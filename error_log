@@ -1,0 +1,31 @@
+[18-Apr-2026 22:50:26 UTC] PHP Warning:  require(/tmp/../public_html/app/vendor/autoload.php): Failed to open stream: No such file or directory in /tmp/testmail.php on line 2
+[18-Apr-2026 22:50:26 UTC] PHP Warning:  require(/tmp/../public_html/app/vendor/autoload.php): Failed to open stream: No such file or directory in /tmp/testmail.php on line 2
+[18-Apr-2026 22:50:26 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/tmp/../public_html/app/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php83/root/usr/share/pear') in /tmp/testmail.php:2
+Stack trace:
+#0 {main}
+  thrown in /tmp/testmail.php on line 2
+[18-Apr-2026 22:55:23 UTC] PHP Fatal error:  Uncaught Error: Class "Illuminate\Foundation\Application" not found in /home/shalom/public_html/app/bootstrap/app.php:7
+Stack trace:
+#0 Command line code(1): require()
+#1 {main}
+  thrown in /home/shalom/public_html/app/bootstrap/app.php on line 7
+[25-Apr-2026 06:53:08 UTC] PHP Parse error:  syntax error, unexpected token "," in app/Http/Controllers/AdminSermonsController.php on line 181
+[25-Apr-2026 07:04:05 UTC] PHP Fatal error:  Uncaught Error: Class "App\Models\Bulletin" not found in Command line code:1
+Stack trace:
+#0 {main}
+  thrown in Command line code on line 1
+[25-Apr-2026 08:11:12 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000] [1045] Access denied for user 'shalom_app
+root'@'localhost' (using password: YES) in Command line code:2
+Stack trace:
+#0 Command line code(2): PDO->__construct('mysql:host=127....', 'shalom_app\nroot', Object(SensitiveParameterValue))
+#1 {main}
+  thrown in Command line code on line 2
+[25-Apr-2026 08:21:40 UTC] PHP Fatal error:  Uncaught Error: Undefined constant "S" in Command line code:18
+Stack trace:
+#0 Command line code(46): makeIcon(32, 'public/favicon-...')
+#1 {main}
+  thrown in Command line code on line 18
+[25-Apr-2026 10:09:13 UTC] PHP Fatal error:  Uncaught Error: str_replace(): Argument #4 ($count) could not be passed by reference in Command line code:9
+Stack trace:
+#0 {main}
+  thrown in Command line code on line 9

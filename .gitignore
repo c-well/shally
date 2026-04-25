@@ -1,0 +1,50 @@
+# Laravel
+/vendor/
+/node_modules/
+/public/build/
+/public/hot
+/public/storage
+/public/uploads/sermons/
+/public/uploads/sermon-covers/
+/public/uploads/sermon-images/
+/public/flyers/
+/storage/*.key
+/storage/app/public
+/storage/debugbar/
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*.php
+/storage/logs/*
+!/storage/framework/cache/data/.gitkeep
+!/storage/framework/sessions/.gitkeep
+!/storage/framework/testing/.gitkeep
+!/storage/framework/views/.gitkeep
+!/storage/logs/.gitkeep
+
+# Secrets — never commit
+.env
+.env.backup
+.env.production
+.env.*.local
+auth.json
+
+# IDE
+.idea/
+.vscode/
+.phpunit.result.cache
+.phpunit.cache
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Misc
+npm-debug.log
+yarn-error.log
+homestead.yaml
+homestead.json
+Homestead.yaml
+Homestead.json
