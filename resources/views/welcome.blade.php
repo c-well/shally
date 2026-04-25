@@ -724,12 +724,33 @@
   @media (max-width: 600px) {
     .admin-panel {
       position: fixed; top: auto; bottom: 16px; left: 16px; right: 16px;
-      max-width: none; max-height: calc(100vh - 120px);
+      max-width: none; max-height: calc(100dvh - 120px);
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;     /* smooth iOS scroll inside panel */
+      overscroll-behavior: contain;          /* don't bubble scroll to body */
       padding: 22px 18px;
     }
     .admin-panel-item { font-size: 19px; }
-    .admin-trigger { padding: 10px 20px; font-size: 10px; }
+    .admin-trigger { padding: 10px 16px; font-size: 10px; gap: 6px; }
+    .admin-trigger-label { line-height: 1; }
+    /* Tighten the chevron spacing on mobile so the trigger itself doesn't overflow */
+    .admin-trigger .chev { width: 11px; height: 11px; }
+
+    /* Andre's ticket #9 fix:
+       The theme-picker nested popover normally pops LEFT of the main panel
+       (right: calc(100% + 6px)). On mobile that's off-screen. Instead, render
+       it INLINE below the trigger so it fits the panel's full width. */
+    .theme-pop {
+      position: static !important;
+      top: auto !important; right: auto !important; left: auto !important;
+      width: 100%;
+      margin-top: 8px;
+      box-shadow: none;
+      border: 1px dashed var(--line);
+      padding: 12px;
+    }
+    .theme-pop.open { display: block; }
+    .theme-swatches { gap: 6px !important; }
   }
   /* Theme picker now lives inside the hamburger as a nested popover */
   .theme-picker { position: relative; }
@@ -2183,7 +2204,9 @@
             @if (auth()->user()?->role === 'super_admin')
               <button type="button" id="bulletin-delete-btn" class="admin-panel-item admin-panel-item-danger"
                       data-delete-url="{{ route('bulletins.destroy', $bulletin) }}"
-                      data-bulletin-title="{{ $bulletin->title ?? optional($bulletin->service_date)->format('M j, Y') }}">
+                      data-bulletin-title="{{ $bulletin->title ?? optional($bulletin->service_date)->format('M j, Y') }}"
+                      data-service-date="{{ $bulletin->service_date?->toDateString() }}"
+                      data-service-date-formatted="{{ $bulletin->service_date?->format('l, F j') }}">
                 <span>Delete this bulletin</span>
               </button>
             @endif
@@ -2816,8 +2839,15 @@
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
     setTimeout(() => input.focus(), 80);
-    // Kick off hymnal load immediately (small)
+    // Item #4: load hymnal eagerly (557 KB), defer KJV/ESV (~7.5 MB each)
+    // until the user actually clicks those tabs OR after 3 sec idle prefetch.
     loadCorpus('hymnal');
+    setTimeout(() => {
+      // Background prefetch — only if user hasn't typed anything yet
+      // (typing already triggers loadCorpus on demand)
+      if (!input.value && !indexes.kjv) loadCorpus('kjv');
+      if (!input.value && !indexes.esv) setTimeout(() => loadCorpus('esv'), 800);
+    }, 3000);
   }
   function closeSearch() {
     overlay.classList.remove('open');
@@ -3485,14 +3515,119 @@
           box.style.minWidth = Math.max(220, r.width) + 'px';
         }
 
+
+  /* ── Local-first suggestion lookup (Item #3 from senior eng review) ──────
+     Hymn list and 66 Bible books are now resolved locally in the browser.
+     People are still hit on the API (the list evolves as bulletins are edited).
+     Hymnal data piggybacks on the existing /search/hymnal.json corpus the
+     full-search modal already loads — no extra HTTP. */
+  const BIBLE_BOOKS_66 = [
+    'Genesis','Exodus','Leviticus','Numbers','Deuteronomy',
+    'Joshua','Judges','Ruth','1 Samuel','2 Samuel','1 Kings','2 Kings',
+    '1 Chronicles','2 Chronicles','Ezra','Nehemiah','Esther','Job',
+    'Psalms','Proverbs','Ecclesiastes','Song of Solomon','Isaiah','Jeremiah',
+    'Lamentations','Ezekiel','Daniel','Hosea','Joel','Amos','Obadiah',
+    'Jonah','Micah','Nahum','Habakkuk','Zephaniah','Haggai','Zechariah','Malachi',
+    'Matthew','Mark','Luke','John','Acts','Romans',
+    '1 Corinthians','2 Corinthians','Galatians','Ephesians','Philippians','Colossians',
+    '1 Thessalonians','2 Thessalonians','1 Timothy','2 Timothy','Titus','Philemon',
+    'Hebrews','James','1 Peter','2 Peter','1 John','2 John','3 John','Jude','Revelation'
+  ];
+
+  let _hymnList = null;          // lazy-loaded on first hymn-scope query
+  let _hymnListPromise = null;
+  async function getHymnList() {
+    if (_hymnList) return _hymnList;
+    if (_hymnListPromise) return _hymnListPromise;
+    _hymnListPromise = (async () => {
+      // Reuse the same hymnal.json the full-search modal loads
+      try {
+        const res = await fetch('/search/hymnal.json');
+        const data = await res.json();
+        _hymnList = data.map(h => ({ number: h.number, title: h.title, label: '#' + h.number + ' ' + h.title }));
+        return _hymnList;
+      } catch (e) {
+        _hymnList = [];
+        return _hymnList;
+      }
+    })();
+    return _hymnListPromise;
+  }
+
+  function localBibleMatch(q) {
+    const needle = q.toLowerCase();
+    const out = [];
+    for (const book of BIBLE_BOOKS_66) {
+      if (book.toLowerCase().includes(needle)) {
+        out.push({ label: book, name: book });
+        if (out.length >= 10) break;
+      }
+    }
+    return out;
+  }
+
+  function localHymnMatch(q, list) {
+    const needle = q.toLowerCase();
+    const out = [];
+    // If query is purely numeric, prefix-match by hymn number
+    if (/^\d+$/.test(q)) {
+      for (const h of list) {
+        if (String(h.number).startsWith(q)) {
+          out.push({ label: h.label });
+          if (out.length >= 12) break;
+        }
+      }
+      return out;
+    }
+    // Otherwise substring-match in title
+    for (const h of list) {
+      if (h.title.toLowerCase().includes(needle)) {
+        out.push({ label: h.label });
+        if (out.length >= 12) break;
+      }
+    }
+    return out;
+  }
+
+  async function getSuggestions(q, scope) {
+    // hymn-only scope — local
+    if (scope === 'hymn') {
+      const list = await getHymnList();
+      return { hymns: localHymnMatch(q, list) };
+    }
+    // bible-only scope — local
+    if (scope === 'bible') {
+      return { books: localBibleMatch(q) };
+    }
+    // person-only scope — API still
+    if (scope === 'person') {
+      try {
+        const res = await fetch('/api/suggestions?q=' + encodeURIComponent(q) + '&scope=person', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+        return await res.json();
+      } catch (e) { return { people: [] }; }
+    }
+    // 'any' / unset scope — combine local hymn + bible with API people
+    const list = await getHymnList();
+    let people = [];
+    try {
+      const res = await fetch('/api/suggestions?q=' + encodeURIComponent(q) + '&scope=person', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+      const data = await res.json();
+      people = data.people || [];
+    } catch (e) {}
+    return {
+      hymns: localHymnMatch(q, list),
+      books: localBibleMatch(q),
+      people: people,
+    };
+  }
+
         let timer;
         input.addEventListener('input', () => {
           clearTimeout(timer);
           timer = setTimeout(async () => {
             const q = input.value.trim();
             if (q.length < 1) { box.style.display = 'none'; return; }
-            const res = await fetch('/api/suggestions?q=' + encodeURIComponent(q) + '&scope=' + encodeURIComponent(scope || ''), { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
-            const data = await res.json();
+            const data = await getSuggestions(q, scope || '');
             const items = [];
             if (scope === 'person') {
               (data.people || []).forEach(p => items.push({ label: p, value: p, tag: 'Person' }));
@@ -3721,13 +3856,49 @@
         }
       } catch (e) {}
 
-      /* Bulletin delete — hamburger menu item (super_admin only). Two-step confirm. */
+      /* Bulletin delete — hamburger menu item (super_admin only).
+         Tiered confirm: if the bulletin's service_date is within ±7 days of
+         today (i.e. THIS week's live bulletin), require typing DELETE to confirm.
+         Otherwise simple confirm. André accidentally deleted today's bulletin
+         on 2026-04-25 — this guardrail prevents the next repeat. */
       const bulDelBtn = document.getElementById('bulletin-delete-btn');
       if (bulDelBtn) {
         bulDelBtn.addEventListener('click', async (ev) => {
           ev.preventDefault();
           const title = bulDelBtn.dataset.bulletinTitle || 'this bulletin';
-          if (!confirm('Delete the bulletin "' + title + '"?\n\nLines, announcements, and snapshot will be hidden but recoverable for 30 seconds.')) return;
+          const sd = bulDelBtn.dataset.serviceDate || '';
+          const sdFormatted = bulDelBtn.dataset.serviceDateFormatted || sd;
+
+          // Determine if this is "this week's" bulletin (within ±7 days of today)
+          let isCurrentWeek = false;
+          if (sd) {
+            const sdDate = new Date(sd + 'T12:00:00');
+            const today = new Date();
+            today.setHours(12, 0, 0, 0);
+            const diffDays = Math.abs(Math.round((sdDate - today) / (1000 * 60 * 60 * 24)));
+            isCurrentWeek = diffDays <= 7;
+          }
+
+          if (isCurrentWeek) {
+            // Hard guardrail — type DELETE to confirm
+            const warning =
+              '⚠️  THIS IS A LIVE BULLETIN  ⚠️\n\n' +
+              'Service date: ' + sdFormatted + '\n' +
+              'Title: "' + title + '"\n\n' +
+              'This bulletin is in the active week and is what guests see right now ' +
+              'when they visit the home page.\n\n' +
+              'If you delete it, the public site will fall back to a different bulletin ' +
+              '(or none at all) until it is restored.\n\n' +
+              'To proceed, type DELETE (all caps) below:';
+            const typed = prompt(warning);
+            if (typed !== 'DELETE') {
+              if (typed !== null) alert('Cancelled — you must type DELETE exactly to confirm.');
+              return;
+            }
+          } else {
+            // Soft confirm for past/old bulletins
+            if (!confirm('Delete the bulletin "' + title + '"?\n\nService date: ' + (sdFormatted || 'unknown') + '\n\nLines, announcements, and snapshot will be hidden but recoverable for 30 seconds.')) return;
+          }
           try {
             const res = await fetch(bulDelBtn.dataset.deleteUrl, {
               method: 'DELETE',
@@ -4298,6 +4469,18 @@
     });
   });
 })();
+</script>
+
+<script>
+// Bulletin Service Worker — network-first cache fallback so guests on flaky
+// church-basement WiFi still see today's program. Admins editing always see
+// fresh from network. Scope is '/' so it covers /welcome and /bulletin/{id};
+// the SW's fetch handler filters internally to only intercept those paths.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/bulletin-sw.js', { scope: '/' }).catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
