@@ -2130,7 +2130,11 @@
   }
   .guest-nav-group[open] > summary::after { transform: rotate(180deg); }
   .guest-nav-group > summary:hover { color: var(--teal); background: rgba(3,97,122,0.06); }
+  .guest-nav-group { display: block; }
+  .guest-nav-group[open] > a,
   .guest-nav-group > a {
+    display: block !important;
+    width: 100%;
     padding: 10px 14px 10px 28px !important;
     font-size: 16px !important;
     color: var(--ink-soft) !important;
