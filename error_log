@@ -29,3 +29,5 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in Command line code on line 9
+[26-Apr-2026 01:45:13 UTC] PHP Warning:  file_get_contents(): https:// wrapper is disabled in the server configuration by allow_url_fopen=0 in Command line code on line 2
+[26-Apr-2026 01:45:13 UTC] PHP Warning:  file_get_contents(https://thechurchofpeace.org/welcome): Failed to open stream: no suitable wrapper could be found in Command line code on line 2

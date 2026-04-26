@@ -3585,7 +3585,7 @@
           }
 
           input.addEventListener('blur', commit);
-          function keydownHandler(e) {
+          input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && type !== 'textarea') { e.preventDefault(); input.blur(); }
             if (e.key === 'Escape') { el.classList.remove('editing'); el.textContent = current; if (suggestBox) suggestBox.remove(); }
           });
