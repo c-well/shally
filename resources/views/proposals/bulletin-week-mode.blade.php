@@ -205,6 +205,23 @@
   </div>
 
   <div class="proposal-card">
+    <h2>The escape hatches (this is the part Karlon flagged)</h2>
+    <p>
+      We don't want this auto-hide to fight us during Revival, Week of Prayer,
+      VBS, camp meeting, or any week where each night has its own bulletin.
+      Three guardrails &mdash; all automatic except the third:
+    </p>
+    <ul>
+      <li><strong>Event-kind bulletins always show.</strong> If <code>kind = 'event'</code>, week-mode never hides it. Revival nights, prayer week, VBS &mdash; full bulletin visible every day.</li>
+      <li><strong>Active event window overrides.</strong> If today falls inside any bulletin's <code>[service_date &hellip; event_ends_at]</code> range, that bulletin renders fully regardless of weekday.</li>
+      <li><strong>Manual toggle.</strong> A new "Always show during the week" checkbox in the bulletin editor for the rare case where automatic detection misses (e.g., a special camp-meeting week we forgot to flag as an event).</li>
+    </ul>
+    <p style="color: var(--brass); font-weight: 500; margin-top: 14px;">
+      The default Sabbath-only rule fires only when no event is active and the bulletin's kind is a regular service.
+    </p>
+  </div>
+
+  <div class="proposal-card">
     <h2>Why</h2>
     <p>
       Steve Jobs's question: <em>does the user need this?</em> A visitor on Tuesday browsing the church site doesn't need the order of service &mdash; they need to know <strong>when service is</strong> and <strong>what's happening this week</strong>. The order of service is for the moment of worship; outside that moment it's noise.

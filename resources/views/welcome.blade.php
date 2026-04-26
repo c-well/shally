@@ -2870,17 +2870,32 @@
   }
 
   document.getElementById('search-btn')?.addEventListener('click', openSearch);
-  // open-search auto-open hook — when arriving from another page via ?open-search=1
-  // OR from the search-float partial, open the search overlay automatically.
+  // open-search auto-open hook — Two signals (URL param + sessionStorage)
+  // for resilience: SW caches, browser back-forward, and Safari quirks have
+  // all stripped the URL param in different scenarios. sessionStorage survives
+  // them. Plus a retry loop so we wait for openSearch to be ready.
   (function () {
     try {
       var p = new URLSearchParams(window.location.search);
-      if (p.get('open-search') === '1') {
-        // Use a tiny delay so MiniSearch lib + indexes start loading first
-        setTimeout(openSearch, 50);
-        // Clean the URL so refresh doesn't keep re-opening
-        var url = window.location.pathname + window.location.hash;
-        history.replaceState(null, '', url);
+      var fromUrl = p.get('open-search') === '1';
+      var fromStore = false;
+      try { fromStore = sessionStorage.getItem('cop_open_search') === '1'; } catch (e) {}
+      if (fromUrl || fromStore) {
+        try { sessionStorage.removeItem('cop_open_search'); } catch (e) {}
+        var attempts = 0;
+        function tryOpen() {
+          attempts++;
+          if (typeof openSearch === 'function' && document.getElementById('search-overlay')) {
+            openSearch();
+          } else if (attempts < 30) {
+            setTimeout(tryOpen, 50);
+          }
+        }
+        setTimeout(tryOpen, 50);
+        if (fromUrl) {
+          var url = window.location.pathname + window.location.hash;
+          history.replaceState(null, '', url);
+        }
       }
     } catch (e) {}
   })();
