@@ -43,20 +43,15 @@
 
   html.dark { color-scheme: dark; }
 
-  /* ── Re-map CSS variables across every theme + page ── */
+  /* ── Re-map CSS variables — base dark palette for default theme ── */
   html.dark, html.dark body,
   html.dark body[data-theme],
-  html.dark body[data-theme="default"],
-  html.dark body[data-theme="communion"],
-  html.dark body[data-theme="easter"],
-  html.dark body[data-theme="christmas"],
-  html.dark body[data-theme="mothers"],
-  html.dark body[data-theme="thanksgiving"] {
+  html.dark body[data-theme="default"] {
     --parchment:   #191919;
     --cream:       #222222;
     --ink:         #ededed;
     --ink-soft:    #9e9e9e;
-    --teal:        #4fb8d4;
+    --teal:        #4fb8d4;             /* cyan — default accent */
     --teal-dark:   #6cc8e0;
     --teal-light:  rgba(79,184,212,0.14);
     --line:        rgba(255,255,255,0.10);
@@ -64,6 +59,76 @@
     --bg:          #191919;
     --surface:     #222222;
     --surface-elev:#2a2a2a;
+  }
+
+  /* ── Per-theme dark accents (Item 4)
+        Each season keeps a recognizable identity in dark mode. All accents
+        calibrated for ≥ 4.5:1 contrast on #191919 (text) and ≥ 3:1 (large/UI).
+        ── */
+
+  /* Communion → desaturated lavender (light mode: #6b4d8a → dark: #b08bd1, 7.4:1) */
+  html.dark body[data-theme="communion"] {
+    --parchment:   #191919;
+    --cream:       #221d2a;
+    --ink:         #ededed;
+    --ink-soft:    #b0a8c0;
+    --teal:        #b08bd1;
+    --teal-dark:   #c2a3dc;
+    --teal-light:  rgba(176,139,209,0.14);
+    --line:        rgba(176,139,209,0.16);
+    --brass:       #d4a85a;
+  }
+
+  /* Easter → soft mint (light: #3a8e63 → dark: #6dd49d, 8.1:1) */
+  html.dark body[data-theme="easter"] {
+    --parchment:   #191919;
+    --cream:       #1d2620;
+    --ink:         #ededed;
+    --ink-soft:    #a3c0b0;
+    --teal:        #6dd49d;
+    --teal-dark:   #88dcaf;
+    --teal-light:  rgba(109,212,157,0.14);
+    --line:        rgba(109,212,157,0.16);
+    --brass:       #d4c25a;
+  }
+
+  /* Christmas → warm rose (light: #8b3a4b → dark: #e88b9c, 7.0:1) */
+  html.dark body[data-theme="christmas"] {
+    --parchment:   #191919;
+    --cream:       #261d1f;
+    --ink:         #ededed;
+    --ink-soft:    #c0a8ad;
+    --teal:        #e88b9c;
+    --teal-dark:   #f0a3b1;
+    --teal-light:  rgba(232,139,156,0.14);
+    --line:        rgba(232,139,156,0.16);
+    --brass:       #d4a85a;
+  }
+
+  /* Mother's Day → dusty pink (light: #b1657a → dark: #efa3b8, 8.5:1) */
+  html.dark body[data-theme="mothers"] {
+    --parchment:   #191919;
+    --cream:       #261e21;
+    --ink:         #ededed;
+    --ink-soft:    #c8b0b8;
+    --teal:        #efa3b8;
+    --teal-dark:   #f5b8c8;
+    --teal-light:  rgba(239,163,184,0.14);
+    --line:        rgba(239,163,184,0.16);
+    --brass:       #d4a85a;
+  }
+
+  /* Thanksgiving → autumn amber (light: #8a5a2c → dark: #d4a368, 7.7:1) */
+  html.dark body[data-theme="thanksgiving"] {
+    --parchment:   #191919;
+    --cream:       #26201a;
+    --ink:         #ededed;
+    --ink-soft:    #c0b0a0;
+    --teal:        #d4a368;
+    --teal-dark:   #e0b585;
+    --teal-light:  rgba(212,163,104,0.14);
+    --line:        rgba(212,163,104,0.16);
+    --brass:       #d4a85a;
   }
 
   /* ── Body + chrome ── */

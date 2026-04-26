@@ -123,6 +123,8 @@ Route::middleware('auth')->group(function () {
 
         // First-party analytics — page_views aggregated dashboard
         Route::get   ('/admin/analytics',               [\App\Http\Controllers\AdminAnalyticsController::class, 'index'])->name('admin.analytics');
+        Route::get   ('/admin/inbox',                   [\App\Http\Controllers\AdminInboxController::class, 'index'])->name('admin.inbox');
+        Route::patch ('/admin/inbox/{ticket}/close',    [\App\Http\Controllers\AdminInboxController::class, 'close'])->name('admin.inbox.close');
 
         Route::get   ('/admin/lessons',                [\App\Http\Controllers\AdminLessonsController::class, 'index'])->name('admin.lessons');
         Route::post  ('/admin/lessons',                [\App\Http\Controllers\AdminLessonsController::class, 'store'])->name('admin.lessons.store');

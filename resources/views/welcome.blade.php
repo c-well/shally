@@ -3423,13 +3423,102 @@
 
           el.classList.add('editing');
           el.innerHTML = '';
-          const input = document.createElement(type === 'textarea' ? 'textarea' : 'input');
-          if (type !== 'textarea') input.type = (type === 'date' || type === 'datetime-local') ? 'text' : type;
-          const placeholders = ['Part…','Who…','Details…','Announcement title…','New section','Location…','Notes…'];
-          input.value = placeholders.includes(current) ? '' : (el.dataset.raw || current);
-          el.appendChild(input);
-          input.focus();
-          try { if (type !== 'textarea' && type !== 'date' && type !== 'datetime-local') input.setSelectionRange(input.value.length, input.value.length); } catch(e) {}
+
+          // SECTION HEADERS — render a <select> of standard bulletin sections
+          // with a Custom escape, instead of free-form text. Prevents the kind
+          // of confused section names that broke bulletin 6 on 2026-04-25.
+          let input;
+          let isSectionPicker = (field === 'section');
+          if (isSectionPicker) {
+            const STANDARD_SECTIONS = [
+              '',                                         // empty = no section header
+              'Pastoral Greetings',
+              'Pastoral Greetings / Baby Dedication',
+              'Praise & Worship',
+              'Service of Worship',
+              'Children\'s Story',
+              'Mission Story',
+              'Special Music',
+              'Sermon',
+              'Tithes & Offerings',
+              'Communion',
+              'Foot Washing',
+              'Closing',
+              'Benediction',
+            ];
+            input = document.createElement('select');
+            input.style.font = 'inherit';
+            input.style.color = 'inherit';
+            input.style.background = 'transparent';
+            input.style.border = '0';
+            input.style.outline = '0';
+            input.style.width = '100%';
+            input.style.padding = '0';
+            input.style.cursor = 'pointer';
+
+            const placeholdersForSection = ['New section', ''];
+            const currentClean = placeholdersForSection.includes(current) ? '' : (el.dataset.raw || current);
+
+            STANDARD_SECTIONS.forEach(sec => {
+              const opt = document.createElement('option');
+              opt.value = sec;
+              opt.textContent = sec || '— No section header —';
+              if (sec === currentClean) opt.selected = true;
+              input.appendChild(opt);
+            });
+            // Custom escape — appears at the end. If selected, swap to text input.
+            const customOpt = document.createElement('option');
+            customOpt.value = '__custom__';
+            customOpt.textContent = '✨ Custom…';
+            // If currentClean isn't in standard list, treat it as already-custom and select Custom
+            const isAlreadyCustom = currentClean && !STANDARD_SECTIONS.includes(currentClean);
+            if (isAlreadyCustom) customOpt.selected = true;
+            input.appendChild(customOpt);
+            el.appendChild(input);
+
+            // If currentClean is custom, swap to text immediately so user can edit
+            if (isAlreadyCustom) {
+              setTimeout(() => swapToCustomText(currentClean), 0);
+            }
+
+            // When user picks Custom, swap to a text input
+            input.addEventListener('change', () => {
+              if (input.value === '__custom__') {
+                swapToCustomText('');
+              }
+            });
+
+            function swapToCustomText(initialValue) {
+              const txt = document.createElement('input');
+              txt.type = 'text';
+              txt.placeholder = 'Custom section name…';
+              txt.value = initialValue;
+              txt.style.font = 'inherit';
+              txt.style.color = 'inherit';
+              txt.style.background = 'transparent';
+              txt.style.border = '0';
+              txt.style.outline = '0';
+              txt.style.width = '100%';
+              txt.style.padding = '0';
+              el.replaceChild(txt, input);
+              input = txt;
+              setTimeout(() => txt.focus(), 0);
+              // Re-attach blur/keydown handlers (added below) to the new element
+              txt.addEventListener('blur', commitWrap);
+              txt.addEventListener('keydown', keydownWrap);
+            }
+
+            input.focus();
+          } else {
+            // Default: text/textarea/date input as before
+            input = document.createElement(type === 'textarea' ? 'textarea' : 'input');
+            if (type !== 'textarea') input.type = (type === 'date' || type === 'datetime-local') ? 'text' : type;
+            const placeholders = ['Part…','Who…','Details…','Announcement title…','New section','Location…','Notes…'];
+            input.value = placeholders.includes(current) ? '' : (el.dataset.raw || current);
+            el.appendChild(input);
+            input.focus();
+            try { if (type !== 'textarea' && type !== 'date' && type !== 'datetime-local') input.setSelectionRange(input.value.length, input.value.length); } catch(e) {}
+          }
 
           let fp;
           if ((type === 'date' || type === 'datetime-local') && window.flatpickr) {
@@ -3446,7 +3535,9 @@
           if (el.dataset.autocomplete) attachSuggest(input, el, el.dataset.autocomplete);
 
           async function commit() {
-            const value = input.value;
+            // For section picker: __custom__ pseudo-value means "still picking" — treat as empty
+            let value = input.value;
+            if (isSectionPicker && value === '__custom__') value = '';
             const displayValue = value || (field === 'part' ? 'Part…' : field === 'person' ? 'Who…' : field === 'detail' ? 'Details…' : field === 'title' ? 'Announcement title…' : field === 'section' ? 'New section' : '');
             // Snapshot bulletin-line text edits so undo can step through them granularly
             const lineOwner = el.closest('[data-line-id]');
@@ -3494,7 +3585,7 @@
           }
 
           input.addEventListener('blur', commit);
-          input.addEventListener('keydown', (e) => {
+          function keydownHandler(e) {
             if (e.key === 'Enter' && type !== 'textarea') { e.preventDefault(); input.blur(); }
             if (e.key === 'Escape') { el.classList.remove('editing'); el.textContent = current; if (suggestBox) suggestBox.remove(); }
           });
