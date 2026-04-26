@@ -22,8 +22,8 @@ class BulletinController extends Controller
         $isAdmin = $user && in_array($user->role, ['clerk', 'super_admin'], true);
         $previewPublic = $isAdmin && $request->boolean('preview');
         $canEdit = $isAdmin && ! $previewPublic;
-        // Week-mode preview — admins can append ?preview-week=1 to see what the
-        // public would see Mon–Fri (just announcements, no order of service).
+        // Week-mode preview — admins can append ?preview-week=1 to test the
+        // guest-facing week-mode rendering.
         $weekModePreview = $isAdmin && $request->boolean('preview-week');
 
         $bulletinId = $request->integer('bulletin');
@@ -81,11 +81,39 @@ class BulletinController extends Controller
             ->orderBy('start_at')
             ->get();
 
+        // Auto-detect week-mode: if the active bulletin is a regular Sabbath
+        // service AND today is NOT the service day AND we are NOT inside any
+        // event window AND the manual override flag is off — hide the order
+        // of service from guests, leaving only announcements + Sabbath reminder.
+        $weekModeAuto = false;
+        if ($bulletin && ! $canEdit) {
+            $today = now()->setTimezone('America/New_York')->startOfDay();
+            $serviceDay = $bulletin->service_date->copy()->setTimezone('America/New_York')->startOfDay();
+            $isServiceDay = $today->equalTo($serviceDay);
+
+            // Event window override: today inside [service_date .. event_ends_at]
+            // OR bulletin is explicitly an 'event' kind
+            $hasEventWindow = false;
+            if (($bulletin->kind ?? null) === 'event') {
+                $hasEventWindow = true;
+            } elseif ($bulletin->event_ends_at) {
+                $eventEnd = $bulletin->event_ends_at->copy()->setTimezone('America/New_York')->endOfDay();
+                $hasEventWindow = $today->between($serviceDay, $eventEnd);
+            }
+
+            // Manual override: always_show_during_week column
+            $alwaysShow = (bool) ($bulletin->always_show_during_week ?? false);
+
+            $weekModeAuto = ! ($isServiceDay || $hasEventWindow || $alwaysShow);
+        }
+
+        $weekMode = $weekModePreview || $weekModeAuto;
+
         return view('welcome', [
             'bulletin'        => $bulletin,
             'canEdit'         => $canEdit,
             'previewPublic'   => $previewPublic,
-            'weekMode'        => $weekModePreview,
+            'weekMode'        => $weekMode,
             'prevBulletinId'  => $prevBulletinId,
             'nextBulletinId'  => $nextBulletinId,
             'upcomingEvents'  => $upcomingEvents,

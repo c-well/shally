@@ -9,7 +9,7 @@ class Bulletin extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'service_date', 'body', 'pdf_path', 'is_published',
+        'title', 'service_date', 'body', 'pdf_path', 'is_published', 'always_show_during_week',
         'published_at', 'published_snapshot',
         'previous_published_snapshot', 'previous_published_at',
         'theme', 'author_id',
@@ -19,6 +19,7 @@ class Bulletin extends Model
     protected $casts = [
         'service_date'                 => 'date',
         'is_published'                 => 'boolean',
+        'always_show_during_week'      => 'boolean',
         'published_at'                 => 'datetime',
         'published_snapshot'           => 'array',
         'previous_published_snapshot'  => 'array',
