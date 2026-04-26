@@ -10,7 +10,7 @@
 @include('partials.seo-head', [
   'title'       => 'Shalom SDA Church · The Church of Peace · Bronx, NY',
   'description' => 'Shalom Seventh-day Adventist Church in the Bronx — Sabbath worship at 11 AM, weekly bulletin, Sabbath School lesson, sermon archive, and prayer meetings on Zoom.',
-  'path'        => '/welcome',
+  'path'        => '/',
 ])
 @include('partials.church-schema')
 <meta name="description" content="Shalom Seventh-day Adventist Church · The Church of Peace · 3323 White Plains Rd, Bronx, NY. Sabbath School, worship service, prayer meetings, podcast, and the weekly bulletin.">
