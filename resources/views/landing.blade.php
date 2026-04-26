@@ -177,16 +177,22 @@
     }
     /* Default: submenu collapsed on mobile */
     .nav-links.open .submenu {
-      display: none;
+      display: none !important;
       position: static !important;
       box-shadow: none;
       border: 0;
       padding: 0 0 8px 18px;
       background: transparent !important;
     }
-    /* When About Us is "active" (we'll toggle via JS), expand */
+    /* When About Us is "active" (we'll toggle via JS), expand as a column */
     .nav-links.open .has-menu.is-expanded .submenu {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .nav-links.open .has-menu.is-expanded .submenu a,
+    .nav-links.open .has-menu.is-expanded .submenu .submenu-eyebrow {
       display: block;
+      width: 100%;
     }
     .nav-links.open .has-menu.is-expanded > a::after {
       content: ' ▴';
