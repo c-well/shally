@@ -147,6 +147,19 @@
   html.dark .nav-tool { color: #9e9e9e; border-color: rgba(255,255,255,0.18); }
   html.dark .nav-tool:hover { color: #4fb8d4; border-color: #4fb8d4; }
 
+  
+  /* Tools cluster — search + text size + hamburger. Always visible. */
+  .nav-tools {
+    display: flex; align-items: center; gap: 6px;
+  }
+  /* On desktop the cluster sits inside the navbar's flex row, after .nav-links.
+     The .nav-mobile-toggle is hidden (existing rule already does this).
+     On mobile the cluster collapses to just the icons + hamburger; the
+     hamburger toggles .nav-links visibility independently. */
+  @media (max-width: 720px) {
+    .nav-tools .nav-tool { width: 36px; height: 36px; }
+  }
+
     .nav-mobile-toggle {
     display: none; background: none; border: 0; cursor: pointer;
     padding: 8px; color: var(--ink);
@@ -547,18 +560,22 @@
     <a href="{{ url('/welcome') }}">Bulletin</a>
     <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener" style="color: var(--teal); border-color: var(--teal);">Donate</a>
 
-    {{-- Tools — search + text-size, replacing the floating buttons.
-         Live in the chrome where they belong; reading area stays clean. --}}
+  </nav>
+
+  {{-- Tools cluster — always visible on every viewport. On mobile, lives
+       next to the hamburger so search and text-size stay reachable even
+       when the nav drawer is closed. --}}
+  <div class="nav-tools">
     <button type="button" id="nav-search-btn" class="nav-tool" aria-label="Search Scripture or Hymnal" title="Search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     </button>
     <button type="button" id="nav-font-btn" class="nav-tool" aria-label="Text size" title="Text size">
       <span class="nav-tool-aa">Aa</span>
     </button>
-  </nav>
-  <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Open menu">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-  </button>
+    <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-links">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+  </div>
 </header>
 
 {{-- ── Hero ── --}}
@@ -732,10 +749,23 @@
 
 <script>
 (function () {
-  // Mobile nav
+  // Mobile nav — toggle drawer + sync aria-expanded for screen readers
   const tog = document.getElementById('nav-toggle');
   const nav = document.getElementById('nav-links');
-  tog?.addEventListener('click', () => nav.classList.toggle('open'));
+  if (tog && nav) {
+    tog.addEventListener('click', () => {
+      const isOpen = nav.classList.toggle('open');
+      tog.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    // Esc closes the drawer + returns focus to toggle (WCAG 2.2 AA dismissible)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && nav.classList.contains('open')) {
+        nav.classList.remove('open');
+        tog.setAttribute('aria-expanded', 'false');
+        tog.focus();
+      }
+    });
+  }
 
   // Font sizer (persists across pages via localStorage)
   const html = document.documentElement;
