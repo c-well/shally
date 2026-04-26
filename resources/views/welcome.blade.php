@@ -2311,6 +2311,19 @@
   @endif
 </header>
 
+{{-- Week-mode preview banner — only shown when ?preview-week=1 is set OR
+     when (future) auto-detection hides the order of service. --}}
+@if (($weekMode ?? false) && ! $canEdit)
+  <div class="week-mode-notice" style="max-width: 720px; margin: 28px auto 0; padding: 22px 28px; background: rgba(3,97,122,0.06); border-left: 3px solid var(--teal); border-radius: 6px; text-align: center;">
+    <div style="font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px;">This Sabbath</div>
+    <div style="font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--ink); margin-bottom: 6px;">Worship at 11 AM</div>
+    <div style="font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--ink-soft); font-style: normal;">3323 White Plains Rd · Bronx · everyone welcome</div>
+    <div style="margin-top: 14px; font-family: 'Instrument Sans', sans-serif; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); opacity: 0.6;">Order of service appears Sabbath morning</div>
+  </div>
+@endif
+
+
+
 @php
   // ─── Sabbath-aware greeting (Bronx, NY sunset) ───────────────────
   $lat = 40.8448; $lon = -73.8648;
@@ -2348,6 +2361,7 @@
   </div>
 </section>
 
+@if (! ($weekMode ?? false) || $canEdit)
 <section class="section">
   <div class="container reading">
     @php
@@ -2594,6 +2608,7 @@
     @endif
   </div>
 </section>
+@endif
 
 <section class="section">
   <div class="events-container">
