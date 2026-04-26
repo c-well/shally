@@ -123,6 +123,10 @@ Route::middleware('auth')->group(function () {
 
         // First-party analytics — page_views aggregated dashboard
         Route::get   ('/admin/analytics',               [\App\Http\Controllers\AdminAnalyticsController::class, 'index'])->name('admin.analytics');
+
+        // Proposals — staging area for previewing UX changes before they ship.
+        Route::get  ('/proposals/bulletin-week-mode', [\App\Http\Controllers\ProposalsController::class, 'bulletinWeekMode'])->name('proposals.bulletin-week-mode');
+        Route::post ('/proposals/bulletin-week-mode/vote', [\App\Http\Controllers\ProposalsController::class, 'voteBulletinWeekMode'])->name('proposals.bulletin-week-mode.vote');
         Route::get   ('/admin/inbox',                   [\App\Http\Controllers\AdminInboxController::class, 'index'])->name('admin.inbox');
         Route::patch ('/admin/inbox/{ticket}/close',    [\App\Http\Controllers\AdminInboxController::class, 'close'])->name('admin.inbox.close');
 

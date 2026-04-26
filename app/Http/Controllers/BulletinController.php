@@ -22,6 +22,9 @@ class BulletinController extends Controller
         $isAdmin = $user && in_array($user->role, ['clerk', 'super_admin'], true);
         $previewPublic = $isAdmin && $request->boolean('preview');
         $canEdit = $isAdmin && ! $previewPublic;
+        // Week-mode preview — admins can append ?preview-week=1 to see what the
+        // public would see Mon–Fri (just announcements, no order of service).
+        $weekModePreview = $isAdmin && $request->boolean('preview-week');
 
         $bulletinId = $request->integer('bulletin');
 
@@ -82,6 +85,7 @@ class BulletinController extends Controller
             'bulletin'        => $bulletin,
             'canEdit'         => $canEdit,
             'previewPublic'   => $previewPublic,
+            'weekMode'        => $weekModePreview,
             'prevBulletinId'  => $prevBulletinId,
             'nextBulletinId'  => $nextBulletinId,
             'upcomingEvents'  => $upcomingEvents,
