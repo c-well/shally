@@ -91,7 +91,47 @@
   .nav-links .has-menu:focus-within .submenu { display: flex; }
   .nav-links .submenu a { padding: 10px 14px; border-bottom: 0; border-radius: 4px; }
   .nav-links .submenu a:hover { background: rgba(3,97,122,0.08); color: var(--teal); }
-  .nav-mobile-toggle {
+
+  /* Submenu sections — when About Us has multiple groupings */
+  .submenu.submenu-wide { min-width: 240px; padding: 14px 8px; }
+  .submenu.submenu-wide a { padding: 9px 14px; font-size: 14px; line-height: 1.3; }
+  .submenu-eyebrow {
+    display: block;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-soft);
+    opacity: 0.55;
+    padding: 12px 14px 4px;
+  }
+  .submenu-eyebrow:first-child { padding-top: 4px; }
+
+  /* Nav tools — search + text-size icons in the header chrome */
+  .nav-tool {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    padding: 0;
+    margin-left: 4px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .nav-tool:hover { color: var(--teal); border-color: var(--teal); }
+  .nav-tool:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .nav-tool-aa {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px; font-weight: 500;
+    letter-spacing: -0.5px; line-height: 1;
+  }
+  html.font-large .nav-tool-aa { font-size: 16px; }
+  html.font-xlarge .nav-tool-aa { font-size: 18px; }
+  html.dark .nav-tool { color: #9e9e9e; border-color: rgba(255,255,255,0.18); }
+  html.dark .nav-tool:hover { color: #4fb8d4; border-color: #4fb8d4; }
+
+    .nav-mobile-toggle {
     display: none; background: none; border: 0; cursor: pointer;
     padding: 8px; color: var(--ink);
   }
@@ -460,21 +500,40 @@
 <header class="navbar">
   <a href="/" class="brand">Shalom</a>
   <nav class="nav-links" id="nav-links">
-    <a href="{{ route('about') }}">About</a>
-    <a href="{{ route('visit') }}">Visit</a>
-    <a href="{{ url('/welcome') }}">Bulletin</a>
-    <a href="{{ route('lesson.show') }}">Sabbath School</a>
-    <a href="{{ route('peace-notes') }}">Peace Notes</a>
-    <a href="{{ route('contact.show') }}">Contact</a>
+    {{-- About Us — the umbrella for everything that's not a primary CTA.
+         Hover/tap reveals the full submenu of pages + watch options. --}}
     <span class="has-menu" tabindex="0">
-      <a href="#connect">Connect ▾</a>
-      <span class="submenu">
+      <a href="{{ route('about') }}">About Us ▾</a>
+      <span class="submenu submenu-wide">
+        <span class="submenu-eyebrow">Get to know us</span>
+        <a href="{{ route('about') }}">Our story</a>
+        <a href="{{ route('beliefs') }}">Beliefs</a>
+        <a href="{{ route('contact.show') }}">Contact</a>
+
+        <span class="submenu-eyebrow">Spiritual life</span>
+        <a href="{{ route('lesson.show') }}">Sabbath School</a>
+        <a href="{{ route('peace-notes') }}">Peace Notes</a>
+
+        <span class="submenu-eyebrow">Connect</span>
         <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener">Join us on Zoom</a>
         <a href="#watch">Watch live</a>
-        <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener">Facebook page</a>
+        <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener">Facebook</a>
       </span>
     </span>
+
+    {{-- Primary CTAs — the three things visitors actually do --}}
+    <a href="{{ route('visit') }}">Visit</a>
+    <a href="{{ url('/welcome') }}">Bulletin</a>
     <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener" style="color: var(--teal); border-color: var(--teal);">Donate</a>
+
+    {{-- Tools — search + text-size, replacing the floating buttons.
+         Live in the chrome where they belong; reading area stays clean. --}}
+    <button type="button" id="nav-search-btn" class="nav-tool" aria-label="Search Scripture or Hymnal" title="Search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button type="button" id="nav-font-btn" class="nav-tool" aria-label="Text size" title="Text size">
+      <span class="nav-tool-aa">Aa</span>
+    </button>
   </nav>
   <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Open menu">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
@@ -787,5 +846,43 @@
 </script>
 
 @include('partials.search-float')
+
+<script>
+// Nav tools — search + text size in the landing header chrome.
+// Replaces the floating search-float and per-page font-toggle for the
+// landing page. The text size cycles normal/large/xlarge and persists
+// across pages via localStorage (key 'cop_font_size'), so reading pages
+// honor the choice.
+(function () {
+  // Search — opens /welcome?open-search=1 just like the floating button did
+  var searchBtn = document.getElementById('nav-search-btn');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', function () {
+      try { sessionStorage.setItem('cop_open_search', '1'); } catch (e) {}
+      window.location.href = '/welcome?open-search=1';
+    });
+  }
+
+  // Text size — same cycling pattern as the lesson page font-toggle
+  var fontBtn = document.getElementById('nav-font-btn');
+  if (fontBtn) {
+    var html = document.documentElement;
+    var states = ['normal', 'large', 'xlarge'];
+    function applyFont(state) {
+      html.classList.remove('font-normal', 'font-large', 'font-xlarge');
+      html.classList.add('font-' + state);
+      try { localStorage.setItem('cop_font_size', state); } catch (e) {}
+    }
+    var current = 'normal';
+    try { current = localStorage.getItem('cop_font_size') || 'normal'; } catch (e) {}
+    applyFont(current);
+    fontBtn.addEventListener('click', function () {
+      var idx = states.indexOf(current);
+      current = states[(idx + 1) % states.length];
+      applyFont(current);
+    });
+  }
+})();
+</script>
 </body>
 </html>
