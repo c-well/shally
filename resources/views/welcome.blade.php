@@ -2269,9 +2269,12 @@
              dropdown menu with all the public-page nav links. Always visible
              (desktop + mobile) since the bulletin header is already crowded. --}}
         <div class="guest-bar" style="position:relative;">
-          <button id="search-btn" class="btn search-btn" aria-label="Search Scripture and Hymnal">
+          <button id="search-btn" class="btn search-btn" aria-label="Search Scripture and Hymnal" title="Search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <span class="search-btn-label">Search</span>
+          </button>
+          <button type="button" id="welcome-font-btn" class="btn search-btn" aria-label="Text size" title="Text size" style="padding:8px 12px;">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:500;letter-spacing:-0.5px;line-height:1;">Aa</span>
           </button>
 
           @auth
@@ -2289,14 +2292,25 @@
           </button>
 
           <nav class="guest-nav" id="guest-nav" role="menu" aria-hidden="true">
-            <span class="guest-nav-label">Pages</span>
+            {{-- Same About Us umbrella structure as landing — three groupings --}}
+            <span class="guest-nav-label">Get to know us</span>
             <a href="{{ url('/') }}" role="menuitem">Home</a>
-            <a href="{{ route('about') }}" role="menuitem">About</a>
-            <a href="{{ route('visit') }}" role="menuitem">Visit</a>
+            <a href="{{ route('about') }}" role="menuitem">Our story</a>
             <a href="{{ route('beliefs') }}" role="menuitem">Beliefs</a>
+            <a href="{{ route('contact.show') }}" role="menuitem">Contact</a>
+
+            <span class="guest-nav-label">Spiritual life</span>
             <a href="{{ route('lesson.show') }}" role="menuitem">Sabbath School</a>
             <a href="{{ route('peace-notes') }}" role="menuitem">Peace Notes</a>
-            <a href="{{ route('contact.show') }}" role="menuitem">Contact</a>
+
+            <span class="guest-nav-label">Connect</span>
+            <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" role="menuitem">Join us on Zoom</a>
+            <a href="#watch" role="menuitem">Watch live</a>
+            <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener" role="menuitem">Facebook</a>
+
+            <span class="guest-nav-label">Visit</span>
+            <a href="{{ route('visit') }}" role="menuitem" style="font-weight:600;">Plan your visit →</a>
+
             <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener" role="menuitem" class="guest-nav-donate">Donate ↗</a>
           </nav>
         </div>
@@ -4602,6 +4616,30 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/bulletin-sw.js', { scope: '/' }).catch(() => {});
   });
 }
+</script>
+
+<script>
+// Welcome page text-size cycler — matches landing nav-font-btn behavior
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('welcome-font-btn');
+    if (!btn) return;
+    var html = document.documentElement;
+    var states = ['normal', 'large', 'xlarge'];
+    function applyFont(state) {
+      html.classList.remove('font-normal', 'font-large', 'font-xlarge');
+      html.classList.add('font-' + state);
+      try { localStorage.setItem('cop_font_size', state); } catch (e) {}
+    }
+    var current = 'normal';
+    try { current = localStorage.getItem('cop_font_size') || 'normal'; } catch (e) {}
+    applyFont(current);
+    btn.addEventListener('click', function () {
+      current = states[(states.indexOf(current) + 1) % states.length];
+      applyFont(current);
+    });
+  });
+})();
 </script>
 </body>
 </html>
