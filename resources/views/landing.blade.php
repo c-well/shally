@@ -78,6 +78,21 @@
     transition: color 0.15s, border-color 0.15s;
   }
   .nav-links a:hover { color: var(--ink); border-bottom-color: var(--teal); }
+  .nav-links a:focus-visible {
+    color: var(--ink);
+    border-bottom-color: var(--teal);
+    outline: 2px solid var(--teal);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  .nav-links .has-menu:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+  /* WCAG 2.2 AA — 2.4.11 Focus Not Obscured: ensure focused elements aren't
+     hidden under the sticky navbar when scrolling lands on them. */
+  :target, :focus-visible { scroll-margin-top: 100px; }
   .nav-links .has-menu { position: relative; }
   .nav-links .has-menu > a::after { content: ' ▾'; opacity: 0.5; font-size: 9px; }
   .nav-links .submenu {
@@ -88,7 +103,8 @@
     box-shadow: 0 18px 36px -16px rgba(26,35,50,0.25);
   }
   .nav-links .has-menu:hover .submenu,
-  .nav-links .has-menu:focus-within .submenu { display: flex; }
+  .nav-links .has-menu:focus-within .submenu,
+  .nav-links .submenu.open { display: flex; }
   .nav-links .submenu a { padding: 10px 14px; border-bottom: 0; border-radius: 4px; }
   .nav-links .submenu a:hover { background: rgba(3,97,122,0.08); color: var(--teal); }
 
@@ -502,22 +518,27 @@
   <nav class="nav-links" id="nav-links">
     {{-- About Us — the umbrella for everything that's not a primary CTA.
          Hover/tap reveals the full submenu of pages + watch options. --}}
-    <span class="has-menu" tabindex="0">
-      <a href="{{ route('about') }}">About Us ▾</a>
-      <span class="submenu submenu-wide">
-        <span class="submenu-eyebrow">Get to know us</span>
-        <a href="{{ route('about') }}">Our story</a>
-        <a href="{{ route('beliefs') }}">Beliefs</a>
-        <a href="{{ route('contact.show') }}">Contact</a>
+    <span class="has-menu" id="about-menu-trigger" role="button"
+          tabindex="0"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-controls="about-menu-submenu">
+      <a href="{{ route('about') }}" tabindex="-1">About Us ▾</a>
+      <span class="submenu submenu-wide" id="about-menu-submenu" role="menu"
+            aria-labelledby="about-menu-trigger">
+        <span class="submenu-eyebrow" role="presentation">Get to know us</span>
+        <a href="{{ route('about') }}" role="menuitem">Our story</a>
+        <a href="{{ route('beliefs') }}" role="menuitem">Beliefs</a>
+        <a href="{{ route('contact.show') }}" role="menuitem">Contact</a>
 
-        <span class="submenu-eyebrow">Spiritual life</span>
-        <a href="{{ route('lesson.show') }}">Sabbath School</a>
-        <a href="{{ route('peace-notes') }}">Peace Notes</a>
+        <span class="submenu-eyebrow" role="presentation">Spiritual life</span>
+        <a href="{{ route('lesson.show') }}" role="menuitem">Sabbath School</a>
+        <a href="{{ route('peace-notes') }}" role="menuitem">Peace Notes</a>
 
-        <span class="submenu-eyebrow">Connect</span>
-        <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener">Join us on Zoom</a>
-        <a href="#watch">Watch live</a>
-        <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener">Facebook</a>
+        <span class="submenu-eyebrow" role="presentation">Connect</span>
+        <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" role="menuitem">Join us on Zoom</a>
+        <a href="#watch" role="menuitem">Watch live</a>
+        <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener" role="menuitem">Facebook</a>
       </span>
     </span>
 
@@ -882,6 +903,78 @@
       applyFont(current);
     });
   }
+})();
+</script>
+
+<script>
+// WCAG 2.2 AA — About Us submenu accessibility wiring.
+// Manages aria-expanded as the menu opens/closes (hover, focus, click, keyboard).
+// Esc dismisses and returns focus to the trigger (1.4.13 Dismissible).
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var trigger = document.getElementById('about-menu-trigger');
+    var submenu = document.getElementById('about-menu-submenu');
+    if (!trigger || !submenu) return;
+
+    function setExpanded(state) {
+      trigger.setAttribute('aria-expanded', state ? 'true' : 'false');
+    }
+
+    function open()  { submenu.classList.add('open');    setExpanded(true); }
+    function close() { submenu.classList.remove('open'); setExpanded(false); }
+
+    // Hover/focus already drive visibility via CSS. Hook same lifecycle to aria.
+    trigger.addEventListener('mouseenter', function () { setExpanded(true); });
+    trigger.addEventListener('mouseleave', function () {
+      // Don't close immediately; if focus is inside submenu, keep it open
+      setTimeout(function () {
+        if (!submenu.contains(document.activeElement) && !trigger.matches(':hover')) {
+          setExpanded(false);
+        }
+      }, 100);
+    });
+    trigger.addEventListener('focusin', function () { setExpanded(true); });
+    submenu.addEventListener('focusout', function (e) {
+      // Only close if focus is leaving the menu region entirely
+      setTimeout(function () {
+        if (!submenu.contains(document.activeElement) && document.activeElement !== trigger) {
+          setExpanded(false);
+        }
+      }, 0);
+    });
+
+    // Click on the trigger SPAN (not the inner <a>) toggles the menu.
+    // Click on the inner <a href=/about> still navigates to /about as expected.
+    trigger.addEventListener('click', function (e) {
+      // Don't intercept clicks on the inner link OR on submenu items
+      if (e.target.tagName === 'A') return;
+      e.preventDefault();
+      var isOpen = trigger.getAttribute('aria-expanded') === 'true';
+      setExpanded(!isOpen);
+    });
+
+    // Esc to dismiss + return focus to trigger (1.4.13 Dismissible)
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && trigger.getAttribute('aria-expanded') === 'true') {
+        setExpanded(false);
+        trigger.focus();
+      }
+    });
+
+    // Keyboard: Enter/Space on the trigger SPAN opens submenu
+    trigger.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target === trigger) {
+        e.preventDefault();
+        var isOpen = trigger.getAttribute('aria-expanded') === 'true';
+        setExpanded(!isOpen);
+        if (!isOpen) {
+          // Move focus to first menu item
+          var first = submenu.querySelector('[role="menuitem"]');
+          if (first) setTimeout(function () { first.focus(); }, 50);
+        }
+      }
+    });
+  });
 })();
 </script>
 </body>
