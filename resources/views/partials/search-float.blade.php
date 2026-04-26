@@ -7,7 +7,7 @@
      Visible to everyone (guests + admins). Suppressed only on /welcome itself
      (where the same Search button already lives in the header). --}}
 @unless (request()->is('welcome') || request()->is('admin') || request()->is('admin/*'))
-  <a href="/welcome?open-search=1" class="search-float" aria-label="Search Scripture or Hymnal" title="Search Scripture or Hymnal">
+  <a href="/welcome?open-search=1" class="search-float" id="search-float-link" aria-label="Search Scripture or Hymnal" title="Search Scripture or Hymnal">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <span>Search</span>
   </a>
@@ -31,7 +31,7 @@
       border-radius: 999px;
       text-decoration: none;
       box-shadow: 0 6px 18px -8px rgba(26,35,50,0.30);
-      transition: background 0.15s, transform 0.1s;
+      transition: background 0.15s, opacity 0.25s ease, transform 0.25s ease;
       z-index: 240;
     }
     .search-float:hover { background: var(--teal, #03617A); }
@@ -41,9 +41,51 @@
     html.dark .search-float { background: #2a2a2a; }
     html.dark .search-float:hover { background: #4fb8d4; color: #0c1e23; }
 
+        .search-float.is-fading { opacity: 0.18; transform: translateY(2px); pointer-events: auto; }
+    .search-float.is-fading:hover { opacity: 1; transform: translateY(0); }
+    .search-float { transition: background 0.15s, opacity 0.25s ease, transform 0.25s ease; }
+
     @media (max-width: 600px) {
       .search-float { bottom: 14px; left: 14px; padding: 9px 14px 9px 12px; font-size: 10px; }
     }
     @media print { .search-float { display: none !important; } }
   </style>
+  <script>
+    // Item 4 — sessionStorage fallback so the welcome page can auto-open even
+    // if the URL param gets stripped (SW caching, browser quirks).
+    document.getElementById('search-float-link')?.addEventListener('click', function () {
+      try { sessionStorage.setItem('cop_open_search', '1'); } catch (e) {}
+    });
+
+    // Item 5 — auto-hide on scroll-down, re-show on scroll-up. Keeps the
+    // button reachable but out of the way during reading. Reduces visual
+    // weight to ~0 when the user is actively scrolling through content.
+    (function () {
+      var btn = document.querySelector('.search-float');
+      if (!btn) return;
+      var lastY = window.scrollY;
+      var ticking = false;
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          var y = window.scrollY;
+          var delta = y - lastY;
+          // Only react to meaningful movement (15+ px)
+          if (Math.abs(delta) > 15) {
+            if (delta > 0 && y > 120) {
+              // Scrolling down past the top — fade out
+              btn.classList.add('is-fading');
+            } else {
+              // Scrolling up OR near the top — fade back in
+              btn.classList.remove('is-fading');
+            }
+            lastY = y;
+          }
+          ticking = false;
+        });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+  </script>
 @endunless
