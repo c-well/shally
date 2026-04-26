@@ -134,6 +134,13 @@
       <span class="card-arrow">View →</span>
     </a>
 
+    <a href="{{ route('admin.inbox') }}" class="card">
+      <span class="card-eyebrow">Bug reports</span>
+      <span class="card-title">Inbox.</span>
+      <span class="card-sub">Read incoming bug reports + feedback. Close when handled.</span>
+      <span class="card-arrow">Open →</span>
+    </a>
+
   </div>
 
   {{-- ── Public pages section — preview & links ── --}}
