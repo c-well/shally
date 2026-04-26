@@ -2104,7 +2104,51 @@
   html.dark .guest-nav a { color: #ededed; }
   html.dark .guest-nav a:hover { color: #4fb8d4; background: rgba(255,255,255,0.04); }
 
-  .guest-nav-donate {
+
+  /* Accordion drawer styling */
+  .guest-nav-group { padding: 0; margin: 0; border-radius: 6px; }
+  .guest-nav-group > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 12px 14px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px; font-weight: 500;
+    line-height: 1.25;
+    color: var(--ink);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 44px;
+    transition: color 0.12s, background 0.12s;
+  }
+  .guest-nav-group > summary::-webkit-details-marker { display: none; }
+  .guest-nav-group > summary::after {
+    content: '▾';
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    transition: transform 0.18s ease;
+  }
+  .guest-nav-group[open] > summary::after { transform: rotate(180deg); }
+  .guest-nav-group > summary:hover { color: var(--teal); background: rgba(3,97,122,0.06); }
+  .guest-nav-group > a {
+    padding: 10px 14px 10px 28px !important;
+    font-size: 16px !important;
+    color: var(--ink-soft) !important;
+  }
+  .guest-nav-group > a:hover { color: var(--teal) !important; background: rgba(3,97,122,0.06); }
+  html.dark .guest-nav-group > summary { color: #ededed; }
+  html.dark .guest-nav-group > summary:hover { color: #4fb8d4; background: rgba(255,255,255,0.04); }
+  html.dark .guest-nav-group > summary::after { color: #9e9e9e; }
+  html.dark .guest-nav-group > a { color: #9e9e9e !important; }
+  html.dark .guest-nav-group > a:hover { color: #4fb8d4 !important; }
+
+  .guest-nav-top {
+    /* Top-level non-accordion items inherit the same padding as summaries */
+    font-size: 19px !important;
+    padding: 12px 14px !important;
+  }
+
+    .guest-nav-donate {
     margin-top: 8px;
     padding: 12px 14px !important;
     background: var(--teal);
@@ -2292,24 +2336,31 @@
           </button>
 
           <nav class="guest-nav" id="guest-nav" role="menu" aria-hidden="true">
-            {{-- Same About Us umbrella structure as landing — three groupings --}}
-            <span class="guest-nav-label">Get to know us</span>
-            <a href="{{ url('/') }}" role="menuitem">Home</a>
-            <a href="{{ route('about') }}" role="menuitem">Our story</a>
-            <a href="{{ route('beliefs') }}" role="menuitem">Beliefs</a>
-            <a href="{{ route('contact.show') }}" role="menuitem">Contact</a>
+            {{-- Accordion drawer — sections collapsed by default. Tap a
+                 section header to expand. Drawer stays scannable. --}}
+            <a href="{{ url('/') }}" role="menuitem" class="guest-nav-top">Home</a>
 
-            <span class="guest-nav-label">Spiritual life</span>
-            <a href="{{ route('lesson.show') }}" role="menuitem">Sabbath School</a>
-            <a href="{{ route('peace-notes') }}" role="menuitem">Peace Notes</a>
+            <details class="guest-nav-group">
+              <summary>About Us</summary>
+              <a href="{{ route('about') }}" role="menuitem">Our story</a>
+              <a href="{{ route('beliefs') }}" role="menuitem">Beliefs</a>
+              <a href="{{ route('contact.show') }}" role="menuitem">Contact</a>
+            </details>
 
-            <span class="guest-nav-label">Connect</span>
-            <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" role="menuitem">Join us on Zoom</a>
-            <a href="#watch" role="menuitem">Watch live</a>
-            <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener" role="menuitem">Facebook</a>
+            <details class="guest-nav-group">
+              <summary>Spiritual life</summary>
+              <a href="{{ route('lesson.show') }}" role="menuitem">Sabbath School</a>
+              <a href="{{ route('peace-notes') }}" role="menuitem">Peace Notes</a>
+            </details>
 
-            <span class="guest-nav-label">Visit</span>
-            <a href="{{ route('visit') }}" role="menuitem" style="font-weight:600;">Plan your visit →</a>
+            <details class="guest-nav-group">
+              <summary>Connect</summary>
+              <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" role="menuitem">Join us on Zoom</a>
+              <a href="#watch" role="menuitem">Watch live</a>
+              <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener" role="menuitem">Facebook</a>
+            </details>
+
+            <a href="{{ route('visit') }}" role="menuitem" class="guest-nav-top">Visit</a>
 
             <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener" role="menuitem" class="guest-nav-donate">Donate ↗</a>
           </nav>

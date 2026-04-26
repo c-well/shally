@@ -160,6 +160,48 @@
     .nav-tools .nav-tool { width: 36px; height: 36px; }
   }
 
+  
+  /* Accordion mobile drawer — convert About Us hover-dropdown into a
+     collapsible accordion when nav-links is opened on mobile. */
+  @media (max-width: 720px) {
+    /* When drawer is open, About Us submenu expands inline (not floating) */
+    .nav-links.open .has-menu {
+      display: block;
+      width: 100%;
+    }
+    .nav-links.open .has-menu > a {
+      display: block;
+      padding: 14px 18px;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+    }
+    /* Default: submenu collapsed on mobile */
+    .nav-links.open .submenu {
+      display: none;
+      position: static !important;
+      box-shadow: none;
+      border: 0;
+      padding: 0 0 8px 18px;
+      background: transparent !important;
+    }
+    /* When About Us is "active" (we'll toggle via JS), expand */
+    .nav-links.open .has-menu.is-expanded .submenu {
+      display: block;
+    }
+    .nav-links.open .has-menu.is-expanded > a::after {
+      content: ' ▴';
+    }
+    .nav-links.open .submenu a {
+      padding: 8px 14px !important;
+      font-size: 13px !important;
+      letter-spacing: 0.10em;
+    }
+    .nav-links.open .submenu-eyebrow {
+      padding: 10px 14px 4px;
+      font-size: 9px;
+    }
+  }
+
     .nav-mobile-toggle {
     display: none; background: none; border: 0; cursor: pointer;
     padding: 8px; color: var(--ink);
@@ -1003,6 +1045,26 @@
           if (first) setTimeout(function () { first.focus(); }, 50);
         }
       }
+    });
+  });
+})();
+</script>
+
+<script>
+// Mobile accordion — tap About Us inside open drawer to expand its submenu
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var navLinks = document.getElementById('nav-links');
+    var trigger  = document.getElementById('about-menu-trigger');
+    if (!navLinks || !trigger) return;
+    var triggerLink = trigger.querySelector('a');
+    if (!triggerLink) return;
+    triggerLink.addEventListener('click', function (e) {
+      // Only intercept when drawer is open AND we are on mobile width
+      if (!navLinks.classList.contains('open')) return;
+      if (window.innerWidth > 720) return;
+      e.preventDefault();
+      trigger.classList.toggle('is-expanded');
     });
   });
 })();
