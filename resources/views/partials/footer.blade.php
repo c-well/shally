@@ -56,4 +56,5 @@
     </a>
   </div>
   <div class="copy">&copy; {{ date("Y") }} Shalom Seventh-day Adventist Church &middot; The Church of Peace</div>
+  <div style="text-align: center; padding: 14px 0; font-family: "Instrument Sans", sans-serif; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;"><a href="/privacy" style="color: var(--ink-soft); text-decoration: none; opacity: 0.65;">Privacy</a></div>
 </footer>
