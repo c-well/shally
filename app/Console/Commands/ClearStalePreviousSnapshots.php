@@ -31,11 +31,9 @@ class ClearStalePreviousSnapshots extends Command
             return 0;
         }
 
-        $query->update([
-            'previous_published_snapshot' => null,
-            'previous_published_at'       => null,
-        ]);
-        $this->info("Cleared {$count} stale previous snapshot(s) (> {$hours}h old).");
+        // Route through BulletinPublisher service for atomic + audit-logged write
+        $cleared = app(\App\Services\BulletinPublisher::class)->clearStaleSnapshots($hours);
+        $this->info("Cleared {$cleared} stale previous snapshot(s) (> {$hours}h old).");
         return 0;
     }
 }

@@ -116,12 +116,14 @@ class BulletinController extends Controller
         return response()->json(['ok' => true, 'bulletin' => $bulletin->only(['id', 'title', 'service_date', 'theme'])]);
     }
 
-    /** POST /bulletins/{bulletin}/publish — snapshot current live rows into published_snapshot. */
-    public function publish(Bulletin $bulletin): JsonResponse
+    /** POST /bulletins/{bulletin}/publish — snapshot + flip is_published.
+     *  Single source of truth: BulletinPublisher service. Audit-logged. */
+    public function publish(Bulletin $bulletin, \App\Services\BulletinPublisher $publisher, \Illuminate\Http\Request $request): JsonResponse
     {
-        $bulletin->publish();
+        $bulletin = $publisher->publish($bulletin, $request->user());
         return response()->json([
             'ok' => true,
+            'is_published' => $bulletin->is_published,
             'published_at' => $bulletin->published_at?->toIso8601String(),
             'has_previous'=> $bulletin->hasAvailablePreviousVersion(),
         ]);
