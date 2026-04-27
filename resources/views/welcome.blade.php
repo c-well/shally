@@ -2250,6 +2250,19 @@
               </div>
             </div>
             @if (auth()->user()?->role === 'super_admin')
+              {{-- Always-show-during-week toggle (Karlon escape hatch).
+                   When checked, this bulletin stays visible to guests Mon-Fri
+                   even though auto week-mode would otherwise hide it.
+                   Useful for revival weeks, VBS, camp meeting, etc. --}}
+              <label class="admin-panel-item" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                <span>Show all week (override)</span>
+                <input type="checkbox"
+                       id="always-show-toggle"
+                       data-update-url="{{ route('bulletins.update', $bulletin) }}"
+                       @if(($bulletin->always_show_during_week ?? false)) checked @endif
+                       style="transform:scale(1.3); cursor:pointer; accent-color: var(--teal);">
+              </label>
+
               <button type="button" id="bulletin-delete-btn" class="admin-panel-item admin-panel-item-danger"
                       data-delete-url="{{ route('bulletins.destroy', $bulletin) }}"
                       data-bulletin-title="{{ $bulletin->title ?? optional($bulletin->service_date)->format('M j, Y') }}"
@@ -4692,6 +4705,34 @@ if ('serviceWorker' in navigator) {
     btn.addEventListener('click', function () {
       current = states[(states.indexOf(current) + 1) % states.length];
       applyFont(current);
+    });
+  });
+})();
+</script>
+
+<script>
+// Always-show-during-week toggle — fires PATCH on change.
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var cb = document.getElementById('always-show-toggle');
+    if (!cb) return;
+    cb.addEventListener('change', async function () {
+      var url = cb.dataset.updateUrl;
+      try {
+        await fetch(url, {
+          method: 'PATCH',
+          credentials: 'same-origin',
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({ always_show_during_week: cb.checked ? 1 : 0 }),
+        });
+        if (typeof showSaved === 'function') showSaved(cb.checked ? 'Always-show ON' : 'Always-show OFF');
+      } catch (e) {
+        if (typeof showSaved === 'function') showSaved('Save failed');
+      }
     });
   });
 })();

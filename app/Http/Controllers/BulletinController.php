@@ -139,6 +139,7 @@ class BulletinController extends Controller
             'title'        => 'sometimes|string|max:180',
             'service_date' => 'sometimes|date',
             'theme'        => 'sometimes|string|in:default,communion,easter,christmas,mothers,thanksgiving',
+            'always_show_during_week' => 'sometimes|boolean',
         ]);
         $bulletin->update($data);
         return response()->json(['ok' => true, 'bulletin' => $bulletin->only(['id', 'title', 'service_date', 'theme'])]);
