@@ -721,20 +721,35 @@
   }
   .ham-item-form { margin: 0; padding: 0; }
 
-  @media (max-width: 600px) {
+  /* Touch-device rule — covers portrait phones, landscape phones, and
+     tablets where the desktop absolute-positioned panel would overflow
+     the viewport with no way to scroll. Triggers on:
+       - small portrait widths (<= 600px)
+       - any coarse-pointer device (iPhone landscape, iPad)
+     Panel becomes a bottom-fixed bottom sheet that scrolls internally. */
+  @media (max-width: 600px), (pointer: coarse) {
     .admin-panel {
-      position: fixed; top: auto; bottom: 16px; left: 16px; right: 16px;
-      max-width: none; max-height: calc(100dvh - 120px);
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;     /* smooth iOS scroll inside panel */
-      overscroll-behavior: contain;          /* don't bubble scroll to body */
+      position: fixed !important;
+      top: auto !important;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      max-width: none;
+      max-height: 70dvh;                        /* hard cap, leaves room for safe area */
+      overflow-y: auto !important;              /* force scroll capability */
+      -webkit-overflow-scrolling: touch;        /* momentum scroll on iOS */
+      overscroll-behavior: contain;             /* don't bubble to body */
       padding: 22px 18px;
+      /* Force GPU accel so iOS Safari treats this as scrollable */
+      transform: translateZ(0);
+      will-change: scroll-position;
     }
-    .admin-panel-item { font-size: 19px; }
+    .admin-panel-item { font-size: 19px; min-height: 44px; }
     .admin-trigger { padding: 10px 16px; font-size: 10px; gap: 6px; }
     .admin-trigger-label { line-height: 1; }
-    /* Tighten the chevron spacing on mobile so the trigger itself doesn't overflow */
     .admin-trigger .chev { width: 11px; height: 11px; }
+    /* Touch-friendly tap interception */
+    .admin-trigger, .admin-panel-item { touch-action: manipulation; }
 
     /* Andre's ticket #9 fix:
        The theme-picker nested popover normally pops LEFT of the main panel
