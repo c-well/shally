@@ -39,3 +39,4 @@
 {{-- Crawler hints --}}
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
 <meta name="theme-color" content="#03617A">
+<meta name="google-site-verification" content="Blmt4l_spzs8CdR0p_7JvKL_fm6JVTuH-_BgwjS9wkI">
