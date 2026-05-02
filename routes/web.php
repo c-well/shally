@@ -29,6 +29,9 @@ Route::view('/privacy', 'privacy')->name('privacy');
 Route::get ('/contact',  [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
 Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'])
      ->middleware(['throttle:5,60', 'honeypot'])->name('contact.send');
+Route::get ('/prayer',   [\App\Http\Controllers\PrayerController::class, 'show'])->name('prayer.show');
+Route::post('/prayer',   [\App\Http\Controllers\PrayerController::class, 'send'])
+     ->middleware(['throttle:3,60', 'honeypot'])->name('prayer.send');
 
 // SEO infrastructure — full site indexing
 Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');

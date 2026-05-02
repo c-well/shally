@@ -110,6 +110,8 @@
 </head>
 <body>
 
+@include('partials.site-menu')
+
 <header class="top">
   <a href="{{ route('admin.hub') }}">← Admin</a>
   <span class="meta">sabbath school</span>

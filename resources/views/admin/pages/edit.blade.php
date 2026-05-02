@@ -105,6 +105,8 @@
 </head>
 <body>
 
+@include('partials.site-menu')
+
 <header class="top">
   <a href="{{ route('admin.pages.index') }}">← Site pages</a>
   <span class="meta">editing /{{ $page->slug }}</span>

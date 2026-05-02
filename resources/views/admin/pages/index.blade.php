@@ -17,7 +17,7 @@
   .top a:hover { color: var(--teal); }
   .top .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--ink-soft); opacity: 0.65; }
   main { max-width: 920px; margin: 0 auto; padding: clamp(48px, 9vh, 88px) clamp(20px, 5vw, 32px) 80px; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 7vw, 72px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; }
+  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 38px); font-weight: 500; letter-spacing: -0.015em; line-height: 1.05; margin-bottom: 4px; }
   .lede { margin-top: 22px; font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 580px; }
   .row { display: grid; grid-template-columns: 100px 1fr auto auto; gap: 18px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); transition: background 0.12s; }
   .row:hover { background: rgba(3,97,122,0.04); }
@@ -33,6 +33,8 @@
 @include('admin.partials._typography')
 </head>
 <body>
+
+@include('partials.site-menu')
 
 <header class="top">
   <a href="{{ route('admin.hub') }}">← Admin</a>

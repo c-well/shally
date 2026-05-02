@@ -1472,7 +1472,13 @@
     letter-spacing: -0.02em;
     padding: 4px 0;
   }
-  .search-input::placeholder { color: rgba(26, 35, 50, 0.3); }
+  .search-input::placeholder {
+    color: rgba(26, 35, 50, 0.4);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
   .search-tabs {
     display: flex; gap: 4px;
     margin-bottom: 20px;

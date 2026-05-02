@@ -49,6 +49,8 @@
 @include('admin.partials._typography')
 </head>
 <body>
+
+@include('partials.site-menu')
 <header class="top">
   <a href="{{ url('/admin') }}">← Admin</a>
   <span class="meta">media library</span>
