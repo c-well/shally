@@ -55,6 +55,7 @@
     font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
     color: var(--teal);
   }
+@keyframes hubBadgePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(209,43,31,0.55); } 50% { box-shadow: 0 0 0 7px rgba(209,43,31,0); } }
 </style>
 @include('admin.partials._typography')
 </head>
@@ -72,6 +73,21 @@
   <p class="lede">Everything that runs the app — log of who's signed in, the people allowed to sign in, the names that appear on bulletin autocomplete, and the schedule.</p>
 
   <div class="grid">
+
+    @php
+      $_unreadPrayer  = \App\Models\PrayerRequest::whereNull('read_at')->count();
+      $_unreadContact = \App\Models\ContactMessage::whereNull('read_at')->count();
+      $_unreadTotal   = $_unreadPrayer + $_unreadContact;
+    @endphp
+    <a href="{{ route('admin.messages') }}" class="card" style="position:relative;">
+      <span class="card-eyebrow">Inbox</span>
+      <span class="card-title">Messages.</span>
+      <span class="card-sub">Prayer requests &amp; contact-form messages from visitors.</span>
+      <span class="card-arrow">Open →</span>
+      @if ($_unreadTotal > 0)
+        <span style="position:absolute; top:18px; right:18px; min-width:22px; height:22px; padding:0 7px; display:inline-flex; align-items:center; justify-content:center; background:#d12b1f; color:#fff; border-radius:999px; font-family:'Instrument Sans',sans-serif; font-size:11px; font-weight:700; @if($_unreadPrayer > 0) animation: hubBadgePulse 2.4s ease-in-out infinite; @endif">{{ $_unreadTotal }}</span>
+      @endif
+    </a>
 
     <a href="{{ route('admin.users') }}" class="card">
       <span class="card-eyebrow">People</span>
