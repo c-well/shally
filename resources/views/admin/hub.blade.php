@@ -60,6 +60,8 @@
 </head>
 <body>
 
+@include('partials.site-menu')
+
 <header class="top">
   <a href="/">← Back to bulletin</a>
   <span class="meta">admin · {{ auth()->user()->name }}</span>

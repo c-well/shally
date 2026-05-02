@@ -45,18 +45,17 @@
     .site-menu-brand em { font-size: 42px; }
   }
   .site-menu-trigger {
-    display: inline-flex; align-items: center; gap: 10px;
-    height: 44px; padding: 0 16px;
-    background: var(--ink, #1a2332); color: #fff;
-    border: 0; border-radius: 10px; cursor: pointer;
-    transition: background 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: var(--ink, #1a2332);
+    border: 0; padding: 6px 2px;
+    cursor: pointer; transition: color 0.15s;
   }
-  .site-menu-trigger:hover { background: #2a3340; }
-  .site-menu-trigger:focus-visible { outline: 2px solid var(--teal, #03617A); outline-offset: 2px; }
+  .site-menu-trigger:hover { color: var(--teal, #03617A); }
+  .site-menu-trigger:focus-visible { outline: none; color: var(--teal, #03617A); }
   .site-menu-trigger-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 600; line-height: 1;
-    letter-spacing: 0.18em; text-transform: uppercase;
+    font-size: 13px; font-weight: 600; line-height: 1;
+    letter-spacing: 0.16em; text-transform: uppercase;
   }
   .site-menu-trigger svg { display: block; }
 
@@ -150,12 +149,94 @@
   }
   .site-menu-sub-link:hover { color: var(--teal, #03617A); transform: translateX(2px); }
   .site-menu-sub-link-form { all: unset; cursor: pointer; display: block; }
+
+  /* Inline admin quick-access dropdown (paired with MENU when signed in) */
+  .site-menu-actions { display: inline-flex; align-items: center; gap: 18px; }
+  .site-admin-dropdown { position: relative; }
+  .site-menu-admin-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; border: 0; padding: 6px 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600; line-height: 1;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink, #1a2332);
+    text-decoration: none; cursor: pointer; white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .site-menu-admin-pill:hover, .site-menu-admin-pill:focus-visible {
+    color: var(--teal, #03617A); outline: none;
+  }
+  .site-menu-admin-pill .chev { opacity: 0.7; transition: transform 0.2s; }
+  .site-menu-admin-pill[aria-expanded="true"] .chev { transform: rotate(180deg); opacity: 1; }
+  .site-admin-panel {
+    display: none;
+    position: absolute; top: calc(100% + 10px); right: 0;
+    min-width: 240px;
+    background: var(--parchment, #fefcef);
+    border: 1px solid rgba(26,35,50,0.12);
+    border-radius: 12px;
+    box-shadow: 0 18px 40px -10px rgba(26,35,50,0.22);
+    padding: 8px;
+    z-index: 250;
+  }
+  .site-admin-panel.open { display: block; }
+  .site-admin-item {
+    display: block; width: 100%;
+    padding: 10px 14px;
+    background: transparent; border: 0; border-radius: 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 500; line-height: 1.2;
+    color: var(--ink, #1a2332);
+    text-decoration: none; text-align: left; cursor: pointer;
+    transition: color 0.12s, background 0.12s;
+  }
+  .site-admin-item:hover, .site-admin-item:focus-visible {
+    color: var(--teal, #03617A); background: rgba(3,97,122,0.05); outline: none;
+  }
+  .site-admin-item-danger { color: #a82a1f; }
+  .site-admin-item-danger:hover { color: #c0392b; background: rgba(168,42,31,0.05); }
+  .site-admin-divider { height: 1px; background: rgba(26,35,50,0.1); margin: 6px 4px; }
+  .site-admin-user {
+    padding: 6px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink, #1a2332); opacity: 0.55;
+  }
+  @media (max-width: 480px) {
+    .site-admin-panel { right: -8px; min-width: 200px; }
+  }
+
+  /* Theme picker show/hide */
+  #theme-pick-pop.theme-pop { display: none; }
+  #theme-pick-pop.theme-pop.open { display: block; }
 </style>
 
 <header class="site-menu-header">
   <div class="site-menu-header-inner">
     <a href="{{ url('/') }}" class="site-menu-brand"><em>Shalom</em></a>
-    <button class="site-menu-trigger" id="site-menu-btn" type="button" aria-label="Open menu" aria-expanded="false">
+    <div class="site-menu-actions">
+      @auth
+        @if (in_array(auth()->user()->role ?? null, ['clerk', 'super_admin'], true))
+          <div class="site-admin-dropdown">
+            <button class="site-menu-admin-pill" id="site-admin-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="site-admin-panel">
+              <span>Admin</span>
+              <svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="site-admin-panel" id="site-admin-panel" role="menu" aria-hidden="true">
+              <a class="site-admin-item" href="{{ url('/welcome') }}" role="menuitem">Bulletin</a>
+              <a class="site-admin-item" href="{{ route('schedule.index') }}" role="menuitem">Department schedule</a>
+              <a class="site-admin-item" href="{{ route('admin.hub') }}" role="menuitem">Admin hub</a>
+              <div class="site-admin-divider"></div>
+              <div class="site-admin-user">{{ auth()->user()->name }}</div>
+              <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                @csrf
+                <button type="submit" class="site-admin-item site-admin-item-danger" role="menuitem">Sign out</button>
+              </form>
+            </div>
+          </div>
+        @endif
+      @endauth
+      <button class="site-menu-trigger" id="site-menu-btn" type="button" aria-label="Open menu" aria-expanded="false">
       <span class="site-menu-trigger-label">Menu</span>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -163,6 +244,7 @@
         <line x1="3" y1="18" x2="21" y2="18"/>
       </svg>
     </button>
+    </div>
   </div>
 </header>
 
@@ -195,6 +277,8 @@
     </div>
 
     <a class="site-menu-link" href="{{ route('visit') }}">Visit Us <span class="arrow">→</span></a>
+
+    <a class="site-menu-link" href="{{ route('prayer.show') }}">Prayer Request <span class="arrow">→</span></a>
 
     <div class="site-menu-section">
       <button class="site-menu-section-toggle" type="button" aria-expanded="false">
@@ -231,7 +315,23 @@
                 <a class="site-menu-sub-link" href="{{ route('bulletins.pdf', $bulletin) }}?version=previous" target="_blank" rel="noopener">Previous PDF</a>
               @endif
               <a class="site-menu-sub-link" href="/?preview=1">Preview as public</a>
-              <button class="site-menu-sub-link site-menu-sub-link-form" id="theme-pick-btn-menu" type="button">Special-day theme</button>
+              <div id="theme-pick-pop-wrap">
+  <button class="site-menu-sub-link site-menu-sub-link-form" id="theme-pick-btn" type="button">Special-day theme ▾</button>
+  <div id="theme-pick-pop" class="theme-pop" style="padding:8px 4px 14px 22px;"
+       data-update-url="{{ route('bulletins.update', $bulletin) }}"
+       data-current="{{ $bulletin->theme ?? 'default' }}">
+    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+      @foreach (['default'=>['Default','#fefcef','#03617A'], 'communion'=>['Communion','#f1ebf9','#6b4d8a'], 'easter'=>['Easter','#eaf6ed','#3a8e63'], 'christmas'=>['Christmas','#f7eaea','#8b3a4b'], 'mothers'=>["Mother's Day",'#fbe8ee','#b1657a'], 'thanksgiving'=>['Thanksgiving','#f7ecdb','#8a5a2c']] as $key => $info)
+        <button type="button" class="theme-swatch" data-theme="{{ $key }}" title="{{ $info[0] }}"
+                style="display:inline-flex; flex-direction:column; align-items:center; gap:3px; padding:5px 6px; background:transparent; border:1px solid rgba(26,35,50,0.12); border-radius:6px; cursor:pointer; min-width:60px;">
+          <span style="width:22px; height:22px; border-radius:50%; background: {{ $info[1] }}; display:inline-flex; align-items:center; justify-content:center;"><span style="width:9px; height:9px; border-radius:50%; background: {{ $info[2] }};"></span></span>
+          <span style="font-family: 'Poppins', sans-serif; font-size: 10px; color: var(--ink, #1a2332);">{{ $info[0] }}</span>
+        </button>
+      @endforeach
+    </div>
+  </div>
+</div>
+
               @if (auth()->user()->role === 'super_admin')
                 <label class="site-menu-sub-link" style="display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer;">
                   <span>Show all week (override)</span>
@@ -279,6 +379,17 @@
 
 <script>
   (function() {
+    // Admin dropdown
+    const aBtn = document.getElementById('site-admin-trigger');
+    const aPanel = document.getElementById('site-admin-panel');
+    if (aBtn && aPanel) {
+      const aOpen = () => { aPanel.classList.add('open'); aBtn.setAttribute('aria-expanded','true'); aPanel.setAttribute('aria-hidden','false'); };
+      const aClose = () => { aPanel.classList.remove('open'); aBtn.setAttribute('aria-expanded','false'); aPanel.setAttribute('aria-hidden','true'); };
+      aBtn.addEventListener('click', e => { e.stopPropagation(); aPanel.classList.contains('open') ? aClose() : aOpen(); });
+      document.addEventListener('click', e => { if (!aPanel.contains(e.target) && !aBtn.contains(e.target)) aClose(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') aClose(); });
+    }
+
     const btn = document.getElementById('site-menu-btn');
     const overlay = document.getElementById('site-menu-overlay');
     const closeBtn = document.getElementById('site-menu-close');

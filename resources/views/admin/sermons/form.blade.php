@@ -69,6 +69,8 @@
 @include('admin.partials._typography')
 </head>
 <body>
+
+@include('partials.site-menu')
 <header class="top">
   <a href="{{ route('admin.sermons.index') }}">← Sermons</a>
   <span class="meta">{{ $sermon->exists ? 'editing' : 'new sermon' }}</span>
