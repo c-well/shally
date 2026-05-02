@@ -74,6 +74,15 @@ class ContactController extends Controller
         }
 
         // ── Send ───────────────────────────────────────────────────────
+        // Persist for the admin inbox
+        \App\Models\ContactMessage::create([
+            'name'       => $data['name'],
+            'email'      => $data['email'],
+            'message'    => $data['message'],
+            'ip'         => $request->ip(),
+            'user_agent' => substr($request->userAgent() ?? '', 0, 250),
+        ]);
+
         $body  = "From: {$data['name']} <{$data['email']}>\n";
         $body .= "Sent via the public contact form on thechurchofpeace.org\n";
         $body .= 'IP: ' . $request->ip() . ' · UA: ' . substr($request->userAgent() ?? '', 0, 200) . "\n";

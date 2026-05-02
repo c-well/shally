@@ -132,6 +132,9 @@ Route::middleware('auth')->group(function () {
         Route::get  ('/proposals/bulletin-week-mode', [\App\Http\Controllers\ProposalsController::class, 'bulletinWeekMode'])->name('proposals.bulletin-week-mode');
         Route::post ('/proposals/bulletin-week-mode/vote', [\App\Http\Controllers\ProposalsController::class, 'voteBulletinWeekMode'])->name('proposals.bulletin-week-mode.vote');
         Route::get   ('/admin/inbox',                   [\App\Http\Controllers\AdminInboxController::class, 'index'])->name('admin.inbox');
+    Route::get  ('/admin/messages',                  [\App\Http\Controllers\AdminMessagesController::class, 'index'])->name('admin.messages');
+    Route::post ('/admin/messages/prayer/{id}/read', [\App\Http\Controllers\AdminMessagesController::class, 'markPrayerRead'])->name('admin.messages.prayer.read')->whereNumber('id');
+    Route::post ('/admin/messages/contact/{id}/read',[\App\Http\Controllers\AdminMessagesController::class, 'markContactRead'])->name('admin.messages.contact.read')->whereNumber('id');
         Route::patch ('/admin/inbox/{ticket}/close',    [\App\Http\Controllers\AdminInboxController::class, 'close'])->name('admin.inbox.close');
 
         Route::get   ('/admin/lessons',                [\App\Http\Controllers\AdminLessonsController::class, 'index'])->name('admin.lessons');
