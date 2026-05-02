@@ -143,6 +143,10 @@
         <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
       </div>
 
+      {{-- Encrypted render timestamp — server checks elapsed time on submit.
+           Bots POSTing in milliseconds get silently dropped. --}}
+      <input type="hidden" name="rendered_at" value="{{ $renderToken ?? '' }}">
+
       <div class="field">
         <label for="name">Your name</label>
         <input type="text" id="name" name="name" required maxlength="120" value="{{ old('name') }}" autocomplete="name">
