@@ -571,60 +571,8 @@
 </style>
 </head>
 <body>
-@include("partials.admin-badge")
 
-{{-- ── Top nav ── --}}
-<header class="navbar">
-  <a href="/" class="brand">Shalom</a>
-  <nav class="nav-links" id="nav-links">
-    {{-- About Us — the umbrella for everything that's not a primary CTA.
-         Hover/tap reveals the full submenu of pages + watch options. --}}
-    <span class="has-menu" id="about-menu-trigger" role="button"
-          tabindex="0"
-          aria-haspopup="menu"
-          aria-expanded="false"
-          aria-controls="about-menu-submenu">
-      <a href="{{ route('about') }}" tabindex="-1">About Us ▾</a>
-      <span class="submenu submenu-wide" id="about-menu-submenu" role="menu"
-            aria-labelledby="about-menu-trigger">
-        <span class="submenu-eyebrow" role="presentation">Get to know us</span>
-        <a href="{{ route('about') }}" role="menuitem">Our story</a>
-        <a href="{{ route('beliefs') }}" role="menuitem">Beliefs</a>
-        <a href="{{ route('contact.show') }}" role="menuitem">Contact</a>
-
-        <span class="submenu-eyebrow" role="presentation">Spiritual life</span>
-        <a href="{{ route('lesson.show') }}" role="menuitem">Sabbath School</a>
-        <a href="{{ route('peace-notes') }}" role="menuitem">Peace Notes</a>
-
-        <span class="submenu-eyebrow" role="presentation">Connect</span>
-        <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" role="menuitem">Join us on Zoom</a>
-        <a href="#watch" role="menuitem">Watch live</a>
-        <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener" role="menuitem">Facebook</a>
-      </span>
-    </span>
-
-    {{-- Primary CTAs — the three things visitors actually do --}}
-    <a href="{{ route('visit') }}">Visit</a>
-    <a href="{{ url('/welcome') }}">Bulletin</a>
-    <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener" style="color: var(--teal); border-color: var(--teal);">Donate</a>
-
-  </nav>
-
-  {{-- Tools cluster — always visible on every viewport. On mobile, lives
-       next to the hamburger so search and text-size stay reachable even
-       when the nav drawer is closed. --}}
-  <div class="nav-tools">
-    <button type="button" id="nav-search-btn" class="nav-tool" aria-label="Search Scripture or Hymnal" title="Search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    </button>
-    <button type="button" id="nav-font-btn" class="nav-tool" aria-label="Text size" title="Text size">
-      <span class="nav-tool-aa">Aa</span>
-    </button>
-    <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-links">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-    </button>
-  </div>
-</header>
+@include('partials.site-menu')
 
 {{-- ── Hero ── --}}
 <section class="hero">

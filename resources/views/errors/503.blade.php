@@ -100,9 +100,7 @@
 <body>
 <div class="stage">
 
-  <header class="top">
-    <span class="meta">v1.0</span>
-  </header>
+  @include('partials.site-menu')
 
   <main>
     <div class="wordmark">The Church of Peace</div>

@@ -89,12 +89,8 @@
 </style>
 </head>
 <body>
-@include("partials.admin-badge")
 
-<header class="top">
-  <a href="/">← Home</a>
-  <span class="meta">contact</span>
-</header>
+@include('partials.site-menu')
 
 <main>
   @if ($page?->eyebrow)

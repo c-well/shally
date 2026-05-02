@@ -38,7 +38,7 @@
 </head>
 <body>
 <div class="stage">
-  <header class="top"><span class="meta">be right back</span></header>
+  @include('partials.site-menu')
   <main>
     <div class="wordmark"><em>The Church of Peace</em></div>
     <h1>We&rsquo;ll be right back &mdash; just a moment.</h1>

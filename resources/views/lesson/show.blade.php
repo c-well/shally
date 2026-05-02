@@ -192,15 +192,8 @@
 </style>
 </head>
 <body>
-@include("partials.admin-badge")
 
-<header class="top">
-  <a href="/">← Back to bulletin</a>
-  <span class="meta">
-    <span id="offline-pill" class="offline-pill">offline</span>
-    sabbath school
-  </span>
-</header>
+@include('partials.site-menu')
 
 <main>
 
