@@ -49,6 +49,7 @@ class SecurityHeaders
             "img-src 'self' data: https: blob:",
             "media-src 'self' https:",
             "connect-src 'self' https://bible-api.com",
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self' https://adventistgiving.org",
