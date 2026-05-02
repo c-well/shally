@@ -45,10 +45,7 @@
 </head>
 <body>
 
-<header class="top">
-  <a href="/">← Home</a>
-  <span class="meta">privacy</span>
-</header>
+@include('partials.site-menu')
 
 <main>
   <div class="head">

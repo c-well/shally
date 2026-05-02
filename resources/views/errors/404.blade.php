@@ -120,10 +120,7 @@
 
 <div class="stage">
 
-<header class="top">
-  <a href="/">← Home</a>
-  <span class="meta">404</span>
-</header>
+@include('partials.site-menu')
 
 <main>
   <div class="four-oh-four">404 · Not found</div>

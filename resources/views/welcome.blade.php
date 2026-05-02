@@ -2182,231 +2182,67 @@
   @media (max-width: 600px) {
     .guest-nav { right: -8px; min-width: 220px; }
   }
+
+  /* ─── Bulletin toolbar (sticky above bulletin card when admin editing) ─── */
+  .bulletin-toolbar {
+    display: flex; align-items: center; gap: 6px;
+    max-width: 1100px; margin: 0 auto; padding: 10px 22px;
+    background: #f4f1e3;
+    border-bottom: 1px solid rgba(3,97,122,0.12);
+    position: sticky; top: 69px; z-index: 40;
+    box-shadow: 0 2px 0 rgba(0,0,0,0); transition: box-shadow 0.2s;
+  }
+  .bulletin-toolbar.stuck { box-shadow: 0 6px 14px -8px rgba(0,0,0,0.18); }
+  .bulletin-toolbar .bt-spacer { flex: 1; }
+  .bt-icon-btn {
+    width: 40px; height: 40px; padding: 0;
+    background: transparent; color: var(--ink, #1a2332);
+    border: 0; border-radius: 10px; cursor: pointer;
+    opacity: 0.3; display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .bt-icon-btn svg { width: 20px; height: 20px; display: block; }
+  .bt-icon-btn:not([disabled]) { opacity: 0.75; }
+  .bt-icon-btn:not([disabled]):hover { background: rgba(0,0,0,0.05); opacity: 1; }
+  .bt-icon-btn:not([disabled]):active { background: rgba(0,0,0,0.08); }
+  .go-live-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 18px;
+    background: var(--ink, #1a2332); color: #fff;
+    border: 0; border-radius: 8px;
+    font: 600 13px/1 'Poppins', sans-serif;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .go-live-pill:hover { background: #2a3340; }
+  .go-live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #36c980;
+    box-shadow: 0 0 0 0 rgba(54,201,128,0.6);
+  }
+  body.bulletin-dirty .go-live-dot { animation: dotpulse 2s infinite; }
+  @keyframes dotpulse {
+    0% { box-shadow: 0 0 0 0 rgba(54,201,128,0.6); }
+    70% { box-shadow: 0 0 0 8px rgba(54,201,128,0); }
+    100% { box-shadow: 0 0 0 0 rgba(54,201,128,0); }
+  }
+  body:not(.bulletin-dirty) .go-live-pill { opacity: 0.65; }
+  body:not(.bulletin-dirty) .go-live-dot { background: rgba(255,255,255,0.35); animation: none; }
 </style>
 </head>
 <body @class(['edit-mode' => $canEdit, 'bulletin-dirty' => $canEdit && $bulletin && (! $bulletin->published_at || ($bulletin->published_snapshot && $bulletin->hasUnpublishedChanges()))]) data-theme="{{ $bulletin?->theme ?? 'default' }}">
 
-<header class="site-header @if($canEdit) clerk @endif">
-  <div class="container inner">
-    <a href="/" class="brand" title="Home">
-      <em>Shalom</em>
-    </a>
+@include('partials.site-menu')
 
-    {{-- Right cluster: Undo/Redo + Go Live + Admin all grouped on the right --}}
-    <div class="header-right">
-      @if ($canEdit && $bulletin)
-        <button class="btn icon-btn" id="undo-btn" type="button" disabled title="Undo (⌘Z)" aria-label="Undo">↶</button>
-        <button class="btn icon-btn" id="redo-btn" type="button" disabled title="Redo (⌘⇧Z)" aria-label="Redo">↷</button>
-      @endif
-      @if ($canEdit && $bulletin)
-        {{-- Go Live trigger — opens its own panel with the actual publish action up top + all bulletin tools --}}
-        <button id="go-live-trigger" class="admin-trigger admin-trigger-go-live" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Go Live menu">
-          <span class="admin-trigger-label">Go Live</span>
-          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div id="go-live-panel" class="admin-panel" role="menu">
-          {{-- The actual publish action — green serif item at the top --}}
-          <button id="publish-btn" class="admin-panel-item admin-panel-item-go-live" type="button" data-publish-url="{{ route('bulletins.publish', $bulletin) }}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Go Live</span>
-          </button>
-
-          <div class="admin-panel-section">
-            <div class="admin-panel-label">Edit</div>
-            <button class="admin-panel-item" data-standard-url="{{ route('bulletins.load-standard', $bulletin) }}" type="button">
-              <span>{{ $bulletin->lines->isEmpty() ? 'Load standard order' : 'Reset to default' }}</span>
-            </button>
-          </div>
-
-          <div class="admin-panel-section">
-            <div class="admin-panel-label">Bulletin</div>
-            <button class="admin-panel-item" data-next-week-url="{{ route('bulletins.next-week') }}" type="button">
-              <span>Next Sabbath</span>
-            </button>
-            <button class="admin-panel-item" id="new-event-series-btn" type="button" title="Create a multi-night event series (Revival, Week of Prayer, etc.)">
-              <span>Event series</span>
-            </button>
-            <a class="admin-panel-item" href="{{ route('bulletins.pdf', $bulletin) }}" target="_blank" rel="noopener" title="Download current bulletin as PDF">
-              <span>Download PDF</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><polyline points="7 7 17 7 17 17"/></svg>
-            </a>
-            @if ($bulletin->hasAvailablePreviousVersion())
-              <a class="admin-panel-item" href="{{ route('bulletins.pdf', $bulletin) }}?version=previous" target="_blank" rel="noopener" title="Previous version (auto-deletes 8h after supersession)">
-                <span>Previous PDF</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><polyline points="7 7 17 7 17 17"/></svg>
-              </a>
-            @endif
-            <a class="admin-panel-item" href="/?preview=1">
-              <span>Preview as public</span>
-            </a>
-            <div class="admin-panel-item theme-picker">
-              <button id="theme-pick-btn" type="button" class="theme-pick-trigger" aria-label="Special-day theme">
-                <span>Special-day theme</span>
-              </button>
-              <div id="theme-pick-pop" class="theme-pop"
-                   data-update-url="{{ route('bulletins.update', $bulletin) }}"
-                   data-current="{{ $bulletin->theme ?? 'default' }}">
-                <div class="theme-pop-label">Theme</div>
-                <div class="theme-swatches">
-                  @foreach ([
-                    'default'      => ['Default', '#fefcef', '#03617A'],
-                    'communion'    => ['Communion', '#f1ebf9', '#6b4d8a'],
-                    'easter'       => ['Easter', '#eaf6ed', '#3a8e63'],
-                    'christmas'    => ['Christmas', '#f7eaea', '#8b3a4b'],
-                    'mothers'      => ['Mother\'s Day', '#fbe8ee', '#b1657a'],
-                    'thanksgiving' => ['Thanksgiving', '#f7ecdb', '#8a5a2c'],
-                  ] as $key => $info)
-                    <button class="theme-swatch" data-theme="{{ $key }}" type="button" title="{{ $info[0] }}">
-                      <span class="sw-bg" style="background: {{ $info[1] }};"><span class="sw-dot" style="background: {{ $info[2] }};"></span></span>
-                      <span class="sw-name">{{ $info[0] }}</span>
-                    </button>
-                  @endforeach
-                </div>
-              </div>
-            </div>
-            @if (auth()->user()?->role === 'super_admin')
-              {{-- Always-show-during-week toggle (Karlon escape hatch).
-                   When checked, this bulletin stays visible to guests Mon-Fri
-                   even though auto week-mode would otherwise hide it.
-                   Useful for revival weeks, VBS, camp meeting, etc. --}}
-              <label class="admin-panel-item" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                <span>Show all week (override)</span>
-                <input type="checkbox"
-                       id="always-show-toggle"
-                       data-update-url="{{ route('bulletins.update', $bulletin) }}"
-                       @if(($bulletin->always_show_during_week ?? false)) checked @endif
-                       style="transform:scale(1.3); cursor:pointer; accent-color: var(--teal);">
-              </label>
-
-              <button type="button" id="bulletin-delete-btn" class="admin-panel-item admin-panel-item-danger"
-                      data-delete-url="{{ route('bulletins.destroy', $bulletin) }}"
-                      data-bulletin-title="{{ $bulletin->title ?? optional($bulletin->service_date)->format('M j, Y') }}"
-                      data-service-date="{{ $bulletin->service_date?->toDateString() }}"
-                      data-service-date-formatted="{{ $bulletin->service_date?->format('l, F j') }}">
-                <span>Delete this bulletin</span>
-              </button>
-            @endif
-          </div>
-        </div>
-      @endif
-      @if ($canEdit)
-        {{-- Admin trigger — slim panel, only non-bulletin tools + account --}}
-        <button id="ham-btn" class="admin-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Admin menu">
-          <span class="admin-trigger-label">Admin</span>
-          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div id="ham-menu" class="admin-panel" role="menu">
-          <div class="admin-panel-section">
-            <div class="admin-panel-label">Tools</div>
-            <button id="search-btn-mobile" class="admin-panel-item" type="button" data-action="search">
-              <span>Search</span>
-            </button>
-            <a href="{{ route('schedule.index') }}" class="admin-panel-item">
-              <span>Department schedule</span>
-            </a>
-            <button id="manage-names-btn" class="admin-panel-item" type="button">
-              <span>Manage names</span>
-            </button>
-            @if (auth()->user()?->role === 'super_admin')
-              <a href="{{ route('admin.hub') }}" class="admin-panel-item">
-                <span>Admin hub</span>
-              </a>
-            @endif
-          </div>
-
-          <div class="admin-panel-section">
-            @auth
-              <div class="admin-panel-user-row">
-                <div class="admin-panel-user">{{ auth()->user()->name }}</div>
-                @if (auth()->user()->role === 'super_admin')
-                  <div class="theme-toggle" role="group" aria-label="Appearance">
-                    <button type="button" data-theme="light" aria-label="Light mode" title="Light mode" aria-pressed="true">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-                    </button>
-                    <button type="button" data-theme="dark" aria-label="Dark mode" title="Dark mode" aria-pressed="false">
-                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.4" fill="rgba(0,0,0,0.35)"/><circle cx="14.5" cy="14" r="1" fill="rgba(0,0,0,0.35)"/><circle cx="15" cy="9" r="0.7" fill="rgba(0,0,0,0.35)"/></svg>
-                    </button>
-                  </div>
-                @endif
-              </div>
-              <form method="POST" action="{{ route('logout') }}" class="ham-item-form">
-                @csrf
-                <button type="submit" class="admin-panel-item">
-                  <span>Sign out</span>
-                </button>
-              </form>
-            @else
-              <a href="{{ route('login') }}" class="admin-panel-item">Sign in</a>
-            @endauth
-          </div>
-        </div>
-      @else
-        {{-- Guest header: search + hamburger nav + sign-in. Hamburger opens a
-             dropdown menu with all the public-page nav links. Always visible
-             (desktop + mobile) since the bulletin header is already crowded. --}}
-        <div class="guest-bar" style="position:relative;">
-          <button id="search-btn" class="btn search-btn" aria-label="Search Scripture and Hymnal" title="Search">
-            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <span class="search-btn-label">Search</span>
-          </button>
-          <button type="button" id="welcome-font-btn" class="btn search-btn" aria-label="Text size" title="Text size" style="padding:8px 12px;">
-            <span style="font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:500;letter-spacing:-0.5px;line-height:1;">Aa</span>
-          </button>
-
-          @auth
-            @if (!empty($previewPublic))
-              <a href="/" class="btn primary" title="Exit public preview">Exit preview</a>
-            @endif
-            <span class="btn" style="pointer-events:none;">{{ auth()->user()->name }}</span>
-            <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn">Sign out</button></form>
-          @else
-            <a href="{{ route('login') }}" class="btn">Sign in</a>
-          @endauth
-
-          <button class="guest-nav-toggle btn" id="guest-nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="guest-nav">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-          </button>
-
-          <nav class="guest-nav" id="guest-nav" role="menu" aria-hidden="true">
-            {{-- Accordion drawer — sections collapsed by default. Tap a
-                 section header to expand. Drawer stays scannable. --}}
-            <a href="{{ url('/') }}" role="menuitem" class="guest-nav-top">Home</a>
-
-            <details class="guest-nav-group">
-              <summary>About Us</summary>
-              <a href="{{ route('about') }}" role="menuitem">Our story</a>
-              <a href="{{ route('beliefs') }}" role="menuitem">Beliefs</a>
-              <a href="{{ route('contact.show') }}" role="menuitem">Contact</a>
-            </details>
-
-            <details class="guest-nav-group">
-              <summary>Spiritual life</summary>
-              <a href="{{ route('lesson.show') }}" role="menuitem">Sabbath School</a>
-              <a href="{{ route('peace-notes') }}" role="menuitem">Peace Notes</a>
-            </details>
-
-            <details class="guest-nav-group">
-              <summary>Connect</summary>
-              <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" role="menuitem">Join us on Zoom</a>
-              <a href="#watch" role="menuitem">Watch live</a>
-              <a href="https://www.facebook.com/thechurchofpeace" target="_blank" rel="noopener" role="menuitem">Facebook</a>
-            </details>
-
-            <a href="{{ route('visit') }}" role="menuitem" class="guest-nav-top">Visit</a>
-
-            <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener" role="menuitem" class="guest-nav-donate">Donate ↗</a>
-          </nav>
-        </div>
-      @endif
-    </div>
+@if ($canEdit && $bulletin)
+  <div class="bulletin-toolbar" aria-label="Editing controls">
+    <button class="bt-icon-btn" id="undo-btn" type="button" disabled aria-label="Undo" title="Undo (⌘Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg></button>
+    <button class="bt-icon-btn" id="redo-btn" type="button" disabled aria-label="Redo" title="Redo (⌘⇧Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/></svg></button>
+    <span class="bt-spacer"></span>
+    <button id="publish-btn" class="go-live-pill" type="button" data-publish-url="{{ route('bulletins.publish', $bulletin) }}" aria-label="Publish bulletin">
+      <span class="go-live-dot"></span><span>Go Live</span>
+    </button>
   </div>
-  @if (!empty($previewPublic))
-    <div class="preview-banner">
-      <span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Previewing as public — drafts and edit tools are hidden.</span>
-      <a href="/" class="preview-exit">Exit preview</a>
-    </div>
-  @endif
-</header>
+@endif
 
 {{-- Week-mode preview banner — only shown when ?preview-week=1 is set OR
      when (future) auto-detection hides the order of service. --}}
@@ -4751,6 +4587,16 @@ if ('serviceWorker' in navigator) {
     });
   });
 })();
+</script>
+
+<script>
+  (function() {
+    const tb = document.querySelector('.bulletin-toolbar');
+    if (!tb) return;
+    window.addEventListener('scroll', () => {
+      tb.classList.toggle('stuck', window.scrollY > 8);
+    }, {passive: true});
+  })();
 </script>
 </body>
 </html>

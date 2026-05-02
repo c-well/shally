@@ -204,12 +204,8 @@
 </style>
 </head>
 <body>
-@include("partials.admin-badge")
 
-<header class="top">
-  <a href="{{ route('peace-notes') }}">← Peace Notes</a>
-  <span class="meta">sermon</span>
-</header>
+@include('partials.site-menu')
 
 <main>
   @if ($sermon->coverUrl())

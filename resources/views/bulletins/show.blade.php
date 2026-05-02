@@ -245,18 +245,7 @@
 </head>
 <body>
 
-<header class="topbar no-print">
-    <div class="inner">
-        <a href="/" class="brand">
-            <div>Shalom <em>SDA</em></div>
-            <div class="sublogo">Seventh-day Adventist · Bronx, NY</div>
-        </a>
-        <div class="actions">
-            <a href="/" class="btn">Home</a>
-            <button onclick="window.print()" class="btn primary">Print bulletin</button>
-        </div>
-    </div>
-</header>
+@include('partials.site-menu')
 
 <main>
     <article class="card">

@@ -110,10 +110,7 @@
 </head>
 <body>
 
-<header class="site-header">
-  <a href="/" class="brand"><em>Shalom</em> SDA</a>
-  <a href="/" class="back">← Back to bulletin</a>
-</header>
+@include('partials.site-menu')
 
 <main>
   <div class="eyebrow">Direct Line</div>
