@@ -8,11 +8,14 @@ class PrayerRequest extends Model
     protected $fillable = [
         'name', 'email', 'phone', 'body',
         'want_followup', 'keep_private',
-        'ip', 'user_agent',
+        'ip', 'user_agent', 'read_at',
     ];
 
     protected $casts = [
         'want_followup' => 'boolean',
         'keep_private'  => 'boolean',
+        'read_at'       => 'datetime',
     ];
+
+    public function scopeUnread($q) { return $q->whereNull('read_at'); }
 }

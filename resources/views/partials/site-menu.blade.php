@@ -209,6 +209,34 @@
   /* Theme picker show/hide */
   #theme-pick-pop.theme-pop { display: none; }
   #theme-pick-pop.theme-pop.open { display: block; }
+
+  /* Admin unread badge — pulses when a prayer request is waiting (PowerBook sleep light) */
+  .site-admin-pill-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px;
+    padding: 0 5px; margin-left: 4px;
+    background: #d12b1f; color: #fff;
+    border-radius: 999px;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 0;
+    line-height: 1;
+  }
+  .site-admin-pill-badge.pulse {
+    animation: siteAdminPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes siteAdminPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(209, 43, 31, 0.55); transform: scale(1); }
+    50%      { box-shadow: 0 0 0 6px rgba(209, 43, 31, 0);    transform: scale(1.05); }
+  }
+
+  /* Quick links list inside admin dropdown */
+  .site-admin-item-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .site-admin-item-count {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    color: #fff; background: #d12b1f;
+    border-radius: 999px; padding: 2px 7px; min-width: 18px; text-align: center;
+  }
 </style>
 
 <header class="site-menu-header">
@@ -220,9 +248,25 @@
           <div class="site-admin-dropdown">
             <button class="site-menu-admin-pill" id="site-admin-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="site-admin-panel">
               <span>Admin</span>
+              @php
+                $unreadPrayersCount  = \App\Models\PrayerRequest::whereNull('read_at')->count();
+                $unreadContactsCount = \App\Models\ContactMessage::whereNull('read_at')->count();
+                $unreadTotal         = $unreadPrayersCount + $unreadContactsCount;
+              @endphp
+              @if ($unreadTotal > 0)
+                <span class="site-admin-pill-badge @if($unreadPrayersCount > 0) pulse @endif">{{ $unreadTotal }}</span>
+              @endif
               <svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="site-admin-panel" id="site-admin-panel" role="menu" aria-hidden="true">
+              <a class="site-admin-item" href="{{ route('admin.messages') }}" role="menuitem">
+                <span class="site-admin-item-row">
+                  <span>Messages</span>
+                  @if ($unreadTotal > 0)
+                    <span class="site-admin-item-count">{{ $unreadTotal }}</span>
+                  @endif
+                </span>
+              </a>
               <a class="site-admin-item" href="{{ url('/welcome') }}" role="menuitem">Bulletin</a>
               <a class="site-admin-item" href="{{ route('schedule.index') }}" role="menuitem">Department schedule</a>
               <a class="site-admin-item" href="{{ route('admin.hub') }}" role="menuitem">Admin hub</a>

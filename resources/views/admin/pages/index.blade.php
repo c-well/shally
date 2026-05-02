@@ -42,8 +42,7 @@
 </header>
 
 <main>
-  <h1>Site pages.</h1>
-  <p class="lede">Edit any public page below. Changes go live the moment you hit save — no SSH, no code, no waiting on Karlon.</p>
+    <p class="lede">Edit any public page below. Changes go live the moment you hit save — no SSH, no code, no waiting on Karlon.</p>
 
   <div class="list">
     @forelse ($pages as $page)
