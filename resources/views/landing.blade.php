@@ -568,6 +568,46 @@
   .slider-arrow.next { right: 18px; }
   @media (max-width: 600px) { .slider-arrow { display: none; } }
 
+
+  /* Scripture-of-the-day swap on hero lede */
+  .lede-stage { position: relative; max-width: 580px; margin: 0 auto; }
+  .lede-stage .lede { transition: opacity 0.9s ease, transform 0.9s ease; }
+  .lede-stage .lede-verse {
+    position: absolute; inset: 0;
+    opacity: 0; transform: translateY(8px);
+    pointer-events: none;
+  }
+  .lede-stage.swapped .lede-welcome { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+  .lede-stage.swapped .lede-verse   { opacity: 1; transform: translateY(0); position: relative; }
+  .lede-verse .verse-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-weight: 500;
+    font-size: 22px; line-height: 1.5;
+    color: var(--ink); letter-spacing: -0.005em;
+    margin: 0;
+  }
+  .lede-verse .verse-ref {
+    margin-top: 12px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: normal; font-weight: 500;
+    font-size: 14px; color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  /* Breathing space between lede and CTAs */
+  .hero-cta, .hero-cta-secondary { margin-top: 36px; }
+  .verse-toggle-wrap { display: block; text-align: center; margin-top: 22px; }
+  .verse-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 4px;
+    background: transparent; border: 0; cursor: pointer;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #2d8659;
+    transition: color 0.15s, opacity 0.4s;
+  }
+  .verse-toggle:hover { color: #1f6843; }
+  .verse-toggle.hidden { opacity: 0; pointer-events: none; }
+  .verse-toggle-dot { width: 6px; height: 6px; border-radius: 50%; background: #2d8659; }
 </style>
 </head>
 <body>
@@ -578,9 +618,16 @@
 <section class="hero">
   <div class="hero-eyebrow">{{ $heroPage?->eyebrow ?? "Shalom Seventh-day Adventist · Bronx, NY" }}</div>
   <h1>Welcome to <em>The Church of Peace</em>.</h1>
-  <div class="lede">@if($heroPage && $heroPage->body_html){!! $heroPage->body_html !!}@else<p><em>&quot;Where two or three gather in my name, there am I with them.&quot;</em> (Matt. 18:20) Every Sabbath, we gather at 3323 White Plains Road to do just that.</p>@endif</div>
+  <div class="lede-stage" id="lede-stage">
+    <div class="lede lede-welcome">@if($heroPage && $heroPage->body_html){!! $heroPage->body_html !!}@else<p><em>&quot;Where two or three gather in my name, there am I with them.&quot;</em> (Matt. 18:20) Every Sabbath, we gather at 3323 White Plains Road to do just that.</p>@endif</div>
+    <div class="lede lede-verse" aria-hidden="true">
+      <p class="verse-text">"For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life."</p>
+      <p class="verse-ref">— John 3:16 · this week's Sabbath School memory verse</p>
+    </div>
+  </div>
   <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin →</a>
   <a href="{{ route('lesson.show') }}" class="hero-cta-secondary">Sabbath School lesson</a>
+  <div class="verse-toggle-wrap"><button class="verse-toggle hidden" id="verse-toggle" type="button"><span class="verse-toggle-dot"></span><span id="verse-toggle-text">Show verse of the day</span></button></div>
 </section>
 
 {{-- ── Schedule ── --}}
@@ -1027,6 +1074,25 @@
     });
   });
 })();
+</script>
+
+<script>
+  (function() {
+    const stage  = document.getElementById('lede-stage');
+    const toggle = document.getElementById('verse-toggle');
+    const txt    = document.getElementById('verse-toggle-text');
+    if (!stage || !toggle) return;
+    const SWAP_AFTER_MS = 25 * 1000;
+    setTimeout(() => {
+      stage.classList.add('swapped');
+      toggle.classList.remove('hidden');
+      txt.textContent = 'Show welcome message';
+    }, SWAP_AFTER_MS);
+    toggle.addEventListener('click', () => {
+      const isVerse = stage.classList.toggle('swapped');
+      txt.textContent = isVerse ? 'Show welcome message' : 'Show verse of the day';
+    });
+  })();
 </script>
 </body>
 </html>
