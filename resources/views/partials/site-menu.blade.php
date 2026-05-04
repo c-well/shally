@@ -122,12 +122,14 @@
   .site-menu-section { border-bottom: 1px solid rgba(26,35,50,0.12); }
   .site-menu-section-toggle { border-bottom: 0; }
   .site-menu-section-toggle .chev {
-    width: 18px; height: 18px; opacity: 0.4;
+    width: 22px; height: 22px;
+    color: #2d8659;          /* green accent — makes the affordance visible */
+    opacity: 0.85;
     transition: transform 0.25s ease, opacity 0.15s;
   }
-  .site-menu-section-toggle:hover .chev { opacity: 0.85; }
+  .site-menu-section-toggle:hover .chev { opacity: 1; }
   .site-menu-section.open .site-menu-section-toggle .chev {
-    transform: rotate(180deg); opacity: 0.85;
+    transform: rotate(180deg); opacity: 1;
   }
   .site-menu-section-body {
     max-height: 0; overflow: hidden;
@@ -293,7 +295,7 @@
           </div>
         @endif
       @endauth
-      <a href="{{ route('bible') }}" class="site-menu-search-icon" aria-label="Search the Bible" title="Search the Bible">
+      <a href="{{ route('bible') }}" class="site-menu-search-icon" aria-label="Search the Bible" title="Search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </a>
       <button class="site-menu-trigger" id="site-menu-btn" type="button" aria-label="Open menu" aria-expanded="false">
@@ -348,6 +350,7 @@
       <div class="site-menu-section-body">
         <div class="site-menu-sub-list">
           <a class="site-menu-sub-link" href="{{ route('bible') }}">Bible (KJV &amp; ESV)</a>
+          <a class="site-menu-sub-link" href="{{ route('hymnal') }}">Hymnal</a>
           <a class="site-menu-sub-link" href="{{ route('peace-notes') }}">Peace Notes</a>
           <a class="site-menu-sub-link" href="{{ route('lesson.show') }}">Sabbath School Lesson</a>
         </div>

@@ -1465,11 +1465,11 @@
   .search-input {
     flex: 1;
     border: none; background: transparent; outline: none;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(28px, 4vw, 40px);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: clamp(20px, 3vw, 26px);
     font-weight: 500;
     color: var(--ink);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     padding: 4px 0;
   }
   .search-input::placeholder {
