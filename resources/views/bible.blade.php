@@ -62,9 +62,9 @@
   .search-wrap svg { color: var(--ink-soft); flex-shrink: 0; }
   .search-input {
     flex: 1; border: 0; background: transparent; outline: none;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(20px, 3vw, 28px); font-weight: 500;
-    color: var(--ink); letter-spacing: -0.01em;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: clamp(18px, 2.6vw, 22px); font-weight: 500;
+    color: var(--ink); letter-spacing: 0;
     padding: 4px 0;
   }
   .search-input::placeholder { color: rgba(26,35,50,0.4); font-family: 'Instrument Sans', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0; }
@@ -75,8 +75,8 @@
   /* Translation tabs (KJV / ESV) */
   .translation-tabs { margin-top: 14px; display: flex; gap: 4px; justify-content: center; }
   .translation-tab {
-    padding: 7px 16px; background: transparent;
-    color: var(--ink-soft); border: 1px solid transparent; border-radius: 999px;
+    padding: 7px 18px; background: transparent;
+    color: var(--ink-soft); border: 1px solid transparent; border-radius: 4px;
     font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
     letter-spacing: 0.14em; text-transform: uppercase;
     cursor: pointer; transition: color 0.15s, background 0.15s, border-color 0.15s;
@@ -92,7 +92,7 @@
   .quick-link {
     padding: 9px 16px;
     background: var(--cream); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 999px;
+    border: 1px solid var(--line); border-radius: 4px;
     font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 500;
     text-decoration: none;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -142,6 +142,27 @@
     transition: background 0.15s, color 0.15s;
   }
   .more-btn:hover { background: var(--teal); color: #fff; }
+  .verse-actions { margin-top: 8px; display: inline-flex; gap: 12px; }
+  .verse-actions button {
+    background: transparent; border: 0; cursor: pointer; padding: 4px 0;
+    color: var(--teal); font-family: 'Instrument Sans', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: color 0.15s;
+  }
+  .verse-actions button:hover { color: var(--teal-dark); }
+  .verse-actions button.done { color: #2d8659; }
+  .verse-actions svg { width: 12px; height: 12px; }
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+    padding: 10px 18px; background: var(--ink); color: #fff;
+    border-radius: 4px; font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    opacity: 0; transition: opacity 0.2s;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; }
 
   /* Cross-link footer */
   .cross-links {
@@ -266,8 +287,15 @@
     const shown = hits.slice(0, limit);
     const terms = q.trim().split(/\s+/).filter(t => t.length >= 2);
     let html = '<div class="result-meta">' + totalCount + ' verse' + (totalCount === 1 ? '' : 's') + ' found' + (totalCount > limit ? ' · showing first ' + limit : '') + '</div>';
-    html += shown.map(h => {
-      return '<div class="result"><div class="result-ref">' + h.ref + '</div><div class="result-text">' + highlight(h.text, terms) + '</div></div>';
+    html += shown.map((h, i) => {
+      return '<div class="result" data-i="' + i + '">' +
+        '<div class="result-ref">' + h.ref + '</div>' +
+        '<div class="result-text">' + highlight(h.text, terms) + '</div>' +
+        '<div class="verse-actions">' +
+          '<button type="button" data-act="copy" data-ref="' + h.ref + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>' +
+          '<button type="button" data-act="share" data-ref="' + h.ref + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>' +
+        '</div>' +
+      '</div>';
     }).join('');
     if (totalCount > limit) {
       html += '<button type="button" class="more-btn" id="more-btn">Show more</button>';
@@ -275,6 +303,46 @@
     results.innerHTML = html;
     const more = document.getElementById('more-btn');
     if (more) more.addEventListener('click', () => { limit += 30; doSearch(lastQ); });
+
+    // Wire up Copy/Share on each result
+    results.querySelectorAll('.verse-actions button').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const i = parseInt(btn.closest('.result').dataset.i, 10);
+        const hit = shown[i];
+        if (!hit) return;
+        const transLabel = trans.toUpperCase();
+        const url = location.origin + location.pathname + '?q=' + encodeURIComponent(hit.ref);
+        const plain = '"' + hit.text + '"
+— ' + hit.ref + ' (' + transLabel + ')
+
+' + url;
+        const act = btn.dataset.act;
+
+        if (act === 'share' && navigator.share) {
+          try {
+            await navigator.share({ title: hit.ref + ' · ' + transLabel, text: '"' + hit.text + '" — ' + hit.ref + ' (' + transLabel + ')', url: url });
+            flash(btn, 'Shared');
+          } catch (_) {}
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(plain);
+          flash(btn, act === 'share' ? 'Link copied' : 'Copied');
+        } catch (_) {
+          const ta = document.createElement('textarea');
+          ta.value = plain; document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); flash(btn, 'Copied'); } catch (e) {}
+          document.body.removeChild(ta);
+        }
+      });
+    });
+  }
+  function flash(btn, msg) {
+    const orig = btn.innerHTML;
+    btn.classList.add('done');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>' + msg;
+    setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = orig; }, 1800);
   }
 
   let debounce;
