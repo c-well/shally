@@ -569,16 +569,17 @@
   @media (max-width: 600px) { .slider-arrow { display: none; } }
 
 
-  /* Scripture-of-the-day swap on hero lede */
-  .lede-stage { position: relative; max-width: 580px; margin: 0 auto; }
-  .lede-stage .lede { transition: opacity 0.9s ease, transform 0.9s ease; }
-  .lede-stage .lede-verse {
-    position: absolute; inset: 0;
-    opacity: 0; transform: translateY(8px);
-    pointer-events: none;
+  /* Scripture-of-the-day swap — CSS grid stacks both layers in the same cell so
+     the stage auto-sizes to whichever paragraph is taller (no clipping, no jump). */
+  .lede-stage { display: grid; max-width: 580px; margin: 0 auto; }
+  .lede-stage > .lede {
+    grid-area: 1 / 1;   /* same cell — stacked */
+    transition: opacity 0.9s ease, transform 0.9s ease;
   }
+  .lede-stage .lede-welcome { opacity: 1; transform: translateY(0); }
+  .lede-stage .lede-verse   { opacity: 0; transform: translateY(8px); pointer-events: none; }
   .lede-stage.swapped .lede-welcome { opacity: 0; transform: translateY(-8px); pointer-events: none; }
-  .lede-stage.swapped .lede-verse   { opacity: 1; transform: translateY(0); position: relative; }
+  .lede-stage.swapped .lede-verse   { opacity: 1; transform: translateY(0); pointer-events: auto; }
   .lede-verse .verse-text {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic; font-weight: 500;

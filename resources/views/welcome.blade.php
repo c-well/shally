@@ -2821,11 +2821,19 @@
       try { fromStore = sessionStorage.getItem('cop_open_search') === '1'; } catch (e) {}
       if (fromUrl || fromStore) {
         try { sessionStorage.removeItem('cop_open_search'); } catch (e) {}
+        var requestedTab = p.get('tab');
         var attempts = 0;
         function tryOpen() {
           attempts++;
           if (typeof openSearch === 'function' && document.getElementById('search-overlay')) {
             openSearch();
+            // If a tab was requested, click it after openSearch has rendered tabs
+            if (requestedTab) {
+              setTimeout(function () {
+                var tabBtn = document.querySelector('.search-tab[data-scope="' + requestedTab + '"]');
+                if (tabBtn) tabBtn.click();
+              }, 120);
+            }
           } else if (attempts < 30) {
             setTimeout(tryOpen, 50);
           }

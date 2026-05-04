@@ -26,6 +26,7 @@ Route::get ('/about',       fn () => view('about',       ['page' => \App\Models\
 Route::get ('/beliefs',     fn () => view('beliefs',     ['page' => \App\Models\Page::bySlug('beliefs')]))->name('beliefs');
 Route::get ('/visit',       fn () => view('visit',       ['page' => \App\Models\Page::bySlug('visit')]))->name('visit');
 Route::view('/privacy', 'privacy')->name('privacy');
+Route::view('/bible',   'bible')->name('bible');
 Route::get ('/contact',  [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
 Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'])
      ->middleware(['throttle:5,60', 'honeypot'])->name('contact.send');
