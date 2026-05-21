@@ -147,15 +147,20 @@ class BulletinController extends Controller
 
     /** POST /bulletins/{bulletin}/publish — snapshot + flip is_published.
      *  Single source of truth: BulletinPublisher service. Audit-logged. */
-    public function publish(Bulletin $bulletin, \App\Services\BulletinPublisher $publisher, \Illuminate\Http\Request $request): JsonResponse
+    public function publish(Bulletin $bulletin, \App\Services\BulletinPublisher $publisher, \Illuminate\Http\Request $request)
     {
+        // PUBLISH_REDIRECT_FALLBACK — supports both XHR and plain HTML form submission.
+        // If JS is broken on mobile, the Go Live button does a real POST; we redirect back with a flash.
         $bulletin = $publisher->publish($bulletin, $request->user());
-        return response()->json([
-            'ok' => true,
-            'is_published' => $bulletin->is_published,
-            'published_at' => $bulletin->published_at?->toIso8601String(),
-            'has_previous'=> $bulletin->hasAvailablePreviousVersion(),
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'ok' => true,
+                'is_published' => $bulletin->is_published,
+                'published_at' => $bulletin->published_at?->toIso8601String(),
+                'has_previous'=> $bulletin->hasAvailablePreviousVersion(),
+            ]);
+        }
+        return redirect()->to(url()->previous() ?: route('welcome'))->with('status', 'Published — live now.');
     }
 
     /**
@@ -345,6 +350,15 @@ class BulletinController extends Controller
      */
     public function suggestions(Request $request): JsonResponse
     {
+        // SUGGESTIONS_AUDIT_LOG — log every call for ~24h so we can see if Andre's browser is reaching this endpoint.
+        // Remove the AuditLog::record call after Andre has confirmed he can edit a bulletin.
+        try {
+            \App\Models\AuditLog::record(
+                event: 'suggestions_called',
+                userId: auth()->id(),
+                description: 'q=' . substr((string) $request->query('q', ''), 0, 40) . ' scope=' . $request->query('scope', '') . ' user=' . (auth()->user()->email ?? 'guest'),
+            );
+        } catch (\Throwable $e) {}
         $q = trim((string) $request->query('q', ''));
         $scope = $request->query('scope', '');
         if ($scope === 'any') $scope = '';
@@ -530,14 +544,24 @@ class BulletinController extends Controller
         ]);
 
         if ($current) {
+            // NEXTWEEK_ANNOUNCEMENTS_CLONED — carry over lines (people blank) AND announcements (verbatim).
             $sort = 0;
             foreach ($current->lines()->orderBy('sort_order')->get() as $line) {
                 $next->lines()->create([
                     'section' => $line->section,
                     'part'    => $line->part,
-                    'person'  => ($line->kind === 'section_header') ? null : null, // blank out person
+                    'person'  => null, // blank out person each new week
                     'kind'    => $line->kind,
                     'sort_order' => $sort++,
+                ]);
+            }
+            // Announcements carry over verbatim — admin deletes the ones that no longer apply.
+            $aSort = 0;
+            foreach ($current->announcements()->orderBy('sort_order')->get() as $a) {
+                $next->announcements()->create([
+                    'title'      => $a->title,
+                    'detail'     => $a->detail,
+                    'sort_order' => $aSort++,
                 ]);
             }
         }

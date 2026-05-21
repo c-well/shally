@@ -79,10 +79,12 @@ Artisan::command('bulletins:prune', function () {
             if (is_file($abs)) @unlink($abs);
         }
 
+        // PRUNE_NARROWED — original intent was to reclaim DISK SPACE (heavy PDF files),
+        // not to nuke DB columns. Body text + JSON snapshot are tiny; nulling the snapshot
+        // broke URL navigation to past bulletins (Andre saw empty pages after May 18).
+        // Now we only null pdf_path (the file itself is unlinked above).
         $b->update([
-            'body' => null,
             'pdf_path' => null,
-            'published_snapshot' => null,
         ]);
         $cleaned++;
     }
@@ -112,3 +114,65 @@ Schedule::call(function () {
 Schedule::call(function () {
     \DB::table("page_views")->where("viewed_at", "<", now()->subDays(90))->delete();
 })->dailyAt("04:00")->name("page-views-prune");
+
+// Peace pipeline — automated Sabbath sermon processing.
+// Saturday 3 PM ET (DST-aware) → scan @gotoshalom, run pipeline, email clerk.
+Schedule::command('peace:scan-channel')
+    ->saturdays()
+    ->at('15:00')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-scan-channel');
+
+// Fallback retry at 4:30pm ET — if YouTube auto-captions weren't ready at 3pm,
+// the 3pm scan finds no caption track and exits. By 4:30 they'll have rendered.
+// Scan is idempotent (filters out already-processed videos), so safe to double-fire.
+Schedule::command('peace:scan-channel')
+    ->saturdays()
+    ->at('16:30')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-scan-channel-retry');
+
+// Hourly state-machine tick — flips pending_review → draft after 72h,
+// and sends the 48h confirm-delete reminder.
+Schedule::command('peace:review-tick')
+    ->hourly()
+    ->onOneServer()
+    ->name('peace-review-tick');
+
+// Sunday 12pm ET sanity check — verify a sermon was actually processed yesterday.
+// If no peace_sermons row was created since Saturday 00:00 ET, alert Karlon.
+// Silent on success (no alert spam).
+Schedule::call(function () {
+    $sat = \Carbon\Carbon::now('America/New_York')->subDay()->startOfDay()->setTimezone('UTC');
+    $latest = \App\Models\PeaceSermon::where('created_at', '>=', $sat)
+        ->orderByDesc('created_at')->first();
+    if (! $latest) {
+        $body  = "Sanity check failed: no peace_sermons row was created since " .
+                 $sat->setTimezone('America/New_York')->format('D M j g:i A T') . ".\n\n";
+        $body .= "Either the auto-scan failed both fires (Sat 3pm + Sat 4:30pm) OR there\'s no Sabbath sermon on YouTube yet.\n\n";
+        $body .= "Manual trigger: https://thechurchofpeace.org/admin/peace/schedule\n";
+        $body .= "Audit log:      https://thechurchofpeace.org/admin/logs\n";
+        try {
+            \Illuminate\Support\Facades\Mail::raw($body, function ($m) {
+                $m->to('contact@c-wellpics.com')
+                  ->cc('andre.marshall@gmail.com')
+                  ->subject('[Shalom] Sabbath sermon NOT processed — needs attention');
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('peace sanity-check: alert email failed', ['err' => $e->getMessage()]);
+        }
+        \App\Models\AuditLog::record(
+            event: 'peace_sanity_check_failed',
+            description: 'Sunday noon sanity check: no sermon processed since ' . $sat->toIso8601String(),
+        );
+    } else {
+        \App\Models\AuditLog::record(
+            event: 'peace_sanity_check_passed',
+            description: 'Sunday noon sanity check: sermon #' . $latest->id . ' (' . $latest->title . ') processed at ' . $latest->created_at->toIso8601String(),
+        );
+    }
+})->sundays()->at('12:00')->timezone('America/New_York')->name('peace-sunday-sanity-check')->onOneServer();

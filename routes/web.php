@@ -21,13 +21,41 @@ Route::get('/lesson/{lesson}', [\App\Http\Controllers\LessonController::class, '
 // Public pages — content editable from /admin/pages
 Route::get ('/peace-notes',         [\App\Http\Controllers\SermonController::class, 'index'])->name('peace-notes');
 Route::get ('/peace-notes/{slug}',  [\App\Http\Controllers\SermonController::class, 'show'])
-     ->where('slug', '[a-z0-9-]+')->name('peace-notes.show');
+     ->where('slug', '[A-Za-z0-9-]+')->name('peace-notes.show');
 Route::get ('/about',       fn () => view('about',       ['page' => \App\Models\Page::bySlug('about')]))->name('about');
 Route::get ('/beliefs',     fn () => view('beliefs',     ['page' => \App\Models\Page::bySlug('beliefs')]))->name('beliefs');
 Route::get ('/visit',       fn () => view('visit',       ['page' => \App\Models\Page::bySlug('visit')]))->name('visit');
 Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/bible',   'bible')->name('bible');
 Route::view('/hymnal',  'hymnal')->name('hymnal');
+Route::middleware('seeker:optional')->group(function () {
+    Route::get('/find-peace',                   [\App\Http\Controllers\FindPeaceController::class, 'index'])->name('find-peace.index');
+    Route::get('/find-peace/saved',             [\App\Http\Controllers\FindPeaceController::class, 'saved'])->middleware('seeker:required')->name('find-peace.saved');
+    Route::get('/find-peace/topic/{slug}',      [\App\Http\Controllers\FindPeaceController::class, 'topic'])->name('find-peace.topic')->where('slug', '[A-Za-z0-9-]+');
+    Route::get ('/find-peace/share',            [\App\Http\Controllers\PeaceShareController::class, 'show'])->middleware('seeker:required')->name('peace.share.show');
+    Route::post('/find-peace/share',            [\App\Http\Controllers\PeaceShareController::class, 'store'])->middleware('seeker:required')->name('peace.share.submit');
+    Route::get('/find-peace/{slug}',            [\App\Http\Controllers\FindPeaceController::class, 'show'])->name('find-peace.show')->where('slug', '[A-Za-z0-9-]+');
+});
+Route::post('/peace/saved/{qa}', [\App\Http\Controllers\FindPeaceController::class, 'savedToggle'])->middleware(['seeker:required'])->where('qa', '[0-9]+')->name('peace.saved.toggle');
+Route::post('/find-peace/poll', [\App\Http\Controllers\PeacePollController::class, 'submit'])->middleware('throttle:30,1')->name('find-peace.poll.submit');
+
+// Peace seeker accounts — magic-link, passwordless, separate guard from admin.
+Route::post('/peace/auth/request',         [\App\Http\Controllers\PeaceAuthController::class, 'request'])
+     ->middleware(['throttle:10,60', \App\Http\Middleware\BlockAbusiveIps::class])
+     ->name('peace.auth.request');
+Route::get ('/peace/auth/verify/{token}',  [\App\Http\Controllers\PeaceAuthController::class, 'verify'])
+     ->where('token', '[a-f0-9]{64}')
+     ->name('peace.auth.verify');
+Route::post('/peace/auth/logout',          [\App\Http\Controllers\PeaceAuthController::class, 'logout'])
+     ->name('peace.auth.logout');
+
+// Public, signed-token review actions (no login — token is the secret).
+// Routes match Saturday-3pm cron emails.
+Route::get('/peace/review/{token}/approve',        [\App\Http\Controllers\PeaceReviewController::class, 'approve'])->where('token','[a-f0-9]{64}')->name('peace.review.approve');
+Route::get('/peace/review/{token}/discard',        [\App\Http\Controllers\PeaceReviewController::class, 'discard'])->where('token','[a-f0-9]{64}')->name('peace.review.discard');
+Route::get('/peace/review/{token}/restore',        [\App\Http\Controllers\PeaceReviewController::class, 'restore'])->where('token','[a-f0-9]{64}')->name('peace.review.restore');
+Route::get('/peace/review/{token}/confirm-delete', [\App\Http\Controllers\PeaceReviewController::class, 'confirmDelete'])->where('token','[a-f0-9]{64}')->name('peace.review.confirm-delete');
+Route::get ('/search',  [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
 Route::get ('/contact',  [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
 Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'])
      ->middleware(['throttle:5,60', 'honeypot'])->name('contact.send');
@@ -99,6 +127,9 @@ Route::middleware('auth')->group(function () {
         Route::view  ('/admin',                        'admin.hub')->name('admin.hub');
         Route::view  ('/admin/names',                  'admin.names')->name('admin.names');
         Route::get   ('/admin/logs',                   [\App\Http\Controllers\AdminLogsController::class, 'index'])->name('admin.logs');
+        Route::get   ('/admin/security',                          [\App\Http\Controllers\AdminSecurityController::class, 'index'])->name('admin.security');
+        Route::post  ('/admin/security/block',                    [\App\Http\Controllers\AdminSecurityController::class, 'block'])->name('admin.security.block');
+        Route::post  ('/admin/security/unblock/{id}',             [\App\Http\Controllers\AdminSecurityController::class, 'unblock'])->name('admin.security.unblock')->where('id', '[0-9]+');
         Route::get   ('/admin/users',                  [\App\Http\Controllers\AdminUsersController::class, 'index'])->name('admin.users');
         Route::post  ('/admin/users',                  [\App\Http\Controllers\AdminUsersController::class, 'store'])->name('admin.users.store');
         Route::patch ('/admin/users/{user}/pin',       [\App\Http\Controllers\AdminUsersController::class, 'updatePin'])->name('admin.users.pin');
@@ -108,6 +139,32 @@ Route::middleware('auth')->group(function () {
         Route::get   ('/admin/pages/{slug}/edit',       [\App\Http\Controllers\AdminPagesController::class, 'edit'])->name('admin.pages.edit');
         Route::patch ('/admin/pages/{slug}',            [\App\Http\Controllers\AdminPagesController::class, 'update'])->name('admin.pages.update');
         Route::post  ('/admin/pages/upload-image',      [\App\Http\Controllers\AdminPagesController::class, 'uploadImage'])->name('admin.pages.upload-image');
+
+        // Peace ministry admin (edit any sermon field, Q&As, scriptures)
+        Route::get   ('/admin/peace',                            [\App\Http\Controllers\AdminPeaceController::class, 'index'])->name('admin.peace.index');
+        Route::get   ('/admin/peace/schedule',                   [\App\Http\Controllers\AdminPeaceController::class, 'schedule'])->name('admin.peace.schedule');
+        Route::get   ('/admin/peace/analytics',                  [\App\Http\Controllers\AdminPeaceController::class, 'analytics'])->name('admin.peace.analytics');
+        Route::get   ('/admin/peace/subscribers',                [\App\Http\Controllers\AdminPeaceController::class, 'subscribers'])->name('admin.peace.subscribers');
+        Route::get ('/admin/peace/submissions',                  [\App\Http\Controllers\AdminPeaceController::class, 'submissions'])->name('admin.peace.submissions');
+        Route::post('/admin/peace/submissions/{id}',             [\App\Http\Controllers\AdminPeaceController::class, 'submissionsUpdate'])->name('admin.peace.submissions.update')->where('id', '[0-9]+');
+        Route::post  ('/admin/peace/schedule/trigger',           [\App\Http\Controllers\AdminPeaceController::class, 'scheduleTrigger'])->name('admin.peace.schedule.trigger');
+        Route::get   ('/admin/peace/{slug}/edit',                [\App\Http\Controllers\AdminPeaceController::class, 'edit'])->name('admin.peace.edit');
+        Route::post  ('/admin/peace/{slug}',                     [\App\Http\Controllers\AdminPeaceController::class, 'update'])->name('admin.peace.update');
+        Route::post  ('/admin/peace/{slug}/qa',                  [\App\Http\Controllers\AdminPeaceController::class, 'addQa'])->name('admin.peace.qa.add');
+        Route::patch ('/admin/peace/{slug}/qa/{qa}',             [\App\Http\Controllers\AdminPeaceController::class, 'updateQa'])->name('admin.peace.qa.update');
+        Route::delete('/admin/peace/{slug}/qa/{qa}',             [\App\Http\Controllers\AdminPeaceController::class, 'destroyQa'])->name('admin.peace.qa.destroy');
+        Route::post  ('/admin/peace/{slug}/scripture',           [\App\Http\Controllers\AdminPeaceController::class, 'addScripture'])->name('admin.peace.scripture.add');
+        Route::delete('/admin/peace/{slug}/scripture/{id}',      [\App\Http\Controllers\AdminPeaceController::class, 'destroyScripture'])->name('admin.peace.scripture.destroy');
+        Route::post  ('/admin/peace/{slug}/trim',                [\App\Http\Controllers\AdminPeaceController::class, 'trim'])->name('admin.peace.trim');
+        Route::post  ('/admin/peace/{slug}/recompress',          [\App\Http\Controllers\AdminPeaceController::class, 'recompress'])->name('admin.peace.recompress');
+
+        // Peace polls — David-style multiple choice that ties feelings back to scripture
+        Route::get   ('/admin/peace/polls',                       [\App\Http\Controllers\AdminPeacePollsController::class, 'index'])->name('admin.peace.polls.index');
+        Route::get   ('/admin/peace/polls/create',                [\App\Http\Controllers\AdminPeacePollsController::class, 'create'])->name('admin.peace.polls.create');
+        Route::post  ('/admin/peace/polls',                       [\App\Http\Controllers\AdminPeacePollsController::class, 'store'])->name('admin.peace.polls.store');
+        Route::get   ('/admin/peace/polls/{poll}/edit',           [\App\Http\Controllers\AdminPeacePollsController::class, 'edit'])->name('admin.peace.polls.edit');
+        Route::post  ('/admin/peace/polls/{poll}',                [\App\Http\Controllers\AdminPeacePollsController::class, 'update'])->name('admin.peace.polls.update');
+        Route::delete('/admin/peace/polls/{poll}',                [\App\Http\Controllers\AdminPeacePollsController::class, 'destroy'])->name('admin.peace.polls.destroy');
 
         Route::get   ("/admin/slides",                 [\App\Http\Controllers\AdminSlidesController::class, "index"])->name("admin.slides.index");
         Route::post  ("/admin/slides",                 [\App\Http\Controllers\AdminSlidesController::class, "store"])->name("admin.slides.store");
