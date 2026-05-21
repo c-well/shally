@@ -22,6 +22,17 @@ class MagicLinkController extends Controller
     /** POST /auth/magic-link — send a magic link to an existing user's email. */
     public function sendLink(Request $request): RedirectResponse
     {
+        // Honeypot: bots fill every visible field. Real users leave 'website' empty.
+        if (filled($request->input('website'))) {
+            \App\Models\AuditLog::record(
+                event: 'magic_link_honeypot',
+                description: 'Honeypot tripped by bot from IP ' . $request->ip(),
+                meta: ['ua' => substr((string) $request->userAgent(), 0, 200)],
+            );
+            $this->maybeBlockIp($request->ip(), 'honeypot');
+            return back()->with('status', 'If that email matches an account, a sign-in link is on its way. Check your inbox in the next minute or two.');
+        }
+
         $data = $request->validate([
             'email' => 'required|email|max:255',
         ]);
@@ -30,7 +41,7 @@ class MagicLinkController extends Controller
         // Rate limits — per email and per IP
         $emailKey = 'magic-email:' . sha1($email);
         $ipKey    = 'magic-ip:' . $request->ip();
-        if (RateLimiter::tooManyAttempts($emailKey, 3) || RateLimiter::tooManyAttempts($ipKey, 10)) {
+        if (RateLimiter::tooManyAttempts($emailKey, 3) || RateLimiter::tooManyAttempts($ipKey, 5)) {
             return back()->withInput()->with('status', 'Too many attempts. Please try again in an hour.');
         }
         RateLimiter::hit($emailKey, 3600); // 1h
@@ -46,6 +57,7 @@ class MagicLinkController extends Controller
             description: 'Magic link requested for: ' . $email . ($user ? '' : ' (no match)'),
             meta: ['email' => $email, 'matched' => (bool) $user],
         );
+        if (!$user) $this->maybeBlockIp($request->ip(), 'magic_link_no_match');
 
         if ($user) {
             [$plainToken] = MagicLinkToken::issueFor(
@@ -102,5 +114,34 @@ class MagicLinkController extends Controller
         );
 
         return redirect()->intended('/');
+    }
+
+    /**
+     * Count this IP's failure-type audit log entries in the last 24h.
+     * If >20, insert into blocked_ips with 24h expiry. Middleware then 429s subsequent requests.
+     */
+    private function maybeBlockIp(string $ip, string $reason): void
+    {
+        if (\DB::table('blocked_ips')->where('ip_address', $ip)->exists()) return; // already blocked
+        $threshold = 20;
+        $count = \DB::table('audit_logs')
+            ->where('ip_address', $ip)
+            ->whereIn('event', ['magic_link_request', 'login_failed', 'magic_link_honeypot'])
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+        if ($count > $threshold) {
+            \DB::table('blocked_ips')->insert([
+                'ip_address' => $ip,
+                'reason' => $reason . ' (>'. $threshold .' failures/24h)',
+                'blocked_at' => now(),
+                'expires_at' => now()->addDay(),
+                'hits_at_block' => $count,
+            ]);
+            \App\Models\AuditLog::record(
+                event: 'ip_auto_blocked',
+                description: 'Auto-blocked IP ' . $ip . ' for 24h after ' . $count . ' failures',
+                meta: ['ip' => $ip, 'count' => $count, 'reason' => $reason],
+            );
+        }
     }
 }

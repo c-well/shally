@@ -483,6 +483,14 @@
     .picker-thumb { min-height: 110px; padding: 12px 8px; }
     .picker-thumb .p-day { font-size: 32px; }
   }
+  /* JUST_SAVED_FLASH — brief green tint on edited element after a successful save.
+     Visible confirmation that the save took, without the jank of a page reload. */
+  .just-saved { animation: flash-saved 1.3s ease-out; }
+  @keyframes flash-saved {
+    0%   { background-color: rgba(45, 134, 89, 0.28); box-shadow: 0 0 0 4px rgba(45, 134, 89, 0.15); }
+    100% { background-color: transparent;             box-shadow: 0 0 0 0   rgba(45, 134, 89, 0);    }
+  }
+
   /* (Old #publish-btn pulse animation removed — Go Live is now a panel item, not a standalone
      button. The dirty signal is now a green Admin trigger, defined further down with the
      admin-trigger styles.) */
@@ -528,6 +536,8 @@
     transition: opacity 0.15s, color 0.15s;
   }
   body.edit-mode .drag-handle { display: inline-block; }
+  /* TOUCH_HANDLE_VISIBLE — touch devices have no hover, so handles stay full opacity */
+  @media (hover: none) { body.edit-mode .drag-handle { opacity: 0.7; color: var(--teal); } }
   body.edit-mode .order-line:hover .drag-handle,
   body.edit-mode .section-header:hover .drag-handle { opacity: 0.85; color: var(--teal); }
   .drag-handle:active { cursor: grabbing; }
@@ -2244,9 +2254,13 @@
     <button class="bt-icon-btn" id="undo-btn" type="button" disabled aria-label="Undo" title="Undo (⌘Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg></button>
     <button class="bt-icon-btn" id="redo-btn" type="button" disabled aria-label="Redo" title="Redo (⌘⇧Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/></svg></button>
     <span class="bt-spacer"></span>
-    <button id="publish-btn" class="go-live-pill" type="button" data-publish-url="{{ route('bulletins.publish', $bulletin) }}" aria-label="Publish bulletin">
-      <span class="go-live-dot"></span><span>Go Live</span>
-    </button>
+    {{-- GO_LIVE_FORM_FALLBACK — real form so a plain tap publishes even when JS is broken. --}}
+    <form method="POST" action="{{ route('bulletins.publish', $bulletin) }}" style="display:contents;" id="publish-form">
+      @csrf
+      <button id="publish-btn" class="go-live-pill" type="submit" data-publish-url="{{ route('bulletins.publish', $bulletin) }}" aria-label="Publish bulletin">
+        <span class="go-live-dot"></span><span>Go Live</span>
+      </button>
+    </form>
   </div>
 @endif
 
@@ -2388,7 +2402,56 @@
               {{ $bulletin->event_name }} · Night {{ $bulletin->event_night_number }}@if ($bulletin->event_total_nights) of {{ $bulletin->event_total_nights }}@endif
             </div>
           @endif
+          @if ($canEdit)
+            <div class="clerk-pdf-row" style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+              <a href="{{ route('bulletins.pdf', $bulletin) }}" target="_blank" rel="noopener"
+                 style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#03617A;color:#fff;text-decoration:none;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;"
+                 title="Download current bulletin as PDF">Download PDF →</a>
+              @if ($bulletin->hasAvailablePreviousVersion())
+                <a href="{{ route('bulletins.pdf', $bulletin) }}?version=previous" target="_blank" rel="noopener"
+                   style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:transparent;color:#03617A;border:1px solid #03617A;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;text-decoration:none;"
+                   title="Previous version (auto-deletes 8h after supersession)">Previous PDF</a>
+              @endif
+            </div>
+          @endif
         </header>
+
+        {{-- NEXTSABBATH_BANNER — visible "start next Sabbath" CTA, only when admin AND next bulletin not yet created. --}}
+        @if ($canEdit && $bulletin && !\App\Models\Bulletin::where('service_date', '>', $bulletin->service_date)->exists())
+          @php
+            $nextSabbathDate = $bulletin->service_date ? $bulletin->service_date->copy()->addDays(7) : now()->next('Saturday');
+          @endphp
+          <div class="next-sabbath-banner" style="
+            background: linear-gradient(135deg, rgba(176,141,60,0.12) 0%, rgba(176,141,60,0.03) 100%);
+            border: 1px solid rgba(176,141,60,0.3);
+            border-left: 4px solid #b08d3c;
+            border-radius: 6px;
+            padding: 14px 20px;
+            margin: 1.5rem auto;
+            max-width: 720px;
+            display: flex; align-items: center; gap: 16px;
+            font-family: 'Poppins', sans-serif;
+          ">
+            <div style="flex:1; min-width: 0;">
+              <div style="font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #b08d3c; margin-bottom: 3px;">
+                Ready for next Sabbath?
+              </div>
+              <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: #1a2332; line-height: 1.25;">
+                Start the bulletin for {{ $nextSabbathDate->format('F j') }} — order &amp; announcements carry over, names reset.
+              </div>
+            </div>
+            <button type="button" data-next-week-url="{{ route('bulletins.next-week') }}" style="
+              background: #b08d3c; color: #fff; border: none;
+              padding: 10px 18px; border-radius: 5px;
+              font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600;
+              letter-spacing: 0.14em; text-transform: uppercase;
+              cursor: pointer; flex-shrink: 0;
+              transition: background 0.15s;
+            " onmouseover="this.style.background='#9a7a32'" onmouseout="this.style.background='#b08d3c'">
+              Start →
+            </button>
+          </div>
+        @endif
 
         {{-- Order of service lines --}}
         @if ($canEdit && $bulletin)
@@ -2402,28 +2465,45 @@
           </div>
         @endif
         @php
+          // POSITION_AWARE_SECTION_HEADERS — track WHERE each explicit section_header sits
+          // (not just whether one exists). If a header is placed AFTER the lines it should
+          // be heading (e.g. Andre clicks "+Add section header" — it appends at the end,
+          // then he renames it — but his lines are higher up), the public view auto-emits
+          // an inline header above the first matching line, AND skips the orphaned
+          // explicit header. In admin/edit view both still render so the editor can fix it.
           $prevSection = null;
           $prevPart = '';
-          // Precompute the set of section names that have an EXPLICIT section_header row.
-          // Public view should not auto-emit a section header for those (the explicit one
-          // is already in the loop) — that prevents the "duplicate section header" bug.
-          $explicitSectionNames = [];
-          foreach ($lines as $_l) {
-              if (($_l['kind'] ?? 'line') === 'section_header' && !empty($_l['section'])) {
-                  $explicitSectionNames[$_l['section']] = true;
+          $explicitHeaderIdx = [];   // section_name => loop index of first explicit header with that name
+          $firstLineIdxByName = [];  // section_name => loop index of FIRST line carrying that section
+          foreach ($lines as $_i => $_l) {
+              $_kind = $_l['kind'] ?? 'line';
+              $_sec  = $_l['section'] ?? '';
+              if ($_sec === '') continue;
+              if ($_kind === 'section_header') {
+                  if (!isset($explicitHeaderIdx[$_sec])) $explicitHeaderIdx[$_sec] = $_i;
+              } else {
+                  if (!isset($firstLineIdxByName[$_sec])) $firstLineIdxByName[$_sec] = $_i;
+              }
+          }
+          // Misplaced = the explicit header sits AFTER the first line that needs it.
+          $misplacedHeaderNames = [];
+          foreach ($explicitHeaderIdx as $_name => $_hIdx) {
+              if (isset($firstLineIdxByName[$_name]) && $firstLineIdxByName[$_name] < $_hIdx) {
+                  $misplacedHeaderNames[$_name] = true;
               }
           }
         @endphp
         @foreach ($lines as $line)
           @php $isHeader = ($line['kind'] ?? 'line') === 'section_header'; @endphp
-          @if (!$canEdit && !$isHeader && isset($line['section']) && $line['section'] !== $prevSection && empty($explicitSectionNames[$line['section']] ?? null))
+          @php $_secName = $line['section'] ?? ''; $_earlierExplicit = $_secName !== '' && isset($explicitHeaderIdx[$_secName]) && $explicitHeaderIdx[$_secName] <= $loop->index; @endphp
+          @if (!$canEdit && !$isHeader && $_secName !== '' && $_secName !== $prevSection && !$_earlierExplicit)
             @if ($line['section'])<div class="section-header">{{ $line['section'] }}</div>@endif
             @php $prevSection = $line['section']; @endphp
           @endif
 
           @if ($isHeader)
             @php $sec = $line['section'] ?? ''; @endphp
-            @if ($sec !== '' || $canEdit)
+            @if ($canEdit || ($sec !== '' && empty($misplacedHeaderNames[$sec] ?? null)))
               <div class="section-header @if($canEdit) editable @endif"
                    @if($canEdit && isset($line['id']))
                      data-line-id="{{ $line['id'] }}"
@@ -2450,7 +2530,8 @@
               //   • everything else                          → scope=person (names from past bulletins)
               // Both columns get the same scope so Andre can type the value into either field
               // without the wrong-suggestions confusion (he kept typing hymns into the person column).
-              $haystack = strtolower(($line['part'] ?? '') . ' ' . ($line['section'] ?? '') . ' ' . $prevPart);
+              // SCOPE_LEAKAGE_FIXED — was including $prevPart (previous line's part), which leaked 'hymn' scope onto person lines right after Opening Hymn. Each line's scope is its own.
+              $haystack = strtolower(($line['part'] ?? '') . ' ' . ($line['section'] ?? ''));
               if (str_contains($haystack, 'scripture')) {
                   $lineScope = 'bible';
               } elseif (str_contains($haystack, 'song') || str_contains($haystack, 'hymn')) {
@@ -2763,7 +2844,7 @@
     if (docs[name]) return;
     if (loading[name]) return loading[name];
     loading[name] = (async () => {
-      const res = await fetch('/search/' + name + '.json');
+      const res = await fetch('/lib/' + name + '.json');
       const data = await res.json();
       docs[name] = data;
       // Wait for MiniSearch lib to be available
@@ -3552,6 +3633,9 @@
                 if (field === 'start_at' && value) el.dataset.raw = value;
                 el.textContent = displayValue;
               }
+              // JUST_SAVED_FLASH trigger — visual confirmation of save
+              el.classList.add('just-saved');
+              setTimeout(() => el.classList.remove('just-saved'), 1300);
               markDirty();
             } catch (e) {
               el.classList.remove('editing');
@@ -3610,7 +3694,7 @@
     _hymnListPromise = (async () => {
       // Reuse the same hymnal.json the full-search modal loads
       try {
-        const res = await fetch('/search/hymnal.json');
+        const res = await fetch('/lib/hymnal.json');
         const data = await res.json();
         _hymnList = data.map(h => ({ number: h.number, title: h.title, label: '#' + h.number + ' ' + h.title }));
         return _hymnList;
@@ -3770,16 +3854,30 @@
         } catch (e) { showSaved('Error'); }
       }));
 
-      /* Publish */
-      document.getElementById('publish-btn').addEventListener('click', async () => {
-        const url = document.getElementById('publish-btn').dataset.publishUrl;
-        try {
-          await post(url);
-          publishStatus.textContent = 'Published just now';
-          publishStatus.classList.remove('unpub');
-          showSaved('Live.');
-        } catch (e) { showSaved('Error'); }
-      });
+      /* Publish — intercept the FORM submit so we keep the XHR/snappy path when JS works,
+         and the form posts naturally if JS is dead. */
+      const publishForm = document.getElementById('publish-form');
+      if (publishForm) {
+        publishForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const url = document.getElementById('publish-btn').dataset.publishUrl;
+          try {
+            await post(url);
+            if (publishStatus) {
+              publishStatus.textContent = 'Published just now';
+              publishStatus.classList.remove('unpub');
+            }
+            document.body.classList.remove('bulletin-dirty');
+            showSaved('Live.');
+            // RELOAD_AFTER_PUBLISH — brief delay so the "Live." toast is visible,
+            // then reload so the page reflects fully-published state with no ambiguity.
+            setTimeout(() => location.reload(), 700);
+          } catch (e2) {
+            // Fall through to native form submit so server-rendered redirect path wins.
+            publishForm.submit();
+          }
+        });
+      }
 
       /* ───── Bulletin lines: drag-to-reorder + unified undo/redo history ───── */
       const orderList = document.getElementById('bulletin-order-list');

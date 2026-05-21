@@ -43,9 +43,33 @@ class BulletinPublisher
                 $bulletin->previous_published_at       = $bulletin->published_at;
             }
 
+            // SNAPSHOT_SAFEGUARD — guard against the empty-snapshot bug that bit Andre on May 16.
+            // If snapshotCurrentState returns something that's missing core keys OR has zero lines
+            // when the live bulletin has lines, ABORT — rolls back the transaction. Better to throw
+            // a visible error than silently save "[]" and serve an empty bulletin to guests.
+            $snap = $bulletin->snapshotCurrentState();
+            $liveLines = $bulletin->lines()->count();
+            $liveAnns  = $bulletin->announcements()->count();
+            if (! is_array($snap) || ! isset($snap['title']) || ! isset($snap['service_date'])) {
+                throw new \RuntimeException('snapshotCurrentState returned malformed array — publish aborted to avoid empty snapshot. Keys: ' . implode(',', array_keys(is_array($snap) ? $snap : [])));
+            }
+            $snapLines = count($snap['lines'] ?? []);
+            $snapAnns  = count($snap['announcements'] ?? []);
+            if ($liveLines > 0 && $snapLines === 0) {
+                throw new \RuntimeException("snapshotCurrentState: live bulletin has {$liveLines} lines but snapshot has 0. Publish aborted. (bulletin id={$bulletin->id})");
+            }
+            if ($liveAnns > 0 && $snapAnns === 0) {
+                throw new \RuntimeException("snapshotCurrentState: live bulletin has {$liveAnns} announcements but snapshot has 0. Publish aborted. (bulletin id={$bulletin->id})");
+            }
+            \Illuminate\Support\Facades\Log::info('Bulletin publish snapshot built', [
+                'bulletin_id' => $bulletin->id,
+                'snap_bytes'  => strlen(json_encode($snap)),
+                'snap_lines'  => $snapLines,
+                'snap_anns'   => $snapAnns,
+            ]);
             $bulletin->is_published       = true;
             $bulletin->published_at       = now();
-            $bulletin->published_snapshot = $bulletin->snapshotCurrentState();
+            $bulletin->published_snapshot = $snap;
             $bulletin->save();
 
             AuditLog::record(

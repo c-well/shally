@@ -267,7 +267,7 @@
     if (loading || index) return Promise.resolve();
     loading = true;
     hint.textContent = 'Loading hymnal…';
-    return fetch('/search/hymnal.json')
+    return fetch('/lib/hymnal.json')
       .then(r => r.json())
       .then(data => {
         docs = data;

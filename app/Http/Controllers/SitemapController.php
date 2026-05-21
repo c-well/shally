@@ -91,6 +91,39 @@ class SitemapController extends Controller
             }
         }
 
+        // ── Finding Peace — sermon pages + topic browse pages ─────────────
+        // Highest-quality long-tail SEO surface — each sermon contributes 5 indexable Q&A entry points
+        // and each topic page rolls up all sermons tagged with that theme.
+        $static[] = ['path' => '/find-peace', 'priority' => '0.95', 'freq' => 'weekly', 'lastmod' => $today];
+
+        \App\Models\PeaceSermon::query()
+            ->whereIn('processing_status', ['published', 'pending_review'])
+            ->whereNotNull('published_at')
+            ->where('is_offsite', false)
+            ->where('is_no_sermon', false)
+            ->orderByDesc('sermon_date')
+            ->get(['slug', 'updated_at'])
+            ->each(function ($s) use (&$static) {
+                $static[] = [
+                    'path'     => '/find-peace/' . $s->slug,
+                    'priority' => '0.90',
+                    'freq'     => 'monthly',
+                    'lastmod'  => $s->updated_at?->toDateString() ?? now()->toDateString(),
+                ];
+            });
+
+        \App\Models\PeaceTopic::has('sermons')
+            ->orderBy('name')
+            ->get(['slug'])
+            ->each(function ($t) use (&$static, $today) {
+                $static[] = [
+                    'path'     => '/find-peace/topic/' . $t->slug,
+                    'priority' => '0.75',
+                    'freq'     => 'weekly',
+                    'lastmod'  => $today,
+                ];
+            });
+
         return $static;
     }
 }

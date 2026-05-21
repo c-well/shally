@@ -14,9 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'     => \App\Http\Middleware\EnsureRole::class,
             'honeypot' => \App\Http\Middleware\Honeypot::class,
+            'seeker'   => \App\Http\Middleware\SeekerAuthMiddleware::class,
         ]);
         // Append global security headers to every response
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->append(\App\Http\Middleware\NoCacheForAdmins::class);
         // Telemetry — log a row to page_views per public successful GET (skips admin/api/bots)
         $middleware->append(\App\Http\Middleware\TrackPageView::class);
         // Trust the cPanel reverse proxy for client-IP / scheme detection

@@ -95,10 +95,10 @@
   }
   .event-row {
     display: grid;
-    grid-template-columns: 130px 14px 1fr 160px;
+    grid-template-columns: 168px 14px 1fr 140px;
     gap: 16px;
     align-items: baseline;
-    padding: 18px 4px;
+    padding: 14px 4px;
     border-bottom: 1px solid var(--line);
   }
   .event-row:last-child { border-bottom: 0; }
@@ -112,8 +112,9 @@
   .event-row .ts .ago {
     display: block;
     font-size: 10px;
-    opacity: 0.7;
-    margin-top: 2px;
+    opacity: 0.55;
+    margin-top: 3px;
+    letter-spacing: 0.02em;
   }
   .event-row .dot {
     width: 8px; height: 8px; border-radius: 50%;
@@ -129,18 +130,23 @@
   .event-row .dot[class*="error_"]   { background: #c0392b; }
 
   .event-row .body {
-    font-size: 14px; line-height: 1.5; color: var(--ink);
+    font-size: 13.5px; line-height: 1.5; color: var(--ink);
   }
   .event-row .body .who {
-    font-weight: 600; color: var(--ink);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-weight: 500; color: var(--ink);
+    font-size: 12.5px; letter-spacing: 0.01em;
+    margin-right: 4px;
   }
   .event-row .body .verb {
-    color: var(--ink-soft);
+    color: var(--ink-soft); font-weight: 400;
   }
   .event-row .ip {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px; color: var(--ink-soft);
-    text-align: right; opacity: 0.7;
+    text-align: right; opacity: 0.65;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
   }
 
   .empty {
@@ -156,10 +162,10 @@
   details.event-run > summary {
     list-style: none; cursor: pointer;
     display: grid;
-    grid-template-columns: 130px 14px 1fr 160px;
+    grid-template-columns: 168px 14px 1fr 140px;
     gap: 16px;
     align-items: baseline;
-    padding: 18px 4px;
+    padding: 14px 4px;
     transition: background 0.12s;
   }
   details.event-run > summary::-webkit-details-marker { display: none; }
@@ -175,13 +181,18 @@
   details.event-run > summary .body .verb { color: var(--ink-soft); }
   details.event-run > summary .body .count {
     display: inline-block;
-    margin-left: 8px;
-    padding: 2px 9px;
-    background: var(--teal); color: #fff;
-    border-radius: 10px;
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 0.12em;
+    margin-left: 10px;
+    padding: 1px 8px;
+    background: transparent; color: var(--teal);
+    border: 1px solid rgba(3,97,122,0.35);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+  details.event-run > summary:hover .body .count {
+    background: rgba(3,97,122,0.06);
+    border-color: var(--teal);
   }
   details.event-run > summary .body .chevron {
     color: var(--ink-soft); margin-left: 6px;
@@ -325,14 +336,20 @@
           @foreach ($group['logs'] as $log)
             @php $nycTime = $log->created_at->copy()->setTimezone('America/New_York'); @endphp
             <div class="event-row">
-              <div class="ts" title="{{ $nycTime->format('Y-m-d H:i:s T') }}">
-                {{ $nycTime->format('M j · g:i:sa') }} <span style="opacity:0.6;">{{ $nycTime->format('T') }}</span>
+              <div class="ts local-time" data-iso="{{ $log->created_at->utc()->toIso8601String() }}" title="{{ $nycTime->format('Y-m-d H:i:s T') }}">
+                <span class="abs">{{ $nycTime->format('M j · g:i:sa') }} <span style="opacity:0.6;">{{ $nycTime->format('T') }}</span></span>
                 <span class="ago">{{ $log->created_at->diffForHumans() }}</span>
               </div>
               <div class="dot {{ $log->event }}"></div>
               <div class="body">
+                @php
+                  $verb = $log->description;
+                  if ($log->user && $verb && str_starts_with($verb, $log->user->name . ' ')) {
+                    $verb = substr($verb, strlen($log->user->name) + 1);
+                  }
+                @endphp
                 @if ($log->user)<span class="who">{{ $log->user->name }}</span>@endif
-                <span class="verb">{{ $log->description }}</span>
+                <span class="verb">{{ $verb }}</span>
               </div>
               <div class="ip">{{ $log->ip_address ?? '' }}</div>
             </div>
@@ -355,8 +372,8 @@
           @endphp
           <details class="event-run">
             <summary>
-              <div class="ts" title="Most recent: {{ $mostRecentNyc->format('Y-m-d H:i:s T') }}">
-                {{ $mostRecentNyc->format('M j · g:i:sa') }} <span style="opacity:0.6;">{{ $mostRecentNyc->format('T') }}</span>
+              <div class="ts local-time" data-iso="{{ $first->created_at->utc()->toIso8601String() }}" title="Most recent: {{ $mostRecentNyc->format('Y-m-d H:i:s T') }}">
+                <span class="abs">{{ $mostRecentNyc->format('M j · g:i:sa') }} <span style="opacity:0.6;">{{ $mostRecentNyc->format('T') }}</span></span>
                 <span class="ago">most recent · {{ $first->created_at->diffForHumans() }}</span>
               </div>
               <div class="dot {{ $first->event }}"></div>
@@ -372,8 +389,8 @@
               @foreach ($group['logs'] as $log)
                 @php $nyc = $log->created_at->copy()->setTimezone('America/New_York'); @endphp
                 <div class="event-row">
-                  <div class="ts" title="{{ $nyc->format('Y-m-d H:i:s T') }}">
-                    {{ $nyc->format('M j · g:i:sa') }} <span style="opacity:0.6;">{{ $nyc->format('T') }}</span>
+                  <div class="ts local-time" data-iso="{{ $log->created_at->utc()->toIso8601String() }}" title="{{ $nyc->format('Y-m-d H:i:s T') }}">
+                    <span class="abs">{{ $nyc->format('M j · g:i:sa') }} <span style="opacity:0.6;">{{ $nyc->format('T') }}</span></span>
                     <span class="ago">{{ $log->created_at->diffForHumans() }}</span>
                   </div>
                   <div class="dot {{ $log->event }}"></div>
@@ -409,5 +426,43 @@
   @endif
 </main>
 
+
+<script>
+// Convert all .local-time elements to the viewer's browser timezone.
+// Falls back to server-rendered ET text if JS is off or Intl unsupported.
+(function () {
+  if (!window.Intl || !Intl.DateTimeFormat) return;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const abbr = (new Date()).toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop();
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true,
+  });
+
+  function relTime(d) {
+    const diff = (d - new Date()) / 1000;   // negative = past
+    const abs = Math.abs(diff);
+    if (abs < 45) return diff < 0 ? 'just now' : 'in a moment';
+    if (abs < 3600) { const m = Math.round(abs/60); return diff < 0 ? m+' min ago' : 'in '+m+' min'; }
+    if (abs < 86400) { const h = Math.round(abs/3600); return diff < 0 ? h+'h ago' : 'in '+h+'h'; }
+    const d2 = Math.round(abs/86400);
+    return diff < 0 ? d2+'d ago' : 'in '+d2+'d';
+  }
+
+  document.querySelectorAll('.local-time').forEach(el => {
+    const iso = el.dataset.iso;
+    if (!iso) return;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return;
+    const abs = el.querySelector('.abs');
+    const ago = el.querySelector('.ago');
+    if (abs) abs.innerHTML = fmt.format(d).replace(',', ' ·') + ' <span style="opacity:0.6;">' + abbr + '</span>';
+    if (ago) {
+      const prefix = ago.textContent.startsWith('most recent') ? 'most recent · ' : '';
+      ago.textContent = prefix + relTime(d);
+    }
+    el.title = d.toString();
+  });
+})();
+</script>
 </body>
 </html>

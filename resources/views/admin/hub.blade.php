@@ -131,6 +131,13 @@
       <span class="card-arrow">Manage →</span>
     </a>
 
+    <a href="{{ route('admin.peace.index') }}" class="card">
+      <span class="card-eyebrow">Ministry</span>
+      <span class="card-title">Finding Peace.</span>
+      <span class="card-sub">Edit auto-processed sermons · tweak Q&amp;As, scriptures, topics · flag offsite/no-sermon.</span>
+      <span class="card-arrow">Manage →</span>
+    </a>
+
     <a href="{{ route('admin.slides.index') }}" class="card">
       <span class="card-eyebrow">Home page</span>
       <span class="card-title">Hero slides.</span>

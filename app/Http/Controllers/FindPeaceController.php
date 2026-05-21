@@ -1,0 +1,148 @@
+<?php
+namespace App\Http\Controllers;
+
+use App\Models\PeaceSermon;
+use Illuminate\View\View;
+
+class FindPeaceController extends Controller
+{
+    /** GET /find-peace — homepage: hero + recent messages */
+    public function index(): View
+    {
+        $recent = PeaceSermon::whereNotNull('published_at')
+            ->orderByDesc('sermon_date')
+            ->limit(20)
+            ->get(['id', 'slug', 'title', 'sermon_date', 'speaker']);
+
+        // Top 3 Q&As from the most recent sermon — default cards under search
+        $latest = $recent->first();
+        $featuredQAs = collect();
+        if ($latest) {
+            $featuredQAs = \App\Models\PeaceQaPair::where('sermon_id', $latest->id)
+                ->orderBy('display_order')
+                ->limit(3)
+                ->get()
+                ->each(fn($qa) => $qa->setRelation('sermon', $latest));
+        }
+
+        // Full Q&A corpus across all published sermons — fed to MiniSearch client-side
+        $qaCorpus = \App\Models\PeaceQaPair::query()
+            ->join('peace_sermons', 'peace_sermons.id', '=', 'peace_qa_pairs.sermon_id')
+            ->whereNotNull('peace_sermons.published_at')
+            ->select(
+                'peace_qa_pairs.id',
+                'peace_qa_pairs.question',
+                'peace_qa_pairs.answer',
+                'peace_sermons.title as sermon_title',
+                'peace_sermons.slug as sermon_slug'
+            )
+            ->orderBy('peace_qa_pairs.display_order')
+            ->get()
+            ->toArray();
+
+        return view('find-peace.index', [
+            'recent'      => $recent,
+            'featuredQAs' => $featuredQAs,
+            'qaCorpus'    => $qaCorpus,
+        ]);
+    }
+
+    /** GET /find-peace/{slug} — single sermon page */
+    public function show(string $slug): View
+    {
+        $sermon = PeaceSermon::where('slug', $slug)
+            ->whereNotNull('published_at')
+            ->with([
+                'qaPairs'    => fn($q) => $q->orderBy('display_order'),
+                'scriptures' => fn($q) => $q->orderBy('display_order'),
+                'topics',
+            ])
+            ->firstOrFail();
+
+        // "If this spoke to you, also hear…" — rank siblings by shared-topic count
+        // (closer match = better UX + better internal linking for SEO; fallback to recency).
+        $topicIds = $sermon->topics->pluck('id')->map(fn($i) => (int)$i)->all();
+        $related = \App\Models\PeaceSermon::query()
+            ->whereNotNull('published_at')
+            ->where('id', '!=', $sermon->id)
+            ->when(!empty($topicIds), function ($q) use ($topicIds) {
+                $ids = implode(',', $topicIds);
+                $q->select('peace_sermons.*')
+                  ->selectRaw("(SELECT COUNT(*) FROM peace_sermon_topic pst WHERE pst.sermon_id = peace_sermons.id AND pst.topic_id IN ($ids)) as shared_topics")
+                  ->orderByDesc('shared_topics');
+            })
+            ->orderByDesc('sermon_date')
+            ->limit(3)
+            ->get();
+
+        $poll = \App\Models\PeacePoll::forSermon($sermon);
+        if ($poll) $poll->load('options');
+        $seeker = request()->attributes->get("seeker");
+        $savedQaIds = $seeker
+            ? \DB::table('peace_saved_qas')
+                ->where('subscriber_id', $seeker->id)
+                ->whereIn('qa_id', $sermon->qaPairs->pluck('id'))
+                ->pluck('qa_id')->all()
+            : [];
+        return view('find-peace.show', [
+            'sermon'     => $sermon,
+            'related'    => $related,
+            'poll'       => $poll,
+            'savedQaIds' => $savedQaIds,
+        ]);
+    }
+
+    public function topic(string $slug): View
+    {
+        $topic = \App\Models\PeaceTopic::where('slug', $slug)->firstOrFail();
+        $sermons = $topic->sermons()
+            ->whereNotNull('published_at')
+            ->orderByDesc('sermon_date')
+            ->get();
+        return view('find-peace.topic', compact('topic', 'sermons'));
+    }
+
+
+    /** GET /find-peace/saved — seeker's saved Q&As. */
+    public function saved(\Illuminate\Http\Request $request): View
+    {
+        $seeker = $request->attributes->get('seeker');
+        if (!$seeker) abort(401);
+
+        $items = $seeker->savedQas()
+            ->with(['sermon:id,slug,title,speaker,sermon_date'])
+            ->get();
+
+        return view('find-peace.saved', compact('seeker', 'items'));
+    }
+
+    /** POST /peace/saved/{qa} — toggle saved state for a Q&A (logged-in seekers only). */
+    public function savedToggle(\Illuminate\Http\Request $request, int $qa): \Illuminate\Http\JsonResponse
+    {
+        $seeker = $request->attributes->get('seeker');
+        if (!$seeker) return response()->json(['ok' => false, 'error' => 'auth required'], 401);
+
+        $exists = \App\Models\PeaceQaPair::where('id', $qa)->exists();
+        if (!$exists) return response()->json(['ok' => false, 'error' => 'qa not found'], 404);
+
+        $existing = \DB::table('peace_saved_qas')
+            ->where('subscriber_id', $seeker->id)
+            ->where('qa_id', $qa)
+            ->first();
+
+        if ($existing) {
+            \DB::table('peace_saved_qas')
+                ->where('subscriber_id', $seeker->id)
+                ->where('qa_id', $qa)
+                ->delete();
+            return response()->json(['ok' => true, 'saved' => false]);
+        }
+
+        \DB::table('peace_saved_qas')->insert([
+            'subscriber_id' => $seeker->id,
+            'qa_id'         => $qa,
+            'saved_at'      => now(),
+        ]);
+        return response()->json(['ok' => true, 'saved' => true]);
+    }
+}

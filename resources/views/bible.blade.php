@@ -247,7 +247,7 @@
     if (loadingFlags[name] || indexes[name]) return Promise.resolve(indexes[name]);
     loadingFlags[name] = true;
     hint.textContent = 'Loading ' + name.toUpperCase() + '…';
-    return fetch('/search/' + name + '.json')
+    return fetch('/lib/' + name + '.json')
       .then(r => r.json())
       .then(docs => {
         const mini = new MiniSearch({
@@ -313,10 +313,7 @@
         if (!hit) return;
         const transLabel = trans.toUpperCase();
         const url = location.origin + location.pathname + '?q=' + encodeURIComponent(hit.ref);
-        const plain = '"' + hit.text + '"
-— ' + hit.ref + ' (' + transLabel + ')
-
-' + url;
+        const plain = '"' + hit.text + '"\n— ' + hit.ref + ' (' + transLabel + ')\n\n' + url;
         const act = btn.dataset.act;
 
         if (act === 'share' && navigator.share) {

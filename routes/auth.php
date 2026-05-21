@@ -20,18 +20,18 @@ Route::middleware('guest')->group(function () {
     }
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware(\App\Http\Middleware\BlockAbusiveIps::class);
 
     // Magic-link sign-in (passwordless alternative)
     Route::get ('auth/magic-link',         [MagicLinkController::class, 'showRequest'])->name('magic-link.request');
     Route::post('auth/magic-link',         [MagicLinkController::class, 'sendLink'])
-         ->middleware('throttle:10,60')->name('magic-link.send');
+         ->middleware(['throttle:10,60', \App\Http\Middleware\BlockAbusiveIps::class])->name('magic-link.send');
     Route::get ('auth/magic-link/{token}', [MagicLinkController::class, 'consume'])
          ->where('token', '[A-Za-z0-9]{64}')->name('magic-link.consume');
 
     // PIN sign-in (first-name + PIN, ideal for elderly/non-tech members)
     Route::get ('pin', [PinController::class, 'showLogin'])->name('pin-login');
-    Route::post('pin', [PinController::class, 'attempt'])->middleware('throttle:20,15')->name('pin-login.attempt');
+    Route::post('pin', [PinController::class, 'attempt'])->middleware(['throttle:20,15', \App\Http\Middleware\BlockAbusiveIps::class])->name('pin-login.attempt');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('honeypot')->name('password.email');
