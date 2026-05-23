@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
@@ -20,7 +19,7 @@
   main { max-width: 760px; margin: 0 auto; padding: 0 32px 80px; }
   h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(26px, 4vw, 34px); font-weight: 500; margin-bottom: 8px; }
   .lede { font-size: 14px; color: var(--ink-soft); margin-bottom: 24px; }
-  .status { padding: 14px 18px; background: rgba(3,97,122,0.08); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
+  .status { padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
   label { display: block; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; margin-top: 22px; }
   input[type=text], textarea, select {
     width: 100%; padding: 10px 12px;
@@ -46,13 +45,15 @@
   .btn:hover { background: var(--teal-dark); }
   .btn.danger { background: rgba(168,42,31,0.85); }
   .btn.danger:hover { background: #a82a1f; }
-  .stats { padding: 16px; background: rgba(3,97,122,0.05); border-radius: 6px; margin-top: 20px; font-size: 13px; color: var(--ink-soft); }
+  .stats { padding: 16px; background: color-mix(in srgb, var(--teal) 5%, transparent); border-radius: 6px; margin-top: 20px; font-size: 13px; color: var(--ink-soft); }
   .errors { padding: 12px 16px; background: rgba(168,42,31,0.08); border-left: 4px solid #a82a1f; border-radius: 0 4px 4px 0; margin-bottom: 16px; }
   .errors ul { padding-left: 18px; font-size: 13px; color: #a82a1f; }
   .help { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
 </style>
+@include('partials.theme-vars')
+@include('admin.partials._typography')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 @include('partials.site-menu')
 
 <header class="top">

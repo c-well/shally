@@ -9,11 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.12); }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
   input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 0; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
   .site-header { padding: 22px clamp(20px, 5vw, 40px); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
@@ -28,9 +26,9 @@
   h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 3vw, 28px); font-weight: 500; margin: 42px 0 16px; letter-spacing: -0.01em; }
   .lead { color: var(--ink-soft); font-size: 17px; line-height: 1.55; margin-bottom: 36px; }
 
-  .ok { background: rgba(3,97,122,0.08); border-left: 3px solid var(--teal); color: var(--teal); padding: 14px 18px; border-radius: 4px; margin-bottom: 20px; font-family: 'Instrument Sans', sans-serif; font-size: 13px; letter-spacing: 0.06em; font-weight: 600; }
+  .ok { background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 3px solid var(--teal); color: var(--teal); padding: 14px 18px; border-radius: 4px; margin-bottom: 20px; font-family: 'Instrument Sans', sans-serif; font-size: 13px; letter-spacing: 0.06em; font-weight: 600; }
 
-  .reply { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 22px 24px; margin-bottom: 36px; box-shadow: 0 6px 18px -8px rgba(26,35,50,0.18); }
+  .reply { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 22px 24px; margin-bottom: 36px; box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--ink) 18%, transparent); }
   .reply-head { display: flex; align-items: center; gap: 8px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); font-weight: 700; margin-bottom: 14px; }
   .reply-body { font-family: 'Cormorant Garamond', serif; font-size: 19px; line-height: 1.6; color: var(--ink); letter-spacing: -0.01em; white-space: pre-line; }
 
@@ -38,7 +36,7 @@
   label.row { display: flex; flex-direction: column; gap: 6px; }
   label.row > .lbl { font-family: 'Instrument Sans', sans-serif; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
   select, textarea, input[type="text"] { font: inherit; padding: 12px 14px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--ink); width: 100%; }
-  select:focus, textarea:focus, input:focus { outline: 0; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); }
+  select:focus, textarea:focus, input:focus { outline: 0; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
   textarea { min-height: 200px; resize: vertical; font-family: 'Poppins', sans-serif; line-height: 1.5; }
   .err {
     color: var(--ink); background: rgba(192, 57, 43, 0.08);
@@ -54,13 +52,13 @@
   /* ─── Ticket cards ─── */
   .tickets-section { margin-top: 48px; }
   .tickets-section h2 { display: flex; align-items: center; gap: 12px; }
-  .tickets-count { font-family: 'Instrument Sans', sans-serif; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; background: rgba(26,35,50,0.06); padding: 4px 10px; border-radius: 12px; }
+  .tickets-count { font-family: 'Instrument Sans', sans-serif; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; background: color-mix(in srgb, var(--ink) 6%, transparent); padding: 4px 10px; border-radius: 12px; }
   .ticket {
     background: #fff; border: 1px solid var(--line); border-radius: 6px;
     padding: 18px 20px; margin-bottom: 12px;
     border-left: 3px solid var(--brass);
   }
-  .ticket.is-closed { border-left-color: var(--teal); background: rgba(3,97,122,0.03); opacity: 0.85; }
+  .ticket.is-closed { border-left-color: var(--teal); background: color-mix(in srgb, var(--teal) 3%, transparent); opacity: 0.85; }
   .ticket-head {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     font-family: 'Instrument Sans', sans-serif; font-size: 10px;
@@ -84,7 +82,7 @@
   .ticket-msg { color: var(--ink); font-size: 15px; line-height: 1.55; white-space: pre-line; }
   .ticket-reply {
     margin-top: 14px; padding: 12px 14px;
-    background: rgba(3,97,122,0.05); border-radius: 4px;
+    background: color-mix(in srgb, var(--teal) 5%, transparent); border-radius: 4px;
     font-family: 'Cormorant Garamond', serif;
     font-size: 15px; line-height: 1.5; color: var(--ink);
     white-space: pre-line;
@@ -94,7 +92,7 @@
     font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
     font-weight: 700; color: var(--teal); margin-bottom: 6px;
   }
-  .ticket-closed-note { margin-top: 10px; padding: 10px 12px; background: rgba(3,97,122,0.06); border-radius: 4px; font-size: 14px; color: var(--ink); font-style: italic; }
+  .ticket-closed-note { margin-top: 10px; padding: 10px 12px; background: color-mix(in srgb, var(--teal) 6%, transparent); border-radius: 4px; font-size: 14px; color: var(--ink); font-style: italic; }
   .ticket-actions { margin-top: 14px; display: flex; gap: 8px; }
   .btn-close, .btn-reopen {
     font-family: 'Instrument Sans', sans-serif; font-size: 10px;
@@ -107,8 +105,9 @@
 
   .empty { color: var(--ink-soft); font-style: italic; font-size: 14px; padding: 6px 0; }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

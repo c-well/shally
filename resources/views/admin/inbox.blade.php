@@ -13,15 +13,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --parchment: #fefcef;
-    --ink: #1a2332;
-    --ink-soft: #5a6478;
-    --teal: #03617A;
-    --teal-dark: #024357;
-    --brass: #b08d3c;
-    --line: rgba(26,35,50,0.12);
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Cormorant Garamond', serif; min-height: 100dvh; }
   .top { padding: 22px clamp(20px, 5vw, 40px); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }
@@ -132,8 +123,9 @@
   .empty { text-align: center; padding: 60px 20px; color: var(--ink-soft); font-size: 18px; }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

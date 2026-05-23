@@ -7,15 +7,6 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=cormorant-garamond:400,500,600,700&family=poppins:400,500,600&family=jetbrains-mono:400,500&display=swap" rel="stylesheet" />
     <style>
-        :root {
-            --parchment: #fefcef;
-            --ink: #1a2332;
-            --ink-soft: #3d4a5f;
-            --brass: #b08d3c;
-            --teal: #03617A;
-            --teal-dark: #024357;
-            --line: rgba(26, 35, 50, 0.12);
-        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { background: var(--parchment); }
         body {
@@ -108,7 +99,7 @@
             border: 1px solid var(--line);
             border-radius: 4px;
             padding: 72px 88px;
-            box-shadow: 0 1px 2px rgba(26,35,50,0.04), 0 4px 24px -12px rgba(26,35,50,0.08);
+            box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent), 0 4px 24px -12px color-mix(in srgb, var(--ink) 8%, transparent);
         }
         .card header { margin-bottom: 36px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
         .card h1 {
@@ -242,8 +233,9 @@
             .bulletin-body { font-size: 11pt; }
         }
     </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

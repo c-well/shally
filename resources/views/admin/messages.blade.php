@@ -9,8 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --line:rgba(26,35,50,0.10); --pulse:#36c980; --warn:#a82a1f; }
+<style>  :root { --pulse:#36c980; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -41,7 +40,7 @@
   .msg-name { font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 500; color: var(--ink); }
   .msg-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); opacity: 0.7; }
   .msg-flags { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); }
-  .msg-flags .flag { display: inline-block; padding: 2px 7px; border-radius: 3px; background: rgba(3,97,122,0.08); margin-right: 4px; }
+  .msg-flags .flag { display: inline-block; padding: 2px 7px; border-radius: 3px; background: color-mix(in srgb, var(--teal) 8%, transparent); margin-right: 4px; }
   .msg-flags .flag.danger { color: var(--warn); background: rgba(168,42,31,0.06); }
   .msg-body { font-family: 'Cormorant Garamond', serif; font-size: 17px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; margin-top: 6px; max-width: 720px; }
   .msg-actions { margin-top: 10px; display: inline-flex; gap: 12px; align-items: center; }
@@ -53,8 +52,10 @@
 
   .empty { padding: 40px 0; text-align: center; color: var(--ink-soft); font-style: italic; opacity: 0.7; }
 </style>
+@include('partials.theme-vars')
+@include('admin.partials._typography')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

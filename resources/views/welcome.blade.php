@@ -26,27 +26,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/minisearch@7.1.0/dist/umd/index.min.js" defer></script>
-<style>
-  :root {
-    --parchment: #fefcef;
-    --ink: #1a2332;
-    --ink-soft: #334455;  /* darkened from #3d4a5f for AA contrast on parchment */
-    --brass: #b08d3c;
-    --teal: #03617A;
-    --teal-dark: #024357;
-    --teal-light: #e6f0f3;
-    --cream: #fefcef;
-    --line: rgba(26, 35, 50, 0.12);
-    --container: 1080px;
-    --reading: 760px;
-    --gutter: 32px;
-  }
+<style>  :root { /* darkened from #3d4a5f for AA contrast on parchment */
+    --brass: #b08d3c; --container: 1080px; --reading: 760px; }
   /* SPECIAL DAY THEMES — pastel palettes that tint the whole homepage. Toggle via clerk-only theme picker. */
-  body[data-theme="communion"]    { --parchment: #f5f0fb; --cream: #f1ebf9; --teal: #6b4d8a; --teal-dark: #553a72; --teal-light: #ece2f5; --brass: #8a6dab; }
-  body[data-theme="easter"]       { --parchment: #f0faf3; --cream: #eaf6ed; --teal: #3a8e63; --teal-dark: #2c714d; --teal-light: #dff0e3; --brass: #c2a652; }
-  body[data-theme="christmas"]    { --parchment: #fbf2f2; --cream: #f7eaea; --teal: #8b3a4b; --teal-dark: #6e2d3b; --teal-light: #f3dcdf; --brass: #b08d3c; }
-  body[data-theme="mothers"]      { --parchment: #fdf1f5; --cream: #fbe8ee; --teal: #b1657a; --teal-dark: #8d4d61; --teal-light: #f6dde3; --brass: #c8916b; }
-  body[data-theme="thanksgiving"] { --parchment: #fbf3e9; --cream: #f7ecdb; --teal: #8a5a2c; --teal-dark: #6b4622; --teal-light: #f0e0c8; --brass: #b08d3c; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); }
   body {
@@ -81,11 +63,6 @@
     max-width: none;
     padding: 0 clamp(20px, 5vw, 48px);
     display: flex; align-items: center; justify-content: space-between; gap: 24px;
-  }
-  @font-face {
-    font-family: 'Xtreem';
-    src: url('/fonts/XtreemMedium.ttf') format('truetype');
-    font-weight: 500; font-style: normal; font-display: swap;
   }
   /* Brand: just "Shalom" in Xtreem teal — no inline tail, no animations.
      Formal name lives in the footer. Cleanest possible header brand. */
@@ -393,7 +370,7 @@
   /* ── Bulletin picker overlay (long-press "Latest") ── */
   .picker-overlay {
     position: fixed; inset: 0;
-    background: rgba(26,35,50,0.65);
+    background: color-mix(in srgb, var(--ink) 65%, transparent);
     z-index: 200;
     display: none;
     align-items: center; justify-content: center;
@@ -441,11 +418,11 @@
   .picker-thumb:hover {
     border-color: var(--teal);
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px -2px rgba(3,97,122,0.15);
+    box-shadow: 0 4px 10px -2px color-mix(in srgb, var(--teal) 15%, transparent);
   }
   .picker-thumb.is-current {
     border-color: var(--teal);
-    background: rgba(3,97,122,0.06);
+    background: color-mix(in srgb, var(--teal) 6%, transparent);
   }
   .picker-thumb.is-event { border-left: 3px solid var(--brass); }
   .picker-thumb .p-month {
@@ -499,7 +476,7 @@
   .bulletin-card {
     background: #fff; border: 1px solid var(--line); border-radius: 4px;
     padding: 56px 64px;
-    box-shadow: 0 1px 2px rgba(26,35,50,0.04), 0 4px 24px -12px rgba(26,35,50,0.08);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent), 0 4px 24px -12px color-mix(in srgb, var(--ink) 8%, transparent);
   }
   .bulletin-head { margin-bottom: 36px; padding-bottom: 28px; border-bottom: 1px solid var(--line); position: relative; }
   .bulletin-nav { display: flex; gap: 6px; align-items: center; justify-content: center; margin-bottom: 16px; }
@@ -672,7 +649,7 @@
     background: var(--parchment);
     border: 1px solid var(--line);
     border-radius: 18px;
-    box-shadow: 0 18px 56px -10px rgba(26,35,50,0.25);
+    box-shadow: 0 18px 56px -10px color-mix(in srgb, var(--ink) 25%, transparent);
     padding: 24px 20px;
     z-index: 200;
   }
@@ -789,7 +766,7 @@
     position: absolute; top: 0; right: calc(100% + 6px);
     background: #fff; border: 1px solid var(--line); border-radius: 6px;
     padding: 14px 14px 10px; min-width: 220px;
-    box-shadow: 0 12px 28px -8px rgba(26,35,50,0.22);
+    box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--ink) 22%, transparent);
     z-index: 100; display: none;
   }
   .theme-pop.open { display: block; }
@@ -813,7 +790,7 @@
     width: 36px; height: 36px;
     display: inline-flex; align-items: center; justify-content: center;
     color: var(--ink-soft); cursor: pointer;
-    box-shadow: 0 2px 4px rgba(26,35,50,0.06);
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--ink) 6%, transparent);
     transition: all 0.15s;
   }
   .event-edit-btn:hover { color: var(--teal); border-color: var(--teal); transform: scale(1.05); }
@@ -945,7 +922,7 @@
 
   /* ── Manage Names modal ── */
   .names-modal {
-    position: fixed; inset: 0; background: rgba(26,35,50,0.55);
+    position: fixed; inset: 0; background: color-mix(in srgb, var(--ink) 55%, transparent);
     z-index: 200; display: none; align-items: center; justify-content: center;
     padding: 24px;
   }
@@ -1008,7 +985,7 @@
     display: flex; flex-direction: column; align-items: center; gap: 5px;
     transition: all 0.15s;
   }
-  .theme-swatch:hover { background: rgba(3,97,122,0.05); }
+  .theme-swatch:hover { background: color-mix(in srgb, var(--teal) 5%, transparent); }
   .theme-swatch.active { border-color: var(--teal); background: var(--teal-light); }
   .sw-bg { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.06); }
   .sw-dot { width: 14px; height: 14px; border-radius: 50%; }
@@ -1139,7 +1116,7 @@
     border-radius: 4px;
     text-align: center;
     overflow: hidden;
-    box-shadow: 0 1px 2px rgba(26,35,50,0.04);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent);
     display: flex;
     flex-direction: column;
   }
@@ -1767,7 +1744,7 @@
   body.edit-mode .order-list .order-list-hint {
     font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em;
     color: var(--ink-soft); padding: 10px 14px; margin-bottom: 14px;
-    background: rgba(3,97,122,0.04); border-left: 3px solid var(--teal);
+    background: color-mix(in srgb, var(--teal) 4%, transparent); border-left: 3px solid var(--teal);
     border-radius: 2px; line-height: 1.7;
   }
   body.edit-mode .order-list .order-list-hint .swatch-part { color: var(--teal); font-weight: 600; }
@@ -1790,7 +1767,7 @@
   .save-indicator { position: fixed; top: 84px; right: 24px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--teal); background: #fff; padding: 8px 14px; border: 1px solid var(--line); border-radius: 2px; opacity: 0; transition: opacity 0.3s; z-index: 100; }
   .save-indicator.show { opacity: 1; }
   /* Inline publish bar — sits right below the bulletin card */
-  .publish-bar { margin-top: 20px; background: #fff; border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 2px 12px -4px rgba(26,35,50,0.08); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .publish-bar { margin-top: 20px; background: #fff; border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 2px 12px -4px color-mix(in srgb, var(--ink) 8%, transparent); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .publish-bar .status { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); }
   .publish-bar .status.unpub { color: var(--brass); }
   @media (max-width: 500px) {
@@ -1819,7 +1796,7 @@
     }
   }
   .add-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--teal); background: transparent; border: 1px dashed var(--teal); border-radius: 2px; padding: 8px 14px; cursor: pointer; }
-  .add-btn:hover { background: rgba(3,97,122,0.06); }
+  .add-btn:hover { background: color-mix(in srgb, var(--teal) 6%, transparent); }
 
   /* Flatpickr — big parchment-themed calendar. Grid forces exact 1/7 columns. */
   .flatpickr-calendar {
@@ -1910,7 +1887,7 @@
   }
 
   /* Suggest dropdown */
-  .suggest { position: absolute; background: #fff; border: 1px solid var(--teal); border-radius: 4px; box-shadow: 0 8px 20px -6px rgba(3,97,122,0.25); min-width: 220px; max-height: 240px; overflow-y: auto; z-index: 60; font-family: 'Poppins', sans-serif; }
+  .suggest { position: absolute; background: #fff; border: 1px solid var(--teal); border-radius: 4px; box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--teal) 25%, transparent); min-width: 220px; max-height: 240px; overflow-y: auto; z-index: 60; font-family: 'Poppins', sans-serif; }
   .suggest-item { padding: 8px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.04); }
   .suggest-item:last-child { border-bottom: 0; }
   .suggest-item:hover, .suggest-item.keyed { background: var(--teal-light); }
@@ -1938,7 +1915,6 @@
     .closing { padding: 72px 0 56px; }
   }
   @media (max-width: 600px) {
-    :root { --gutter: 18px; }
     body { font-size: 15px; }
     .site-header { padding: 16px 0; }
     .brand { font-size: 46px; letter-spacing: -0.02em; }
@@ -2024,17 +2000,7 @@
   html.dark body[data-theme="easter"],
   html.dark body[data-theme="christmas"],
   html.dark body[data-theme="mothers"],
-  html.dark body[data-theme="thanksgiving"] {
-    --parchment: #191919;
-    --cream:     #222222;
-    --ink:       #ededed;
-    --ink-soft:  #9e9e9e;
-    --teal:      #4fb8d4;
-    --teal-dark: #6cc8e0;
-    --teal-light: rgba(79,184,212,0.14);
-    --line:      rgba(255,255,255,0.10);
-    --brass:     #d4a85a;
-  }
+  html.dark
   /* ── Dark mode (chrome only — bulletin theme variants TBD) ── */
   html.dark { color-scheme: dark; }
   html.dark, html.dark body { background: #191919 !important; color: #ededed !important; }
@@ -2098,7 +2064,7 @@
     background: var(--parchment);
     border: 1px solid var(--line);
     border-radius: 14px;
-    box-shadow: 0 18px 56px -10px rgba(26,35,50,0.25);
+    box-shadow: 0 18px 56px -10px color-mix(in srgb, var(--ink) 25%, transparent);
     display: none;
     flex-direction: column;
     gap: 2px;
@@ -2130,7 +2096,7 @@
     display: flex; align-items: center;
     transition: color 0.12s, background 0.12s;
   }
-  .guest-nav a:hover { color: var(--teal); background: rgba(3,97,122,0.06); }
+  .guest-nav a:hover { color: var(--teal); background: color-mix(in srgb, var(--teal) 6%, transparent); }
   .guest-nav a:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
   html.dark .guest-nav a { color: #ededed; }
   html.dark .guest-nav a:hover { color: #4fb8d4; background: rgba(255,255,255,0.04); }
@@ -2160,7 +2126,7 @@
     transition: transform 0.18s ease;
   }
   .guest-nav-group[open] > summary::after { transform: rotate(180deg); }
-  .guest-nav-group > summary:hover { color: var(--teal); background: rgba(3,97,122,0.06); }
+  .guest-nav-group > summary:hover { color: var(--teal); background: color-mix(in srgb, var(--teal) 6%, transparent); }
   .guest-nav-group { display: block; }
   .guest-nav-group[open] > a,
   .guest-nav-group > a {
@@ -2170,7 +2136,7 @@
     font-size: 16px !important;
     color: var(--ink-soft) !important;
   }
-  .guest-nav-group > a:hover { color: var(--teal) !important; background: rgba(3,97,122,0.06); }
+  .guest-nav-group > a:hover { color: var(--teal) !important; background: color-mix(in srgb, var(--teal) 6%, transparent); }
   html.dark .guest-nav-group > summary { color: #ededed; }
   html.dark .guest-nav-group > summary:hover { color: #4fb8d4; background: rgba(255,255,255,0.04); }
   html.dark .guest-nav-group > summary::after { color: #9e9e9e; }
@@ -2203,8 +2169,8 @@
   .bulletin-toolbar {
     display: flex; align-items: center; gap: 6px;
     max-width: 1100px; margin: 0 auto; padding: 10px 22px;
-    background: #f4f1e3;
-    border-bottom: 1px solid rgba(3,97,122,0.12);
+    background: var(--cream, #f4f1e3);
+    border-bottom: 1px solid color-mix(in srgb, var(--teal) 12%, transparent);
     position: sticky; top: 69px; z-index: 40;
     box-shadow: 0 2px 0 rgba(0,0,0,0); transition: box-shadow 0.2s;
   }
@@ -2244,8 +2210,9 @@
   body:not(.bulletin-dirty) .go-live-pill { opacity: 0.65; }
   body:not(.bulletin-dirty) .go-live-dot { background: rgba(255,255,255,0.35); animation: none; }
 </style>
+@include('partials.theme-vars')
 </head>
-<body @class(['edit-mode' => $canEdit, 'bulletin-dirty' => $canEdit && $bulletin && (! $bulletin->published_at || ($bulletin->published_snapshot && $bulletin->hasUnpublishedChanges()))]) data-theme="{{ $bulletin?->theme ?? 'default' }}">
+<body @class(['edit-mode' => $canEdit, 'bulletin-dirty' => $canEdit && $bulletin && (! $bulletin->published_at || ($bulletin->published_snapshot && $bulletin->hasUnpublishedChanges()))]) data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 
@@ -2264,10 +2231,11 @@
   </div>
 @endif
 
+
 {{-- Week-mode preview banner — only shown when ?preview-week=1 is set OR
      when (future) auto-detection hides the order of service. --}}
 @if (($weekMode ?? false) && ! $canEdit)
-  <div class="week-mode-notice" style="max-width: 720px; margin: 28px auto 0; padding: 22px 28px; background: rgba(3,97,122,0.06); border-left: 3px solid var(--teal); border-radius: 6px; text-align: center;">
+  <div class="week-mode-notice" style="max-width: 720px; margin: 28px auto 0; padding: 22px 28px; background: color-mix(in srgb, var(--teal) 6%, transparent); border-left: 3px solid var(--teal); border-radius: 6px; text-align: center;">
     <div style="font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px;">This Sabbath</div>
     <div style="font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--ink); margin-bottom: 6px;">Worship at 11 AM</div>
     <div style="font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--ink-soft); font-style: normal;">3323 White Plains Rd · Bronx · everyone welcome</div>
@@ -2422,8 +2390,8 @@
             $nextSabbathDate = $bulletin->service_date ? $bulletin->service_date->copy()->addDays(7) : now()->next('Saturday');
           @endphp
           <div class="next-sabbath-banner" style="
-            background: linear-gradient(135deg, rgba(176,141,60,0.12) 0%, rgba(176,141,60,0.03) 100%);
-            border: 1px solid rgba(176,141,60,0.3);
+            background: linear-gradient(135deg, color-mix(in srgb, var(--brass) 12%, transparent) 0%, color-mix(in srgb, var(--brass) 3%, transparent) 100%);
+            border: 1px solid color-mix(in srgb, var(--brass) 30%, transparent);
             border-left: 4px solid #b08d3c;
             border-radius: 6px;
             padding: 14px 20px;
@@ -2465,45 +2433,19 @@
           </div>
         @endif
         @php
-          // POSITION_AWARE_SECTION_HEADERS — track WHERE each explicit section_header sits
-          // (not just whether one exists). If a header is placed AFTER the lines it should
-          // be heading (e.g. Andre clicks "+Add section header" — it appends at the end,
-          // then he renames it — but his lines are higher up), the public view auto-emits
-          // an inline header above the first matching line, AND skips the orphaned
-          // explicit header. In admin/edit view both still render so the editor can fix it.
-          $prevSection = null;
-          $prevPart = '';
-          $explicitHeaderIdx = [];   // section_name => loop index of first explicit header with that name
-          $firstLineIdxByName = [];  // section_name => loop index of FIRST line carrying that section
-          foreach ($lines as $_i => $_l) {
-              $_kind = $_l['kind'] ?? 'line';
-              $_sec  = $_l['section'] ?? '';
-              if ($_sec === '') continue;
-              if ($_kind === 'section_header') {
-                  if (!isset($explicitHeaderIdx[$_sec])) $explicitHeaderIdx[$_sec] = $_i;
-              } else {
-                  if (!isset($firstLineIdxByName[$_sec])) $firstLineIdxByName[$_sec] = $_i;
-              }
-          }
-          // Misplaced = the explicit header sits AFTER the first line that needs it.
-          $misplacedHeaderNames = [];
-          foreach ($explicitHeaderIdx as $_name => $_hIdx) {
-              if (isset($firstLineIdxByName[$_name]) && $firstLineIdxByName[$_name] < $_hIdx) {
-                  $misplacedHeaderNames[$_name] = true;
-              }
-          }
+          // SECTION_OF_TRUTH (2026-05-23, option B) — section headers are now PURELY
+          // determined by explicit kind=section_header rows. No per-line section attribute,
+          // no auto-injection, no reconciliation. The old POSITION_AWARE_SECTION_HEADERS
+          // block was a workaround for the dual-source-of-truth bug; that bug is fixed
+          // at the data layer now (line rows have section=NULL, enforced in controller
+          // + model boot hook). WYSIWYG: what Andre drags = what renders.
         @endphp
         @foreach ($lines as $line)
           @php $isHeader = ($line['kind'] ?? 'line') === 'section_header'; @endphp
-          @php $_secName = $line['section'] ?? ''; $_earlierExplicit = $_secName !== '' && isset($explicitHeaderIdx[$_secName]) && $explicitHeaderIdx[$_secName] <= $loop->index; @endphp
-          @if (!$canEdit && !$isHeader && $_secName !== '' && $_secName !== $prevSection && !$_earlierExplicit)
-            @if ($line['section'])<div class="section-header">{{ $line['section'] }}</div>@endif
-            @php $prevSection = $line['section']; @endphp
-          @endif
 
           @if ($isHeader)
             @php $sec = $line['section'] ?? ''; @endphp
-            @if ($canEdit || ($sec !== '' && empty($misplacedHeaderNames[$sec] ?? null)))
+            @if ($canEdit || $sec !== '')
               <div class="section-header @if($canEdit) editable @endif"
                    @if($canEdit && isset($line['id']))
                      data-line-id="{{ $line['id'] }}"
@@ -2518,7 +2460,6 @@
                   <span class="row-actions"><button data-delete-url="{{ route('bulletins.lines.destroy', [$bulletin, $line['id']]) }}" class="del">×</button></span>
                 @endif
               </div>
-              @php if (!$canEdit) $prevSection = $sec; @endphp
             @endif
           @else
             @php
@@ -4530,7 +4471,7 @@
       /* Theme picker (clerk only) */
       const themeBtn = document.getElementById('theme-pick-btn');
       const themePop = document.getElementById('theme-pick-pop');
-      if (themeBtn && themePop) {
+      if (themePop) { /* themeBtn no longer required — swatches are always visible inline */
         const updateUrl = themePop.dataset.updateUrl;
         const current = themePop.dataset.current || 'default';
         themePop.querySelectorAll('.theme-swatch').forEach(sw => {
@@ -4570,14 +4511,14 @@
       width: 46px; height: 46px; border-radius: 50%;
       background: var(--teal, #03617A); color: #fff;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 6px 18px -4px rgba(3,97,122,0.5);
+      box-shadow: 0 6px 18px -4px color-mix(in srgb, var(--teal) 50%, transparent);
       text-decoration: none; opacity: 0.55; transform: scale(1);
       transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
       z-index: 90;
     }
     .feedback-fab:hover, .feedback-fab:focus-visible {
       opacity: 1; transform: scale(1.06);
-      box-shadow: 0 10px 24px -4px rgba(3,97,122,0.6);
+      box-shadow: 0 10px 24px -4px color-mix(in srgb, var(--teal) 60%, transparent);
       outline: 0;
     }
     @media (max-width: 600px) { .feedback-fab { bottom: 16px; right: 16px; width: 42px; height: 42px; } }

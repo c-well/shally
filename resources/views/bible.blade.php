@@ -38,7 +38,6 @@
 @endverbatim</script>
 
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); --cream:#f7f1d8; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -55,10 +54,10 @@
     padding: 14px 18px;
     background: #fff;
     border: 1px solid var(--line); border-radius: 8px;
-    box-shadow: 0 8px 28px -10px rgba(26,35,50,0.12);
+    box-shadow: 0 8px 28px -10px color-mix(in srgb, var(--ink) 12%, transparent);
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .search-wrap:focus-within { border-color: var(--teal); box-shadow: 0 8px 32px -8px rgba(3,97,122,0.22); }
+  .search-wrap:focus-within { border-color: var(--teal); box-shadow: 0 8px 32px -8px color-mix(in srgb, var(--teal) 22%, transparent); }
   .search-wrap svg { color: var(--ink-soft); flex-shrink: 0; }
   .search-input {
     flex: 1; border: 0; background: transparent; outline: none;
@@ -67,7 +66,7 @@
     color: var(--ink); letter-spacing: 0;
     padding: 4px 0;
   }
-  .search-input::placeholder { color: rgba(26,35,50,0.4); font-family: 'Instrument Sans', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0; }
+  .search-input::placeholder { color: color-mix(in srgb, var(--ink) 40%, transparent); font-family: 'Instrument Sans', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0; }
   .search-clear { background: transparent; border: 0; color: var(--ink-soft); cursor: pointer; opacity: 0.6; padding: 4px 8px; display: none; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
   .search-clear:hover { opacity: 1; color: var(--ink); }
   .search-wrap.has-text .search-clear { display: inline-flex; }
@@ -119,7 +118,7 @@
     color: var(--ink);
   }
   .result-text mark {
-    background: rgba(176,141,60,0.18); color: var(--ink); padding: 0 2px; border-radius: 2px;
+    background: color-mix(in srgb, var(--brass) 18%, transparent); color: var(--ink); padding: 0 2px; border-radius: 2px;
   }
   .results-empty {
     padding: 30px 0; text-align: center;
@@ -180,8 +179,9 @@
   }
   .cross-links a:hover { color: var(--teal-dark); text-decoration: underline; }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

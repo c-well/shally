@@ -9,11 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455;
-    --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c;
-    --line:rgba(26,35,50,0.10);
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -169,9 +164,9 @@
     transition: background 0.12s;
   }
   details.event-run > summary::-webkit-details-marker { display: none; }
-  details.event-run > summary:hover { background: rgba(3,97,122,0.04); }
+  details.event-run > summary:hover { background: color-mix(in srgb, var(--teal) 4%, transparent); }
   details.event-run[open] > summary {
-    background: rgba(3,97,122,0.05);
+    background: color-mix(in srgb, var(--teal) 5%, transparent);
     border-bottom: 1px dashed var(--line);
   }
   details.event-run > summary .body {
@@ -184,14 +179,14 @@
     margin-left: 10px;
     padding: 1px 8px;
     background: transparent; color: var(--teal);
-    border: 1px solid rgba(3,97,122,0.35);
+    border: 1px solid color-mix(in srgb, var(--teal) 35%, transparent);
     border-radius: 3px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; font-weight: 500;
     letter-spacing: 0.06em;
   }
   details.event-run > summary:hover .body .count {
-    background: rgba(3,97,122,0.06);
+    background: color-mix(in srgb, var(--teal) 6%, transparent);
     border-color: var(--teal);
   }
   details.event-run > summary .body .chevron {
@@ -202,7 +197,7 @@
   }
   details.event-run[open] > summary .body .chevron { transform: rotate(90deg); }
   details.event-run .nested {
-    background: rgba(26,35,50,0.02);
+    background: color-mix(in srgb, var(--ink) 2%, transparent);
     padding: 4px 0 6px;
   }
   details.event-run .nested .event-row {
@@ -246,8 +241,9 @@
   }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

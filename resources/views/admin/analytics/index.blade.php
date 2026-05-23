@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: "Poppins", system-ui, sans-serif; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -40,8 +39,8 @@
 
   /* Trendline (SVG-based, no external lib) */
   .trend { width: 100%; height: 180px; }
-  .trend .grid-line { stroke: rgba(26,35,50,0.08); stroke-width: 1; }
-  .trend .area { fill: rgba(3,97,122,0.10); }
+  .trend .grid-line { stroke: color-mix(in srgb, var(--ink) 8%, transparent); stroke-width: 1; }
+  .trend .area { fill: color-mix(in srgb, var(--teal) 10%, transparent); }
   .trend .line { fill: none; stroke: var(--teal); stroke-width: 2; }
   .trend .uniq-line { fill: none; stroke: var(--brass); stroke-width: 2; stroke-dasharray: 4,3; }
   .trend-legend { display: flex; gap: 18px; margin-top: 10px; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--ink-soft); text-transform: uppercase; }
@@ -50,7 +49,7 @@
 
   .row-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .row-table th { text-align: left; padding: 10px 14px; font-family: "Instrument Sans", sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
-  .row-table td { padding: 10px 14px; border-bottom: 1px solid rgba(26,35,50,0.04); }
+  .row-table td { padding: 10px 14px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 4%, transparent); }
   .row-table td.path { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink); word-break: break-all; }
   .row-table td.num { text-align: right; font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; color: var(--teal); }
   .row-table tr:last-child td { border-bottom: 0; }
@@ -63,15 +62,16 @@
   .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
   .pill {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px; background: rgba(3,97,122,0.06);
+    padding: 6px 12px; background: color-mix(in srgb, var(--teal) 6%, transparent);
     border-radius: 999px; font-family: "JetBrains Mono", monospace; font-size: 11px;
     color: var(--ink); letter-spacing: 0.04em;
   }
   .pill .n { color: var(--teal); font-weight: 500; }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 <header class="top">

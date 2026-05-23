@@ -30,7 +30,7 @@
       letter-spacing: 0.18em; text-transform: uppercase;
       border-radius: 999px;
       text-decoration: none;
-      box-shadow: 0 6px 18px -8px rgba(26,35,50,0.30);
+      box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--ink) 30%, transparent);
       transition: background 0.15s, opacity 0.25s ease, transform 0.25s ease;
       z-index: 240;
     }

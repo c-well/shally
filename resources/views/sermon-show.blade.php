@@ -16,7 +16,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -44,7 +43,7 @@
     aspect-ratio: 16 / 9;
     max-height: 70vh;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(3,97,122,0.10), rgba(176,141,60,0.10));
+    background: linear-gradient(135deg, color-mix(in srgb, var(--teal) 10%, transparent), color-mix(in srgb, var(--brass) 10%, transparent));
     display: flex; align-items: center; justify-content: center;
   }
   .hero-cover img {
@@ -69,7 +68,7 @@
     margin: 48px auto 0; max-width: 680px;
     padding: 28px clamp(20px, 4vw, 32px);
     background: #fff; border: 1px solid var(--line); border-radius: 14px;
-    box-shadow: 0 18px 44px -22px rgba(3,97,122,0.22);
+    box-shadow: 0 18px 44px -22px color-mix(in srgb, var(--teal) 22%, transparent);
   }
   .player audio { display: none; }
   .player-controls {
@@ -93,10 +92,10 @@
     background: var(--teal); color: #fff; border: 0;
     cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 24px -8px rgba(3,97,122,0.55);
+    box-shadow: 0 8px 24px -8px color-mix(in srgb, var(--teal) 55%, transparent);
     transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
   }
-  .play-btn:hover { background: var(--teal-dark); box-shadow: 0 10px 28px -8px rgba(3,97,122,0.65); }
+  .play-btn:hover { background: var(--teal-dark); box-shadow: 0 10px 28px -8px color-mix(in srgb, var(--teal) 65%, transparent); }
   .play-btn:active { transform: scale(0.95); }
   .play-btn svg { width: 28px; height: 28px; }
   .play-btn .icon-pause { display: none; }
@@ -108,17 +107,17 @@
   .progress-bar {
     position: relative;
     height: 5px; border-radius: 999px;
-    background: rgba(26,35,50,0.10);
+    background: color-mix(in srgb, var(--ink) 10%, transparent);
     overflow: visible;
   }
-  .progress-buffer { position: absolute; inset: 0; width: 0%; background: rgba(3,97,122,0.18); border-radius: 999px; }
+  .progress-buffer { position: absolute; inset: 0; width: 0%; background: color-mix(in srgb, var(--teal) 18%, transparent); border-radius: 999px; }
   .progress-fill { position: absolute; inset: 0; width: 0%; background: var(--teal); border-radius: 999px; }
   .progress-handle {
     position: absolute; top: 50%; left: 0;
     width: 14px; height: 14px;
     background: var(--teal); border: 2px solid #fff; border-radius: 50%;
     transform: translate(-50%, -50%) scale(0);
-    box-shadow: 0 2px 6px rgba(3,97,122,0.45);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--teal) 45%, transparent);
     transition: transform 0.15s;
   }
   .progress-wrap:hover .progress-handle, .player.playing .progress-handle { transform: translate(-50%, -50%) scale(1); }
@@ -142,11 +141,11 @@
     transition: opacity 0.15s, color 0.15s, background 0.15s;
   }
   .speed-pills button:hover { opacity: 1; color: var(--teal); }
-  .speed-pills button.active { opacity: 1; color: var(--teal); background: rgba(3,97,122,0.10); font-weight: 600; }
+  .speed-pills button.active { opacity: 1; color: var(--teal); background: color-mix(in srgb, var(--teal) 10%, transparent); font-weight: 600; }
 
   .player-utils {
     margin-top: 18px; padding-top: 18px;
-    border-top: 1px solid rgba(26,35,50,0.06);
+    border-top: 1px solid color-mix(in srgb, var(--ink) 6%, transparent);
     display: flex; align-items: center; justify-content: space-between;
     font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 600;
     letter-spacing: 0.20em; text-transform: uppercase;
@@ -169,7 +168,7 @@
   .prose p { margin-bottom: 1.2em; }
   .prose h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(24px, 3.5vw, 32px); font-weight: 500; letter-spacing: -0.02em; color: var(--ink); margin: 1.6em 0 0.5em; }
   .prose h3 { font-family: 'Cormorant Garamond', serif; font-size: clamp(20px, 2.8vw, 24px); font-weight: 500; color: var(--ink); margin: 1.4em 0 0.4em; }
-  .prose blockquote { margin: 1.5em 0; padding: 14px 22px; border-left: 3px solid var(--teal); background: rgba(3,97,122,0.05); font-style: italic; color: var(--ink-soft); }
+  .prose blockquote { margin: 1.5em 0; padding: 14px 22px; border-left: 3px solid var(--teal); background: color-mix(in srgb, var(--teal) 5%, transparent); font-style: italic; color: var(--ink-soft); }
   .prose ul, .prose ol { margin: 1em 0 1em 1.4em; }
   .prose li { margin-bottom: 0.4em; }
   .prose a { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; }
@@ -202,8 +201,9 @@
     .pn-card.next { text-align: left; }
   }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

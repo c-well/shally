@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --ink-faint:rgba(26,35,50,0.45); --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); --red:#a82a1f; --green:#2d8659; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
   .top { padding: 22px 32px; display: flex; align-items: center; justify-content: space-between; }
@@ -39,7 +38,7 @@
   .filter-btn:hover { color: var(--teal); border-color: var(--teal); }
   .filter-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); }
 
-  .status { padding: 14px 18px; background: rgba(3,97,122,0.08); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
+  .status { padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
 
   .sub-item {
     background: #fff; border: 1px solid var(--line); border-radius: 6px;
@@ -54,12 +53,12 @@
     display: inline-block; padding: 3px 9px; border-radius: 3px;
     font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600;
   }
-  .type-pill.question  { background: rgba(3,97,122,0.10); color: var(--teal); }
-  .type-pill.experience { background: rgba(176,141,60,0.15); color: var(--brass); }
-  .stat-pill.pending  { background: rgba(176,141,60,0.15); color: var(--brass); }
+  .type-pill.question  { background: color-mix(in srgb, var(--teal) 10%, transparent); color: var(--teal); }
+  .type-pill.experience { background: color-mix(in srgb, var(--brass) 15%, transparent); color: var(--brass); }
+  .stat-pill.pending  { background: color-mix(in srgb, var(--brass) 15%, transparent); color: var(--brass); }
   .stat-pill.approved { background: rgba(45,134,89,0.12); color: var(--green); }
-  .stat-pill.archived { background: rgba(26,35,50,0.06); color: var(--ink-faint); }
-  .stat-pill.replied  { background: rgba(3,97,122,0.10); color: var(--teal); }
+  .stat-pill.archived { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink-faint); }
+  .stat-pill.replied  { background: color-mix(in srgb, var(--teal) 10%, transparent); color: var(--teal); }
 
   .sub-body { font-size: 14px; line-height: 1.65; color: var(--ink); margin-bottom: 14px; white-space: pre-wrap; }
   .sub-attribution { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--ink-soft); font-size: 13px; margin-bottom: 14px; }
@@ -82,15 +81,17 @@
   details.reply-form summary::-webkit-details-marker { display: none; }
   details.reply-form summary:hover { color: var(--teal); border-color: var(--teal); }
   details.reply-form[open] summary { background: var(--teal); color: #fff; }
-  details.reply-form form { margin-top: 14px; padding: 14px; background: rgba(3,97,122,0.04); border-radius: 6px; }
+  details.reply-form form { margin-top: 14px; padding: 14px; background: color-mix(in srgb, var(--teal) 4%, transparent); border-radius: 6px; }
   details.reply-form textarea { width: 100%; padding: 10px 12px; background: #fff; border: 1px solid var(--line); border-radius: 4px; font-family: inherit; font-size: 13px; min-height: 100px; }
 
   .empty { padding: 60px 0; text-align: center; color: var(--ink-soft); font-style: italic; }
-  .replied-block { padding: 14px 16px; background: rgba(3,97,122,0.06); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; margin-top: 12px; font-size: 13px; }
+  .replied-block { padding: 14px 16px; background: color-mix(in srgb, var(--teal) 6%, transparent); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; margin-top: 12px; font-size: 13px; }
   .replied-block .h { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); margin-bottom: 4px; }
 </style>
+@include('partials.theme-vars')
+@include('admin.partials._typography')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 @include('partials.site-menu')
 
 <header class="top">

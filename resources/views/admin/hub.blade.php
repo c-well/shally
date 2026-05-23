@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Admin — The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -33,7 +33,7 @@
   .card:hover {
     border-color: var(--teal);
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px -16px rgba(3,97,122,0.4);
+    box-shadow: 0 12px 28px -16px color-mix(in srgb, var(--teal) 40%, transparent);
   }
   .card-eyebrow {
     font-family: 'Instrument Sans', sans-serif;
@@ -58,8 +58,9 @@
 @keyframes hubBadgePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(209,43,31,0.55); } 50% { box-shadow: 0 0 0 7px rgba(209,43,31,0); } }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 
@@ -70,7 +71,75 @@
 
 <main>
   <h1>Admin.</h1>
+
+  {{-- EXPENSIVE_CALL_BANNER — red flag if any Anthropic call in last 24h exceeded the threshold --}}
+  @php
+    $expensiveCall = \App\Models\AnthropicUsageLog::where('created_at', '>=', now()->subDay())
+                       ->where('cost_usd', '>=', config('anthropic_pricing.alert_threshold_usd', 1.00))
+                       ->orderByDesc('created_at')->first();
+  @endphp
+  @if ($expensiveCall)
+    <div style="background:#fff;border:2px solid #a82a1f;border-left:6px solid #a82a1f;border-radius:6px;padding:16px 22px;margin:18px 0 24px;display:flex;align-items:center;gap:18px;">
+      <div style="font-size:28px;line-height:1;">⚠</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#a82a1f;margin-bottom:4px;">
+          Anthropic cost spike — last 24h
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--ink);line-height:1.25;">
+          One call cost <strong>${{ number_format($expensiveCall->cost_usd, 4) }}</strong>
+          from <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(168,42,31,0.08);padding:1px 6px;border-radius:3px;">{{ $expensiveCall->source }}</code>
+          using {{ $expensiveCall->model }} — {{ $expensiveCall->created_at->diffForHumans() }}.
+        </div>
+      </div>
+      <a href="{{ route('admin.anthropic-usage') }}" style="flex-shrink:0;padding:10px 18px;background:#a82a1f;color:#fff;text-decoration:none;border-radius:5px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;">Investigate →</a>
+    </div>
+  @endif
   <p class="lede">Everything that runs the app — log of who's signed in, the people allowed to sign in, the names that appear on bulletin autocomplete, and the schedule.</p>
+
+  {{-- SITE_THEME_PICKER — Option A: site-wide theme. Small inline row at top of /admin so it's one glance away. --}}
+  <div id="site-theme-picker"
+       data-update-url="{{ route('admin.settings.theme') }}"
+       data-current="{{ \App\Models\AppSetting::get('site_theme', 'default') }}"
+       style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin: 18px 0 28px; padding: 12px 16px; background:#fff; border:1px solid var(--line); border-radius:6px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-soft); white-space:nowrap;">Site theme</span>
+    @foreach (['default'=>['Default','#fefcef','#03617A'], 'communion'=>['Communion','#f1ebf9','#6b4d8a'], 'easter'=>['Easter','#eaf6ed','#3a8e63'], 'christmas'=>['Christmas','#f7eaea','#8b3a4b'], 'mothers'=>["Mother's Day",'#fbe8ee','#b1657a'], 'thanksgiving'=>['Thanksgiving','#f7ecdb','#8a5a2c']] as $key => $info)
+      <button type="button" class="site-theme-swatch" data-theme="{{ $key }}" title="{{ $info[0] }}"
+              style="display:inline-flex; align-items:center; gap:6px; padding:4px 10px 4px 5px; background:#fff; border:1px solid color-mix(in srgb, var(--ink) 12%, transparent); border-radius:18px; cursor:pointer;">
+        <span style="width:18px; height:18px; border-radius:50%; background: {{ $info[1] }}; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><span style="width:7px; height:7px; border-radius:50%; background: {{ $info[2] }};"></span></span>
+        <span style="font-family:'Poppins',sans-serif; font-size:11px; color:var(--ink);">{{ $info[0] }}</span>
+      </button>
+    @endforeach
+  </div>
+
+  <script>
+  (function () {
+    const pick = document.getElementById('site-theme-picker');
+    if (!pick) return;
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const url  = pick.dataset.updateUrl;
+    const current = pick.dataset.current || 'default';
+    pick.querySelectorAll('.site-theme-swatch').forEach(sw => {
+      if (sw.dataset.theme === current) { sw.style.borderColor = 'var(--teal)'; sw.style.background = 'color-mix(in srgb, var(--teal) 6%, transparent)'; }
+      sw.addEventListener('click', async () => {
+        const theme = sw.dataset.theme;
+        try {
+          const r = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+            body: JSON.stringify({ theme }),
+            credentials: 'same-origin',
+          });
+          if (!r.ok) throw new Error('save failed');
+          pick.querySelectorAll('.site-theme-swatch').forEach(s => {
+            s.style.borderColor = (s === sw ? 'var(--teal)' : 'color-mix(in srgb, var(--ink) 12%, transparent)');
+            s.style.background = (s === sw ? 'color-mix(in srgb, var(--teal) 6%, transparent)' : '#fff');
+          });
+          setTimeout(() => location.reload(), 400);
+        } catch (e) { alert('Theme save failed: ' + e.message); }
+      });
+    });
+  })();
+  </script>
 
   <div class="grid">
 
@@ -101,6 +170,20 @@
       <span class="card-title">Audit log.</span>
       <span class="card-sub">Every sign-in, magic link, and error from the last 40 days.</span>
       <span class="card-arrow">View →</span>
+    </a>
+
+    <a href="{{ route('admin.changelog') }}" class="card">
+      <span class="card-eyebrow">Dev notes</span>
+      <span class="card-title">Changelog.</span>
+      <span class="card-sub">Plain-English log of every site change. When something feels off, check here first.</span>
+      <span class="card-arrow">Open →</span>
+    </a>
+
+    <a href="{{ route('admin.anthropic-usage') }}" class="card">
+      <span class="card-eyebrow">Cost</span>
+      <span class="card-title">API spend.</span>
+      <span class="card-sub">Live tally of Shalom's Anthropic API calls. Per-source + per-model breakdown, recent calls.</span>
+      <span class="card-arrow">Open →</span>
     </a>
 
     <a href="{{ route('admin.names') }}" class="card">
@@ -220,6 +303,7 @@
     <strong style="color:var(--ink);">Editing copy:</strong> page text currently lives in the Blade templates &mdash; ping Karlon for now.
     A click-to-edit admin like the bulletin will land in a follow-up if you want it.
   </p>
+
 </main>
 
 </body>
