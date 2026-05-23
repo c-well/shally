@@ -13,7 +13,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -25,7 +24,7 @@
 
   .privacy-card {
     margin: 28px 0 36px; padding: 18px 22px;
-    background: rgba(3,97,122,0.06);
+    background: color-mix(in srgb, var(--teal) 6%, transparent);
     border-left: 3px solid var(--teal);
     border-radius: 0 6px 6px 0;
     font-size: 14px; line-height: 1.55; color: var(--ink-soft);
@@ -44,7 +43,7 @@
     transition: border-color 0.15s, box-shadow 0.15s;
   }
   .field textarea { min-height: 180px; resize: vertical; font-family: 'Poppins', sans-serif; line-height: 1.55; }
-  .field input:focus, .field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); outline: none; }
+  .field input:focus, .field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); outline: none; }
   .field .err { color: #c0392b; font-size: 12px; margin-top: 2px; }
 
   .check-row { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; cursor: pointer; }
@@ -64,14 +63,15 @@
 
   .flash {
     margin-bottom: 24px; padding: 22px 26px;
-    background: rgba(3,97,122,0.08); border-left: 4px solid var(--teal);
+    background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 4px solid var(--teal);
     border-radius: 0 6px 6px 0;
     font-size: 16px; line-height: 1.55; color: var(--ink);
   }
   .flash strong { color: var(--teal); }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

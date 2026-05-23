@@ -622,7 +622,7 @@ class AdminPeaceController extends Controller
                         $body .= "  " . str_replace("\n", "\n  ", $original) . "\n\n";
                         $body .= str_repeat('─', 50) . "\n\n";
                         $body .= $reply . "\n\n";
-                        $body .= "— A pastor at Shalom\n\n";
+                        $body .= "— A pastor at The Church of Peace\n\n";
                         $body .= "Reply to this email if you want to continue the conversation. Or come back to Finding Peace anytime: " . url('/find-peace') . "\n";
 
                         \Illuminate\Support\Facades\Mail::raw($body, function ($m) use ($seekerEmail, $sub) {

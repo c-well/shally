@@ -12,21 +12,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 
 <style>
-  :root {
-    --bg: #fefcef; --bg-elevated: #f7f1d8;
-    --ink: #1a2332; --ink-soft: #334455; --ink-faint: rgba(26,35,50,0.45);
-    --brass: #03617A; --brass-bright: #048aaa;
-    --teal: #03617A; --teal-bright: #048aaa;
-    --line: rgba(26,35,50,0.10); --line-strong: rgba(26,35,50,0.18);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0a1014; --bg-elevated: #111820;
-      --ink: #fefcef; --ink-soft: rgba(254,252,239,0.65); --ink-faint: rgba(254,252,239,0.35);
-      --brass: #b08d3c; --brass-bright: #d4a94a;
-      --line: rgba(254,252,239,0.08); --line-strong: rgba(254,252,239,0.15);
-    }
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Poppins', system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.65; min-height: 100dvh; }
   main { max-width: 720px; margin: 0 auto; padding: 4rem 1.5rem 8rem; }
@@ -64,6 +49,7 @@
   }
   .logout:hover { color: var(--ink-soft); }
 </style>
+@include('partials.find-peace-vars')
 </head>
 <body>
 <main>

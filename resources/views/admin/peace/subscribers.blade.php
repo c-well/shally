@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --ink-faint:rgba(26,35,50,0.45); --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
   .top { padding: 22px 32px; display: flex; align-items: center; justify-content: space-between; }
@@ -26,7 +25,7 @@
   .row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
   .row:last-child { border-bottom: none; }
   .email { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink); }
-  .source { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; background: rgba(176,141,60,0.10); color: var(--brass); }
+  .source { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; background: color-mix(in srgb, var(--brass) 10%, transparent); color: var(--brass); }
   .verified { padding: 2px 7px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
   .verified.yes { background: rgba(45,134,89,0.12); color: #2d8659; }
   .verified.no  { background: rgba(168,42,31,0.10); color: #a82a1f; }
@@ -34,8 +33,10 @@
   .panel { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 14px 20px; }
   .empty { padding: 60px 0; text-align: center; color: var(--ink-soft); font-style: italic; }
 </style>
+@include('partials.theme-vars')
+@include('admin.partials._typography')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 @include('partials.site-menu')
 
 <header class="top">

@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -20,7 +19,7 @@
   main { max-width: 720px; margin: 0 auto; padding: 28px clamp(20px, 5vw, 32px) 80px; }
   h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px, 6vw, 56px); font-weight: 500; font-style: italic; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 24px; }
 
-  .flash { margin-bottom: 22px; padding: 14px 18px; background: rgba(3,97,122,0.08); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; }
+  .flash { margin-bottom: 22px; padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; }
   .flash.error { background: rgba(192,57,43,0.08); border-left-color: #c0392b; }
 
   form { display: grid; gap: 18px; }
@@ -31,11 +30,11 @@
     font: inherit; font-size: 14px; padding: 10px 12px;
     border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--ink);
   }
-  .field input:focus, .field textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
   .field textarea { min-height: 200px; resize: vertical; font-family: 'JetBrains Mono', monospace; line-height: 1.55; }
   .field .hint { font-size: 12px; color: var(--ink-soft); opacity: 0.7; margin-top: 2px; }
 
-  .audio-current { padding: 14px 18px; background: rgba(3,97,122,0.06); border: 1px solid rgba(3,97,122,0.2); border-radius: 6px; }
+  .audio-current { padding: 14px 18px; background: color-mix(in srgb, var(--teal) 6%, transparent); border: 1px solid color-mix(in srgb, var(--teal) 20%, transparent); border-radius: 6px; }
   .audio-current audio { width: 100%; height: 40px; margin-top: 6px; }
   .audio-current .label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); }
 
@@ -63,12 +62,13 @@
     letter-spacing: 0.14em; text-transform: uppercase;
     cursor: pointer; transition: color 0.15s, border-color 0.15s, background 0.15s;
   }
-  .md-tool:hover { color: var(--teal); border-color: var(--teal); background: rgba(3,97,122,0.04); }
+  .md-tool:hover { color: var(--teal); border-color: var(--teal); background: color-mix(in srgb, var(--teal) 4%, transparent); }
   .md-status { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-soft); opacity: 0.7; letter-spacing: 0.04em; }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 <header class="top">
@@ -138,7 +138,7 @@
     </div>
 
     @if ($sermon->exists && $sermon->coverUrl())
-      <div class="audio-current" style="background:rgba(176,141,60,0.06); border-color:rgba(176,141,60,0.2);">
+      <div class="audio-current" style="background:color-mix(in srgb, var(--brass) 6%, transparent); border-color:color-mix(in srgb, var(--brass) 20%, transparent);">
         <div class="label" style="color:var(--brass);">Current cover</div>
         <img src="{{ $sermon->coverUrl() }}" alt="cover" style="margin-top:8px; max-width:240px; height:auto; border-radius:4px;">
       </div>
@@ -190,8 +190,8 @@
 </main>
 
 {{-- Media library picker modal — opens when "Pick from library" is clicked --}}
-<div id="media-picker" style="display:none; position:fixed; inset:0; background:rgba(26,35,50,0.55); z-index:9000; align-items:center; justify-content:center;">
-  <div style="background:#fff; max-width:840px; width:calc(100% - 32px); max-height:80vh; border-radius:14px; padding:24px; display:flex; flex-direction:column; box-shadow:0 20px 50px -12px rgba(26,35,50,0.4);">
+<div id="media-picker" style="display:none; position:fixed; inset:0; background:color-mix(in srgb, var(--ink) 55%, transparent); z-index:9000; align-items:center; justify-content:center;">
+  <div style="background:#fff; max-width:840px; width:calc(100% - 32px); max-height:80vh; border-radius:14px; padding:24px; display:flex; flex-direction:column; box-shadow:0 20px 50px -12px color-mix(in srgb, var(--ink) 40%, transparent);">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
       <h3 style="font-family:'JetBrains Mono',monospace; font-size:14px; letter-spacing:0.06em; font-weight:600;">Pick a cover image</h3>
       <button type="button" id="media-picker-close" style="background:transparent; border:0; cursor:pointer; font-size:22px; color:var(--ink-soft);" aria-label="Close">×</button>
@@ -275,7 +275,7 @@
     }
     grid.innerHTML = filt.map(i =>
       '<button type="button" class="media-tile" data-id="' + i.id + '" data-url="' + i.url + '" data-name="' + (i.original_name||'').replace(/"/g, '&quot;') + '" '
-      + 'style="aspect-ratio:1; background:rgba(3,97,122,0.06); border:2px solid transparent; border-radius:6px; padding:0; overflow:hidden; cursor:pointer; transition:border-color 0.12s;">'
+      + 'style="aspect-ratio:1; background:color-mix(in srgb, var(--teal) 6%, transparent); border:2px solid transparent; border-radius:6px; padding:0; overflow:hidden; cursor:pointer; transition:border-color 0.12s;">'
       + '<img src="' + i.url + '" alt="" style="width:100%; height:100%; object-fit:cover; display:block;" loading="lazy">'
       + '</button>'
     ).join('');

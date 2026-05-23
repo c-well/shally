@@ -48,7 +48,7 @@
                 margin-top: 12px; text-align: center;
             }
             .auth-card {
-                border: 1px solid rgba(26,35,50,0.15);
+                border: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
             }
             .auth-footer {
                 font-family: 'JetBrains Mono', monospace;

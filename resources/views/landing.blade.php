@@ -18,12 +18,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-display: swap; }
-  :root {
-    --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455;
-    --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c;
-    --line:rgba(26,35,50,0.10);
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -100,13 +94,13 @@
     background: #fff; border: 1px solid var(--line); border-radius: 6px;
     padding: 8px; min-width: 220px;
     display: none; flex-direction: column;
-    box-shadow: 0 18px 36px -16px rgba(26,35,50,0.25);
+    box-shadow: 0 18px 36px -16px color-mix(in srgb, var(--ink) 25%, transparent);
   }
   .nav-links .has-menu:hover .submenu,
   .nav-links .has-menu:focus-within .submenu,
   .nav-links .submenu.open { display: flex; }
   .nav-links .submenu a { padding: 10px 14px; border-bottom: 0; border-radius: 4px; }
-  .nav-links .submenu a:hover { background: rgba(3,97,122,0.08); color: var(--teal); }
+  .nav-links .submenu a:hover { background: color-mix(in srgb, var(--teal) 8%, transparent); color: var(--teal); }
 
   /* Submenu sections — when About Us has multiple groupings */
   .submenu.submenu-wide { min-width: 240px; padding: 14px 8px; }
@@ -310,7 +304,7 @@
     text-align: center;
     transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
   }
-  .svc-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 12px 28px -16px rgba(3,97,122,0.25); }
+  .svc-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 12px 28px -16px color-mix(in srgb, var(--teal) 25%, transparent); }
   .svc-card .svc-name {
     font-family: 'Cormorant Garamond', serif;
     font-size: 22px; font-weight: 500;
@@ -341,7 +335,7 @@
     display: flex; flex-direction: column;
     transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
   }
-  .feature-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 12px 28px -16px rgba(3,97,122,0.25); }
+  .feature-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 12px 28px -16px color-mix(in srgb, var(--teal) 25%, transparent); }
   .feature-card .fc-eyebrow {
     font-family: 'Instrument Sans', sans-serif;
     font-size: 10px; font-weight: 700; letter-spacing: 0.28em;
@@ -367,7 +361,7 @@
     margin: 40px auto 0;
     max-width: 880px; aspect-ratio: 16 / 9;
     border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
-    box-shadow: 0 18px 40px -20px rgba(26,35,50,0.25);
+    box-shadow: 0 18px 40px -20px color-mix(in srgb, var(--ink) 25%, transparent);
     background: #000;
   }
   .youtube-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
@@ -405,7 +399,7 @@
     background: var(--teal); color: #fff;
     border-radius: 12px;
     text-align: center;
-    box-shadow: 0 24px 48px -22px rgba(3,97,122,0.4);
+    box-shadow: 0 24px 48px -22px color-mix(in srgb, var(--teal) 40%, transparent);
   }
   .donate-band h3 {
     font-family: 'Cormorant Garamond', serif;
@@ -469,7 +463,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     padding: 10px 14px;
     background: #fff; border: 1px solid var(--line); border-radius: 999px;
-    box-shadow: 0 6px 18px -8px rgba(26,35,50,0.25);
+    box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--ink) 25%, transparent);
     cursor: pointer; user-select: none;
     font-family: 'Instrument Sans', sans-serif;
     font-size: 11px; font-weight: 700;
@@ -610,8 +604,9 @@
   .verse-toggle.hidden { opacity: 0; pointer-events: none; }
   .verse-toggle-dot { width: 6px; height: 6px; border-radius: 50%; background: #2d8659; }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

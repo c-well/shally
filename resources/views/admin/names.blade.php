@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -42,7 +41,7 @@
   }
   .add-name-bar input:focus {
     outline: 0; border-color: var(--teal);
-    box-shadow: 0 0 0 3px rgba(3,97,122,0.12);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent);
   }
   .add-name-bar button {
     background: var(--teal); color: #fff; border: 1px solid var(--teal);
@@ -70,7 +69,7 @@
     border-radius: 4px;
     transition: background 0.12s;
   }
-  .name-text:hover { background: rgba(3,97,122,0.05); }
+  .name-text:hover { background: color-mix(in srgb, var(--teal) 5%, transparent); }
   .name-text[contenteditable="true"] {
     background: #fff; outline: 2px solid var(--teal); outline-offset: 0;
     cursor: text;
@@ -101,8 +100,9 @@
   }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

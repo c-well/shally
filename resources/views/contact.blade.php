@@ -17,8 +17,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-display: swap; }
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -64,7 +62,7 @@
     transition: border-color 0.15s, box-shadow 0.15s;
   }
   .field textarea { min-height: 160px; resize: vertical; font-family: 'Poppins', sans-serif; line-height: 1.55; }
-  .field input:focus, .field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); outline: none; }
+  .field input:focus, .field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); outline: none; }
   .field .err { color: #c0392b; font-size: 12px; margin-top: 2px; }
 
   .honey { position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none; }
@@ -79,7 +77,7 @@
 
   .flash {
     margin-bottom: 24px; padding: 18px 22px;
-    background: rgba(3,97,122,0.08); border-left: 4px solid var(--teal);
+    background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 4px solid var(--teal);
     border-radius: 0 6px 6px 0;
     font-size: 15px; line-height: 1.55; color: var(--ink);
   }
@@ -87,8 +85,9 @@
 
   footer { padding: 22px clamp(20px, 5vw, 40px) 40px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink-soft); opacity: 0.6; }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

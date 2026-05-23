@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); --warn:#a82a1f; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
@@ -45,7 +44,7 @@
     transition: border-color 0.15s, box-shadow 0.15s;
   }
   .field textarea { min-height: 100px; resize: vertical; line-height: 1.55; font-family: 'Cormorant Garamond', serif; font-size: 16px; }
-  .field input:focus, .field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); outline: none; }
+  .field input:focus, .field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); outline: none; }
 
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 600px) { .row2 { grid-template-columns: 1fr; } }
@@ -83,8 +82,10 @@
   .public-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); text-decoration: none; }
   .public-link:hover { text-decoration: underline; }
 </style>
+@include('partials.theme-vars')
+@include('admin.partials._typography')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 
@@ -112,7 +113,7 @@
   @php
     $dh = !empty($audioDur) ? floor($audioDur/60).':'.str_pad($audioDur%60,2,'0',STR_PAD_LEFT) : '--';
   @endphp
-  <details class="trim-panel" style="margin-bottom:28px;padding:18px 22px;background:rgba(3,97,122,0.04);border:1px solid var(--line);border-radius:6px;">
+  <details class="trim-panel" style="margin-bottom:28px;padding:18px 22px;background:color-mix(in srgb, var(--teal) 4%, transparent);border:1px solid var(--line);border-radius:6px;">
     <summary style="cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--teal);">
       Audio · current length {{ $dh }} — tighten boundaries ▾
     </summary>

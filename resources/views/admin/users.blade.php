@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -26,7 +25,7 @@
 
   .flash {
     margin-top: 26px;
-    background: rgba(176,141,60,0.10); border-left: 3px solid var(--brass);
+    background: color-mix(in srgb, var(--brass) 10%, transparent); border-left: 3px solid var(--brass);
     padding: 14px 18px; border-radius: 0 4px 4px 0;
     font-size: 14px; color: var(--ink); line-height: 1.5;
   }
@@ -65,7 +64,7 @@
   }
   .add-form input:focus, .add-form select:focus {
     border-color: var(--teal);
-    box-shadow: 0 0 0 3px rgba(3,97,122,0.12);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent);
   }
   .add-form button {
     background: var(--teal); color: #fff; border: 1px solid var(--teal);
@@ -110,9 +109,9 @@
     font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700;
     letter-spacing: 0.14em; text-transform: uppercase;
   }
-  .u-role.super_admin { background: rgba(3,97,122,0.10); color: var(--teal); }
-  .u-role.clerk       { background: rgba(176,141,60,0.12); color: var(--brass); }
-  .u-role.sabbath     { background: rgba(26,35,50,0.06); color: var(--ink-soft); }
+  .u-role.super_admin { background: color-mix(in srgb, var(--teal) 10%, transparent); color: var(--teal); }
+  .u-role.clerk       { background: color-mix(in srgb, var(--brass) 12%, transparent); color: var(--brass); }
+  .u-role.sabbath     { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink-soft); }
   .u-pin-status {
     font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 600;
     letter-spacing: 0.14em; text-transform: uppercase;
@@ -127,7 +126,7 @@
     background: #fff; color: var(--ink); text-align: center; letter-spacing: 4px;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .pin-form input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); }
+  .pin-form input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
   .pin-form button {
     background: transparent; color: var(--ink-soft); border: 1px solid var(--line);
     padding: 7px 12px; border-radius: 4px; cursor: pointer;
@@ -159,8 +158,9 @@
   }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

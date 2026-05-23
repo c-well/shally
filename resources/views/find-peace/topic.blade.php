@@ -15,18 +15,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #fefcef; --ink: #1a2332; --ink-soft: #334455; --ink-faint: rgba(26,35,50,0.45);
-    --brass: #03617A; --brass-bright: #048aaa;
-    --line: rgba(26,35,50,0.10);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0a1014; --ink: #fefcef; --ink-soft: rgba(254,252,239,0.65); --ink-faint: rgba(254,252,239,0.35);
-      --brass: #b08d3c; --brass-bright: #d4a94a;
-      --line: rgba(254,252,239,0.08);
-    }
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Poppins', -apple-system, sans-serif;

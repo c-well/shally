@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -20,7 +19,7 @@
   h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 38px); font-weight: 500; letter-spacing: -0.015em; line-height: 1.05; margin-bottom: 4px; }
   .lede { margin-top: 22px; font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 580px; }
   .row { display: grid; grid-template-columns: 100px 1fr auto auto; gap: 18px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); transition: background 0.12s; }
-  .row:hover { background: rgba(3,97,122,0.04); }
+  .row:hover { background: color-mix(in srgb, var(--teal) 4%, transparent); }
   .row:last-child { border-bottom: 0; }
   .row .slug { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--teal); }
   .row .title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; line-height: 1.2; }
@@ -31,8 +30,9 @@
   @media (max-width: 700px) { .row { grid-template-columns: 1fr auto; } .row .slug, .row .lastedit { display: none; } }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

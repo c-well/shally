@@ -14,15 +14,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --parchment: #fefcef;
-    --ink: #1a2332;
-    --ink-soft: #5a6478;
-    --teal: #03617A;
-    --teal-dark: #024357;
-    --brass: #b08d3c;
-    --line: rgba(26,35,50,0.12);
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Cormorant Garamond', serif; min-height: 100dvh; }
 
@@ -95,10 +86,10 @@
   .compare-side h3 .badge {
     display: inline-block; margin-left: 8px; padding: 2px 8px;
     border-radius: 999px; font-size: 9px; font-weight: 700;
-    background: rgba(176,141,60,0.15); color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 15%, transparent); color: var(--brass);
     letter-spacing: 0.18em;
   }
-  .compare-side h3.proposed .badge { background: rgba(3,97,122,0.15); color: var(--teal); }
+  .compare-side h3.proposed .badge { background: color-mix(in srgb, var(--teal) 15%, transparent); color: var(--teal); }
   .frame-wrap {
     border: 1px solid var(--line);
     border-radius: 12px;
@@ -114,7 +105,7 @@
   }
   .frame-label {
     position: absolute; top: 8px; right: 8px;
-    background: rgba(26,35,50,0.85); color: #fff;
+    background: color-mix(in srgb, var(--ink) 85%, transparent); color: #fff;
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px; letter-spacing: 0.12em;
     padding: 4px 8px; border-radius: 4px;
@@ -175,8 +166,9 @@
   }
   .meta-info strong { color: var(--ink); }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 <header class="top">
   <a href="{{ url('/welcome') }}">← Bulletin</a>

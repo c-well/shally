@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -23,7 +22,7 @@
   h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 7vw, 72px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; }
   .lede { margin-top: 22px; font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 540px; }
 
-  .flash { margin-top: 26px; background: rgba(176,141,60,0.10); border-left: 3px solid var(--brass); padding: 14px 18px; border-radius: 0 4px 4px 0; font-size: 14px; line-height: 1.5; }
+  .flash { margin-top: 26px; background: color-mix(in srgb, var(--brass) 10%, transparent); border-left: 3px solid var(--brass); padding: 14px 18px; border-radius: 0 4px 4px 0; font-size: 14px; line-height: 1.5; }
 
   .form {
     margin-top: 36px;
@@ -41,7 +40,7 @@
     border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--ink); width: 100%;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .form input:focus, .form textarea:focus, .form select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); }
+  .form input:focus, .form textarea:focus, .form select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
   .form button {
     background: var(--teal); color: #fff; border: 1px solid var(--teal);
     padding: 12px 22px; border-radius: 4px;
@@ -77,9 +76,9 @@
     letter-spacing: 0.06em; font-weight: 500;
     white-space: nowrap;
   }
-  .l-cache.full   { background: rgba(3,97,122,0.10); color: var(--teal); }
-  .l-cache.partial{ background: rgba(176,141,60,0.12); color: var(--brass); }
-  .l-cache.empty  { background: rgba(26,35,50,0.06); color: var(--ink-soft); opacity: 0.7; }
+  .l-cache.full   { background: color-mix(in srgb, var(--teal) 10%, transparent); color: var(--teal); }
+  .l-cache.partial{ background: color-mix(in srgb, var(--brass) 12%, transparent); color: var(--brass); }
+  .l-cache.empty  { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink-soft); opacity: 0.7; }
   .l-cache .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
   .l-actions form, .l-sync form { display: inline; }
@@ -90,7 +89,7 @@
     font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
     transition: all 0.15s;
   }
-  .l-sync button { color: var(--teal); border: 1px solid rgba(3,97,122,0.3); }
+  .l-sync button { color: var(--teal); border: 1px solid color-mix(in srgb, var(--teal) 30%, transparent); }
   .l-sync button:hover { background: var(--teal); color: #fff; border-color: var(--teal); }
   .l-sync button:disabled { opacity: 0.5; cursor: wait; }
   .l-actions button { color: var(--ink-soft); border: 1px solid rgba(192,57,43,0.3); }
@@ -107,8 +106,9 @@
   }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

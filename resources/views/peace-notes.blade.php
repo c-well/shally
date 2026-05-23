@@ -16,7 +16,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -51,7 +50,7 @@
     text-decoration: none; color: inherit;
     transition: background 0.12s;
   }
-  .sermon-card:hover { background: rgba(3,97,122,0.04); }
+  .sermon-card:hover { background: color-mix(in srgb, var(--teal) 4%, transparent); }
   .sermon-card:last-child { border-bottom: 0; }
 
   /* Cover thumbnail with subtle Ken Burns animation. Each card uses an offset so they
@@ -61,7 +60,7 @@
     position: relative;
     width: 120px; height: 120px;
     overflow: hidden; border-radius: 8px;
-    background: linear-gradient(135deg, rgba(3,97,122,0.08), rgba(176,141,60,0.10));
+    background: linear-gradient(135deg, color-mix(in srgb, var(--teal) 8%, transparent), color-mix(in srgb, var(--brass) 10%, transparent));
     flex-shrink: 0;
   }
   .sermon-cover img {
@@ -113,7 +112,7 @@
     margin-top: 56px; padding: 48px;
     text-align: center; color: var(--ink-soft);
     font-family: 'Cormorant Garamond', serif; font-style: italic;
-    font-size: 19px; background: rgba(3,97,122,0.04); border-radius: 8px;
+    font-size: 19px; background: color-mix(in srgb, var(--teal) 4%, transparent); border-radius: 8px;
   }
 
   .ctas { margin-top: 64px; display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
@@ -131,8 +130,9 @@
     .sermon-date .day { font-size: 22px; }
   }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: "Poppins", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -22,18 +21,18 @@
   .summary { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.16em; color: var(--ink-soft); margin-bottom: 22px; }
   .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
   .toolbar input[type="search"] { padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; font: inherit; font-size: 13px; min-width: 220px; }
-  .toolbar input[type="search"]:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); }
+  .toolbar input[type="search"]:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
   .filter-pills { display: inline-flex; gap: 6px; }
   .filter-pills a { padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; font-family: "Instrument Sans", sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: all 0.15s; }
   .filter-pills a:hover { color: var(--teal); border-color: var(--teal); }
   .filter-pills a.active { background: var(--teal); color: #fff; border-color: var(--teal); }
   .upload-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; background: var(--teal); color: #fff; border: 0; border-radius: 4px; cursor: pointer; font-family: "Instrument Sans", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
   .upload-btn:hover { background: var(--teal-dark); }
-  .flash { margin-bottom: 22px; padding: 14px 18px; background: rgba(3,97,122,0.08); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; }
+  .flash { margin-bottom: 22px; padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; }
   .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
   .tile { background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s; display: flex; flex-direction: column; }
-  .tile:hover { border-color: var(--teal); transform: translateY(-1px); box-shadow: 0 8px 22px -10px rgba(3,97,122,0.22); }
-  .tile-thumb { aspect-ratio: 4 / 3; background: rgba(3,97,122,0.06); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .tile:hover { border-color: var(--teal); transform: translateY(-1px); box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--teal) 22%, transparent); }
+  .tile-thumb { aspect-ratio: 4 / 3; background: color-mix(in srgb, var(--teal) 6%, transparent); display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .tile-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .tile-audio { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--teal); letter-spacing: 0.14em; text-transform: uppercase; text-align: center; padding: 22px; }
   .tile-audio .ico { font-size: 28px; display: block; margin-bottom: 6px; }
@@ -47,8 +46,9 @@
   .empty { padding: 60px; text-align: center; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: 8px; }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 <header class="top">

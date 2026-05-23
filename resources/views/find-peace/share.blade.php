@@ -12,21 +12,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 
 <style>
-  :root {
-    --bg: #fefcef; --bg-elevated: #f7f1d8;
-    --ink: #1a2332; --ink-soft: #334455; --ink-faint: rgba(26,35,50,0.45);
-    --brass: #03617A; --brass-bright: #048aaa;
-    --teal: #03617A; --teal-bright: #048aaa;
-    --line: rgba(26,35,50,0.10); --line-strong: rgba(26,35,50,0.18);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0a1014; --bg-elevated: #111820;
-      --ink: #fefcef; --ink-soft: rgba(254,252,239,0.65); --ink-faint: rgba(254,252,239,0.35);
-      --brass: #b08d3c; --brass-bright: #d4a94a;
-      --line: rgba(254,252,239,0.08); --line-strong: rgba(254,252,239,0.15);
-    }
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Poppins', system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.65; min-height: 100dvh; }
   main { max-width: 680px; margin: 0 auto; padding: 4rem 1.5rem 8rem; }
@@ -35,7 +20,7 @@
   h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 2.6rem); font-weight: 500; line-height: 1.1; margin-bottom: 0.4rem; }
   .lede { color: var(--ink-soft); font-size: 1rem; margin-bottom: 2rem; }
 
-  .flash { padding: 14px 18px; background: rgba(3,97,122,0.10); border-left: 3px solid var(--brass); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; color: var(--ink); }
+  .flash { padding: 14px 18px; background: color-mix(in srgb, var(--teal) 10%, transparent); border-left: 3px solid var(--brass); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; color: var(--ink); }
 
   .tabs { display: flex; gap: 0; margin-bottom: 1.8rem; border-bottom: 1px solid var(--line); }
   .tab-btn {
@@ -111,11 +96,12 @@
   .recent-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.3rem; }
   .recent-body { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.5; }
   .stat-pill { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; margin-left: 0.5rem; }
-  .stat-pill.pending  { background: rgba(176,141,60,0.15); color: var(--brass); }
+  .stat-pill.pending  { background: color-mix(in srgb, var(--brass) 15%, transparent); color: var(--brass); }
   .stat-pill.approved { background: rgba(45,134,89,0.12); color: #2d8659; }
-  .stat-pill.archived { background: rgba(26,35,50,0.06); color: var(--ink-faint); }
-  .stat-pill.replied  { background: rgba(3,97,122,0.10); color: var(--teal); }
+  .stat-pill.archived { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink-faint); }
+  .stat-pill.replied  { background: color-mix(in srgb, var(--teal) 10%, transparent); color: var(--teal); }
 </style>
+@include('partials.find-peace-vars')
 </head>
 <body>
 <main>

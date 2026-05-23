@@ -659,7 +659,15 @@ class BulletinController extends Controller
         ]);
     }
 
-    /** POST /bulletins/{bulletin}/load-standard-order — prefill blank bulletin with default SDA order of service. */
+    /**
+     * POST /bulletins/{bulletin}/load-standard-order — prefill blank bulletin
+     * with default SDA order of service.
+     *
+     * SECTION_OF_TRUTH (2026-05-23, option B): `section` is populated ONLY on
+     * kind=section_header rows. Line rows leave `section` NULL. The header's
+     * position in sort_order determines which lines visually belong to it —
+     * no per-line section attribute, no phantom headers, WYSIWYG.
+     */
     public function loadStandardOrder(\App\Models\Bulletin $bulletin): \Illuminate\Http\JsonResponse
     {
         $bulletin->lines()->delete();
@@ -671,15 +679,15 @@ class BulletinController extends Controller
             ['section' => null,      'part' => 'Invocation',          'person' => null, 'kind' => 'line'],
             ['section' => null,      'part' => 'Announcements',       'person' => null, 'kind' => 'line'],
             ['section' => $pastoral, 'part' => null,                  'person' => null, 'kind' => 'section_header'],
-            ['section' => $pastoral, 'part' => 'Welcome',             'person' => null, 'kind' => 'line'],
-            ['section' => $pastoral, 'part' => 'Opening Hymn',        'person' => null, 'kind' => 'line'],
-            ['section' => $pastoral, 'part' => 'Scripture Reading',   'person' => null, 'kind' => 'line'],
-            ['section' => $pastoral, 'part' => 'Intercessory Prayer', 'person' => null, 'kind' => 'line'],
-            ['section' => $pastoral, 'part' => "Children's Story",    'person' => null, 'kind' => 'line'],
-            ['section' => $pastoral, 'part' => 'Special Music',       'person' => null, 'kind' => 'line'],
-            ['section' => $pastoral, 'part' => 'Sermon',              'person' => null, 'kind' => 'line'],
-            ['section' => $pastoral, 'part' => 'Closing Hymn',        'person' => null, 'kind' => 'line'],
-            ['section' => $pastoral, 'part' => 'Benediction',         'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => 'Welcome',             'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => 'Opening Hymn',        'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => 'Scripture Reading',   'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => 'Intercessory Prayer', 'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => "Children's Story",    'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => 'Special Music',       'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => 'Sermon',              'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => 'Closing Hymn',        'person' => null, 'kind' => 'line'],
+            ['section' => null,      'part' => 'Benediction',         'person' => null, 'kind' => 'line'],
         ];
         foreach ($order as $i => $row) {
             $bulletin->lines()->create($row + ['sort_order' => $i]);

@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -27,15 +26,15 @@
 
   main { max-width: 1280px; margin: 0 auto; padding: 28px clamp(20px, 5vw, 32px) 80px; }
 
-  .flash { margin-bottom: 22px; padding: 14px 18px; background: rgba(3,97,122,0.08); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; line-height: 1.5; }
+  .flash { margin-bottom: 22px; padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; line-height: 1.5; }
   .flash.error { background: rgba(192,57,43,0.08); border-left-color: #c0392b; }
 
   .meta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
   .field { display: flex; flex-direction: column; gap: 6px; }
   .field label { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); }
   .field input { font: inherit; font-size: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--ink); }
-  .field input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); }
-  .field input[readonly] { background: rgba(26,35,50,0.04); color: var(--ink-soft); cursor: default; }
+  .field input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
+  .field input[readonly] { background: color-mix(in srgb, var(--ink) 4%, transparent); color: var(--ink-soft); cursor: default; }
 
   /* Toolbar */
   .toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #fff; border: 1px solid var(--line); border-radius: 6px 6px 0 0; border-bottom: 0; }
@@ -45,7 +44,7 @@
     font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500;
     color: var(--ink-soft); transition: background 0.12s, color 0.12s, border-color 0.12s;
   }
-  .toolbar button:hover { background: rgba(3,97,122,0.08); color: var(--teal); border-color: var(--line); }
+  .toolbar button:hover { background: color-mix(in srgb, var(--teal) 8%, transparent); color: var(--teal); border-color: var(--line); }
   .toolbar .sep { width: 1px; background: var(--line); margin: 4px 6px; }
   .toolbar .image-btn { color: var(--brass); font-weight: 600; }
 
@@ -74,7 +73,7 @@
   .preview-body h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; margin: 1.2em 0 0.4em; color: var(--ink); }
   .preview-body h3 { font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 500; margin: 1em 0 0.4em; color: var(--ink); }
   .preview-body p { margin-bottom: 1em; }
-  .preview-body blockquote { margin: 1.2em 0; padding: 12px 18px; border-left: 3px solid var(--teal); background: rgba(3,97,122,0.05); font-style: italic; color: var(--ink-soft); }
+  .preview-body blockquote { margin: 1.2em 0; padding: 12px 18px; border-left: 3px solid var(--teal); background: color-mix(in srgb, var(--teal) 5%, transparent); font-style: italic; color: var(--ink-soft); }
   .preview-body ul, .preview-body ol { margin: 1em 0 1em 1.4em; }
   .preview-body li { margin-bottom: 0.4em; }
   .preview-body a { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; }
@@ -85,14 +84,14 @@
   .preview-body hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
   .preview-body table { width: 100%; border-collapse: collapse; margin: 1em 0; }
   .preview-body th, .preview-body td { padding: 8px 12px; border: 1px solid var(--line); text-align: left; }
-  .preview-body th { background: rgba(3,97,122,0.05); font-weight: 600; }
+  .preview-body th { background: color-mix(in srgb, var(--teal) 5%, transparent); font-weight: 600; }
 
   .footer-info { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; color: var(--ink-soft); font-size: 13px; }
   .footer-info .last-edit { font-family: 'JetBrains Mono', monospace; font-size: 11px; opacity: 0.7; }
   .footer-info .public-link { color: var(--teal); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
   .footer-info .public-link:hover { border-bottom-color: var(--teal); }
 
-  .upload-progress { display: none; padding: 8px 14px; margin-left: 8px; background: rgba(176,141,60,0.12); color: var(--brass); border-radius: 4px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
+  .upload-progress { display: none; padding: 8px 14px; margin-left: 8px; background: color-mix(in srgb, var(--brass) 12%, transparent); color: var(--brass); border-radius: 4px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
   .upload-progress.on { display: inline-block; }
 
   @media (max-width: 900px) {
@@ -102,8 +101,9 @@
   }
 </style>
 @include('admin.partials._typography')
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 
@@ -123,6 +123,15 @@
   @endif
   @if ($errors->any())
     <div class="flash error">{{ $errors->first() }}</div>
+  @endif
+
+  @if ($page->slug === 'home')
+    <!-- SLIDES_CROSSLINK: home page has a separate slides surface -->
+    <div style="margin: 0 0 24px; padding: 14px 18px; background: color-mix(in srgb, var(--brass) 7%, transparent); border-left: 3px solid #b08d3c; border-radius: 0 4px 4px 0; font-size: 13px; color: #334455; line-height: 1.55;">
+      <strong style="color:#1a2332;">Hero slides for the home page live here →</strong>
+      <a href="{{ route('admin.slides.index') }}" style="color:#03617A; text-decoration:underline; margin-left:4px;">Manage hero slides</a>.
+      (The slider that appears between the schedule and "what's happening" on the home page.)
+    </div>
   @endif
 
   <form method="POST" action="{{ route('admin.pages.update', $page->slug) }}" id="page-form">
@@ -259,7 +268,7 @@
   });
 
   // Drag-and-drop straight into the editor
-  ta.addEventListener('dragover', e => { e.preventDefault(); ta.style.background = 'rgba(3,97,122,0.05)'; });
+  ta.addEventListener('dragover', e => { e.preventDefault(); ta.style.background = 'color-mix(in srgb, var(--teal) 5%, transparent)'; });
   ta.addEventListener('dragleave', () => ta.style.background = '');
   ta.addEventListener('drop', e => {
     e.preventDefault();

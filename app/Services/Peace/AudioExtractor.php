@@ -36,7 +36,7 @@ class AudioExtractor
         $url = "https://www.youtube.com/watch?v={$videoId}";
         $dl = new Process([
             self::YT_DLP, '--no-warnings',
-            '-x', '--audio-format', 'mp3', '--audio-quality', '0',
+            '--ffmpeg-location', '/usr/local/bin/ffmpeg', '-x', '--audio-format', 'mp3', '--audio-quality', '0',
             '-o', $fullPath, $url,
         ]);
         $dl->setTimeout(self::TIMEOUT_DOWNLOAD_SEC);

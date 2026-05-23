@@ -15,7 +15,7 @@
   .site-menu-header {
     position: sticky; top: 0; z-index: 50;
     background: var(--parchment, #fefcef);
-    border-bottom: 1px solid rgba(3,97,122,0.12);
+    border-bottom: 1px solid color-mix(in srgb, var(--teal) 12%, transparent);
   }
   .site-menu-header-inner {
     max-width: 1100px; margin: 0 auto;
@@ -102,7 +102,7 @@
     color: var(--ink, #1a2332);
     text-decoration: none;
     background: transparent; border: 0;
-    border-bottom: 1px solid rgba(26,35,50,0.12);
+    border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
     text-align: left; cursor: pointer;
     transition: color 0.15s;
   }
@@ -119,7 +119,7 @@
   .site-menu-link-signout { color: #a82a1f; }
   .site-menu-link-signout:hover { color: #c0392b; }
 
-  .site-menu-section { border-bottom: 1px solid rgba(26,35,50,0.12); }
+  .site-menu-section { border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); }
   .site-menu-section-toggle { border-bottom: 0; }
   .site-menu-section-toggle .chev {
     width: 22px; height: 22px;
@@ -175,9 +175,9 @@
     position: absolute; top: calc(100% + 10px); right: 0;
     min-width: 240px;
     background: var(--parchment, #fefcef);
-    border: 1px solid rgba(26,35,50,0.12);
+    border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
     border-radius: 12px;
-    box-shadow: 0 18px 40px -10px rgba(26,35,50,0.22);
+    box-shadow: 0 18px 40px -10px color-mix(in srgb, var(--ink) 22%, transparent);
     padding: 8px;
     z-index: 250;
   }
@@ -193,11 +193,11 @@
     transition: color 0.12s, background 0.12s;
   }
   .site-admin-item:hover, .site-admin-item:focus-visible {
-    color: var(--teal, #03617A); background: rgba(3,97,122,0.05); outline: none;
+    color: var(--teal, #03617A); background: color-mix(in srgb, var(--teal) 5%, transparent); outline: none;
   }
   .site-admin-item-danger { color: #a82a1f; }
   .site-admin-item-danger:hover { color: #c0392b; background: rgba(168,42,31,0.05); }
-  .site-admin-divider { height: 1px; background: rgba(26,35,50,0.1); margin: 6px 4px; }
+  .site-admin-divider { height: 1px; background: color-mix(in srgb, var(--ink) 10%, transparent); margin: 6px 4px; }
   .site-admin-user {
     padding: 6px 14px;
     font-family: 'JetBrains Mono', monospace;
@@ -379,22 +379,7 @@
                 <a class="site-menu-sub-link" href="{{ route('bulletins.pdf', $bulletin) }}?version=previous" target="_blank" rel="noopener">Previous PDF</a>
               @endif
               <a class="site-menu-sub-link" href="/?preview=1">Preview as public</a>
-              <div id="theme-pick-pop-wrap">
-  <button class="site-menu-sub-link site-menu-sub-link-form" id="theme-pick-btn" type="button">Special-day theme ▾</button>
-  <div id="theme-pick-pop" class="theme-pop" style="padding:8px 4px 14px 22px;"
-       data-update-url="{{ route('bulletins.update', $bulletin) }}"
-       data-current="{{ $bulletin->theme ?? 'default' }}">
-    <div style="display:flex; flex-wrap:wrap; gap:6px;">
-      @foreach (['default'=>['Default','#fefcef','#03617A'], 'communion'=>['Communion','#f1ebf9','#6b4d8a'], 'easter'=>['Easter','#eaf6ed','#3a8e63'], 'christmas'=>['Christmas','#f7eaea','#8b3a4b'], 'mothers'=>["Mother's Day",'#fbe8ee','#b1657a'], 'thanksgiving'=>['Thanksgiving','#f7ecdb','#8a5a2c']] as $key => $info)
-        <button type="button" class="theme-swatch" data-theme="{{ $key }}" title="{{ $info[0] }}"
-                style="display:inline-flex; flex-direction:column; align-items:center; gap:3px; padding:5px 6px; background:transparent; border:1px solid rgba(26,35,50,0.12); border-radius:6px; cursor:pointer; min-width:60px;">
-          <span style="width:22px; height:22px; border-radius:50%; background: {{ $info[1] }}; display:inline-flex; align-items:center; justify-content:center;"><span style="width:9px; height:9px; border-radius:50%; background: {{ $info[2] }};"></span></span>
-          <span style="font-family: 'Poppins', sans-serif; font-size: 10px; color: var(--ink, #1a2332);">{{ $info[0] }}</span>
-        </button>
-      @endforeach
-    </div>
-  </div>
-</div>
+{{-- THEME_PICKER_MOVED — moved to welcome.blade.php (visible row below the bulletin toolbar). 2026-05-22 --}}
 
               @if (auth()->user()->role === 'super_admin')
                 <label class="site-menu-sub-link" style="display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer;">

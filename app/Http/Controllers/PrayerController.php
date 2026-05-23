@@ -93,7 +93,7 @@ class PrayerController extends Controller
 " : "Hello,
 
 ");
-            $ackBody .= "Thank you for sharing your prayer request with us. The prayer team at Shalom SDA Church has received it and will be lifting your need before God.
+            $ackBody .= "Thank you for sharing your prayer request with us. The prayer team at The Church of Peace has received it and will be lifting your need before God.
 
 ";
             if ($pr->want_followup) {
@@ -105,7 +105,7 @@ class PrayerController extends Controller
 
 ";
             $ackBody .= "In peace,
-The Church of Peace · Shalom SDA · Bronx, NY
+The Church of Peace · Bronx, NY
 https://thechurchofpeace.org
 ";
             try {

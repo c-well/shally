@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
   .top { padding: 22px 32px; display: flex; align-items: center; justify-content: space-between; }
@@ -20,14 +19,14 @@
   h1 { font-family: 'JetBrains Mono', monospace; font-size: clamp(20px, 3vw, 26px); font-weight: 500; letter-spacing: 0.04em; margin-bottom: 8px; text-transform: uppercase; }
   h2 { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; margin: 36px 0 14px; }
   .lede { font-size: 14px; color: var(--ink-soft); max-width: 680px; margin-bottom: 30px; }
-  .status { padding: 14px 18px; background: rgba(3,97,122,0.08); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
+  .status { padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
 
   .panel { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 18px 22px; margin-bottom: 16px; }
   .row { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: baseline; padding: 12px 0; border-bottom: 1px dashed var(--line); }
   .row:last-child { border-bottom: none; }
   .kind { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
-  .kind.recurring { background: rgba(3,97,122,0.10); color: var(--teal); }
-  .kind.one-off { background: rgba(176,141,60,0.15); color: var(--brass); }
+  .kind.recurring { background: color-mix(in srgb, var(--teal) 10%, transparent); color: var(--teal); }
+  .kind.one-off { background: color-mix(in srgb, var(--brass) 15%, transparent); color: var(--brass); }
   .cmd { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink); }
   .when { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); white-space: nowrap; text-align: right; }
   .when .et { color: var(--teal); font-weight: 500; }
@@ -47,20 +46,22 @@
   .sermon-row .title a:hover { color: var(--teal); }
   .sermon-row .stat { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
   .stat.published { background: rgba(45,134,89,0.12); color: #2d8659; }
-  .stat.pending_review { background: rgba(176,141,60,0.15); color: var(--brass); }
+  .stat.pending_review { background: color-mix(in srgb, var(--brass) 15%, transparent); color: var(--brass); }
   .stat.draft { background: rgba(168,42,31,0.10); color: #a82a1f; }
-  .stat.soft_discarded, .stat.trashed { background: rgba(26,35,50,0.08); color: var(--ink-soft); }
+  .stat.soft_discarded, .stat.trashed { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink-soft); }
   .speaker { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
   .deadline { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-soft); margin-top: 2px; opacity: 0.7; }
 
   .log-tail { background: #1a2332; color: #fefcef; padding: 14px 18px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.55; overflow-x: auto; }
   .log-tail .line { white-space: pre; }
-  .log-tail.empty { background: rgba(26,35,50,0.04); color: var(--ink-soft); font-style: italic; }
+  .log-tail.empty { background: color-mix(in srgb, var(--ink) 4%, transparent); color: var(--ink-soft); font-style: italic; }
 
   .empty-msg { padding: 30px 0; text-align: center; color: var(--ink-soft); font-size: 13px; }
 </style>
+@include('partials.theme-vars')
+@include('admin.partials._typography')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 @include('partials.site-menu')
 
 <header class="top">
@@ -70,7 +71,7 @@
 
 <main>
   <h1>Schedule</h1>
-  <p class="lede">Saturday 3 PM ET the cron scans @gotoshalom for the latest Sabbath stream, runs the Peace pipeline, and emails you for approval. Hourly the state-machine tick handles deadlines. Cookies-authenticated yt-dlp is wired via <code style="background:rgba(26,35,50,0.05);padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;">~/bin/ytdlp-auth</code>.</p>
+  <p class="lede">Saturday 3 PM ET the cron scans @gotoshalom for the latest Sabbath stream, runs the Peace pipeline, and emails you for approval. Hourly the state-machine tick handles deadlines. Cookies-authenticated yt-dlp is wired via <code style="background:color-mix(in srgb, var(--ink) 5%, transparent);padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;">~/bin/ytdlp-auth</code>.</p>
 
   @if (session('status'))
     <div class="status">{{ session('status') }}</div>

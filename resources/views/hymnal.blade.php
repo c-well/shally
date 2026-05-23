@@ -36,10 +36,9 @@
 }
 @endverbatim</script>
 
-<style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --brass-dark:#8c6f2e; --line:rgba(26,35,50,0.10); --cream:#f7f1d8; --warm:#faf3e0; }
+<style>  :root { --warm:#faf3e0; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--warm); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
+  html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 3px; }
 
   main { max-width: 760px; margin: 0 auto; padding: clamp(36px, 6vh, 64px) clamp(20px, 5vw, 32px) 80px; }
@@ -55,10 +54,10 @@
     padding: 14px 18px;
     background: #fff;
     border: 1px solid var(--line); border-radius: 4px;
-    box-shadow: 0 8px 28px -10px rgba(176,141,60,0.18);
+    box-shadow: 0 8px 28px -10px color-mix(in srgb, var(--brass) 18%, transparent);
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .search-wrap:focus-within { border-color: var(--brass); box-shadow: 0 8px 32px -8px rgba(176,141,60,0.32); }
+  .search-wrap:focus-within { border-color: var(--brass); box-shadow: 0 8px 32px -8px color-mix(in srgb, var(--brass) 32%, transparent); }
   .search-wrap svg { color: var(--ink-soft); flex-shrink: 0; }
   .search-input {
     flex: 1; border: 0; background: transparent; outline: none;
@@ -67,7 +66,7 @@
     color: var(--ink); letter-spacing: 0;
     padding: 4px 0;
   }
-  .search-input::placeholder { color: rgba(26,35,50,0.4); font-family: 'Instrument Sans', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0; }
+  .search-input::placeholder { color: color-mix(in srgb, var(--ink) 40%, transparent); font-family: 'Instrument Sans', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0; }
   .search-clear { background: transparent; border: 0; color: var(--ink-soft); cursor: pointer; opacity: 0.6; padding: 4px 8px; display: none; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
   .search-wrap.has-text .search-clear { display: inline-flex; }
 
@@ -97,7 +96,7 @@
     cursor: pointer;
     transition: background 0.15s;
   }
-  .result:hover { background: rgba(176,141,60,0.06); margin: 0 -10px; padding-left: 10px; padding-right: 10px; }
+  .result:hover { background: color-mix(in srgb, var(--brass) 6%, transparent); margin: 0 -10px; padding-left: 10px; padding-right: 10px; }
   .result-num {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px; color: var(--brass); font-weight: 500; letter-spacing: 0.04em;
@@ -108,7 +107,7 @@
     font-size: 20px; font-weight: 500; line-height: 1.3;
     color: var(--ink); flex: 1;
   }
-  .result-title mark { background: rgba(176,141,60,0.22); color: var(--ink); padding: 0 2px; border-radius: 2px; }
+  .result-title mark { background: color-mix(in srgb, var(--brass) 22%, transparent); color: var(--ink); padding: 0 2px; border-radius: 2px; }
   .results-empty { padding: 30px 0; text-align: center; font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--ink-soft); opacity: 0.7; }
   .more-btn { margin: 24px auto 0; display: block; padding: 12px 22px; background: transparent; color: var(--brass); border: 1px solid var(--brass); border-radius: 4px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 0.15s, color 0.15s; }
   .more-btn:hover { background: var(--brass); color: #fff; }
@@ -116,7 +115,7 @@
   /* Hymn detail overlay */
   .hymn-overlay {
     position: fixed; inset: 0; z-index: 300;
-    background: rgba(26,35,50,0.55);
+    background: color-mix(in srgb, var(--ink) 55%, transparent);
     display: none; align-items: center; justify-content: center;
     padding: clamp(12px, 4vw, 40px);
     overflow-y: auto;
@@ -181,8 +180,9 @@
   .cross-links a { display: inline-block; margin: 0 12px; color: var(--brass); font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; }
   .cross-links a:hover { color: var(--brass-dark); text-decoration: underline; }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

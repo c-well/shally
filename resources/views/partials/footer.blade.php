@@ -6,38 +6,40 @@
   context-specific footers — see project_church_app memory for rationale).
 --}}
 <style>
+  /* FOOTER_THEME_VARS — switched from hardcoded #03617A/#334455 to CSS vars (with hardcoded fallbacks)
+     so the footer picks up the site theme via body[data-theme="..."]. 2026-05-23 */
   @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-display: swap; }
   footer.site {
     margin-top: 64px;
     padding: 48px clamp(20px, 5vw, 40px) 64px;
     text-align: center;
-    border-top: 1px solid rgba(26,35,50,0.10);
-    color: #334455;
+    border-top: 1px solid var(--line, color-mix(in srgb, var(--ink) 10%, transparent));
+    color: var(--ink-soft, #334455);
   }
   footer.site .footer-brand {
     font-family: 'Xtreem', 'Cormorant Garamond', serif;
     font-size: 72px; font-weight: 500; font-style: normal; text-transform: lowercase;
-    line-height: 0.95; color: #03617A; margin-bottom: 8px; letter-spacing: -0.02em;
+    line-height: 0.95; color: var(--teal, #03617A); margin-bottom: 8px; letter-spacing: -0.02em;
   }
   footer.site address {
     font-style: normal;
     font-family: 'Instrument Sans', sans-serif;
     font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
-    line-height: 1.85; color: #334455; margin-bottom: 24px;
+    line-height: 1.85; color: var(--ink-soft, #334455); margin-bottom: 24px;
   }
-  footer.site address a { color: #334455; border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s; }
-  footer.site address a:hover { color: #03617A; border-bottom-color: #03617A; }
+  footer.site address a { color: var(--ink-soft, #334455); border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  footer.site address a:hover { color: var(--teal, #03617A); border-bottom-color: var(--teal, #03617A); }
   footer.site .socials { display: flex; gap: 16px; justify-content: center; margin-bottom: 24px; }
   footer.site .socials a {
     width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
-    border: 1px solid rgba(26,35,50,0.10); border-radius: 50%; color: #334455;
+    border: 1px solid var(--line, color-mix(in srgb, var(--ink) 10%, transparent)); border-radius: 50%; color: var(--ink-soft, #334455);
     transition: color 0.15s, border-color 0.15s;
   }
-  footer.site .socials a:hover { color: #03617A; border-color: #03617A; }
+  footer.site .socials a:hover { color: var(--teal, #03617A); border-color: var(--teal, #03617A); }
   footer.site .socials svg { width: 16px; height: 16px; }
   footer.site .copy {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: #334455; opacity: 0.7; letter-spacing: 0.08em;
+    font-size: 10px; color: var(--ink-soft, #334455); opacity: 0.7; letter-spacing: 0.08em;
   }
 </style>
 <footer class="site">

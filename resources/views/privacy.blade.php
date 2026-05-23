@@ -10,14 +10,6 @@
   'path'        => '/privacy',
 ])
 <style>
-  :root {
-    --parchment: #fefcef;
-    --ink: #1a2332;
-    --ink-soft: #5a6478;
-    --teal: #03617A;
-    --brass: #b08d3c;
-    --line: rgba(26,35,50,0.10);
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Cormorant Garamond', serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
 
@@ -42,8 +34,9 @@
   .prose code { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 3px; }
   html.dark .prose code { background: rgba(255,255,255,0.06); }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

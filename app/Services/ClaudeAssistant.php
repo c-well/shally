@@ -53,6 +53,20 @@ class ClaudeAssistant
             );
 
             // content is an array of polymorphic blocks — guard for the text block
+                        // ANTHROPIC_USAGE_TRACKED — log this call for the in-app cost dashboard
+            try {
+                \App\Models\AnthropicUsageLog::track([
+                    'source'             => 'feedback.assistant',
+                    'model'              => self::MODEL,
+                    'input_tokens'       => $response->usage->inputTokens ?? 0,
+                    'output_tokens'      => $response->usage->outputTokens ?? 0,
+                    'cache_read_tokens'  => $response->usage->cacheReadInputTokens ?? 0,
+                    'cache_write_tokens' => $response->usage->cacheCreationInputTokens ?? 0,
+                    'request_id'         => $response->id ?? null,
+                    'outcome'            => 'ok',
+                ]);
+            } catch (\Throwable $e) { /* never block on logging */ }
+
             foreach ($response->content as $block) {
                 if ($block->type === 'text') {
                     return trim($block->text);

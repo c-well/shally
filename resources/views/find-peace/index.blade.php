@@ -15,22 +15,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #fefcef; --bg-elevated: #f7f1d8;
-    --ink: #1a2332; --ink-soft: #334455; --ink-faint: rgba(26,35,50,0.45);
-    /* Light mode: brass tokens map to teal so the accent matches the main site. */
-    --brass: #03617A; --brass-bright: #048aaa;
-    --line: rgba(26,35,50,0.10); --line-strong: rgba(26,35,50,0.18);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0a1014; --bg-elevated: #111820;
-      --ink: #fefcef; --ink-soft: rgba(254,252,239,0.65); --ink-faint: rgba(254,252,239,0.35);
-      /* Dark mode: warm brass reads better on deep bg. */
-      --brass: #b08d3c; --brass-bright: #d4a94a;
-      --line: rgba(254,252,239,0.08); --line-strong: rgba(254,252,239,0.15);
-    }
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
@@ -76,7 +60,7 @@
     color: var(--ink); outline: none;
     transition: border-color 0.3s, box-shadow 0.3s;
   }
-  .search-input:focus { border-color: var(--brass); box-shadow: 0 0 0 4px rgba(176,141,60,0.12); }
+  .search-input:focus { border-color: var(--brass); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brass) 12%, transparent); }
   .search-input::placeholder { color: var(--ink-faint); font-weight: 300; }
   .whisper { font-size: 0.85rem; color: var(--ink-faint); font-weight: 300; margin-bottom: 2.5rem; }
 
@@ -92,7 +76,7 @@
     border-radius: 6px;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .qa-card:hover { border-color: var(--brass); box-shadow: 0 4px 16px -8px rgba(176,141,60,0.25); }
+  .qa-card:hover { border-color: var(--brass); box-shadow: 0 4px 16px -8px color-mix(in srgb, var(--brass) 25%, transparent); }
   .qa-card details summary {
     cursor: pointer; list-style: none;
     padding: 1.1rem 1.4rem;
@@ -218,6 +202,7 @@
     .scroll-cue .arrow { font-size: 1.2rem; }
   }
 </style>
+@include('partials.find-peace-vars')
 </head>
 <body>
 

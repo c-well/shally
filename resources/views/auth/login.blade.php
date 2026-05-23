@@ -12,7 +12,7 @@
   :root {
     --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455;
     --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c;
-    --line:rgba(26,35,50,0.12);
+    --line:color-mix(in srgb, var(--ink) 12%, transparent);
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
@@ -73,7 +73,7 @@
   }
 
   .flash {
-    background: rgba(3,97,122,0.08);
+    background: color-mix(in srgb, var(--teal) 8%, transparent);
     border-left: 3px solid var(--teal);
     color: var(--teal-dark);
     padding: 12px 16px; border-radius: 0 4px 4px 0;
@@ -98,7 +98,7 @@
   }
   input:focus {
     border-color: var(--teal);
-    box-shadow: 0 0 0 3px rgba(3,97,122,0.12);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent);
   }
 
   .err {

@@ -16,8 +16,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-display: swap; }
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -40,7 +38,7 @@
   .prose h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 38px); font-weight: 500; letter-spacing: -0.02em; color: var(--ink); margin: 2em 0 0.5em; padding-top: 0.4em; border-top: 1px solid var(--line); }
   .prose h2:first-child { border-top: 0; padding-top: 0; margin-top: 1em; }
   .prose h3 { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 3vw, 28px); font-weight: 500; color: var(--ink); margin: 1.6em 0 0.5em; }
-  .prose blockquote { margin: 1.8em 0; padding: 18px 26px; background: rgba(3,97,122,0.06); border-left: 4px solid var(--teal); border-radius: 0 8px 8px 0; font-style: italic; color: var(--ink-soft); }
+  .prose blockquote { margin: 1.8em 0; padding: 18px 26px; background: color-mix(in srgb, var(--teal) 6%, transparent); border-left: 4px solid var(--teal); border-radius: 0 8px 8px 0; font-style: italic; color: var(--ink-soft); }
   .prose ul, .prose ol { margin: 1em 0 1em 1.4em; }
   .prose li { margin-bottom: 0.4em; }
   .prose a { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; }
@@ -55,8 +53,9 @@
 
   footer { padding: 22px clamp(20px, 5vw, 40px) 40px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink-soft); opacity: 0.6; }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

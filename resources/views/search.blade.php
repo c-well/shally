@@ -13,7 +13,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); --cream:#f7f1d8; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -30,10 +29,10 @@
     padding: 14px 18px;
     background: #fff;
     border: 1px solid var(--line); border-radius: 4px;
-    box-shadow: 0 8px 28px -10px rgba(26,35,50,0.12);
+    box-shadow: 0 8px 28px -10px color-mix(in srgb, var(--ink) 12%, transparent);
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .search-wrap:focus-within { border-color: var(--teal); box-shadow: 0 8px 32px -8px rgba(3,97,122,0.22); }
+  .search-wrap:focus-within { border-color: var(--teal); box-shadow: 0 8px 32px -8px color-mix(in srgb, var(--teal) 22%, transparent); }
   .search-wrap svg { color: var(--ink-soft); flex-shrink: 0; }
   .search-input {
     flex: 1; border: 0; background: transparent; outline: none;
@@ -42,7 +41,7 @@
     color: var(--ink); letter-spacing: 0;
     padding: 4px 0;
   }
-  .search-input::placeholder { color: rgba(26,35,50,0.4); font-weight: 500; }
+  .search-input::placeholder { color: color-mix(in srgb, var(--ink) 40%, transparent); font-weight: 500; }
   .search-clear { background: transparent; border: 0; color: var(--ink-soft); cursor: pointer; opacity: 0.6; padding: 4px 8px; display: none; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
   .search-wrap.has-text .search-clear { display: inline-flex; }
 
@@ -73,7 +72,7 @@
     color: inherit;
     transition: background 0.15s;
   }
-  .result:hover { background: rgba(3,97,122,0.04); margin: 0 -10px; padding-left: 10px; padding-right: 10px; }
+  .result:hover { background: color-mix(in srgb, var(--teal) 4%, transparent); margin: 0 -10px; padding-left: 10px; padding-right: 10px; }
   .result-kind {
     display: inline-block; padding: 2px 8px;
     background: var(--cream); color: var(--ink-soft);
@@ -82,8 +81,8 @@
     font-size: 9px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
     margin-bottom: 8px;
   }
-  .result-kind.page       { background: rgba(3,97,122,0.10);  color: var(--teal-dark); }
-  .result-kind.peace-note { background: rgba(176,141,60,0.10); color: var(--brass); }
+  .result-kind.page       { background: color-mix(in srgb, var(--teal) 10%, transparent);  color: var(--teal-dark); }
+  .result-kind.peace-note { background: color-mix(in srgb, var(--brass) 10%, transparent); color: var(--brass); }
   .result-kind.bulletin   { background: rgba(45,134,89,0.10);  color: #2d8659; }
   .result-kind.event      { background: rgba(168,42,31,0.08);  color: #a82a1f; }
   .result-kind.lesson     { background: rgba(107,77,138,0.10); color: #6b4d8a; }
@@ -92,12 +91,12 @@
     font-size: 22px; font-weight: 500; line-height: 1.3;
     color: var(--ink); margin-bottom: 4px;
   }
-  .result-title mark { background: rgba(176,141,60,0.22); color: var(--ink); padding: 0 2px; border-radius: 2px; }
+  .result-title mark { background: color-mix(in srgb, var(--brass) 22%, transparent); color: var(--ink); padding: 0 2px; border-radius: 2px; }
   .result-desc {
     font-family: 'Cormorant Garamond', serif;
     font-size: 16px; line-height: 1.5; color: var(--ink-soft);
   }
-  .result-desc mark { background: rgba(176,141,60,0.18); color: var(--ink); padding: 0 2px; border-radius: 2px; }
+  .result-desc mark { background: color-mix(in srgb, var(--brass) 18%, transparent); color: var(--ink); padding: 0 2px; border-radius: 2px; }
   .results-empty { padding: 30px 0; text-align: center; font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--ink-soft); opacity: 0.7; }
 
   /* Cross-link footer */
@@ -107,8 +106,9 @@
   .cross-links a { display: inline-block; margin: 0 12px; color: var(--teal); font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; }
   .cross-links a:hover { color: var(--teal-dark); text-decoration: underline; }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 

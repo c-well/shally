@@ -71,7 +71,7 @@
         letter-spacing: 0.18em; text-transform: uppercase;
         cursor: pointer;
         line-height: 1;
-        box-shadow: 0 4px 14px -4px rgba(26,35,50,0.30);
+        box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--ink) 30%, transparent);
         transition: background 0.15s, border-color 0.15s, transform 0.1s;
         text-decoration: none;
       }
@@ -93,9 +93,9 @@
         min-width: 280px;
         max-width: 340px;
         background: var(--parchment, #fefcef);
-        border: 1px solid var(--line, rgba(26,35,50,0.12));
+        border: 1px solid var(--line, color-mix(in srgb, var(--ink) 12%, transparent));
         border-radius: 16px;
-        box-shadow: 0 18px 56px -10px rgba(26,35,50,0.28);
+        box-shadow: 0 18px 56px -10px color-mix(in srgb, var(--ink) 28%, transparent);
         padding: 22px 16px;
         z-index: 250;
       }
@@ -104,7 +104,7 @@
       .admin-float-section + .admin-float-section {
         margin-top: 18px;
         padding-top: 18px;
-        border-top: 1px solid var(--line, rgba(26,35,50,0.12));
+        border-top: 1px solid var(--line, color-mix(in srgb, var(--ink) 12%, transparent));
       }
       .admin-float-eyebrow {
         font-family: 'Instrument Sans', sans-serif;
@@ -132,7 +132,7 @@
         transition: color 0.12s, background 0.12s;
         min-height: 44px;
       }
-      .admin-float-item:hover { color: var(--teal, #03617A); background: rgba(3,97,122,0.06); }
+      .admin-float-item:hover { color: var(--teal, #03617A); background: color-mix(in srgb, var(--teal) 6%, transparent); }
       .admin-float-item:focus-visible { outline: 2px solid var(--teal, #03617A); outline-offset: 2px; }
       .admin-float-user {
         padding: 4px 8px 12px;

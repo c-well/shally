@@ -11,7 +11,7 @@
 <style>
   :root {
     --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455;
-    --teal:#03617A; --teal-dark:#024357; --line:rgba(26,35,50,0.12);
+    --teal:#03617A; --teal-dark:#024357; --line:color-mix(in srgb, var(--ink) 12%, transparent);
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
@@ -42,7 +42,7 @@
   .lede { color: var(--ink-soft); font-size: 16px; line-height: 1.55; margin-bottom: 32px; max-width: 380px; }
 
   .flash {
-    background: rgba(3,97,122,0.08);
+    background: color-mix(in srgb, var(--teal) 8%, transparent);
     border-left: 3px solid var(--teal);
     color: var(--teal-dark);
     padding: 12px 16px; border-radius: 0 4px 4px 0;
@@ -53,7 +53,7 @@
   .row { display: flex; flex-direction: column; gap: 7px; }
   .lbl { font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-soft); }
   input[type="email"] { font: inherit; font-size: 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: var(--ink); width: 100%; transition: border-color 0.15s, box-shadow 0.15s; }
-  input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(3,97,122,0.12); }
+  input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
   .err { color: var(--ink); background: rgba(192, 57, 43, 0.08); border-left: 3px solid #c0392b; padding: 6px 12px; font-size: 13px; line-height: 1.4; border-radius: 0 4px 4px 0; margin-top: 6px; }
 
   .actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; }

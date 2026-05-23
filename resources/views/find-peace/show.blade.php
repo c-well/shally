@@ -80,29 +80,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  @font-face {
-    font-family: 'Xtreem';
-    src: url('/fonts/XtreemMedium.ttf') format('truetype');
-    font-weight: 500; font-style: normal; font-display: swap;
-  }
-  :root {
-    --bg: #fefcef; --bg-elevated: #f7f1d8;
-    --ink: #1a2332; --ink-soft: #334455; --ink-faint: rgba(26,35,50,0.45);
-    /* Light mode: brass tokens map to teal so the accent matches the main site
-       and stays legible on the parchment background. */
-    --brass: #03617A; --brass-bright: #048aaa;
-    --teal: #03617A; --teal-bright: #048aaa;
-    --line: rgba(26,35,50,0.10); --line-strong: rgba(26,35,50,0.18);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0a1014; --bg-elevated: #111820;
-      --ink: #fefcef; --ink-soft: rgba(254,252,239,0.65); --ink-faint: rgba(254,252,239,0.35);
-      /* Dark mode: restore warm brass — it reads well on the deep green/black bg. */
-      --brass: #b08d3c; --brass-bright: #d4a94a;
-      --line: rgba(254,252,239,0.08); --line-strong: rgba(254,252,239,0.15);
-    }
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
@@ -154,14 +131,14 @@
     --player-accent: #03617A;
     --player-accent-bright: #024357;
     --player-bg: #fbf4e0;
-    --player-border: rgba(26,35,50,0.10);
+    --player-border: color-mix(in srgb, var(--ink) 10%, transparent);
     --player-ink: #1a2332;
     --player-ink-soft: #334455;
-    --player-track: rgba(26,35,50,0.12);
-    --player-buffer: rgba(3,97,122,0.18);
-    --player-glow: rgba(3,97,122,0.45);
-    --player-glow-hover: rgba(3,97,122,0.65);
-    --player-tint: rgba(3,97,122,0.12);
+    --player-track: color-mix(in srgb, var(--ink) 12%, transparent);
+    --player-buffer: color-mix(in srgb, var(--teal) 18%, transparent);
+    --player-glow: color-mix(in srgb, var(--teal) 45%, transparent);
+    --player-glow-hover: color-mix(in srgb, var(--teal) 65%, transparent);
+    --player-tint: color-mix(in srgb, var(--teal) 12%, transparent);
 
     margin: 0 auto 3rem;
     padding: 28px clamp(20px, 4vw, 32px);
@@ -169,7 +146,7 @@
     border: 1px solid var(--player-border);
     border-radius: 14px;
     color: var(--player-ink);
-    box-shadow: 0 18px 44px -22px rgba(3,97,122,0.22);
+    box-shadow: 0 18px 44px -22px color-mix(in srgb, var(--teal) 22%, transparent);
   }
   .player audio { display: none; }
   .player-controls {
@@ -294,7 +271,7 @@
   .qa-item:hover { border-color: var(--brass); }
   .qa-item.spotlight {
     border-color: var(--brass);
-    box-shadow: 0 4px 16px -8px rgba(176,141,60,0.3);
+    box-shadow: 0 4px 16px -8px color-mix(in srgb, var(--brass) 30%, transparent);
   }
   .qa-item details summary {
     cursor: pointer; list-style: none;
@@ -330,10 +307,10 @@
     margin-bottom: 0.75rem;
     border: 1px solid var(--line);
     border-radius: 4px;
-    background: rgba(176,141,60,0.03);
+    background: color-mix(in srgb, var(--brass) 3%, transparent);
     transition: background 0.2s;
   }
-  .section-accordion[open] { background: rgba(176,141,60,0.06); }
+  .section-accordion[open] { background: color-mix(in srgb, var(--brass) 6%, transparent); }
   .section-accordion > summary {
     cursor: pointer; list-style: none;
     display: flex; align-items: center; gap: 0.75rem;
@@ -612,7 +589,7 @@
   .poll-option:hover { border-color: var(--brass); }
   .poll-option input[type=radio] { accent-color: var(--brass); margin: 0; flex-shrink: 0; }
   .poll-option-text { flex: 1; font-size: 0.95rem; color: var(--ink); }
-  .poll-option.selected { border-color: var(--brass); background: rgba(3,97,122,0.05); }
+  .poll-option.selected { border-color: var(--brass); background: color-mix(in srgb, var(--teal) 5%, transparent); }
   .poll-submit {
     margin-top: 1.2rem;
     padding: 0.7rem 1.4rem;
@@ -635,11 +612,11 @@
   .poll-result-row.canonical { border-color: var(--brass); }
   .poll-result-bar {
     position: absolute; inset: 0;
-    background: rgba(3,97,122,0.12);
+    background: color-mix(in srgb, var(--teal) 12%, transparent);
     width: 0%; transition: width 0.6s ease-out;
     z-index: 0;
   }
-  .poll-result-row.canonical .poll-result-bar { background: rgba(3,97,122,0.20); }
+  .poll-result-row.canonical .poll-result-bar { background: color-mix(in srgb, var(--teal) 20%, transparent); }
   .poll-result-content {
     position: relative; z-index: 1;
     display: flex; justify-content: space-between; align-items: center;
@@ -718,11 +695,11 @@
     transition: border-color 0.15s, background 0.15s, transform 0.1s;
     width: 100%;
   }
-  .share-option:hover { border-color: var(--brass); background: rgba(176,141,60,0.06); }
+  .share-option:hover { border-color: var(--brass); background: color-mix(in srgb, var(--brass) 6%, transparent); }
   .share-option:active { transform: scale(0.98); }
   .share-option .icon-wrap {
     width: 36px; height: 36px; border-radius: 50%;
-    background: rgba(176,141,60,0.12); color: var(--brass);
+    background: color-mix(in srgb, var(--brass) 12%, transparent); color: var(--brass);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
@@ -731,7 +708,7 @@
   .share-option .opt-title { font-weight: 500; font-size: 0.98rem; line-height: 1.3; display: block; }
   .share-option .opt-sub { font-size: 0.78rem; color: var(--ink-soft); margin-top: 2px; line-height: 1.3; display: block; }
   .share-option .chev { color: var(--ink-faint); font-size: 1.2rem; line-height: 1; }
-  .share-option.success { border-color: var(--brass); background: rgba(176,141,60,0.10); }
+  .share-option.success { border-color: var(--brass); background: color-mix(in srgb, var(--brass) 10%, transparent); }
   .share-option.success .icon-wrap { background: var(--brass); color: var(--bg); }
   .share-more-toggle {
     margin-top: 0.8rem; padding-top: 0.8rem;
@@ -754,6 +731,7 @@
   }
   .share-modal-cancel:hover { color: var(--ink-soft); }
 </style>
+@include('partials.find-peace-vars')
 </head>
 <body>
 

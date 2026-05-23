@@ -14,8 +14,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-display: swap; }
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
@@ -25,7 +23,7 @@
   .top a { font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; color: var(--ink-soft); }
   .top a:hover { color: var(--teal); }
   .top .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--ink-soft); opacity: 0.65; display: flex; align-items: center; gap: 10px; }
-  .offline-pill { display: none; padding: 3px 8px; border-radius: 999px; background: rgba(176,141,60,0.15); color: var(--brass); font-weight: 700; letter-spacing: 0.2em; }
+  .offline-pill { display: none; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--brass) 15%, transparent); color: var(--brass); font-weight: 700; letter-spacing: 0.2em; }
   .offline-pill.on { display: inline-block; }
 
   main { max-width: 760px; margin: 0 auto; padding: clamp(36px, 7vh, 64px) clamp(20px, 5vw, 32px) 80px; }
@@ -60,7 +58,7 @@
   .day-cell:hover { border-color: var(--teal); color: var(--teal); }
   .day-cell .dow { font-family: 'Instrument Sans', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px; }
   .day-cell .dnum { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; line-height: 1; color: var(--ink); letter-spacing: -0.015em; }
-  .day-cell.active { background: var(--teal); border-color: var(--teal); color: #fff; box-shadow: 0 6px 14px -6px rgba(3,97,122,0.4); }
+  .day-cell.active { background: var(--teal); border-color: var(--teal); color: #fff; box-shadow: 0 6px 14px -6px color-mix(in srgb, var(--teal) 40%, transparent); }
   .day-cell.active .dnum { color: #fff; }
   .day-cell.active .dow { color: rgba(255,255,255,0.85); }
   .day-cell.today:not(.active) { border-color: var(--brass); }
@@ -77,17 +75,17 @@
   .prose h2, .prose h3 { font-family: 'Cormorant Garamond', serif; font-weight: 600; letter-spacing: -0.015em; margin: 1.4em 0 0.5em; color: var(--ink); }
   .prose h2 { font-size: 1.4em; }
   .prose h3 { font-size: 1.15em; }
-  .prose blockquote { margin: 1.2em 0; padding: 14px 22px; border-left: 3px solid var(--teal); background: rgba(3,97,122,0.05); font-style: italic; color: var(--ink-soft); }
+  .prose blockquote { margin: 1.2em 0; padding: 14px 22px; border-left: 3px solid var(--teal); background: color-mix(in srgb, var(--teal) 5%, transparent); font-style: italic; color: var(--ink-soft); }
   /* Memory Text — the headline verse for the week, set apart with teal card + monospace label. */
   .prose blockquote.memory-verse {
     margin: 2em 0;
     padding: 26px 28px 28px;
-    background: rgba(3,97,122,0.07);
-    border: 1px solid rgba(3,97,122,0.25);
+    background: color-mix(in srgb, var(--teal) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--teal) 25%, transparent);
     border-left: 4px solid var(--teal);
     border-radius: 8px;
     font-style: normal; color: var(--ink);
-    box-shadow: 0 6px 20px -12px rgba(3,97,122,0.35);
+    box-shadow: 0 6px 20px -12px color-mix(in srgb, var(--teal) 35%, transparent);
   }
   .prose blockquote.memory-verse > p:first-child {
     font-family: 'JetBrains Mono', monospace;
@@ -97,19 +95,19 @@
     margin-bottom: 14px;
     font-style: normal;
   }
-  .prose blockquote.memory-verse a.verse { background: rgba(3,97,122,0.16); }
+  .prose blockquote.memory-verse a.verse { background: color-mix(in srgb, var(--teal) 16%, transparent); }
   html.font-large  .prose blockquote.memory-verse > p:first-child { font-size: 12px; }
   html.font-xlarge .prose blockquote.memory-verse > p:first-child { font-size: 13px; }
   .prose ul, .prose ol { margin: 1em 0 1em 1.4em; }
   .prose li { margin-bottom: 0.5em; }
   .prose a.verse {
     display: inline; padding: 1px 5px; margin: 0 1px;
-    border-radius: 3px; background: rgba(3,97,122,0.08);
+    border-radius: 3px; background: color-mix(in srgb, var(--teal) 8%, transparent);
     color: var(--teal); text-decoration: none; font-weight: 500;
     font-size: 0.92em; cursor: pointer;
     transition: background 0.12s;
   }
-  .prose a.verse:hover { background: rgba(3,97,122,0.18); }
+  .prose a.verse:hover { background: color-mix(in srgb, var(--teal) 18%, transparent); }
   .prose a:not(.verse) { color: var(--teal); text-decoration: underline; text-underline-offset: 2px; }
 
   .day-foot-nav { margin-top: 50px; display: flex; justify-content: space-between; gap: 14px; padding-top: 26px; border-top: 1px solid var(--line); }
@@ -132,7 +130,7 @@
 
   /* Verse modal */
   .verse-modal {
-    position: fixed; inset: 0; background: rgba(26,35,50,0.55);
+    position: fixed; inset: 0; background: color-mix(in srgb, var(--ink) 55%, transparent);
     display: none; align-items: flex-end; justify-content: center;
     z-index: 200; padding: 0;
   }
@@ -180,7 +178,7 @@
   html.font-xlarge .prose { font-size: 26px; line-height: 1.85; }
   html.font-xlarge .verse-modal-body { font-size: 24px; line-height: 1.75; }
 
-  .font-toggle { position: fixed; bottom: 22px; right: 22px; display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; background: #fff; border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 6px 18px -8px rgba(26,35,50,0.25); cursor: pointer; user-select: none; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); transition: border-color 0.15s, color 0.15s, transform 0.1s; z-index: 100; }
+  .font-toggle { position: fixed; bottom: 22px; right: 22px; display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; background: #fff; border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--ink) 25%, transparent); cursor: pointer; user-select: none; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); transition: border-color 0.15s, color 0.15s, transform 0.1s; z-index: 100; }
   .font-toggle:hover { border-color: var(--teal); color: var(--teal); }
   .font-toggle:active { transform: translateY(1px); }
   .font-toggle .aa { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; letter-spacing: -0.5px; line-height: 1; }
@@ -190,8 +188,9 @@
     .font-toggle { bottom: 14px; right: 14px; padding: 8px 12px; font-size: 10px; }
   }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 @include('partials.site-menu')
 
@@ -438,7 +437,7 @@
     if (!html) {
       const keys = ref.split(',').map(s => s.trim()).filter(Boolean);
       html = keys.map(k => verses[k] || '').filter(Boolean)
-                 .join('<hr style="margin:20px 0; border:none; border-top:1px solid rgba(26,35,50,0.1);">');
+                 .join('<hr style="margin:20px 0; border:none; border-top:1px solid color-mix(in srgb, var(--ink) 10%, transparent);">');
     }
     if (!html) html = '<p><em>Scripture not available — try opening the PDF.</em></p>';
 

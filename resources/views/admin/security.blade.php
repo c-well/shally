@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455; --ink-faint:rgba(26,35,50,0.45); --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c; --red:#a82a1f; --green:#2d8659; --line:rgba(26,35,50,0.10); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
   .top { padding: 22px 32px; display: flex; align-items: center; justify-content: space-between; }
@@ -20,7 +19,7 @@
   h1 { font-family: 'JetBrains Mono', monospace; font-size: clamp(20px, 3vw, 26px); font-weight: 500; letter-spacing: 0.04em; margin-bottom: 8px; text-transform: uppercase; }
   h2 { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; margin: 36px 0 14px; }
   .lede { font-size: 14px; color: var(--ink-soft); max-width: 720px; margin-bottom: 30px; }
-  .status { padding: 14px 18px; background: rgba(3,97,122,0.08); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
+  .status { padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
 
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 36px; }
   .kpi { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 16px 20px; }
@@ -38,9 +37,9 @@
   .when { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); white-space: nowrap; }
   .pill { display:inline-block; padding: 2px 7px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; }
   .pill.blocked { background: rgba(168,42,31,0.10); color: var(--red); }
-  .pill.warn { background: rgba(176,141,60,0.15); color: var(--brass); }
+  .pill.warn { background: color-mix(in srgb, var(--brass) 15%, transparent); color: var(--brass); }
   .pill.ok { background: rgba(45,134,89,0.12); color: var(--green); }
-  .pill.event { background: rgba(26,35,50,0.06); color: var(--ink-soft); }
+  .pill.event { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink-soft); }
 
   .btn { padding: 5px 11px; background: transparent; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 3px; font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; text-decoration: none; }
   .btn:hover { color: var(--teal); border-color: var(--teal); }
@@ -55,15 +54,17 @@
   .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
   @media (max-width: 700px) { .columns { grid-template-columns: 1fr; } }
 
-  details.add-block { margin-bottom: 20px; padding: 14px 18px; background: rgba(3,97,122,0.04); border: 1px solid var(--line); border-radius: 6px; }
+  details.add-block { margin-bottom: 20px; padding: 14px 18px; background: color-mix(in srgb, var(--teal) 4%, transparent); border: 1px solid var(--line); border-radius: 6px; }
   details.add-block summary { cursor: pointer; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); list-style: none; }
   details.add-block summary::-webkit-details-marker { display: none; }
   details.add-block form { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 10px; align-items: end; }
   details.add-block input, details.add-block select { padding: 7px 9px; background: #fff; border: 1px solid var(--line); border-radius: 4px; font-family: inherit; font-size: 13px; }
   details.add-block label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 4px; display: block; }
 </style>
+@include('partials.theme-vars')
+@include('admin.partials._typography')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 @include('partials.site-menu')
 
 <header class="top">
@@ -209,7 +210,7 @@
     <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 14px;">
       <strong>{{ number_format($csf['total_blocked']) }} IPs blocked at firewall level.</strong>
       Sample (10 most-recent additions). Updated {{ \Illuminate\Support\Carbon::parse($csf['updated_at'])->diffForHumans() }}.
-      Full management via <code style="background:rgba(26,35,50,0.05);padding:2px 6px;border-radius:3px;">cPanel → Security → ConfigServer Security</code>.
+      Full management via <code style="background:color-mix(in srgb, var(--ink) 5%, transparent);padding:2px 6px;border-radius:3px;">cPanel → Security → ConfigServer Security</code>.
     </p>
     <div class="csf-list">
       @foreach ($csf['recent_top'] as $line)

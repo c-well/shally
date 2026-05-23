@@ -9,8 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" defer></script>
-<style>
-  :root { --cream:#fbf6e9; --paper:#fff; --ink:#1a2332; --ink-soft:#5a6678; --teal:#03617a; --teal-dark:#024357; --teal-light:#e6f0f3; --line:#e3dfd2; --gold:#b89a4a; --past:#c9c2af; }
+<style>  :root { --paper:#fff; --gold:#b89a4a; --past:#c9c2af; }
   *{box-sizing:border-box; margin:0; padding:0;} html,body{overflow-x:hidden; max-width:100%; background:var(--cream);}
   body{
     color:var(--ink); font-family:'Poppins',ui-sans-serif,sans-serif; font-size:16px; line-height:1.5;
@@ -65,7 +64,7 @@
   .name-chip:hover{background:var(--teal); color:#fff; transform:translateY(-1px);}
   .name-chip:active{cursor:grabbing;}
   .name-chip .grip{opacity:0.4; font-size:11px;}
-  .name-chip.add{background:transparent; color:var(--teal); border:1.5px dashed rgba(3,97,122,0.4); cursor:pointer;}
+  .name-chip.add{background:transparent; color:var(--teal); border:1.5px dashed color-mix(in srgb, var(--teal) 40%, transparent); cursor:pointer;}
 
   .weeks{display:grid; gap:14px; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));}
   .week{
@@ -92,7 +91,7 @@
   }
   .name-chip-assigned:hover .x{opacity:1;}
   .empty-slot{
-    border:1.5px dashed rgba(3,97,122,0.25); border-radius:4px; padding:18px; text-align:center;
+    border:1.5px dashed color-mix(in srgb, var(--teal) 25%, transparent); border-radius:4px; padding:18px; text-align:center;
     font-family:'Instrument Sans',sans-serif; font-size:10px; letter-spacing:0.18em; text-transform:uppercase;
     color:var(--ink-soft); font-weight:600;
   }
@@ -103,7 +102,7 @@
     flex:1; padding:11px 12px; border:1px solid var(--line); border-radius:4px; font:inherit; background:#fff; color:var(--ink);
     min-height:44px;
   }
-  .role-row select:focus, .role-row input:focus{outline:0; border-color:var(--teal); box-shadow:0 0 0 3px rgba(3,97,122,0.12);}
+  .role-row select:focus, .role-row input:focus{outline:0; border-color:var(--teal); box-shadow:0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent);}
 
   /* Previous-weeks collapsible (Anthropic-style list) */
   .prev-weeks{margin-top:36px; padding-top:8px; border-top:1px solid var(--line);}
@@ -163,7 +162,7 @@
   }
   .saved-toast.show{opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);}
 
-  .modal{position:fixed; inset:0; background:rgba(26,35,50,0.55); display:none; align-items:center; justify-content:center; padding:24px; z-index:300;}
+  .modal{position:fixed; inset:0; background:color-mix(in srgb, var(--ink) 55%, transparent); display:none; align-items:center; justify-content:center; padding:24px; z-index:300;}
   .modal.open{display:flex;}
   .modal-card{background:#fff; border-radius:8px; max-width:520px; width:100%; max-height:80vh; overflow-y:auto; padding:22px;}
   .modal-card h3{font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:500; margin-bottom:6px;}
@@ -192,8 +191,9 @@
     .role-label{flex:0 0 100%;}
   }
 </style>
+@include('partials.theme-vars')
 </head>
-<body>
+<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 <div class="wrap">
   <div class="topbar">
     <div class="topbar-title">

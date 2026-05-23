@@ -1,6 +1,9 @@
-{{-- Shared admin typography — mono headers per Karlons request (admin = simpler/tighter
-     than public). Public-facing views keep Cormorant Garamond. To update the rule,
-     edit this one partial — every admin view @includes it. --}}
+{{-- Shared admin typography — Varela Round headings, Noto Serif body (2026-05-23,
+     per Karlons request). ADMIN ONLY — public-facing views keep their own fonts.
+     To update the rule, edit this one partial — every admin view @includes it. --}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Noto+Serif:wght@400;600&display=swap" rel="stylesheet">
 <style>
   /* No italic anywhere in admin — Karlons directive. Scoped to NOT include
      .preview-body and the markdown toolbar where italic is meaningful (it shows
@@ -9,24 +12,34 @@
     font-style: normal !important;
   }
 
-  /* All admin headings use JetBrains Mono — admin reads as "back office" vs polished public. */
-  body h1, body h2, body h3,
-  body .admin-title, body .admin-h, body .page-title {
-    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  /* Body copy — Noto Serif. Override inline Poppins/system defaults in admin blades. */
+  body, body p, body td, body th, body li, body span, body div, body a,
+  body input, body select, body textarea, body button {
+    font-family: "Noto Serif", "Times New Roman", serif !important;
+  }
+  /* Keep monospace where it carries meaning (code, .mono, numeric cells). */
+  body code, body pre, body .mono, body .num, body kbd, body samp {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  }
+
+  /* All admin headings + labels use Varela Round. */
+  body h1, body h2, body h3, body h4,
+  body .admin-title, body .admin-h, body .page-title,
+  body label, body .admin-label, body .field-label,
+  body .label, body .eyebrow, body .card-eyebrow, body .meta {
+    font-family: "Varela Round", Arial, sans-serif !important;
     letter-spacing: 0.02em;
     font-weight: 600;
   }
   body h1, body .page-title { font-size: 22px; }
   body h2 { font-size: 16px; }
   body h3 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft, #334455); }
-  /* Tighten label affordance too — admin likes terse mono labels */
   body label, body .admin-label, body .field-label {
-    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     letter-spacing: 0.06em;
     font-size: 11px;
     text-transform: uppercase;
     color: var(--ink-soft, #334455);
-    font-weight: 500;
+    font-weight: 600;
   }
 </style>
 
