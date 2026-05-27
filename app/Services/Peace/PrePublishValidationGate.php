@@ -93,15 +93,37 @@ class PrePublishValidationGate
             $failed['scriptures_verified'] = 'zero Q&A pairs survived validation';
         }
 
-        // ── Check 6: SPEAKER_CONFIDENCE
-        // If the speaker field exactly matches the default placeholder (or is
-        // empty), we couldn't extract a real name from the intro — that was the
-        // Dr. Calvin Watkins failure mode. A name like "Kumal Smith | Shalom SDA"
-        // is fine (real name + affiliation), only flag the bare placeholder.
+        // ── Check 6: SPEAKER_CONFIDENCE (hardened 2026-05-27 after "Tiny Lights"
+        // slipped through with speaker="Children's day" — the video title leaked
+        // into the speaker field). A real speaker name should:
+        //   (a) NOT be empty / NOT be a known placeholder
+        //   (b) NOT contain calendar / service words (those signal video-title leak)
+        //   (c) Have at least one Capitalized name-shaped token (Firstname Lastname)
+        //       — handles "Kumal Smith", "Sis Keyashia", "Dr Calvin Watkins" etc.
         $speaker = trim((string) ($sermon->speaker ?? ''));
-        $placeholders = ['Shalom SDA Church', 'Shalom SDA', 'Shalom Seventh-day Adventist', 'Unknown', 'Guest'];
-        if ($speaker === '' || in_array($speaker, $placeholders, true)) {
-            $failed['speaker_confidence'] = "speaker not extracted from intro (got: '{$speaker}')";
+        $placeholders = ['Shalom SDA Church', 'Shalom SDA', 'Shalom Seventh-day Adventist', 'Unknown', 'Guest', 'TBD'];
+        // Words that indicate a video-title / non-person value
+        $titleLeakWords = ['day', 'service', 'sabbath', 'morning', 'evening', 'stream', 'live', 'broadcast', 'worship', 'meeting', 'special'];
+
+        $reason = null;
+        if ($speaker === '') {
+            $reason = 'speaker field is empty';
+        } elseif (in_array($speaker, $placeholders, true)) {
+            $reason = "speaker is a placeholder value ('{$speaker}')";
+        } else {
+            $lower = strtolower($speaker);
+            foreach ($titleLeakWords as $w) {
+                if (preg_match('/\b' . preg_quote($w, '/') . '\b/', $lower)) {
+                    $reason = "speaker looks like a video-title leak (contains '{$w}', got: '{$speaker}')";
+                    break;
+                }
+            }
+            if (! $reason && ! preg_match('/[A-Z][a-z]+/', $speaker)) {
+                $reason = "speaker has no proper-name-shaped token (got: '{$speaker}')";
+            }
+        }
+        if ($reason) {
+            $failed['speaker_confidence'] = $reason;
         }
 
         return [
