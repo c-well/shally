@@ -603,6 +603,72 @@
   .verse-toggle:hover { color: #1f6843; }
   .verse-toggle.hidden { opacity: 0; pointer-events: none; }
   .verse-toggle-dot { width: 6px; height: 6px; border-radius: 50%; background: #2d8659; }
+
+  /* LIVE_HERO — appears only when YouTube channel is broadcasting */
+  .hero-cta.live-cta {
+    background: var(--brass, #7a3e9a);
+    color: #fff;
+    border: 0;
+    display: inline-flex; align-items: center; gap: 10px;
+    box-shadow: 0 10px 32px rgba(122,62,154,0.25);
+  }
+  .hero-cta.live-cta:hover { background: color-mix(in srgb, var(--brass, #7a3e9a) 88%, #fff); }
+  .live-cta-dot {
+    width: 7px; height: 7px; background: #fff; border-radius: 50%;
+    animation: liveDotPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes liveDotPulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.55); }
+    70% { box-shadow: 0 0 0 7px rgba(255,255,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+  }
+  .hero-live-links {
+    margin-top: 24px;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
+  }
+  .hero-live-links a {
+    color: var(--ink-soft, #5a6478);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--brass, #7a3e9a) 45%, transparent);
+    padding-bottom: 2px;
+    margin: 0 12px;
+    transition: color 0.18s, border-color 0.18s;
+  }
+  .hero-live-links a:hover { color: var(--ink, #1a2332); border-color: var(--brass, #7a3e9a); }
+  .hero-live-links span { color: var(--ink-soft, #c4bed1); }
+
+  /* LIGHTBOX — YouTube live embed modal */
+  .lb-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(10,10,18,0.88);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .lb-backdrop.open { display: flex; animation: lbFade 0.18s ease; }
+  @keyframes lbFade { from { opacity: 0; } to { opacity: 1; } }
+  .lb-frame {
+    position: relative;
+    width: 100%; max-width: 1080px;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 6px; overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+  .lb-frame iframe { width: 100%; height: 100%; border: 0; }
+  .lb-close {
+    position: absolute; top: -44px; right: 0;
+    background: transparent; border: 0;
+    color: #fff; font-size: 28px; line-height: 1;
+    cursor: pointer; padding: 4px 10px;
+    font-family: inherit; opacity: 0.7;
+    transition: opacity 0.15s;
+  }
+  .lb-close:hover { opacity: 1; }
+  body.lb-open { overflow: hidden; }
 </style>
 @include('partials.theme-vars')
 </head>
@@ -621,8 +687,30 @@
       <p class="verse-ref">— John 3:16 · this week's Sabbath School memory verse</p>
     </div>
   </div>
-  <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin →</a>
-  <a href="{{ route('lesson.show') }}" class="hero-cta-secondary">Sabbath School lesson</a>
+  @php
+    // LIVE_STATE — read from cache only (peace:check-live cron writes every 5 min).
+    // Fail-safe: stale (>15 min) or missing → treat as not live.
+    $liveCheckedAt = \App\Models\AppSetting::get('is_live_checked_at');
+    $isLiveCacheFresh = $liveCheckedAt && \Carbon\Carbon::parse($liveCheckedAt)->gt(now()->subMinutes(15));
+    $isLive = $isLiveCacheFresh && \App\Models\AppSetting::get('is_live') === '1';
+  @endphp
+
+  @if ($isLive)
+    {{-- LIVE — single primary CTA, bulletin + lesson demote to text links --}}
+    <a href="#" class="hero-cta live-cta" data-live-cta>
+      <span class="live-cta-dot" aria-hidden="true"></span>
+      Watch the service · Live now
+    </a>
+    <div class="hero-live-links">
+      <a href="{{ url('/welcome') }}">This Sabbath's bulletin</a>
+      <span aria-hidden="true">·</span>
+      <a href="{{ route('lesson.show') }}">Sabbath School lesson</a>
+    </div>
+  @else
+    {{-- DORMANT — normal two-button hero (unchanged) --}}
+    <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin →</a>
+    <a href="{{ route('lesson.show') }}" class="hero-cta-secondary">Sabbath School lesson</a>
+  @endif
   <div class="verse-toggle-wrap"><button class="verse-toggle hidden" id="verse-toggle" type="button"><span class="verse-toggle-dot"></span><span id="verse-toggle-text">Show verse of the day</span></button></div>
 </section>
 
@@ -1090,5 +1178,49 @@
     });
   })();
 </script>
+
+{{-- LIVE_LIGHTBOX — only rendered when channel is currently live. --}}
+@if (!empty($isLive) && $isLive)
+<div class="lb-backdrop" id="liveLightbox" role="dialog" aria-modal="true" aria-label="Live service">
+  <div class="lb-frame">
+    <button class="lb-close" aria-label="Close">×</button>
+    <iframe
+      id="liveLightboxIframe"
+      src=""
+      title="Live service"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen></iframe>
+  </div>
+</div>
+<script>
+(function () {
+  const backdrop = document.getElementById('liveLightbox');
+  if (!backdrop) return;
+  const iframe   = document.getElementById('liveLightboxIframe');
+  const closeBtn = backdrop.querySelector('.lb-close');
+  const channelId = @json(config('services.youtube.channel_id'));
+  const LIVE_EMBED = `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1`;
+
+  function open() {
+    iframe.src = LIVE_EMBED;
+    backdrop.classList.add('open');
+    document.body.classList.add('lb-open');
+  }
+  function close() {
+    backdrop.classList.remove('open');
+    document.body.classList.remove('lb-open');
+    iframe.src = '';
+  }
+
+  document.querySelectorAll('[data-live-cta]').forEach(el => {
+    el.addEventListener('click', e => { e.preventDefault(); open(); });
+  });
+  closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && backdrop.classList.contains('open')) close(); });
+})();
+</script>
+@endif
 </body>
 </html>

@@ -35,6 +35,10 @@ return [
         ],
     ],
 
+    'youtube' => [
+        'channel_id' => env('YOUTUBE_CHANNEL_ID'),
+    ],
+
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
     ],

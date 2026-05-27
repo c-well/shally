@@ -143,6 +143,31 @@ Schedule::command('peace:review-tick')
     ->onOneServer()
     ->name('peace-review-tick');
 
+
+// Late-evening retry attempts for slow caption generation (Karlon directive 2026-05-23):
+// YouTube can take 2-6 hours to caption a 3-hour livestream. These retries catch it
+// whenever captions land. Scan is idempotent (filters processed videos + watermark
+// blocks archives) so safe to repeat.
+Schedule::command('peace:scan-channel')
+    ->saturdays()->at('19:00')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-scan-channel-retry-7pm');
+
+Schedule::command('peace:scan-channel')
+    ->saturdays()->at('21:00')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-scan-channel-retry-9pm');
+
+Schedule::command('peace:scan-channel')
+    ->sundays()->at('07:00')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-scan-channel-retry-sun-7am');
 // Sunday 12pm ET sanity check — verify a sermon was actually processed yesterday.
 // If no peace_sermons row was created since Saturday 00:00 ET, alert Karlon.
 // Silent on success (no alert spam).
@@ -176,3 +201,57 @@ Schedule::call(function () {
         );
     }
 })->sundays()->at('12:00')->timezone('America/New_York')->name('peace-sunday-sanity-check')->onOneServer();
+
+// Anthropic API spend weekly summary email (Sunday 9am ET)
+Schedule::command('anthropic:weekly-report')
+    ->sundays()
+    ->at('09:00')
+    ->timezone('America/New_York')
+    ->name('anthropic-weekly-report')
+    ->onOneServer();
+
+// LIVE_DETECTOR — polls YouTube every 5 min, caches is_live to AppSetting.
+// Hero CTA on the landing page reads ONLY from cache, never from YouTube directly.
+Schedule::command('peace:check-live')
+    ->everyFiveMinutes()
+    ->onOneServer()
+    ->withoutOverlapping(8)
+    ->name('peace-check-live');
+
+
+// CRON_HEARTBEAT (2026-05-27) — every minute, write a sentinel timestamp to
+// AppSetting so the audit can verify "is cron itself firing?". If this row
+// goes stale, schedule:run has stopped, OS cron broke, or something
+// fundamental is wrong.
+Schedule::call(function () {
+    \App\Models\AppSetting::set('cron_heartbeat_at', now()->toIso8601String());
+})->everyMinute()->name('cron-heartbeat')->onOneServer();
+
+// DAILY_SPEND_CAP (2026-05-27) — hourly check that today and last-7-days
+// Anthropic spend stay within budget. Per-call cap already enforces $1.
+// This catches "many small calls → big total" scenarios.
+Schedule::call(function () {
+    $dailyMax = 5.00;
+    $weeklyMax = 30.00;
+    $today = \App\Models\AnthropicUsageLog::totalSpend(now()->startOfDay());
+    $week  = \App\Models\AnthropicUsageLog::totalSpend(now()->subDays(7));
+
+    $lastAlert = \App\Models\AppSetting::get('spend_cap_last_alert_at', '1970-01-01T00:00:00Z');
+    $cooldown = \Carbon\Carbon::parse($lastAlert)->lt(now()->subHours(6));
+    if (! $cooldown) return;
+
+    $breach = null;
+    if ($today > $dailyMax)      $breach = ['DAILY', $today, $dailyMax];
+    elseif ($week  > $weeklyMax) $breach = ['7-DAY', $week,  $weeklyMax];
+    if (! $breach) return;
+
+    $body = sprintf(
+        "%s Anthropic spend cap tripped.\n\nCurrent: \$%.2f\nCap:     \$%.2f\n\nDashboard: %s\n",
+        $breach[0], $breach[1], $breach[2], url('/admin/anthropic-usage')
+    );
+    \Illuminate\Support\Facades\Mail::raw($body, function ($m) use ($breach) {
+        $m->to('contact@c-wellpics.com')
+          ->subject(sprintf('⚠ [The Church of Peace] %s spend cap tripped: $%.2f', $breach[0], $breach[1]));
+    });
+    \App\Models\AppSetting::set('spend_cap_last_alert_at', now()->toIso8601String());
+})->hourly()->name('anthropic-spend-cap')->onOneServer();
