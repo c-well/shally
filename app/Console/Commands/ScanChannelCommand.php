@@ -161,14 +161,33 @@ class ScanChannelCommand extends Command
         $sermon->draft_email_sent_at          = null;
         $sermon->confirm_delete_email_sent_at = null;
 
-        if ($shortGated) {
-            $sermon->processing_status = 'short_message_review';
-            // Do NOT set published_at — keep it off Find Peace until Karlon decides.
+        // PRE_PUBLISH_VALIDATION_GATE (2026-05-27) — six-check audit before publish.
+        // Catches the failure modes the short-message gate alone missed (Dr. Calvin
+        // Watkins incident, missing audio_url, hallucinated heart-line, etc.).
+        $validationFailed = [];
+        if (! $shortGated) {
+            $gate = app(\App\Services\Peace\PrePublishValidationGate::class);
+            $result = $gate->run($sermon);
+            if (! $result['ok']) {
+                $validationFailed = $result['failed'];
+            }
+        }
+        $heldByGate = $shortGated || !empty($validationFailed);
+
+        if ($heldByGate) {
+            $sermon->processing_status = $shortGated ? 'short_message_review' : 'needs_review';
             $sermon->published_at = null;
-            $this->warn(sprintf(
-                'SHORT MESSAGE detected (span=%ds, words=%d). Held for manual review — NOT published.',
-                $detectedSpan, $sermonWordCount
-            ));
+            if ($shortGated) {
+                $this->warn(sprintf(
+                    'SHORT MESSAGE detected (span=%ds, words=%d). Held — NOT published.',
+                    $detectedSpan, $sermonWordCount
+                ));
+            } else {
+                $this->warn('VALIDATION GATE held the sermon. Failed checks:');
+                foreach ($validationFailed as $check => $reason) {
+                    $this->warn("  ✗ {$check}: {$reason}");
+                }
+            }
         } else {
             $sermon->processing_status = 'pending_review';
             if (!$sermon->published_at) $sermon->published_at = now();
@@ -177,10 +196,10 @@ class ScanChannelCommand extends Command
 
         $sermon->loadMissing('qaPairs');
 
-        if ($shortGated) {
+        if ($heldByGate) {
             // Skip review email + SEO ping. Karlon will get a separate "needs your eyes"
             // heartbeat email below; nothing public-facing should fire.
-            $this->info("Sermon held at /admin/peace/{$sermon->slug}/edit — short-message review required.");
+            $this->info("Sermon held at /admin/peace/{$sermon->slug}/edit — review required.");
         } else {
             try {
                 $mailer->newReview($sermon);
@@ -219,6 +238,20 @@ class ScanChannelCommand extends Command
                 $body .= "Review:  " . url('/admin/peace/' . $sermon->slug . '/edit') . "\n\n";
                 $body .= "From the admin edit screen you can publish manually if the message is\n";
                 $body .= "preachable, or discard it for the week.\n";
+            } elseif (!empty($validationFailed)) {
+                $subject = '[The Church of Peace] ⚠ Validation gate held sermon — review: ' . $sermon->title;
+                $body  = "Pre-publish validation gate caught a problem. Sermon held for review.\n\n";
+                $body .= "  Title:   " . $sermon->title . "\n";
+                $body .= "  ID:      #" . $sermon->id . "\n";
+                $body .= "  Status:  needs_review (NOT published)\n\n";
+                $body .= "Failed checks:\n";
+                foreach ($validationFailed as $check => $reason) {
+                    $body .= "  ✗ {$check}: {$reason}\n";
+                }
+                $body .= "\nReview:  " . url('/admin/peace/' . $sermon->slug . '/edit') . "\n\n";
+                $body .= "If the sermon looks right after review, publish manually.\n";
+                $body .= "If the pipeline picked the wrong content (e.g. a guest speaker\n";
+                $body .= "instead of the main message), discard it for the week.\n";
             } else {
                 $subject = '[The Church of Peace] Sabbath sermon processed: ' . $sermon->title;
                 $body  = "Sabbath sermon processed.\n\n";
