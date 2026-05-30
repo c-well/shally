@@ -136,6 +136,42 @@ Route::middleware('auth')->group(function () {
         Route::delete('/admin/users/{user}/pin',       [\App\Http\Controllers\AdminUsersController::class, 'clearPin'])->name('admin.users.pin.clear');
         // Editable site pages (markdown-backed, image-uploadable)
         Route::get   ('/admin/pages',                   [\App\Http\Controllers\AdminPagesController::class, 'index'])->name('admin.pages.index');
+        Route::post  ('/admin/settings/theme', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate(['theme' => 'required|in:default,communion,easter,christmas,mothers,thanksgiving']);
+            \App\Models\AppSetting::set('site_theme', $data['theme']);
+            \App\Models\AuditLog::record(event: 'site_theme_changed', userId: auth()->id(), description: 'Site theme set to: ' . $data['theme']);
+            return response()->json(['ok' => true, 'theme' => $data['theme']]);
+        })->name('admin.settings.theme');
+        Route::get   ('/admin/anthropic-usage', function () {
+            $now = \Carbon\Carbon::now('America/New_York');
+            $startToday = $now->copy()->startOfDay()->setTimezone('UTC');
+            $start7d    = $now->copy()->subDays(7)->setTimezone('UTC');
+            $startMonth = $now->copy()->startOfMonth()->setTimezone('UTC');
+            $start30d   = $now->copy()->subDays(30)->setTimezone('UTC');
+            return view('admin.anthropic-usage', [
+                'totalToday'  => \App\Models\AnthropicUsageLog::totalSpend($startToday),
+                'callsToday'  => \App\Models\AnthropicUsageLog::where('created_at','>=',$startToday)->count(),
+                'total7d'     => \App\Models\AnthropicUsageLog::totalSpend($start7d),
+                'calls7d'     => \App\Models\AnthropicUsageLog::where('created_at','>=',$start7d)->count(),
+                'totalMonth'  => \App\Models\AnthropicUsageLog::totalSpend($startMonth),
+                'callsMonth'  => \App\Models\AnthropicUsageLog::where('created_at','>=',$startMonth)->count(),
+                'totalAll'    => (float) \App\Models\AnthropicUsageLog::sum('cost_usd'),
+                'callsAll'    => \App\Models\AnthropicUsageLog::count(),
+                'bySource'    => \App\Models\AnthropicUsageLog::spendBySource($start30d),
+                'byModel'     => \App\Models\AnthropicUsageLog::spendByModel($start30d),
+                'recent'      => \App\Models\AnthropicUsageLog::orderByDesc('created_at')->limit(50)->get(),
+            ]);
+        })->name('admin.anthropic-usage');
+        Route::get   ('/admin/changelog',               function () {
+            $path = base_path('docs/CHANGELOG.md');
+            $md = is_file($path) ? file_get_contents($path) : '# No CHANGELOG.md yet';
+            $converter = new \League\CommonMark\CommonMarkConverter([
+                'html_input' => 'strip',
+                'allow_unsafe_links' => false,
+            ]);
+            $html = (string) $converter->convert($md);
+            return view('admin.changelog', ['html' => $html]);
+        })->name('admin.changelog');
         Route::get   ('/admin/pages/{slug}/edit',       [\App\Http\Controllers\AdminPagesController::class, 'edit'])->name('admin.pages.edit');
         Route::patch ('/admin/pages/{slug}',            [\App\Http\Controllers\AdminPagesController::class, 'update'])->name('admin.pages.update');
         Route::post  ('/admin/pages/upload-image',      [\App\Http\Controllers\AdminPagesController::class, 'uploadImage'])->name('admin.pages.upload-image');
