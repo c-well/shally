@@ -165,5 +165,6 @@
 @include("partials.footer")
 
 @include('partials.search-float')
+@include('partials._event-tracker')
 </body>
 </html>

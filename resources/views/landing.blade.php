@@ -1222,5 +1222,6 @@
 })();
 </script>
 @endif
+@include('partials._event-tracker')
 </body>
 </html>

@@ -4651,5 +4651,6 @@ if ('serviceWorker' in navigator) {
     }, {passive: true});
   })();
 </script>
+@include('partials._event-tracker')
 </body>
 </html>

@@ -67,6 +67,14 @@ Route::post('/prayer',   [\App\Http\Controllers\PrayerController::class, 'send']
 Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt',  [\App\Http\Controllers\SitemapController::class, 'robots'])->name('robots');
 
+// Native event tracking — accepts batched interaction events from the in-page tracker.
+// Public (no auth), rate-limited per session_id, CSRF-exempt for cross-context
+// fetch+sendBeacon compatibility. Bot + DNT filtered in the controller.
+Route::post('/api/events', [\App\Http\Controllers\EventIngestController::class, 'ingest'])
+     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+     ->middleware('throttle:60,1')
+     ->name('events.ingest');
+
 Route::middleware(['auth', 'role:clerk'])->group(function () {
     // Bulletin meta + lines + announcements + publish
     Route::patch('/bulletins/{bulletin}',           [BulletinController::class, 'updateMeta'])->name('bulletins.update');
