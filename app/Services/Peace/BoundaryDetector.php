@@ -38,6 +38,16 @@ class BoundaryDetector
     /** Minimum span length we'll consider a sermon candidate (seconds). */
     private const MIN_SERMON_LENGTH = 600;  // 10 minutes
 
+    /**
+     * SPAN_EXTEND (2026-05-30, after David Stewart sermon got cut at 26:30
+     * of an actual 52:22 message). After picking the longest span, walk
+     * forward absorbing nearby spans that look like continuation of the
+     * sermon: brief pauses (preacher drinks water, congregation responds,
+     * altar-call prep) shouldn't truncate the message.
+     */
+    private const EXTEND_MAX_GAP = 90.0;       // join only if gap < this
+    private const EXTEND_MIN_NEXT = 120.0;     // require next span >= 2 min so we don't absorb tiny chatter
+
     public function detect(array $captions, int $totalDurationSeconds): ?array
     {
         if (count($captions) < 10) {
@@ -97,6 +107,33 @@ class BoundaryDetector
 
         $sermon = reset($qualifying);
         $second = next($qualifying);
+
+        // SPAN_EXTEND — absorb nearby continuation spans into the sermon.
+        // Time-sort ALL spans (not just qualifying ones) so we can walk
+        // forward from the picked sermon's end and join short pauses.
+        $spansByTime = $spans;
+        usort($spansByTime, fn($a, $b) => $a['start'] <=> $b['start']);
+        $sermonEnd = $sermon['end'];
+        $absorbed = 0;
+        $absorbedDuration = 0;
+        foreach ($spansByTime as $s) {
+            if ($s['start'] <= $sermonEnd) continue;  // before or overlapping
+            $gap = $s['start'] - $sermonEnd;
+            if ($gap > self::EXTEND_MAX_GAP) break;   // genuine break in content
+            if ($s['length'] < self::EXTEND_MIN_NEXT) continue; // skip noise but keep looking
+            $sermonEnd = $s['end'];
+            $absorbed++;
+            $absorbedDuration += $s['length'];
+        }
+        if ($absorbed > 0) {
+            $sermon['end'] = $sermonEnd;
+            $sermon['length'] = $sermonEnd - $sermon['start'];
+            Log::info('BoundaryDetector: SPAN_EXTEND absorbed continuation spans', [
+                'absorbed_count' => $absorbed,
+                'added_seconds'  => (int) $absorbedDuration,
+                'new_length'     => (int) $sermon['length'],
+            ]);
+        }
 
         // Confidence from ratio of #1 to #2
         $confidence = 0.55;
