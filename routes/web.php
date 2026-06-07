@@ -200,6 +200,7 @@ Route::middleware('auth')->group(function () {
         Route::post  ('/admin/peace/{slug}/scripture',           [\App\Http\Controllers\AdminPeaceController::class, 'addScripture'])->name('admin.peace.scripture.add');
         Route::delete('/admin/peace/{slug}/scripture/{id}',      [\App\Http\Controllers\AdminPeaceController::class, 'destroyScripture'])->name('admin.peace.scripture.destroy');
         Route::post  ('/admin/peace/{slug}/trim',                [\App\Http\Controllers\AdminPeaceController::class, 'trim'])->name('admin.peace.trim');
+        Route::post  ("/admin/peace/{slug}/boundaries",        [\App\Http\Controllers\AdminPeaceController::class, "setBoundaries"])->name("admin.peace.boundaries");
         Route::post  ('/admin/peace/{slug}/recompress',          [\App\Http\Controllers\AdminPeaceController::class, 'recompress'])->name('admin.peace.recompress');
 
         // Peace polls — David-style multiple choice that ties feelings back to scripture

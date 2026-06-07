@@ -67,7 +67,19 @@ class AdminPeaceController extends Controller
                 } catch (\Throwable $e) { /* swallow — duration is best-effort */ }
             }
         }
-        return view('admin.peace.edit', ['sermon' => $sermon, 'audioDur' => $audioDur]);
+        // BOUNDARY_EDITOR — condensed caption events for live caption sync
+        $captionEvents = [];
+        $cachePath = storage_path('app/peace-cache/' . $sermon->youtube_video_id . '.en.json3');
+        if (file_exists($cachePath)) {
+            $json = json_decode(file_get_contents($cachePath), true);
+            foreach ($json['events'] ?? [] as $ev) {
+                $t = ($ev['tStartMs'] ?? 0) / 1000;
+                $text = trim(implode('', array_column($ev['segs'] ?? [], 'utf8')));
+                if ($text === '') continue;
+                $captionEvents[] = ['t' => (int) $t, 'text' => mb_substr($text, 0, 160)];
+            }
+        }
+        return view('admin.peace.edit', ['sermon' => $sermon, 'audioDur' => $audioDur, 'captionEvents' => $captionEvents]);
     }
 
     public function update(Request $request, string $slug): RedirectResponse
@@ -649,6 +661,175 @@ class AdminPeaceController extends Controller
 
             default:
                 return back()->with('status', 'Unknown action.');
+        }
+    }
+    /**
+     * BOUNDARY_EDITOR (2026-05-30) — set sermon_start/end_seconds against the
+     * FULL YouTube video. Three actions:
+     *   - save_only           → update DB only
+     *   - save_and_reslice    → DB + re-slice audio from YouTube source
+     *   - save_reslice_regen  → all of above + regenerate Q&As via Claude
+     *
+     * Re-slice downloads the full audio via yt-dlp, slices with ffmpeg,
+     * replaces the existing sermon mp3. Old file is backed up to .bak.
+     *
+     * Regenerate calls PeaceContentGenerator on the new caption slice,
+     * replaces title / heart_line / summary / speaker / slug / Q&As.
+     */
+    public function setBoundaries(Request $request, string $slug): RedirectResponse
+    {
+        $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
+
+        $data = $request->validate([
+            'start'  => 'required|integer|min:0|max:43200',  // max 12h video
+            'end'    => 'required|integer|min:0|max:43200',
+            'action' => 'required|string|in:save_only,save_and_reslice,save_reslice_regen',
+        ]);
+
+        if ($data['end'] <= $data['start']) {
+            return back()->withErrors(['end' => 'OUT must be after IN.']);
+        }
+        if ($data['end'] - $data['start'] < 60) {
+            return back()->withErrors(['end' => 'Span must be at least 1 minute.']);
+        }
+
+        $oldStart = $sermon->sermon_start_seconds;
+        $oldEnd   = $sermon->sermon_end_seconds;
+        $sermon->sermon_start_seconds = $data['start'];
+        $sermon->sermon_end_seconds   = $data['end'];
+        $sermon->boundary_source = 'manual';
+        $sermon->boundary_reason = sprintf(
+            'Manually set via admin boundary editor. Previous: %s → %s (%s). New: %s → %s (%s).',
+            gmdate('H:i:s', $oldStart),
+            gmdate('H:i:s', $oldEnd),
+            gmdate('i:s', $oldEnd - $oldStart),
+            gmdate('H:i:s', $data['start']),
+            gmdate('H:i:s', $data['end']),
+            gmdate('i:s', $data['end'] - $data['start']),
+        );
+        $sermon->boundary_confidence = 1.0;
+        $sermon->save();
+
+        // Audit log
+        \App\Models\AuditLog::record(
+            event: 'peace_boundaries_updated',
+            userId: $request->user()?->id,
+            description: sprintf('Sermon %s: %s → %s', $sermon->slug,
+                gmdate('H:i:s', $oldStart) . '–' . gmdate('H:i:s', $oldEnd),
+                gmdate('H:i:s', $data['start']) . '–' . gmdate('H:i:s', $data['end'])),
+            meta: ['sermon_id' => $sermon->id, 'old_start' => $oldStart, 'old_end' => $oldEnd, 'new_start' => $data['start'], 'new_end' => $data['end']],
+        );
+
+        if ($data['action'] === 'save_only') {
+            return back()->with('status',
+                'Boundaries saved. Audio + content unchanged — use "Save + Re-slice" when you want them updated to match.');
+        }
+
+        // RE-SLICE — download full audio, cut to new span
+        $videoId = $sermon->youtube_video_id;
+        $audioDir = storage_path('app/public/peace/audio');
+        if (! is_dir($audioDir)) mkdir($audioDir, 0755, true);
+        $existing = "{$audioDir}/{$videoId}.mp3";
+        $fullPath = "/tmp/{$videoId}-full.mp3";
+
+        // Backup old slice
+        if (file_exists($existing)) {
+            copy($existing, $existing . '.bak.' . now()->format('Ymd-His'));
+        }
+
+        // Download full audio (~30-60s for a 2hr video)
+        $dl = new \Symfony\Component\Process\Process([
+            '/home/shalom/bin/ytdlp-auth', '--no-warnings',
+            '--ffmpeg-location', '/usr/local/bin/ffmpeg',
+            '-x', '--audio-format', 'mp3', '--audio-quality', '5',
+            '-o', $fullPath,
+            "https://www.youtube.com/watch?v={$videoId}",
+        ]);
+        $dl->setTimeout(300);
+        $dl->run();
+        if (! $dl->isSuccessful() || ! file_exists($fullPath)) {
+            return back()->with('status', '❌ Audio download failed: ' . substr($dl->getErrorOutput(), 0, 200));
+        }
+
+        // Slice
+        $span = $data['end'] - $data['start'];
+        $slice = new \Symfony\Component\Process\Process([
+            '/usr/local/bin/ffmpeg', '-y',
+            '-ss', (string) $data['start'],
+            '-i', $fullPath,
+            '-t', (string) $span,
+            '-acodec', 'libmp3lame', '-b:a', '128k',
+            $existing,
+        ]);
+        $slice->setTimeout(180);
+        $slice->run();
+        @unlink($fullPath);
+        if (! $slice->isSuccessful() || ! file_exists($existing) || filesize($existing) < 100_000) {
+            return back()->with('status', '❌ Audio slice failed: ' . substr($slice->getErrorOutput(), 0, 200));
+        }
+
+        $sermon->audio_url = '/storage/peace/audio/' . $videoId . '.mp3';
+        $sermon->audio_duration_seconds = $span;
+        $sermon->audio_status = 'ready';
+        $sermon->save();
+
+        if ($data['action'] === 'save_and_reslice') {
+            return back()->with('status',
+                sprintf('✓ Audio re-sliced to %s. Title + Q&As + heart-line still reflect the OLD span — use Re-slice + Regenerate if they need refreshing.', gmdate('i:s', $span)));
+        }
+
+        // REGENERATE — rebuild caption slice + run Claude
+        $cachePath = storage_path("app/peace-cache/{$videoId}.en.json3");
+        if (! file_exists($cachePath)) {
+            return back()->with('status',
+                '✓ Audio re-sliced, but caption file missing — content not regenerated. Run the scan command to refresh captions.');
+        }
+        $json = json_decode(file_get_contents($cachePath), true);
+        $sliceText = '';
+        foreach ($json['events'] ?? [] as $ev) {
+            $t = ($ev['tStartMs'] ?? 0) / 1000;
+            if ($t < $data['start'] || $t > $data['end']) continue;
+            foreach ($ev['segs'] ?? [] as $seg) {
+                $sliceText .= ' ' . ($seg['utf8'] ?? '');
+            }
+        }
+        if (strlen($sliceText) < 500) {
+            return back()->with('status', '✓ Audio re-sliced, but caption slice too short to regenerate content (' . strlen($sliceText) . ' chars).');
+        }
+
+        try {
+            $gen = app(\App\Services\Peace\PeaceContentGenerator::class);
+            $result = $gen->generate($sliceText, [
+                'video_id'    => $videoId,
+                'video_title' => $sermon->title . ' (re-generated)',
+            ]);
+            $oldSlug = $sermon->slug;
+            $sermon->title              = $result['title'] ?? $sermon->title;
+            $sermon->heart_line         = $result['heart_line'] ?? $sermon->heart_line;
+            $sermon->summary_paragraphs = $result['summary'] ?? $sermon->summary_paragraphs;
+            $sermon->speaker            = $result['speaker'] ?? $sermon->speaker;
+            // Keep the old slug if title didn't change — preserves URLs
+            $newSlug = \Illuminate\Support\Str::slug($sermon->title) . '-' . substr($videoId, 0, 6);
+            if ($newSlug !== $oldSlug) $sermon->slug = $newSlug;
+            $sermon->save();
+
+            // Replace Q&As
+            \App\Models\PeaceQaPair::where('sermon_id', $sermon->id)->delete();
+            foreach ($result['qa_pairs'] ?? [] as $i => $qa) {
+                \App\Models\PeaceQaPair::create([
+                    'sermon_id'        => $sermon->id,
+                    'question'         => $qa['question'] ?? '',
+                    'answer'           => $qa['answer'] ?? '',
+                    'display_order'    => $i,
+                    'confidence_score' => $qa['confidence'] ?? 0.8,
+                ]);
+            }
+
+            return redirect()->route('admin.peace.edit', $sermon->slug)
+                ->with('status', sprintf('✓ Boundaries + audio + Q&As all updated. New span %s. Title: %s.',
+                    gmdate('i:s', $span), $sermon->title));
+        } catch (\Throwable $e) {
+            return back()->with('status', '✓ Audio re-sliced. ❌ Content regen failed: ' . substr($e->getMessage(), 0, 200));
         }
     }
 }
