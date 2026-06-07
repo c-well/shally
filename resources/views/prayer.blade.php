@@ -139,5 +139,6 @@
 
 @include('partials.footer')
 
+@include('partials._event-tracker')
 </body>
 </html>

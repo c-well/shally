@@ -255,3 +255,8 @@ Schedule::call(function () {
     });
     \App\Models\AppSetting::set('spend_cap_last_alert_at', now()->toIso8601String());
 })->hourly()->name('anthropic-spend-cap')->onOneServer();
+
+// INTERACTION_ROLLUP — daily aggregation of clicks/hovers/scroll into
+// heatmap_summaries + scroll_summaries; deletes raw rows older than 30 days.
+// Runs at 03:30 ET (after DB backup at 03:00).
+Schedule::command("analytics:rollup")->dailyAt("03:30")->timezone("America/New_York")->name("analytics-rollup")->onOneServer();

@@ -372,5 +372,6 @@
   setTimeout(() => loadCorpus('kjv'), 300);
 })();
 </script>
+@include('partials._event-tracker')
 </body>
 </html>

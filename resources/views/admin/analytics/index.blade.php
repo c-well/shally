@@ -218,9 +218,247 @@
     </div>
   @endif
 
+  {{-- ═══════════════════════════════════════════════════════════════════
+       INTERACTION ANALYTICS — clicks, heatmap, scroll, named events, sessions
+       Added 2026-05-30. Data from interaction_events table.
+       ═══════════════════════════════════════════════════════════════════ --}}
+  <h2 style="font-size:18px; font-weight:600; margin:36px 0 16px; padding-top:24px; border-top:2px solid var(--line);">Interaction analytics</h2>
+
+  <div class="totals">
+    <div class="stat">
+      <div class="label">Total events</div>
+      <div class="value">{{ number_format($interactionTotals->total_events ?? 0) }}</div>
+      <div class="sub">{{ number_format($interactionTotals->sessions ?? 0) }} sessions</div>
+    </div>
+    <div class="stat">
+      <div class="label">Clicks</div>
+      <div class="value">{{ number_format($interactionTotals->clicks ?? 0) }}</div>
+    </div>
+    <div class="stat">
+      <div class="label">Hovers (sampled)</div>
+      <div class="value">{{ number_format($interactionTotals->hovers ?? 0) }}</div>
+    </div>
+    <div class="stat">
+      <div class="label">Named events</div>
+      <div class="value">{{ number_format($interactionTotals->named ?? 0) }}</div>
+      <div class="sub">qa_open · audio · etc.</div>
+    </div>
+  </div>
+
+  {{-- HEATMAP VIEWER --}}
+  <section class="panel">
+    <h2>Click hotspots</h2>
+    <p style="font-size:12px; color:var(--ink-soft); margin:-8px 0 12px;">Each dot is a click. Brighter = more clicks. Hovers shown lighter.</p>
+    @if ($heatmapPages->isEmpty())
+      <p style="color:var(--ink-soft); font-size:13px;">No click data yet — once visitors interact, heatmaps populate here.</p>
+    @else
+      <form method="GET" action="{{ route('admin.analytics') }}" style="margin-bottom:14px;">
+        <input type="hidden" name="days" value="{{ $days }}">
+        <label style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-soft); margin-right:8px;">Page:</label>
+        <select name="heatmap_path" onchange="this.form.submit()" style="font-family:'JetBrains Mono',monospace; font-size:11px; padding:5px 8px; border:1px solid var(--line); border-radius:4px;">
+          @foreach ($heatmapPages as $hp)
+            <option value="{{ $hp->path }}" @if($hp->path === $heatmapPath) selected @endif>{{ $hp->path }} ({{ $hp->clicks }})</option>
+          @endforeach
+        </select>
+      </form>
+      <div style="position:relative; background:#faf7f0; border:1px solid var(--line); border-radius:6px; overflow:hidden;">
+        <div style="padding:16px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-soft); border-bottom:1px solid var(--line);">
+          {{ $heatmapPath }} · {{ count($heatmapPoints) }} interaction points
+        </div>
+        <canvas id="heatmapCanvas" width="900" height="600" style="width:100%; max-width:900px; height:auto; display:block; background:#fff;"></canvas>
+      </div>
+      <p style="font-size:11px; color:var(--ink-soft); margin-top:10px; font-family:'JetBrains Mono',monospace; letter-spacing:0.06em;">
+        Coordinates are visitor-viewport normalized. Aim for clusters in expected hotspots (CTAs, links). Empty regions = invisible content.
+      </p>
+    @endif
+  </section>
+
+  {{-- SCROLL DEPTH --}}
+  <section class="panel">
+    <h2>Scroll depth — how far visitors actually get</h2>
+    @if ($scrollDepth->isEmpty())
+      <p style="color:var(--ink-soft); font-size:13px;">No scroll data yet — captured on page unload.</p>
+    @else
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead>
+          <tr style="text-align:left; border-bottom:1px solid var(--line);">
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft);">Page</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">Sessions</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">10%</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">25%</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">50%</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">75%</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">100%</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($scrollDepth as $row)
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="padding:9px 6px; font-family:'JetBrains Mono',monospace; font-size:11px;">{{ $row->path }}</td>
+              <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace;">{{ $row->total }}</td>
+              @foreach (['r10','r25','r50','r75','r100'] as $bucket)
+                @php $pct = $row->total > 0 ? round(($row->$bucket / $row->total) * 100) : 0; @endphp
+                <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace; color:{{ $pct >= 75 ? '#2d8659' : ($pct >= 50 ? '#5b6478' : ($pct >= 25 ? '#b08a3e' : '#a82a1f')) }};">{{ $pct }}%</td>
+              @endforeach
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    @endif
+  </section>
+
+  {{-- NAMED EVENTS --}}
+  <section class="panel">
+    <h2>Named events</h2>
+    @if ($namedEvents->isEmpty())
+      <p style="color:var(--ink-soft); font-size:13px;">No named events yet. As visitors open Q&As, play sermons, download PDFs, etc., they appear here.</p>
+    @else
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead>
+          <tr style="text-align:left; border-bottom:1px solid var(--line);">
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft);">Event</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">Occurrences</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">Unique sessions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($namedEvents as $ev)
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="padding:9px 6px; font-family:'JetBrains Mono',monospace; font-size:11px;"><strong>{{ $ev->event_type }}</strong></td>
+              <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace;">{{ number_format($ev->occurrences) }}</td>
+              <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace; color:var(--ink-soft);">{{ number_format($ev->uniques) }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    @endif
+  </section>
+
+  {{-- CLICK LEADERBOARD --}}
+  <section class="panel">
+    <h2>Top clicked elements</h2>
+    @if ($topClicks->isEmpty())
+      <p style="color:var(--ink-soft); font-size:13px;">No click data yet.</p>
+    @else
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead>
+          <tr style="text-align:left; border-bottom:1px solid var(--line);">
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft);">Element</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft);">Page</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">Clicks</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($topClicks as $c)
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="padding:9px 6px; font-size:11px; max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                @if($c->element_text)<strong>{{ Str::limit($c->element_text, 50) }}</strong>@endif
+                <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--ink-soft); display:block;">{{ Str::limit($c->element_selector, 80) }}</span>
+              </td>
+              <td style="padding:9px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--ink-soft);">{{ $c->path }}</td>
+              <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace;">{{ $c->clicks }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    @endif
+  </section>
+
+  {{-- SESSION TRAIL --}}
+  <section class="panel">
+    <h2>Recent visitor sessions</h2>
+    <p style="font-size:12px; color:var(--ink-soft); margin:-8px 0 12px;">Click a session to see the event trail.</p>
+    @if ($recentSessions->isEmpty())
+      <p style="color:var(--ink-soft); font-size:13px;">No qualifying sessions yet (need ≥3 events to surface).</p>
+    @else
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead>
+          <tr style="text-align:left; border-bottom:1px solid var(--line);">
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft);">Started</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft);">Device</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">Events</th>
+            <th style="padding:8px 6px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--ink-soft); text-align:right;">Pages</th>
+            <th style="padding:8px 6px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($recentSessions as $s)
+            <tr style="border-bottom:1px solid var(--line); @if($selectedSession === $s->session_id) background:rgba(176,138,62,0.08); @endif">
+              <td style="padding:9px 6px; font-family:'JetBrains Mono',monospace; font-size:11px;">{{ \Carbon\Carbon::parse($s->started)->diffForHumans() }}</td>
+              <td style="padding:9px 6px; font-family:'JetBrains Mono',monospace; font-size:11px;">{{ $s->device ?? '—' }} {{ $s->country ? '· '.$s->country : '' }}</td>
+              <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace;">{{ $s->events }}</td>
+              <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace;">{{ $s->pages }}</td>
+              <td style="padding:9px 6px; text-align:right;">
+                <a href="{{ route('admin.analytics') }}?days={{ $days }}&session={{ $s->session_id }}" style="font-family:'Instrument Sans',sans-serif; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); text-decoration:none;">View trail →</a>
+              </td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+
+      @if ($selectedSession && $sessionTrail)
+        <div style="margin-top:22px; padding:14px 16px; background:#faf7f0; border:1px solid var(--line); border-radius:6px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:12px;">
+            Trail · session {{ substr($selectedSession,0,8) }}… · {{ count($sessionTrail) }} events
+          </div>
+          <ol style="list-style:none; padding:0; max-height:380px; overflow-y:auto;">
+            @foreach ($sessionTrail as $ev)
+              <li style="padding:5px 0; font-family:'JetBrains Mono',monospace; font-size:11px; border-bottom:1px dashed rgba(0,0,0,0.06);">
+                <span style="color:var(--ink-soft); font-size:9px;">{{ \Carbon\Carbon::parse($ev->created_at)->format('H:i:s') }}</span>
+                <strong style="color:var(--teal); margin-left:8px;">{{ $ev->event_type }}</strong>
+                <span style="color:var(--ink-soft); margin-left:8px;">{{ $ev->path }}</span>
+                @if($ev->element_text)<span style="margin-left:8px;">"{{ Str::limit($ev->element_text, 50) }}"</span>@endif
+              </li>
+            @endforeach
+          </ol>
+        </div>
+      @endif
+    @endif
+  </section>
+
   <p style="margin-top:30px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; color:var(--ink-soft); opacity:0.55; text-transform:uppercase;">
-    First-party telemetry · No external trackers · IPs hashed · 90-day retention
+    First-party telemetry · No external trackers · IPs hashed · 90-day retention<br>
+    Interaction events 30-day raw retention + rolled summaries
   </p>
+
+  {{-- HEATMAP CANVAS RENDERING --}}
+  @if(!$heatmapPages->isEmpty())
+  <script>
+  (function () {
+    var canvas = document.getElementById('heatmapCanvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var points = @json($heatmapPoints);
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Build density grid scaled to canvas viewport
+    var W = canvas.width, H = canvas.height;
+    points.forEach(function (p) {
+      var srcW = p.viewport_w || 1280;
+      var srcH = p.viewport_h || 800;
+      var nx = (p.x / srcW) * W;
+      var ny = (p.y / srcH) * H;
+      var isClick = p.event_type === 'click';
+      var radius = isClick ? 14 : 8;
+      var color = isClick ? 'rgba(176,138,62,0.42)' : 'rgba(3,97,122,0.18)';
+      var grad = ctx.createRadialGradient(nx, ny, 0, nx, ny, radius);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(nx, ny, radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Footer label
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.font = '11px monospace';
+    ctx.fillText('Heatmap of clicks + hovers, normalized to 900×600 viewport.', 12, H - 12);
+  })();
+  </script>
+  @endif
 </main>
 </body>
 </html>

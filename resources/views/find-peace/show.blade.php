@@ -1592,5 +1592,6 @@ document.querySelectorAll('.reaction').forEach(btn => {
     <button type="button" class="share-modal-cancel" id="share-cancel">Never mind</button>
   </div>
 </div>
+@include('partials._event-tracker')
 </body>
 </html>
