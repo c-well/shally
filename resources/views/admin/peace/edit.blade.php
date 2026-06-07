@@ -108,6 +108,231 @@
     <div class="status">{{ session('status') }}</div>
   @endif
 
+  {{-- ── BOUNDARY EDITOR (2026-05-30) — works against the FULL video, not the
+       sliced audio. Use when the auto-detected boundaries grabbed the wrong
+       span (e.g. picked the children's story instead of the sermon, or cut
+       a long sermon short like Stewart's 26:30 of an actual 52:22). ──────── --}}
+  @if($sermon->youtube_video_id)
+  <details class="boundary-panel" style="margin-bottom:28px;padding:18px 22px;background:color-mix(in srgb, var(--brass) 5%, transparent);border:1px solid var(--line);border-radius:6px;">
+    <summary style="cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--brass);">
+      Boundary editor · current span {{ gmdate('H:i:s', $sermon->sermon_start_seconds) }} → {{ gmdate('H:i:s', $sermon->sermon_end_seconds) }} ({{ gmdate('i:s', $sermon->sermon_end_seconds - $sermon->sermon_start_seconds) }}) ▾
+    </summary>
+
+    <p style="margin:14px 0 16px;font-size:13px;color:var(--ink-soft);">
+      Use this when the auto-detected span is wrong — the player below plays the <strong>full</strong> YouTube video. Scrub to find the real start/end, then click "Set IN" or "Set OUT" at the player's current time. <strong>Save + Re-slice</strong> downloads the full audio, cuts to the new span, and optionally regenerates Q&As (~$0.07 in Claude).
+    </p>
+
+    <div style="background:#000;border-radius:4px;overflow:hidden;aspect-ratio:16/9;max-width:600px;margin-bottom:18px;">
+      <iframe id="boundaryYTPlayer"
+        width="100%" height="100%"
+        src="https://www.youtube.com/embed/{{ $sermon->youtube_video_id }}?start={{ $sermon->sermon_start_seconds }}&enablejsapi=1&modestbranding=1&rel=0"
+        title="Sermon video"
+        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        frameborder="0"></iframe>
+    </div>
+
+    <form method="POST" action="{{ route('admin.peace.boundaries', $sermon->slug) }}" id="boundaryForm">
+      @csrf
+
+      {{-- IN POINT --}}
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:14px;">
+        <label style="font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-soft);min-width:60px;">IN</label>
+        <input type="text" name="start_human" id="startHuman" value="{{ gmdate('H:i:s', $sermon->sermon_start_seconds) }}"
+               pattern="\d+:\d{2}:\d{2}|\d+:\d{2}"
+               style="padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:14px;width:120px;"
+               required>
+        <input type="hidden" name="start" id="startSec" value="{{ $sermon->sermon_start_seconds }}">
+        <div class="jog-buttons" style="display:flex;gap:4px;">
+          <button type="button" class="jog" data-target="start" data-delta="-30">−30s</button>
+          <button type="button" class="jog" data-target="start" data-delta="-5">−5s</button>
+          <button type="button" class="jog set-current" data-target="start">↑ set</button>
+          <button type="button" class="jog" data-target="start" data-delta="5">+5s</button>
+          <button type="button" class="jog" data-target="start" data-delta="30">+30s</button>
+          <button type="button" class="jog jump" data-target="start" title="Jump player to IN">▶</button>
+        </div>
+      </div>
+
+      {{-- OUT POINT --}}
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:14px;">
+        <label style="font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-soft);min-width:60px;">OUT</label>
+        <input type="text" name="end_human" id="endHuman" value="{{ gmdate('H:i:s', $sermon->sermon_end_seconds) }}"
+               pattern="\d+:\d{2}:\d{2}|\d+:\d{2}"
+               style="padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:14px;width:120px;"
+               required>
+        <input type="hidden" name="end" id="endSec" value="{{ $sermon->sermon_end_seconds }}">
+        <div class="jog-buttons" style="display:flex;gap:4px;">
+          <button type="button" class="jog" data-target="end" data-delta="-30">−30s</button>
+          <button type="button" class="jog" data-target="end" data-delta="-5">−5s</button>
+          <button type="button" class="jog set-current" data-target="end">↑ set</button>
+          <button type="button" class="jog" data-target="end" data-delta="5">+5s</button>
+          <button type="button" class="jog" data-target="end" data-delta="30">+30s</button>
+          <button type="button" class="jog jump" data-target="end" title="Jump player to OUT">▶</button>
+        </div>
+      </div>
+
+      {{-- LIVE CAPTION (synced to player position) --}}
+      <div id="liveCaption" style="margin:18px 0;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:4px;min-height:38px;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--ink-soft);font-size:14px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-style:normal;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--brass);margin-right:8px;">caption @ <span id="capTime">--:--:--</span></span>
+        <span id="capText">click play above to see live captions</span>
+      </div>
+
+      {{-- ACTIONS --}}
+      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+        <button type="button" id="playRangeBtn" style="padding:9px 16px;background:#fff;color:var(--brass);border:1px solid var(--brass);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
+          ▸ Play IN→OUT
+        </button>
+        <button type="submit" name="action" value="save_only"
+                onclick="return confirm('Save boundaries only? Audio + content stay as-is (you can re-slice later).');"
+                style="padding:9px 16px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
+          Save boundaries
+        </button>
+        <button type="submit" name="action" value="save_and_reslice"
+                onclick="return confirm('Save + re-slice audio from full YouTube video? Downloads ~100MB and takes ~2 minutes. Audio file will be replaced.');"
+                style="padding:9px 16px;background:var(--teal);color:#fff;border:0;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
+          Save + Re-slice audio
+        </button>
+        <button type="submit" name="action" value="save_reslice_regen"
+                onclick="return confirm('Save + re-slice + regenerate Q&As/heart-line? Costs ~$0.07 in Claude API. Old Q&As will be deleted. Takes ~3 minutes total.');"
+                style="padding:9px 16px;background:var(--brass);color:#fff;border:0;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
+          Save + Re-slice + Regenerate ($0.07)
+        </button>
+      </div>
+    </form>
+  </details>
+
+  <style>
+    .jog-buttons .jog {
+      padding: 6px 10px;
+      background: #fff; border: 1px solid var(--line);
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .jog-buttons .jog:hover { background: var(--brass); color: #fff; border-color: var(--brass); }
+    .jog-buttons .jog.set-current { background: rgba(176,138,62,0.15); color: var(--brass); border-color: var(--brass); font-weight: 700; }
+    .jog-buttons .jog.jump { background: var(--teal); color: #fff; border-color: var(--teal); }
+  </style>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+  (function () {
+    var captions = @json($captionEvents ?? []);
+    var player;
+    var captionCheckTimer;
+
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player('boundaryYTPlayer', {
+        events: {
+          'onReady': function () { startCaptionTimer(); }
+        }
+      });
+    };
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function fmt(sec) {
+      sec = Math.max(0, Math.floor(sec));
+      var h = Math.floor(sec / 3600);
+      var m = Math.floor((sec % 3600) / 60);
+      var s = sec % 60;
+      return pad(h) + ':' + pad(m) + ':' + pad(s);
+    }
+    function parse(str) {
+      var parts = str.split(':').map(function(x){ return parseInt(x, 10) || 0; });
+      if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      if (parts.length === 2) return parts[0] * 60 + parts[1];
+      return parts[0] || 0;
+    }
+
+    function getCurrent() {
+      if (!player || !player.getCurrentTime) return null;
+      return Math.floor(player.getCurrentTime());
+    }
+    function setValue(target, sec) {
+      sec = Math.max(0, Math.floor(sec));
+      document.getElementById(target + 'Sec').value = sec;
+      document.getElementById(target + 'Human').value = fmt(sec);
+    }
+    function getValue(target) {
+      return parseInt(document.getElementById(target + 'Sec').value, 10) || 0;
+    }
+
+    // Jog buttons
+    document.querySelectorAll('.jog').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var target = btn.dataset.target;
+        if (btn.classList.contains('set-current')) {
+          var c = getCurrent();
+          if (c !== null) setValue(target, c);
+        } else if (btn.classList.contains('jump')) {
+          if (player && player.seekTo) {
+            player.seekTo(getValue(target), true);
+            player.playVideo();
+          }
+        } else {
+          var delta = parseInt(btn.dataset.delta, 10);
+          setValue(target, getValue(target) + delta);
+        }
+      });
+    });
+
+    // Text input syncing
+    ['start', 'end'].forEach(function (target) {
+      document.getElementById(target + 'Human').addEventListener('change', function () {
+        setValue(target, parse(this.value));
+      });
+    });
+
+    // Play IN→OUT
+    document.getElementById('playRangeBtn').addEventListener('click', function () {
+      if (!player) return;
+      var start = getValue('start');
+      var end = getValue('end');
+      player.seekTo(start, true);
+      player.playVideo();
+      var checkEnd = setInterval(function () {
+        if (!player || !player.getCurrentTime) { clearInterval(checkEnd); return; }
+        if (player.getCurrentTime() >= end) {
+          player.pauseVideo();
+          clearInterval(checkEnd);
+        }
+      }, 500);
+    });
+
+    // Caption sync — find caption text at current player time
+    function startCaptionTimer() {
+      captionCheckTimer = setInterval(function () {
+        if (!player || !player.getCurrentTime) return;
+        var t = player.getCurrentTime();
+        document.getElementById('capTime').textContent = fmt(t);
+        if (!captions.length) return;
+        // Linear scan — fine for ~2000 caption events
+        var match = null;
+        for (var i = 0; i < captions.length; i++) {
+          if (captions[i].t <= t && (i === captions.length - 1 || captions[i+1].t > t)) {
+            match = captions[i];
+            break;
+          }
+        }
+        if (match) document.getElementById('capText').textContent = match.text || '…';
+      }, 500);
+    }
+
+    // Form validation
+    document.getElementById('boundaryForm').addEventListener('submit', function (e) {
+      var s = getValue('start');
+      var ed = getValue('end');
+      if (ed <= s) {
+        e.preventDefault();
+        alert('OUT must be after IN.');
+      }
+    });
+  })();
+  </script>
+  @endif
+
   {{-- ── Audio trim — re-cut against the existing trimmed file ─────────── --}}
   @if($sermon->audio_url)
   @php
