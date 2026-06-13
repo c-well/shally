@@ -73,6 +73,11 @@ class ContactController extends Controller
             return $silent('no-english');
         }
 
+        // ── 5. Content-level spam filter (added 2026-06-11 after marketing/crypto bypass) ──
+        if ($reason = app(\App\Services\SpamFilter::class)->detect($data["name"], $data["email"], $data["message"])) {
+            return $silent("spam:$reason");
+        }
+
         // ── Send ───────────────────────────────────────────────────────
         // Persist for the admin inbox
         \App\Models\ContactMessage::create([
