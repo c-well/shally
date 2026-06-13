@@ -57,6 +57,11 @@ class PrayerController extends Controller
 
         if (! preg_match('/[a-zA-Z]{3,}/', $data['body'])) return $silent('no-english');
 
+        // ── Content-level spam filter (added 2026-06-11) ──
+        if ($reason = app(\App\Services\SpamFilter::class)->detect($data["name"] ?? null, $data["email"] ?? null, $data["body"])) {
+            return $silent("spam:$reason");
+        }
+
         $pr = PrayerRequest::create([
             'name'          => $data['name'] ?? null,
             'email'         => $data['email'] ?? null,
