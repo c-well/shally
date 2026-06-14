@@ -134,11 +134,20 @@ class WhisperTranscribeCommand extends Command
             return self::FAILURE;
         }
 
-        // ── Audit-log
+        // ── Audit-log with cost. Whisper bills $0.006/min, billed per second.
+        $costUsd = round(($duration / 60) * 0.006, 4);
         \App\Models\AuditLog::record(
             event: 'peace_whisper_transcribed',
-            description: "Whisper fallback transcribed and processed video {$videoId} (duration {$duration}s)",
-            meta: ['video_id' => $videoId, 'duration_seconds' => $duration],
+            description: sprintf('Whisper transcribed video %s (duration %ds, cost $%.4f)', $videoId, $duration, $costUsd),
+            meta: [
+                'video_id'         => $videoId,
+                'duration_seconds' => $duration,
+                'cost_usd'         => $costUsd,
+                'model'            => 'whisper-1',
+                'vendor'           => 'openai',
+                'source'           => 'peace.whisper_fallback',
+                'key_account'      => 'iig-adminkc',
+            ],
         );
 
         $this->info("✓ Done.");
