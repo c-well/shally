@@ -260,3 +260,21 @@ Schedule::call(function () {
 // heatmap_summaries + scroll_summaries; deletes raw rows older than 30 days.
 // Runs at 03:30 ET (after DB backup at 03:00).
 Schedule::command("analytics:rollup")->dailyAt("03:30")->timezone("America/New_York")->name("analytics-rollup")->onOneServer();
+
+// MIDWEEK_CAPTION_RETRIES (2026-06-14) — YouTube auto-captions sometimes
+// land days after the Sabbath stream ends. Cache TTL gives up at 4 days,
+// so Wednesday is the last realistic window to catch a late-arriving caption.
+// Two attempts spread across the day in case the morning probe is too early.
+Schedule::command('peace:scan-channel')
+    ->wednesdays()->at('07:00')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-scan-channel-wed-7am');
+
+Schedule::command('peace:scan-channel')
+    ->wednesdays()->at('19:00')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-scan-channel-wed-7pm');
