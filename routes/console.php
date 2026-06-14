@@ -278,3 +278,12 @@ Schedule::command('peace:scan-channel')
     ->onOneServer()
     ->emailOutputOnFailure('contact@c-wellpics.com')
     ->name('peace-scan-channel-wed-7pm');
+
+// Tuesday midday retry (added 2026-06-14) — extra mid-cycle attempt to
+// catch captions that landed Sunday-Monday and missed the Wednesday window.
+Schedule::command('peace:scan-channel')
+    ->tuesdays()->at('12:00')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-scan-channel-tue-noon');
