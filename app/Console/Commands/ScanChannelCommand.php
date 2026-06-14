@@ -100,18 +100,44 @@ class ScanChannelCommand extends Command
         // CAPTION_PRECHECK — newest-first, but skip any candidate that doesn't have captions yet.
         // YouTube auto-captions can take 30-60 min after a long stream ends. If the current
         // top candidate has no captions, try the next one (might be older but processable).
+        //
+        // NO_CAPTIONS_MEMO (2026-06-14): Some videos NEVER get captions (the channel disabled
+        // them for that upload, audio quality too poor, etc.). Without persistence the scanner
+        // re-checks the same dead videos every fire — 5 wasted YouTube probes per scan, every
+        // scan, forever. We remember "tried at <ts>" in interaction_events meta as a lightweight
+        // cache: videos checked within the last 24h are skipped. After 24h, re-probe (captions
+        // sometimes appear days late).
+        $skipCacheKey = 'no_captions_cache';
+        $skipCache = json_decode(\App\Models\AppSetting::get($skipCacheKey, '{}'), true) ?: [];
+        $now = time();
+        // Prune entries older than 7 days — give up on those, don't probe again
+        $skipCache = array_filter($skipCache, fn($ts) => ($now - $ts) < 86400 * 7);
+
         $pick = null;
         $fetcher = app(\App\Services\Peace\TranscriptFetcher::class);
         foreach ($newOnly as $candidate) {
-            $this->line("  Checking captions on: {$candidate['title']} ({$candidate['id']}) …");
-            $probe = $fetcher->getTranscript($candidate['id']);
+            $vid = $candidate['id'];
+            $lastChecked = $skipCache[$vid] ?? 0;
+            if ($lastChecked && ($now - $lastChecked) < 86400) {
+                $this->line("  ↷ Skipping {$candidate['title']} ({$vid}) — no captions on last check " . round(($now - $lastChecked) / 3600) . "h ago");
+                continue;
+            }
+            $this->line("  Checking captions on: {$candidate['title']} ({$vid}) …");
+            $probe = $fetcher->getTranscript($vid);
             if (!empty($probe)) {
                 $pick = $candidate;
                 $this->line("  ✓ Captions available — " . count($probe) . " caption events");
+                // Remove from skip cache if previously listed
+                unset($skipCache[$vid]);
                 break;
             }
             $this->line("  ✗ No captions yet — trying next candidate.");
+            $skipCache[$vid] = $now;
         }
+
+        // Persist the cache regardless of outcome
+        \App\Models\AppSetting::set($skipCacheKey, json_encode($skipCache));
+
         if ($pick === null) {
             $this->warn('No candidates have captions yet. Try again in 30-60 min.');
             return self::SUCCESS;  // not a failure — captions just not ready
@@ -269,8 +295,15 @@ class ScanChannelCommand extends Command
         }
 
         // WATERMARK_ADVANCE — successful run, advance to picked video's upload_date
-        // (or today if no upload_date present). Tomorrow's scanner starts from here.
-        $advance = $pick['upload_date'] ?? now('America/New_York')->format('Ymd');
+        // (or today if no valid upload_date present). Tomorrow's scanner starts from here.
+        //
+        // WATERMARK_NA_GUARD (2026-06-14): yt-dlp returns the literal string "NA" when
+        // the channel doesn't expose upload_date for a video. The null-coalesce above
+        // doesn't catch that — the string "NA" gets stored and then string-compares
+        // weirdly against valid YYYYMMDD watermarks, breaking future scans for weeks.
+        // Require an 8-digit numeric value or fall back to today.
+        $raw = $pick['upload_date'] ?? null;
+        $advance = ($raw && preg_match('/^\d{8}$/', $raw)) ? $raw : now('America/New_York')->format('Ymd');
         \App\Models\AppSetting::set('peace_scanner_watermark', $advance);
 
         return self::SUCCESS;
