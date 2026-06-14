@@ -287,3 +287,15 @@ Schedule::command('peace:scan-channel')
     ->onOneServer()
     ->emailOutputOnFailure('contact@c-wellpics.com')
     ->name('peace-scan-channel-tue-noon');
+
+// WHISPER_FALLBACK (added 2026-06-14) — Wednesday 6 PM ET, fires only if no
+// sermon has been processed for the current week. Last-ditch fallback when
+// YouTube never generates captions for the Sabbath stream. Auto-picks the
+// most recent caption-less video, downloads + chunks + Whisper-transcribes
+// + invokes peace:process. Cost ~$1.10 per 3-hour service.
+Schedule::command('peace:whisper-transcribe')
+    ->wednesdays()->at('18:00')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->emailOutputOnFailure('contact@c-wellpics.com')
+    ->name('peace-whisper-wed-6pm');
