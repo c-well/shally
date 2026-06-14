@@ -41,18 +41,44 @@ class SendAnthropicWeeklyReport extends Command
             }
         }
 
+        // OpenAI Whisper section — tallies all peace_whisper_transcribed audit events.
+        // The Whisper key is shared with the IIG adminkc account, so usage tracked here
+        // is the Shalom-pipeline portion only.
+        $whisperEvents = \App\Models\AuditLog::where('event', 'peace_whisper_transcribed')
+            ->where('created_at', '>=', $since)
+            ->get();
+        $whisperTotal  = 0;
+        $whisperSeconds = 0;
+        foreach ($whisperEvents as $ev) {
+            $whisperTotal   += (float) ($ev->meta['cost_usd'] ?? 0);
+            $whisperSeconds += (int)   ($ev->meta['duration_seconds'] ?? 0);
+        }
+        $body .= "\nOpenAI Whisper (shared IIG key, tracked locally):\n";
+        if ($whisperEvents->isEmpty()) {
+            $body .= "  (no Whisper fallbacks fired this week)\n";
+        } else {
+            $body .= sprintf("  %d transcription%s · %s of audio · \$%.4f\n",
+                $whisperEvents->count(),
+                $whisperEvents->count() === 1 ? '' : 's',
+                gmdate('H:i:s', $whisperSeconds),
+                $whisperTotal
+            );
+        }
+
         $body .= "\n" . str_repeat('─', 56) . "\n";
         $body .= "Live dashboard:  " . url('/admin/anthropic-usage') . "\n";
         $body .= "Pricing config:  config/anthropic_pricing.php  (edit when Anthropic changes rates)\n\n";
         $body .= "If you see unexpected activity here, the source column tells you which feature in The Church of Peace did it.\n";
         $body .= "Calls from elsewhere (Claude Code, skills, etc.) do NOT appear in this report — check the Anthropic Console for those.\n";
+        $body .= "Whisper rows come from the audit_log (event=peace_whisper_transcribed). The OpenAI key is shared with adminkc/IIG.\n";
 
+        $combined = $total + $whisperTotal;
         try {
-            Mail::raw($body, function ($m) use ($total) {
+            Mail::raw($body, function ($m) use ($combined) {
                 $m->to('contact@c-wellpics.com')
-                  ->subject(sprintf('[The Church of Peace] Weekly Anthropic spend — $%.2f', $total));
+                  ->subject(sprintf('[The Church of Peace] Weekly API spend — $%.2f', $combined));
             });
-            $this->info("Weekly report emailed. Total: \$" . number_format($total, 4));
+            $this->info("Weekly report emailed. Combined total: \$" . number_format($combined, 4));
         } catch (\Throwable $e) {
             $this->error("Email send failed: " . $e->getMessage());
             return self::FAILURE;
