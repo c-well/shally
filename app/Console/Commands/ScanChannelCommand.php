@@ -111,7 +111,7 @@ class ScanChannelCommand extends Command
         $skipCache = json_decode(\App\Models\AppSetting::get($skipCacheKey, '{}'), true) ?: [];
         $now = time();
         // Prune entries older than 7 days — give up on those, don't probe again
-        $skipCache = array_filter($skipCache, fn($ts) => ($now - $ts) < 86400 * 7);
+        $skipCache = array_filter($skipCache, fn($ts) => ($now - $ts) < 86400 * 4);
 
         $pick = null;
         $fetcher = app(\App\Services\Peace\TranscriptFetcher::class);
