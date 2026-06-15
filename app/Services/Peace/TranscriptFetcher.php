@@ -119,18 +119,29 @@ class TranscriptFetcher
     }
 
     /**
-     * Format transcript lines as a single timestamped string Claude can read.
-     * "[hh:mm:ss] line text\n" per entry.
+     * Format transcript lines for a prompt.
+     *
+     * $withTimestamps:
+     *   true  — "[hh:mm:ss] line text\n" per entry (use when timing matters).
+     *   false — flowing prose, no per-line clock prefix (use for content
+     *           generation — Pass 2 writes summary/Q&As/heart-line which never
+     *           reference timestamps, so the ~24% of input tokens those prefixes
+     *           cost is pure waste. TOKEN_DIET 2026-06-15).
      */
-    public function formatForPrompt(array $lines, int $startSec = 0, ?int $endSec = null): string
+    public function formatForPrompt(array $lines, int $startSec = 0, ?int $endSec = null, bool $withTimestamps = true): string
     {
         $out = '';
         foreach ($lines as $line) {
             if ($line['start'] < $startSec) continue;
             if ($endSec !== null && $line['start'] > $endSec) break;
-            $t = $line['start'];
-            $out .= sprintf("[%02d:%02d:%02d] %s\n", $t / 3600, ($t % 3600) / 60, $t % 60, $line['text']);
+            if ($withTimestamps) {
+                $t = (int) $line['start'];  // cast: sprintf %02d on a float is deprecated in PHP 8.3
+                $out .= sprintf("[%02d:%02d:%02d] %s\n", intdiv($t, 3600), intdiv($t % 3600, 60), $t % 60, $line['text']);
+            } else {
+                // Join as flowing text; a trailing space keeps sentence flow across cues.
+                $out .= $line['text'] . ' ';
+            }
         }
-        return $out;
+        return $withTimestamps ? $out : trim($out);
     }
 }

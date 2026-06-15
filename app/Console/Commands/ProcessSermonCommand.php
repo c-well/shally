@@ -82,7 +82,7 @@ class ProcessSermonCommand extends Command
         }
 
         // ═══ Step 3: Slice transcript for Pass 2 ═══════════════════════
-        $sermonText = $fetcher->formatForPrompt($transcript, $bounds['sermon_start_seconds'], $bounds['sermon_end_seconds']);
+        $sermonText = $fetcher->formatForPrompt($transcript, $bounds["sermon_start_seconds"], $bounds["sermon_end_seconds"], false); // TOKEN_DIET: no timestamps for content gen
         $this->line("\n[3/6] Sermon-only slice: " . strlen($sermonText) . " chars (~" . (int) (str_word_count($sermonText) * 1.3) . " tokens)");
 
         // ═══ Step 4: Pass 2 — content generation ═══════════════════════
