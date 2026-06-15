@@ -140,9 +140,29 @@ class ScanChannelCommand extends Command
 
         if ($pick === null) {
             $this->warn('No candidates have captions yet. Try again in 30-60 min.');
+            // PENDING_WHISPER_POINTER (2026-06-14): record THE one sermon candidate the
+            // scanner wanted but couldn't process for lack of captions. This is the single
+            // authoritative target the Wednesday Whisper fallback will transcribe — it has
+            // already passed dedup + watermark + event-skip + caption filters, so it's a
+            // real, recent, non-duplicate sermon. Whisper never guesses from a raw cache.
+            // $newOnly is newest-first; element 0 is this Sabbath's sermon.
+            $top = $newOnly[0] ?? null;
+            if ($top) {
+                \App\Models\AppSetting::set('pending_whisper_video', json_encode([
+                    'id'          => $top['id'],
+                    'title'       => $top['title'],
+                    'upload_date' => $top['upload_date'] ?? null,
+                    'detected_at' => $now,
+                ]));
+                $this->line("  → Recorded Whisper-fallback target: {$top['title']} ({$top['id']})");
+            }
             return self::SUCCESS;  // not a failure — captions just not ready
         }
         $this->info("→ Picked: {$pick['title']} ({$pick['id']})");
+
+        // A caption-based pick succeeded — clear any pending Whisper target so the
+        // Wednesday fallback doesn't redundantly transcribe what we just processed.
+        \App\Models\AppSetting::set('pending_whisper_video', '');
 
         if ($dryRun) {
             $this->info('Dry run — stopping before pipeline. Would have invoked peace:process.');

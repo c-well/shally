@@ -66,16 +66,27 @@ class TranscriptFetcher
         $tmpDir = storage_path('app/peace-cache');
         if (! is_dir($tmpDir)) mkdir($tmpDir, 0755, true);
 
-        $outPath = "{$tmpDir}/{$videoId}";
-        $proc = new Process([
-            self::YT_DLP, '--no-warnings', '--skip-download',
-            '--write-auto-subs', '--sub-lang', 'en', '--sub-format', 'json3',
-            '-o', "{$outPath}.%(ext)s", $url,
-        ]);
-        $proc->setTimeout(self::TIMEOUT_SECONDS);
-        $proc->run();
-
+        $outPath  = "{$tmpDir}/{$videoId}";
         $jsonPath = "{$outPath}.en.json3";
+
+        // WHISPER_CLOBBER_GUARD (2026-06-14): if a Whisper fallback already wrote
+        // this transcript (marked by a sidecar .whisper file), use it as-is and do
+        // NOT re-run yt-dlp. These videos have no YouTube captions, so a fetch would
+        // either no-op or (worst case) overwrite our paid Whisper transcript with
+        // nothing. The marker makes the Whisper transcript authoritative.
+        $whisperMarker = "{$outPath}.whisper";
+        if (file_exists($whisperMarker) && file_exists($jsonPath)) {
+            Log::info('TranscriptFetcher: using Whisper transcript (skipping yt-dlp)', ['video_id' => $videoId]);
+        } else {
+            $proc = new Process([
+                self::YT_DLP, '--no-warnings', '--skip-download', '--no-overwrites',
+                '--write-auto-subs', '--sub-lang', 'en', '--sub-format', 'json3',
+                '-o', "{$outPath}.%(ext)s", $url,
+            ]);
+            $proc->setTimeout(self::TIMEOUT_SECONDS);
+            $proc->run();
+        }
+
         if (! file_exists($jsonPath)) {
             Log::warning('TranscriptFetcher::getTranscript no caption file', [
                 'video_id' => $videoId, 'expected' => $jsonPath,
