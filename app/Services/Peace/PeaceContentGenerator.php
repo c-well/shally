@@ -40,7 +40,7 @@ class PeaceContentGenerator
             $userMsg = "Speaker: " . ($videoMeta['speaker'] ?? '(unknown)') . "\n"
                      . "Date: "    . ($videoMeta['date']    ?? '(unknown)') . "\n"
                      . "Stage title: " . ($videoMeta['title'] ?? '(unknown)') . "\n\n"
-                     . "SERMON TRANSCRIPT (timestamped):\n\n" . $sermonTranscript;
+                     . "SERMON TRANSCRIPT:\n\n" . $sermonTranscript;
 
             $response = $client->messages->create(
                 model: self::MODEL,
