@@ -41,6 +41,32 @@
 
   .edit-hint { margin-top: 3rem; padding: 14px 18px; background: color-mix(in srgb, var(--brass) 7%, transparent); border-left: 3px solid var(--brass); border-radius: 0 4px 4px 0; font-size: 13px; color: var(--ink-soft); line-height: 1.55; }
   .edit-hint strong { color: var(--ink); }
+
+  /* Restore points + rollback */
+  .cl-flash { padding: 12px 16px; margin-bottom: 22px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; color: var(--ink); }
+  .cl-section { margin-bottom: 2.6rem; }
+  .cl-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .cl-h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 500; color: var(--ink); margin-bottom: 0.4rem; }
+  .cl-note { font-size: 13px; color: var(--ink-soft); line-height: 1.55; margin-bottom: 1rem; max-width: 640px; }
+  .cl-empty { padding: 18px; background: #fff; border: 1px dashed var(--line); border-radius: 6px; font-size: 13px; color: var(--ink-soft); font-style: italic; }
+  .cl-cps { display: flex; flex-direction: column; gap: 8px; }
+  .cl-cp { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 16px; background: #fff; border: 1px solid var(--line); border-radius: 6px; }
+  .cl-cp-main { min-width: 0; }
+  .cl-cp-kind { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; margin-right: 8px; background: color-mix(in srgb, var(--ink-soft) 12%, transparent); color: var(--ink-soft); }
+  .cl-cp-kind-auto_update { background: color-mix(in srgb, var(--teal) 14%, transparent); color: var(--teal-dark); }
+  .cl-cp-kind-pre_rollback { background: color-mix(in srgb, var(--brass) 16%, transparent); color: var(--brass); }
+  .cl-cp-label { font-size: 14px; color: var(--ink); font-weight: 500; }
+  .cl-cp-meta { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.04em; color: var(--ink-soft); margin-top: 4px; }
+  .cl-cp-gone { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); opacity: 0.6; }
+  .cl-btn-ghost { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); background: transparent; border: 1px solid var(--line); border-radius: 5px; padding: 8px 14px; cursor: pointer; }
+  .cl-btn-ghost:hover { border-color: var(--teal); }
+  .cl-btn-danger { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #fff; background: var(--warn, #a82a1f); border: 0; border-radius: 5px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+  .cl-btn-danger:hover { filter: brightness(1.08); }
+  .cl-commits { display: flex; flex-direction: column; gap: 2px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .cl-commit { display: flex; gap: 12px; padding: 4px 0; border-bottom: 1px dashed color-mix(in srgb, var(--line) 60%, transparent); color: var(--ink); }
+  .cl-commit-sha { color: var(--teal); min-width: 56px; }
+  .cl-commit-date { color: var(--ink-soft); min-width: 80px; }
+  .cl-commit-subj { color: var(--ink); }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')
@@ -56,6 +82,68 @@
   <h1>Changelog.</h1>
   <p class="lede">Every notable change to the site, in plain English. Newest at the top. When something feels off, scroll back through this to see what shifted recently.</p>
 
+  @if (session('status'))
+    <div class="cl-flash">{{ session('status') }}</div>
+  @endif
+
+  {{-- ─── RESTORE POINTS (checkpoints) ─────────────────────────────────── --}}
+  <section class="cl-section">
+    <div class="cl-section-head">
+      <h2 class="cl-h2">Restore points</h2>
+      @if ($canRollback)
+        <form method="POST" action="{{ route('admin.changelog.checkpoint') }}" style="display:inline;"
+              data-confirm="Capture a restore point of the site exactly as it is right now?" data-confirm-ok="Capture">@csrf
+          <button type="submit" class="cl-btn-ghost">+ Capture checkpoint now</button>
+        </form>
+      @endif
+    </div>
+    <p class="cl-note">A restore point is a saved last-known-good state (code lock + database). The self-update routine captures one before every update; you can capture one manually before risky changes. {{ $canRollback ? 'You can roll back to any restorable point below.' : 'Only super-admins (and assigned users) can roll back.' }}</p>
+
+    @if ($checkpoints->isEmpty())
+      <div class="cl-empty">No restore points yet. The first one appears after the next self-update or when you capture one.</div>
+    @else
+      <div class="cl-cps">
+        @foreach ($checkpoints as $cp)
+          <div class="cl-cp">
+            <div class="cl-cp-main">
+              <span class="cl-cp-kind cl-cp-kind-{{ $cp->kind }}">{{ str_replace('_',' ',$cp->kind) }}</span>
+              <span class="cl-cp-label">{{ $cp->label }}</span>
+              @php
+                $meta = $cp->created_at->diffForHumans();
+                if ($cp->app_version) $meta .= ' · ' . $cp->app_version;
+                if ($cp->git_sha) $meta .= ' · ' . substr($cp->git_sha, 0, 7);
+                if ($cp->restored_at) $meta .= ' · ⤺ restored ' . $cp->restored_at->diffForHumans();
+              @endphp
+              <span class="cl-cp-meta">{{ $meta }}</span>
+            </div>
+            @if ($canRollback)
+              @if ($cp->isRestorable())
+                <form method="POST" action="{{ route('admin.changelog.restore', $cp->id) }}" style="display:inline;"
+                      data-confirm="Roll the WHOLE SITE back to &quot;{{ $cp->label }}&quot; ({{ $cp->created_at->format('M j, g:ia') }})? Code + database both revert. A fresh restore point of the current state is captured first, so this is undoable." data-confirm-ok="Roll back">@csrf
+                  <button type="submit" class="cl-btn-danger">↺ Roll back</button>
+                </form>
+              @else
+                <span class="cl-cp-gone">backup expired</span>
+              @endif
+            @endif
+          </div>
+        @endforeach
+      </div>
+    @endif
+  </section>
+
+  @if (!empty($commits))
+  <section class="cl-section">
+    <h2 class="cl-h2">Recent code commits</h2>
+    <div class="cl-commits">
+      @foreach ($commits as $c)
+        <div class="cl-commit"><span class="cl-commit-sha">{{ $c['sha'] }}</span><span class="cl-commit-date">{{ $c['date'] }}</span><span class="cl-commit-subj">{{ $c['subj'] }}</span></div>
+      @endforeach
+    </div>
+  </section>
+  @endif
+
+  <h2 class="cl-h2" style="margin-top:2.5rem;">Change history</h2>
   <div class="doc">
     {!! $html !!}
   </div>
@@ -68,5 +156,6 @@
   </div>
 </main>
 
+@include('partials._confirm')
 </body>
 </html>

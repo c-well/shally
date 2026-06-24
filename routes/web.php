@@ -170,16 +170,9 @@ Route::middleware('auth')->group(function () {
                 'recent'      => \App\Models\AnthropicUsageLog::orderByDesc('created_at')->limit(50)->get(),
             ]);
         })->name('admin.anthropic-usage');
-        Route::get   ('/admin/changelog',               function () {
-            $path = base_path('docs/CHANGELOG.md');
-            $md = is_file($path) ? file_get_contents($path) : '# No CHANGELOG.md yet';
-            $converter = new \League\CommonMark\CommonMarkConverter([
-                'html_input' => 'strip',
-                'allow_unsafe_links' => false,
-            ]);
-            $html = (string) $converter->convert($md);
-            return view('admin.changelog', ['html' => $html]);
-        })->name('admin.changelog');
+        Route::get ('/admin/changelog',                  [\App\Http\Controllers\AdminChangelogController::class, 'index'])->name('admin.changelog');
+        Route::post('/admin/changelog/checkpoint',        [\App\Http\Controllers\AdminChangelogController::class, 'checkpoint'])->name('admin.changelog.checkpoint');
+        Route::post('/admin/changelog/{id}/restore',      [\App\Http\Controllers\AdminChangelogController::class, 'restore'])->name('admin.changelog.restore')->whereNumber('id');
         Route::get   ('/admin/pages/{slug}/edit',       [\App\Http\Controllers\AdminPagesController::class, 'edit'])->name('admin.pages.edit');
         Route::patch ('/admin/pages/{slug}',            [\App\Http\Controllers\AdminPagesController::class, 'update'])->name('admin.pages.update');
         Route::post  ('/admin/pages/upload-image',      [\App\Http\Controllers\AdminPagesController::class, 'uploadImage'])->name('admin.pages.upload-image');
