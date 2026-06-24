@@ -308,3 +308,13 @@ Schedule::command('messages:sweep-spam --prune-days=30')
     ->timezone('America/New_York')
     ->name('messages-sweep-spam')
     ->onOneServer();
+
+// SELF_UPDATE (2026-06-24) — "claudeless" weekly security maintenance.
+// Sunday 5 AM ET. --security-only: does nothing unless composer audit finds an
+// advisory; when it does, it checkpoints (git+lock+DB), updates within-major,
+// migrates, health-checks, and auto-rolls-back on any regression. Emails result.
+Schedule::command("system:self-update --security-only")
+    ->sundays()->at("05:00")
+    ->timezone("America/New_York")
+    ->name("system-self-update")
+    ->onOneServer();
