@@ -23,6 +23,8 @@
     Honors a custom OK label via data-confirm-ok="Delete".
 --}}
 <style>
+  .bc-backdrop[hidden] { display: none !important; }
+  .bc-toast[hidden] { display: none !important; }
   .bc-backdrop { position: fixed; inset: 0; background: rgba(26,35,50,0.45); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 2147483000; opacity: 0; transition: opacity 0.16s ease; padding: 20px; }
   .bc-backdrop.show { opacity: 1; }
   .bc-box { background: var(--parchment, #fefcef); border: 1px solid var(--line, #e3ddc9); border-radius: 10px; max-width: 420px; width: 100%; padding: 26px 28px 20px; box-shadow: 0 24px 64px rgba(0,0,0,0.22); transform: translateY(6px); transition: transform 0.16s ease; }
