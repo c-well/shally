@@ -41,7 +41,7 @@
                             <td class="p-3 font-medium">{{ $d->name }}</td>
                             <td class="p-3 text-gray-600">{{ $d->description }}</td>
                             <td class="p-3 text-right">
-                                <form method="POST" action="{{ route('departments.destroy', $d) }}" class="inline" onsubmit="return confirm('Delete {{ $d->name }}?');">
+                                <form method="POST" action="{{ route('departments.destroy', $d) }}" class="inline" data-confirm="Delete {{ $d->name }}?">
                                     @csrf @method('DELETE')
                                     <button class="text-xs text-red-600 hover:underline">Delete</button>
                                 </form>
@@ -54,4 +54,5 @@
             </table>
         </div>
     </div>
+@include('partials._confirm')
 </x-app-layout>

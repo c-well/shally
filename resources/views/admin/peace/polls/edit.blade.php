@@ -159,7 +159,7 @@
   </form>
 
   @if($poll->exists)
-    <form method="POST" action="{{ route('admin.peace.polls.destroy', $poll) }}" onsubmit="return confirm('Delete this poll? All responses will be lost.');" style="margin-top: 60px;">
+    <form method="POST" action="{{ route('admin.peace.polls.destroy', $poll) }}" data-confirm="Delete this poll? All responses will be lost." style="margin-top: 60px;">
       @csrf @method('DELETE')
       <button type="submit" class="btn danger">Delete poll</button>
     </form>
@@ -170,7 +170,7 @@
   let optCount = document.querySelectorAll('#options-list .opt-row').length;
   document.getElementById('opt-add').addEventListener('click', () => {
     if (document.querySelectorAll('#options-list .opt-row').length >= 6) {
-      alert('Max 6 options.'); return;
+      shToast('Max 6 options.'); return;
     }
     const row = document.createElement('div');
     row.className = 'opt-row';
@@ -185,5 +185,6 @@
     document.getElementById('options-list').appendChild(row);
   });
 </script>
+@include('partials._confirm')
 </body>
 </html>

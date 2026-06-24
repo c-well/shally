@@ -142,7 +142,7 @@
             <span class="pill warn">permanent</span>
           @endif
         </span>
-        <form method="POST" action="{{ route('admin.security.unblock', $b->id) }}" onsubmit="return confirm('Unblock {{ $b->ip_address }}?');" style="display:inline;">
+        <form method="POST" action="{{ route('admin.security.unblock', $b->id) }}" data-confirm="Unblock {{ $b->ip_address }}?" style="display:inline;">
           @csrf
           <button type="submit" class="btn danger">Unblock</button>
         </form>
@@ -221,5 +221,6 @@
     <div class="empty">CSF snapshot unavailable — check that the root cron <code>csf-stats-snapshot.sh</code> is running.</div>
   @endif
 </main>
+@include('partials._confirm')
 </body>
 </html>

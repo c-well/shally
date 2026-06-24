@@ -99,7 +99,7 @@
 document.querySelectorAll('.remove-btn').forEach(btn => {
   btn.addEventListener('click', async (e) => {
     const qaId = btn.dataset.removeId;
-    if (!confirm('Remove from your saved list?')) return;
+    if (!await window.shConfirm('Remove from your saved list?')) return;
     try {
       const resp = await fetch('/peace/saved/' + qaId, {
         method: 'POST',
@@ -119,5 +119,6 @@ document.querySelectorAll('.remove-btn').forEach(btn => {
   });
 });
 </script>
+@include('partials._confirm')
 </body>
 </html>

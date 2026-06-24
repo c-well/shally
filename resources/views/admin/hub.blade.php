@@ -135,7 +135,7 @@
             s.style.background = (s === sw ? 'color-mix(in srgb, var(--teal) 6%, transparent)' : '#fff');
           });
           setTimeout(() => location.reload(), 400);
-        } catch (e) { alert('Theme save failed: ' + e.message); }
+        } catch (e) { shToast('Theme save failed: ' + e.message); }
       });
     });
   })();
@@ -305,6 +305,7 @@
   </p>
 
 </main>
+@include('partials._confirm')
 
 </body>
 </html>

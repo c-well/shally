@@ -253,13 +253,13 @@
       const note = prompt('Close with a short resolution note? (optional)');
       if (note === null) return;
       try { await patch(closeBtn.dataset.closeUrl, { note }); location.reload(); }
-      catch (err) { alert('Could not close: ' + err.message); }
+      catch (err) { shToast('Could not close: ' + err.message); }
     }
     const reopenBtn = e.target.closest('.btn-reopen');
     if (reopenBtn) {
-      if (!confirm('Reopen this ticket?')) return;
+      if (!await window.shConfirm('Reopen this ticket?')) return;
       try { await patch(reopenBtn.dataset.reopenUrl); location.reload(); }
-      catch (err) { alert('Could not reopen: ' + err.message); }
+      catch (err) { shToast('Could not reopen: ' + err.message); }
     }
   });
 })();
@@ -312,6 +312,7 @@
   });
 })();
 </script>
+@include('partials._confirm')
 
 </body>
 </html>

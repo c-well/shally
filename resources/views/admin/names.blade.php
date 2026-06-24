@@ -197,7 +197,7 @@
             });
             if (!res.ok) throw new Error('rename failed');
             await load();
-          } catch (e) { alert('Could not rename: ' + e.message); span.textContent = original; }
+          } catch (e) { shToast('Could not rename: ' + e.message); span.textContent = original; }
         });
       });
     } catch (e) { list.innerHTML = '<div class="empty">Failed to load.</div>'; }
@@ -214,13 +214,13 @@
   }
 
   async function block(person, clearLines) {
-    if (!confirm(`Hide "${person}" from autocomplete${clearLines ? ' AND remove from past bulletin lines' : ''}?`)) return;
+    if (!await window.shConfirm(`Hide "${person}" from autocomplete${clearLines ? ' AND remove from past bulletin lines' : ''}?`)) return;
     try { await post('/api/people/block', { person, clear_from_lines: !!clearLines }); load(); }
-    catch (e) { alert('Failed: ' + e.message); }
+    catch (e) { shToast('Failed: ' + e.message); }
   }
   async function unblock(person) {
     try { await post('/api/people/unblock', { person }); load(); }
-    catch (e) { alert('Failed: ' + e.message); }
+    catch (e) { shToast('Failed: ' + e.message); }
   }
 
   // + Add new name
@@ -233,12 +233,13 @@
       await post('/api/people', { name });
       input.value = '';
       await load();
-    } catch (e) { alert('Could not add: ' + e.message); }
+    } catch (e) { shToast('Could not add: ' + e.message); }
   });
 
   load();
 })();
 </script>
+@include('partials._confirm')
 
 </body>
 </html>

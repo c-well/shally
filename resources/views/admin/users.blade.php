@@ -228,7 +228,7 @@
           @if ($u->pin_hash)
             @if ($u->id !== auth()->id())
               <button type="button" class="clear"
-                onclick="event.preventDefault(); if(confirm('Clear {{ $u->name }}\'s PIN?')) { document.getElementById('clear-{{ $u->id }}').submit(); }">×</button>
+                onclick="event.preventDefault(); window.shConfirm('Clear {{ $u->name }}\'s PIN?', {danger:true}).then(function(o){ if(o){ document.getElementById('clear-{{ $u->id }}').submit(); } });">×</button>
               <form id="clear-{{ $u->id }}" method="POST" action="{{ route('admin.users.pin.clear', $u) }}" style="display:none;">@csrf @method('DELETE')</form>
             @endif
           @endif
@@ -237,6 +237,7 @@
     @endforeach
   </section>
 </main>
+('partials._confirm')
 
 </body>
 </html>

@@ -199,7 +199,7 @@
         </div>
         <div class="l-actions">
           <form method="POST" action="{{ route('admin.lessons.destroy', $lesson) }}"
-                onsubmit="return confirm('Delete {{ $lesson->quarterLabel() }}?');">
+                data-confirm="Delete {{ $lesson->quarterLabel() }}?">
             @csrf @method('DELETE')
             <button type="submit">Delete</button>
           </form>
@@ -208,6 +208,7 @@
     @endforeach
   </section>
 </main>
+@include('partials._confirm')
 
 </body>
 </html>

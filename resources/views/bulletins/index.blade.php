@@ -53,7 +53,7 @@
                     </div>
                     <a href="{{ route('bulletins.show', $b) }}" target="_blank" class="text-xs text-indigo-600 hover:underline">View</a>
                     <a href="{{ route('bulletins.edit', $b) }}" class="text-xs text-gray-600 hover:underline">Edit</a>
-                    <form method="POST" action="{{ route('bulletins.destroy', $b) }}" onsubmit="return confirm('Delete this bulletin?');">
+                    <form method="POST" action="{{ route('bulletins.destroy', $b) }}" data-confirm="Delete this bulletin?">
                         @csrf @method('DELETE')
                         <button class="text-xs text-red-600 hover:underline">Delete</button>
                     </form>
@@ -63,4 +63,5 @@
             @endforelse
         </div>
     </div>
+@include('partials._confirm')
 </x-app-layout>

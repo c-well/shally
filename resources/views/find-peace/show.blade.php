@@ -1248,7 +1248,7 @@ document.querySelectorAll('.reaction').forEach(btn => {
         } catch (err) {
           submitBtn.disabled = false;
           submitBtn.textContent = 'See what scripture says →';
-          alert('Sorry — could not submit your answer. ' + (err.message || ''));
+          shToast('Sorry — could not submit your answer. ' + (err.message || ''));
         }
       });
     });
@@ -1376,12 +1376,12 @@ document.querySelectorAll('.reaction').forEach(btn => {
         } else {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Send link →';
-          alert(data.message || data.error || 'Something went wrong. Try again.');
+          shToast(data.message || data.error || 'Something went wrong. Try again.');
         }
       } catch (err) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Send link →';
-        alert('Network error. Try again.');
+        shToast('Network error. Try again.');
       }
     });
   }
@@ -1593,5 +1593,6 @@ document.querySelectorAll('.reaction').forEach(btn => {
   </div>
 </div>
 @include('partials._event-tracker')
+@include('partials._confirm')
 </body>
 </html>

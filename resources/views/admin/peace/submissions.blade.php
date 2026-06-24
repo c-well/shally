@@ -161,7 +161,7 @@
         @endif
 
         @if ($sub->status !== 'archived')
-          <form method="POST" action="{{ route('admin.peace.submissions.update', $sub->id) }}" style="display:inline;" onsubmit="return confirm('Archive this submission?');">
+          <form method="POST" action="{{ route('admin.peace.submissions.update', $sub->id) }}" style="display:inline;" data-confirm="Archive this submission?">
             @csrf
             <input type="hidden" name="action" value="archive">
             <button type="submit" class="btn danger">Archive</button>
@@ -191,5 +191,6 @@
     <div class="empty">No submissions match this filter.</div>
   @endforelse
 </main>
+@include('partials._confirm')
 </body>
 </html>
