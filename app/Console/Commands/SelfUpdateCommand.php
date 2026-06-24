@@ -72,6 +72,22 @@ class SelfUpdateCommand extends Command
             return self::FAILURE;
         }
 
+        // Record this restore point so it shows up in /admin/changelog alongside
+        // manual checkpoints. created_by = null marks it as system-captured.
+        try {
+            \App\Models\SystemCheckpoint::create([
+                'label' => ($dryRun ? 'Auto — before self-update (dry-run)' : 'Auto — before self-update'),
+                'kind' => 'auto_update',
+                'git_sha' => $sha ?: null,
+                'composer_lock_path' => is_file($lockBackup) ? $lockBackup : null,
+                'db_backup_path' => $dbBackup,
+                'app_version' => trim($this->artisan(['--version'])['out']) ?: null,
+                'created_by' => null,
+            ]);
+        } catch (\Throwable $e) {
+            $this->warn('  Could not record SystemCheckpoint row: ' . $e->getMessage());
+        }
+
         if ($dryRun) {
             $this->info('  Dry run — checkpoint captured, no update applied. Plan: composer update ' . implode(' ', self::DIRECT_DEPS) . ' --with-dependencies (within major).');
             return self::SUCCESS;
