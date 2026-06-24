@@ -53,23 +53,7 @@
   .msg-actions .delete { color: var(--warn) !important; }
   .msg-actions .delete:hover { color: #fff !important; background: var(--warn); padding: 2px 6px !important; border-radius: 3px; text-decoration: none !important; }
 
-  /* Branded confirm modal — replaces native confirm() */
-  .cm-backdrop { position: fixed; inset: 0; background: rgba(26,35,50,0.45); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; transition: opacity 0.16s ease; padding: 20px; }
-  .cm-backdrop.show { opacity: 1; }
-  .cm-box { background: var(--parchment, #fefcef); border: 1px solid var(--line); border-radius: 10px; max-width: 420px; width: 100%; padding: 26px 28px 20px; box-shadow: 0 24px 64px rgba(0,0,0,0.22); transform: translateY(6px); transition: transform 0.16s ease; }
-  .cm-backdrop.show .cm-box { transform: translateY(0); }
-  .cm-text { font-family: 'Cormorant Garamond', serif; font-size: 19px; line-height: 1.45; color: var(--ink); margin-bottom: 22px; }
-  .cm-actions { display: flex; justify-content: flex-end; gap: 10px; }
-  .cm-btn { font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; padding: 10px 18px; border-radius: 5px; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
-  .cm-cancel { background: transparent; color: var(--ink-soft); border-color: var(--line); }
-  .cm-cancel:hover { color: var(--ink); border-color: var(--ink-soft); }
-  .cm-ok { background: var(--warn); color: #fff; }
-  .cm-ok:hover { background: #8f2318; }
-  .cm-ok:disabled { opacity: 0.6; cursor: wait; }
-
-  /* Toast */
-  .cm-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--ink); color: #fff; font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 12px 20px; border-radius: 8px; box-shadow: 0 12px 32px rgba(0,0,0,0.25); z-index: 10000; opacity: 0; transition: opacity 0.22s, transform 0.22s; }
-  .cm-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* Confirm modal + toast now provided site-wide by partials/_confirm.blade.php */
   .msg.unread .msg-name::before { content: '● '; color: var(--pulse); font-size: 14px; }
 
   .empty { padding: 40px 0; text-align: center; color: var(--ink-soft); font-style: italic; opacity: 0.7; }
@@ -134,7 +118,7 @@
             <a href="mailto:{{ $p->email }}?subject=Your%20prayer%20request">Reply via email</a>
           @endif
           <form method="POST" action="{{ route('admin.messages.prayer.delete', $p->id) }}" style="display:inline;"
-                data-ajax-delete data-confirm="Move this prayer request to trash? You can restore it for 30 days.">@csrf
+                data-confirm-ajax="Move this prayer request to trash? You can restore it for 30 days.">@csrf
             <button type="submit" class="delete">Delete</button>
           </form>
         </div>
@@ -164,7 +148,7 @@
           @endif
           <a href="mailto:{{ $c->email }}?subject=Re%3A%20your%20message">Reply via email</a>
           <form method="POST" action="{{ route('admin.messages.contact.delete', $c->id) }}" style="display:inline;"
-                data-ajax-delete data-confirm="Move this message to trash? You can restore it for 30 days.">@csrf
+                data-confirm-ajax="Move this message to trash? You can restore it for 30 days.">@csrf
             <button type="submit" class="delete">Delete</button>
           </form>
         </div>
@@ -184,89 +168,6 @@
   }));
 </script>
 
-{{-- BRANDED_CONFIRM + AJAX_DELETE (2026-06-24) — replaces the native confirm()
-     panel and the full-page redirect. The row fades out in place; no reload,
-     so the active tab is never lost. --}}
-<div class="cm-backdrop" id="cmBackdrop" role="dialog" aria-modal="true" aria-labelledby="cmText" hidden>
-  <div class="cm-box">
-    <p class="cm-text" id="cmText">Are you sure?</p>
-    <div class="cm-actions">
-      <button type="button" class="cm-btn cm-cancel" id="cmCancel">Cancel</button>
-      <button type="button" class="cm-btn cm-ok" id="cmOk">Delete</button>
-    </div>
-  </div>
-</div>
-<div class="cm-toast" id="cmToast" hidden></div>
-
-<script>
-(function () {
-  const backdrop = document.getElementById('cmBackdrop');
-  const textEl   = document.getElementById('cmText');
-  const okBtn    = document.getElementById('cmOk');
-  const cancelBtn= document.getElementById('cmCancel');
-  const toast    = document.getElementById('cmToast');
-  const token    = document.querySelector('meta[name="csrf-token"]')?.content || '';
-  let pendingForm = null;
-
-  function openModal(form) {
-    pendingForm = form;
-    textEl.textContent = form.dataset.confirm || 'Are you sure?';
-    backdrop.hidden = false;
-    requestAnimationFrame(() => backdrop.classList.add('show'));
-    okBtn.focus();
-  }
-  function closeModal() {
-    backdrop.classList.remove('show');
-    setTimeout(() => { backdrop.hidden = true; pendingForm = null; }, 160);
-  }
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.hidden = false;
-    requestAnimationFrame(() => toast.classList.add('show'));
-    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.hidden = true, 250); }, 3200);
-  }
-
-  // Intercept any data-ajax-delete form
-  document.querySelectorAll('form[data-ajax-delete]').forEach(form => {
-    form.addEventListener('submit', e => { e.preventDefault(); openModal(form); });
-  });
-
-  cancelBtn.addEventListener('click', closeModal);
-  backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !backdrop.hidden) closeModal(); });
-
-  okBtn.addEventListener('click', async () => {
-    if (!pendingForm) return;
-    const form = pendingForm;
-    const row  = form.closest('[data-msg-row]');
-    okBtn.disabled = true;
-    try {
-      const resp = await fetch(form.action, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
-      });
-      const data = await resp.json().catch(() => ({}));
-      closeModal();
-      okBtn.disabled = false;
-      if (resp.ok && data.ok) {
-        // Fade the row out in place — stay on the current tab, no reload.
-        if (row) {
-          row.style.transition = 'opacity 0.25s, transform 0.25s';
-          row.style.opacity = '0';
-          row.style.transform = 'translateX(-8px)';
-          setTimeout(() => row.remove(), 260);
-        }
-        showToast(data.message || 'Moved to trash.');
-      } else {
-        showToast('Could not delete — try again.');
-      }
-    } catch (err) {
-      closeModal();
-      okBtn.disabled = false;
-      showToast('Network error — try again.');
-    }
-  });
-})();
-</script>
+@include('partials._confirm')
 </body>
 </html>
