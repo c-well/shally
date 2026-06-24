@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ContactMessage;
 use App\Models\PrayerRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -41,17 +42,25 @@ class AdminMessagesController extends Controller
         return back();
     }
 
-    /** POST /admin/messages/prayer/{id}/delete — soft delete (recoverable 30 days) */
-    public function deletePrayer(int $id): RedirectResponse
+    /** POST /admin/messages/prayer/{id}/delete — soft delete (recoverable 30 days).
+     *  Returns JSON for the in-page AJAX delete; falls back to a redirect for no-JS. */
+    public function deletePrayer(Request $request, int $id): RedirectResponse|JsonResponse
     {
         PrayerRequest::findOrFail($id)->delete();
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['ok' => true, 'message' => 'Prayer request moved to trash (recoverable for 30 days).']);
+        }
         return back()->with('status', 'Prayer request moved to trash (recoverable for 30 days).');
     }
 
-    /** POST /admin/messages/contact/{id}/delete — soft delete (recoverable 30 days) */
-    public function deleteContact(int $id): RedirectResponse
+    /** POST /admin/messages/contact/{id}/delete — soft delete (recoverable 30 days).
+     *  Returns JSON for the in-page AJAX delete; falls back to a redirect for no-JS. */
+    public function deleteContact(Request $request, int $id): RedirectResponse|JsonResponse
     {
         ContactMessage::findOrFail($id)->delete();
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['ok' => true, 'message' => 'Message moved to trash (recoverable for 30 days).']);
+        }
         return back()->with('status', 'Message moved to trash (recoverable for 30 days).');
     }
 
