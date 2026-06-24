@@ -299,3 +299,12 @@ Schedule::command('peace:whisper-transcribe')
     ->onOneServer()
     ->emailOutputOnFailure('contact@c-wellpics.com')
     ->name('peace-whisper-wed-6pm');
+
+// SPAM_AUTO_SWEEP (added 2026-06-18) — daily 04:15 ET, soft-deletes obvious
+// contact-form spam (conservative: contact messages only, never prayers,
+// recoverable for 30 days, then hard-pruned). Logs to audit_log.
+Schedule::command('messages:sweep-spam --prune-days=30')
+    ->dailyAt('04:15')
+    ->timezone('America/New_York')
+    ->name('messages-sweep-spam')
+    ->onOneServer();

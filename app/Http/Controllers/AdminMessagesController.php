@@ -40,4 +40,32 @@ class AdminMessagesController extends Controller
         $c->save();
         return back();
     }
+
+    /** POST /admin/messages/prayer/{id}/delete — soft delete (recoverable 30 days) */
+    public function deletePrayer(int $id): RedirectResponse
+    {
+        PrayerRequest::findOrFail($id)->delete();
+        return back()->with('status', 'Prayer request moved to trash (recoverable for 30 days).');
+    }
+
+    /** POST /admin/messages/contact/{id}/delete — soft delete (recoverable 30 days) */
+    public function deleteContact(int $id): RedirectResponse
+    {
+        ContactMessage::findOrFail($id)->delete();
+        return back()->with('status', 'Message moved to trash (recoverable for 30 days).');
+    }
+
+    /** POST /admin/messages/prayer/{id}/restore */
+    public function restorePrayer(int $id): RedirectResponse
+    {
+        PrayerRequest::onlyTrashed()->findOrFail($id)->restore();
+        return back()->with('status', 'Prayer request restored.');
+    }
+
+    /** POST /admin/messages/contact/{id}/restore */
+    public function restoreContact(int $id): RedirectResponse
+    {
+        ContactMessage::onlyTrashed()->findOrFail($id)->restore();
+        return back()->with('status', 'Message restored.');
+    }
 }

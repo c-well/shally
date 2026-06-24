@@ -54,6 +54,24 @@ class SpamFilter
         'online casino', 'free spins', 'slot machine',
         // greeting-then-url pattern (#1)
         'hi admin', 'hello admin', 'dear admin', 'dear webmaster',
+        // phishing / account-scare (added 2026-06-18 after "Steerwors" slipped
+        // through — "account inactive 364 days, claim your funds, withdraw in 24h")
+        'account has been inactive', 'inactive for', 'avoid deletion',
+        'claim your funds', 'claim your reward', 'request a withdrawal',
+        'within 24 hours', 'within 48 hours', 'verify your account',
+        'suspended', 'unusual activity', 'confirm your identity',
+        'you have won', 'you have been selected', 'gift card',
+    ];
+
+    /**
+     * URL-shortener hosts. Legitimate church contacts virtually never send a
+     * shortened link — they're the calling card of phishing/spam that wants to
+     * hide the destination. A single shortener link is treated as spam outright.
+     */
+    private const LINK_SHORTENERS = [
+        'tinyurl.com', 'bit.ly', 'goo.gl', 'ow.ly', 't.co', 'is.gd',
+        'buff.ly', 'rebrand.ly', 'cutt.ly', 'shorturl', 'rb.gy',
+        'tiny.cc', 'lnkd.in', 'snip.ly', 'shorte.st', 'adf.ly',
     ];
 
     /**
@@ -70,6 +88,14 @@ class SpamFilter
         // ── 1. URL in name field (real names don't contain http://)
         if (preg_match('~https?://|www\.~i', $name)) {
             return 'url-in-name';
+        }
+
+        // ── 1b. Link shortener anywhere = hard spam flag. Real visitors don't
+        //       hide their destination behind tinyurl/bit.ly/etc.
+        foreach (self::LINK_SHORTENERS as $host) {
+            if (str_contains($combinedLower, $host)) {
+                return 'link-shortener:' . $host;
+            }
         }
 
         // ── 2. URL count in body — legitimate church-contact traffic

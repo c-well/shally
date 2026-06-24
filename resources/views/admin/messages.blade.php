@@ -47,7 +47,11 @@
   .msg-actions a, .msg-actions button { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); background: transparent; border: 0; cursor: pointer; text-decoration: none; padding: 0; }
   .msg-actions a:hover, .msg-actions button:hover { color: var(--teal-dark); text-decoration: underline; }
 
-  .msg.unread { background: rgba(54,201,128,0.04); margin-left: -12px; padding-left: 12px; border-left: 3px solid var(--pulse); }
+  /* padding-left is 9px (not 12) to offset the 3px border under box-sizing:border-box,
+     so unread body/actions line up exactly with read messages. (alignment fix 2026-06-18) */
+  .msg.unread { background: rgba(54,201,128,0.04); margin-left: -12px; padding-left: 9px; border-left: 3px solid var(--pulse); }
+  .msg-actions .delete { color: var(--warn) !important; }
+  .msg-actions .delete:hover { color: #fff !important; background: var(--warn); padding: 2px 6px !important; border-radius: 3px; text-decoration: none !important; }
   .msg.unread .msg-name::before { content: '● '; color: var(--pulse); font-size: 14px; }
 
   .empty { padding: 40px 0; text-align: center; color: var(--ink-soft); font-style: italic; opacity: 0.7; }
@@ -111,6 +115,9 @@
           @if ($p->email)
             <a href="mailto:{{ $p->email }}?subject=Your%20prayer%20request">Reply via email</a>
           @endif
+          <form method="POST" action="{{ route('admin.messages.prayer.delete', $p->id) }}" style="display:inline;" onsubmit="return confirm('Move this prayer request to trash? Recoverable for 30 days.');">@csrf
+            <button type="submit" class="delete">Delete</button>
+          </form>
         </div>
       </div>
     @empty
@@ -137,6 +144,9 @@
             <span class="msg-meta">read {{ $c->read_at->diffForHumans() }}</span>
           @endif
           <a href="mailto:{{ $c->email }}?subject=Re%3A%20your%20message">Reply via email</a>
+          <form method="POST" action="{{ route('admin.messages.contact.delete', $c->id) }}" style="display:inline;" onsubmit="return confirm('Move this message to trash? Recoverable for 30 days.');">@csrf
+            <button type="submit" class="delete">Delete</button>
+          </form>
         </div>
       </div>
     @empty
