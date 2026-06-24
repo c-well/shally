@@ -183,17 +183,17 @@
           ▸ Play IN→OUT
         </button>
         <button type="submit" name="action" value="save_only"
-                onclick="return confirm('Save boundaries only? Audio + content stay as-is (you can re-slice later).');"
+                onclick="event.preventDefault();var b=this;shConfirm('Save boundaries only? Audio + content stay as-is (you can re-slice later).',{danger:true}).then(function(o){if(o)b.form.requestSubmit(b);});"
                 style="padding:9px 16px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
           Save boundaries
         </button>
         <button type="submit" name="action" value="save_and_reslice"
-                onclick="return confirm('Save + re-slice audio from full YouTube video? Downloads ~100MB and takes ~2 minutes. Audio file will be replaced.');"
+                onclick="event.preventDefault();var b=this;shConfirm('Save + re-slice audio from full YouTube video? Downloads ~100MB and takes ~2 minutes. Audio file will be replaced.',{danger:true}).then(function(o){if(o)b.form.requestSubmit(b);});"
                 style="padding:9px 16px;background:var(--teal);color:#fff;border:0;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
           Save + Re-slice audio
         </button>
         <button type="submit" name="action" value="save_reslice_regen"
-                onclick="return confirm('Save + re-slice + regenerate Q&As/heart-line? Costs ~$0.07 in Claude API. Old Q&As will be deleted. Takes ~3 minutes total.');"
+                onclick="event.preventDefault();var b=this;shConfirm('Save + re-slice + regenerate Q&As/heart-line? Costs ~$0.07 in Claude API. Old Q&As will be deleted. Takes ~3 minutes total.',{danger:true}).then(function(o){if(o)b.form.requestSubmit(b);});"
                 style="padding:9px 16px;background:var(--brass);color:#fff;border:0;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
           Save + Re-slice + Regenerate ($0.07)
         </button>
@@ -326,7 +326,7 @@
       var ed = getValue('end');
       if (ed <= s) {
         e.preventDefault();
-        alert('OUT must be after IN.');
+        shToast('OUT must be after IN.');
       }
     });
   })();
@@ -345,7 +345,7 @@
     <p style="margin:14px 0 16px;font-size:13px;color:var(--ink-soft);">
       Offsets are relative to the <em>current</em> audio file (the one already trimmed by the pipeline). Use <strong>MM:SS</strong> format. End must be after start. A 3-second fade-out is always applied. To extend <em>past</em> the current end, leave it for Claude — that needs the full source.
     </p>
-    <form method="POST" action="{{ route('admin.peace.trim', $sermon->slug) }}" onsubmit="return confirm('Re-trim this audio? The original boundaries will be lost (backup is kept server-side).');">
+    <form method="POST" action="{{ route('admin.peace.trim', $sermon->slug) }}" data-confirm="Re-trim this audio? The original boundaries will be lost (backup is kept server-side).">
       @csrf
       <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;">
         <label style="display:block;">
@@ -371,7 +371,7 @@
         <button type="submit"
                 formaction="{{ route('admin.peace.recompress', $sermon->slug) }}"
                 formnovalidate
-                onclick="return confirm('Re-encode the current audio with this compressor? Boundaries stay the same. Old file is replaced.');"
+                onclick="event.preventDefault();var b=this;shConfirm('Re-encode the current audio with this compressor? Boundaries stay the same. Old file is replaced.',{danger:true}).then(function(o){if(o)b.form.requestSubmit(b);});"
                 style="margin-left:8px;padding:7px 14px;background:#fff;color:var(--teal);border:1px solid var(--teal);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
           Apply compressor only →
         </button>
@@ -460,7 +460,7 @@
           </div>
         </div>
       </form>
-      <form method="POST" action="{{ route('admin.peace.qa.destroy', [$sermon->slug, $qa->id]) }}" style="text-align:right; margin-top:-10px;" onsubmit="return confirm('Remove this Q&A?');">
+      <form method="POST" action="{{ route('admin.peace.qa.destroy', [$sermon->slug, $qa->id]) }}" style="text-align:right; margin-top:-10px;" data-confirm="Remove this Q&A?">
         @csrf @method('DELETE')
         <button type="submit" class="danger">Delete Q&A #{{ $qa->id }}</button>
       </form>
@@ -491,7 +491,7 @@
       <div class="ref-row">
         <span class="ref-label">{{ $scr->reference_display }} · {{ $scr->translation }}</span>
         <span class="ref-text">{{ \Illuminate\Support\Str::limit($scr->verse_text, 100) }}</span>
-        <form method="POST" action="{{ route('admin.peace.scripture.destroy', [$sermon->slug, $scr->id]) }}" onsubmit="return confirm('Remove this scripture?');">
+        <form method="POST" action="{{ route('admin.peace.scripture.destroy', [$sermon->slug, $scr->id]) }}" data-confirm="Remove this scripture?">
           @csrf @method('DELETE')
           <button type="submit" class="danger">Remove</button>
         </form>
@@ -507,6 +507,7 @@
   </div>
 
 </main>
+@include('partials._confirm')
 
 </body>
 </html>

@@ -521,7 +521,7 @@
       </div>
     `).join('');
     membersList.querySelectorAll('button[data-action="delete"]').forEach(b => b.addEventListener('click', async () => {
-      if (!confirm('Remove "' + b.dataset.name + '" from ' + state.data.department.name + '?')) return;
+      if (!await window.shConfirm('Remove "' + b.dataset.name + '" from ' + state.data.department.name + '?')) return;
       await api('DELETE', '/api/schedule/members/' + b.dataset.id);
       await load(); renderMembersModal();
     }));
@@ -533,5 +533,6 @@
   else window.addEventListener('load', load);
 })();
 </script>
+@include('partials._confirm')
 </body>
 </html>

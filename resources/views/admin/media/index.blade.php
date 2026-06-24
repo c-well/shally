@@ -100,7 +100,7 @@
           </div>
           <div class="tile-actions">
             <button type="button" class="copy" data-url="{{ $m->url() }}">Copy URL</button>
-            <form method="POST" action="{{ route('admin.media.destroy', $m) }}" onsubmit="return confirm('Delete this media file?');" style="flex:1; display:flex;">
+            <form method="POST" action="{{ route('admin.media.destroy', $m) }}" data-confirm="Delete this media file?" style="flex:1; display:flex;">
               @csrf @method('DELETE')
               <button type="submit" class="del">Delete</button>
             </form>
@@ -123,5 +123,6 @@ document.querySelectorAll('.copy').forEach(btn => {
   });
 });
 </script>
+@include('partials._confirm')
 </body>
 </html>

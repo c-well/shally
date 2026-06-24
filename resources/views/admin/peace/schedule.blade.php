@@ -101,7 +101,7 @@
   </div>
 
   <form action="{{ route('admin.peace.schedule.trigger') }}" method="POST" class="trigger-form"
-        onsubmit="return confirm('Fire peace:scan-channel right now? This costs ~$0.13 in API and triggers an email.');">
+        data-confirm="Fire peace:scan-channel right now? This costs ~$0.13 in API and triggers an email.">
     @csrf
     <input type="hidden" name="confirm" value="yes">
     <button type="submit" class="btn">Fire now →</button>
@@ -137,5 +137,6 @@
     @endforeach
   @endif
 </main>
+@include('partials._confirm')
 </body>
 </html>

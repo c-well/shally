@@ -289,7 +289,7 @@
     })
       .then(r => r.json())
       .then(data => {
-        if (data.error) { alert('Upload failed: ' + data.error); return; }
+        if (data.error) { shToast('Upload failed: ' + data.error); return; }
         // Insert markdown image at cursor
         const md = '![' + (data.alt || 'image') + '](' + data.url + ')\n';
         const s = ta.selectionStart;
@@ -298,7 +298,7 @@
         ta.focus();
         render();
       })
-      .catch(err => alert('Upload failed: ' + err.message))
+      .catch(err => shToast('Upload failed: ' + err.message))
       .finally(() => {
         upload.classList.remove('on');
         saveBtn.disabled = false;
@@ -314,6 +314,7 @@
   });
 })();
 </script>
+@include('partials._confirm')
 
 </body>
 </html>

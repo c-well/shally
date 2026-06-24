@@ -64,7 +64,7 @@
                         </div>
                         @if ($e->notes) <div class="mt-1 text-sm text-gray-600">{{ $e->notes }}</div> @endif
                     </div>
-                    <form method="POST" action="{{ route('events.destroy', $e) }}" onsubmit="return confirm('Delete this event?');">
+                    <form method="POST" action="{{ route('events.destroy', $e) }}" data-confirm="Delete this event?">
                         @csrf @method('DELETE')
                         <button class="text-xs text-red-600 hover:underline">Delete</button>
                     </form>
@@ -74,4 +74,5 @@
             @endforelse
         </div>
     </div>
+@include('partials._confirm')
 </x-app-layout>

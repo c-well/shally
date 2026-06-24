@@ -3772,7 +3772,7 @@
       document.querySelectorAll('[data-delete-url].del').forEach(btn => btn.addEventListener('click', async (ev) => {
         ev.stopPropagation(); // don't bubble to .editable parents (corrupts title with "×")
         ev.preventDefault();
-        if (!confirm('Delete this row?')) return;
+        if (!await window.shConfirm('Delete this row?')) return;
         try {
           const isBulletinLine = btn.closest('[data-line-id]') && orderList?.contains(btn);
           if (isBulletinLine && snapshotLines().length) {
@@ -3999,12 +3999,12 @@
               'To proceed, type DELETE (all caps) below:';
             const typed = prompt(warning);
             if (typed !== 'DELETE') {
-              if (typed !== null) alert('Cancelled — you must type DELETE exactly to confirm.');
+              if (typed !== null) shToast('Cancelled — you must type DELETE exactly to confirm.');
               return;
             }
           } else {
             // Soft confirm for past/old bulletins
-            if (!confirm('Delete the bulletin "' + title + '"?\n\nService date: ' + (sdFormatted || 'unknown') + '\n\nLines, announcements, and snapshot will be hidden but recoverable for 30 seconds.')) return;
+            if (!await window.shConfirm('Delete the bulletin "' + title + '"?\n\nService date: ' + (sdFormatted || 'unknown') + '\n\nLines, announcements, and snapshot will be hidden but recoverable for 30 seconds.')) return;
           }
           try {
             const res = await fetch(bulDelBtn.dataset.deleteUrl, {
@@ -4029,7 +4029,7 @@
 
       /* Reset to default order — push history + reload */
       document.querySelectorAll('[data-standard-url]').forEach(btn => btn.addEventListener('click', async () => {
-        if (!confirm('Reset bulletin to default order? You can undo this.')) return;
+        if (!await window.shConfirm('Reset bulletin to default order? You can undo this.')) return;
         try {
           if (snapshotLines().length) pushHistory('Reset to default');
           queuePendingToast('Reset to default');
@@ -4073,7 +4073,7 @@
 
       /* Start next week's bulletin */
       document.querySelectorAll('[data-next-week-url]').forEach(btn => btn.addEventListener('click', async () => {
-        if (!confirm("Start next Sabbath's bulletin?\nThis creates a new one and leaves today's alone.")) return;
+        if (!await window.shConfirm("Start next Sabbath's bulletin?\nThis creates a new one and leaves today's alone.")) return;
         try { const r = await post(btn.dataset.nextWeekUrl); if (r.redirect) location.href = r.redirect; else location.reload(); } catch (e) { showSaved('Error'); }
       }));
 
@@ -4238,7 +4238,7 @@
             if (data.redirect) location.href = data.redirect;
             else location.reload();
           } catch (err) {
-            alert('Could not create series: ' + err.message);
+            shToast('Could not create series: ' + err.message);
             $submitBtn.disabled = false;
             $submitBtn.textContent = 'Create';
           }
@@ -4330,7 +4330,7 @@
       evDeleteBtn?.addEventListener('click', async () => {
         const id = evDeleteBtn.dataset.id;
         const title = evDeleteBtn.dataset.title || 'Event';
-        if (!confirm('Delete "' + title + '"?')) return;
+        if (!await window.shConfirm('Delete "' + title + '"?')) return;
         try {
           sessionStorage.setItem('event-undo-pending', JSON.stringify({ id, title, ts: Date.now() }));
           await del(evDeleteBtn.dataset.deleteUrl);
@@ -4366,7 +4366,7 @@
       /* Flyer remove (clerk) */
       document.querySelectorAll('[data-flyer-remove-url]').forEach(btn => btn.addEventListener('click', async (e) => {
         e.preventDefault();
-        if (!confirm('Remove this flyer?')) return;
+        if (!await window.shConfirm('Remove this flyer?')) return;
         try { await del(btn.dataset.flyerRemoveUrl); location.reload(); } catch (err) { showSaved('Error'); }
       }));
 
@@ -4401,7 +4401,7 @@
         } catch (e) { nmList.textContent = 'Failed to load.'; }
       }
       async function blockName(person, clearLines) {
-        if (!confirm(`Hide "${person}" from autocomplete${clearLines ? ' AND clear it from past bulletin lines' : ''}?`)) return;
+        if (!await window.shConfirm(`Hide "${person}" from autocomplete${clearLines ? ' AND clear it from past bulletin lines' : ''}?`)) return;
         try { await post('/api/people/block', { person, clear_from_lines: !!clearLines }); loadNames(); }
         catch (e) { showSaved('Failed'); }
       }
@@ -4652,5 +4652,6 @@ if ('serviceWorker' in navigator) {
   })();
 </script>
 @include('partials._event-tracker')
+@include('partials._confirm')
 </body>
 </html>

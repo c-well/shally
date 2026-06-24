@@ -83,7 +83,7 @@
         </div>
         <a href="{{ route('admin.sermons.edit', $s) }}" class="edit-btn">Edit</a>
         <form method="POST" action="{{ route('admin.sermons.destroy', $s) }}"
-              onsubmit="return confirm('Delete \'{{ $s->title }}\'? Audio file will also be removed.');">
+              data-confirm="Delete '{{ $s->title }}'? Audio file will also be removed.">
           @csrf @method('DELETE')
           <button type="submit" class="del-btn">Delete</button>
         </form>
@@ -93,5 +93,6 @@
     @endforelse
   </div>
 </main>
+@include('partials._confirm')
 </body>
 </html>

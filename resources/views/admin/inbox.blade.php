@@ -186,7 +186,7 @@
       @if ($ticket->status !== 'closed')
         <div class="ticket-actions">
           <form method="POST" action="{{ route('admin.inbox.close', $ticket) }}" style="display:flex; gap:8px; flex-wrap:wrap; flex:1;"
-                onsubmit="return confirm('Close ticket #{{ $ticket->id }}?');">
+                data-confirm="Close ticket #{{ $ticket->id }}?">
             @csrf
             @method('PATCH')
             <input name="note" type="text" placeholder="Optional close note…"
@@ -200,6 +200,7 @@
     <div class="empty">No tickets in this view. 🙌</div>
   @endforelse
 </main>
+@include('partials._confirm')
 
 </body>
 </html>

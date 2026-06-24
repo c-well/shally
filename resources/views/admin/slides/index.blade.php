@@ -125,7 +125,7 @@
         </div>
         <div class="actions">
           <form method="POST" action="{{ route('admin.slides.destroy', $slide) }}"
-                onsubmit="return confirm('Delete this slide?');">
+                data-confirm="Delete this slide?">
             @csrf @method('DELETE')
             <button type="submit">Delete</button>
           </form>
@@ -187,6 +187,7 @@
   });
 })();
 </script>
+@include('partials._confirm')
 
 </body>
 </html>
