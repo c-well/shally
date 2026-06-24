@@ -209,6 +209,32 @@ class ProcessSermonCommand extends Command
             return $sermon;
         });
 
+        // PRE_PUBLISH_VALIDATION_GATE (2026-06-24) — enforced HERE so EVERY path
+        // that reaches peace:process (scan, Whisper fallback, manual rescue) gets
+        // the same checks. Previously the gate only ran in ScanChannelCommand, so
+        // Whisper/manual runs published unchecked (that's how #22, a generic
+        // livestream with a placeholder speaker, went live). If the gate fails,
+        // hold the sermon for review instead of publishing.
+        $sermon->loadMissing('qaPairs');
+        $gate = app(\App\Services\Peace\PrePublishValidationGate::class);
+        $result = $gate->run($sermon);
+        if (! $result['ok']) {
+            $sermon->processing_status = 'needs_review';
+            $sermon->published_at = null;
+            $sermon->save();
+            $this->warn("⚠ Validation gate HELD this sermon (not published):");
+            foreach ($result['failed'] as $check => $reason) {
+                $this->warn("    ✗ {$check}: {$reason}");
+            }
+            \App\Models\AuditLog::record(
+                event: 'peace_process_gate_held',
+                description: "peace:process held {$sermon->slug} — " . implode('; ', array_map(fn($k,$v)=>"$k: $v", array_keys($result['failed']), $result['failed'])),
+                meta: ['sermon_id' => $sermon->id, 'failed' => $result['failed']],
+            );
+            $this->info("Sermon saved as #{$sermon->id} (needs_review) — slug: {$sermon->slug}");
+            return self::SUCCESS;
+        }
+
         $this->info("✓ Sermon saved as #{$sermon->id} — slug: {$sermon->slug}");
         $this->line("Visit: /find-peace/{$sermon->slug}");
         return self::SUCCESS;
