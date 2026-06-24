@@ -3,8 +3,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Concerns\HasRevisions;
+
 class QuarterlyLesson extends Model
 {
+    use HasRevisions;
+
+    /* ── revision history (see App\Concerns\HasRevisions) ── */
+    public function revisionFields(): array { return ['theme', 'year', 'quarter', 'pdf_url']; }
+    public function revisionLabel(): string { return 'Lesson · Q' . $this->quarter . ' ' . $this->year; }
+
+
     protected $fillable = ['year', 'quarter', 'theme', 'starts_on', 'ends_on', 'pdf_path', 'pdf_url'];
     protected $casts = ['starts_on' => 'date', 'ends_on' => 'date'];
 

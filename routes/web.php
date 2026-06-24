@@ -173,6 +173,8 @@ Route::middleware('auth')->group(function () {
         Route::get ('/admin/changelog',                  [\App\Http\Controllers\AdminChangelogController::class, 'index'])->name('admin.changelog');
         Route::post('/admin/changelog/checkpoint',        [\App\Http\Controllers\AdminChangelogController::class, 'checkpoint'])->name('admin.changelog.checkpoint');
         Route::post('/admin/changelog/{id}/restore',      [\App\Http\Controllers\AdminChangelogController::class, 'restore'])->name('admin.changelog.restore')->whereNumber('id');
+        Route::get ('/admin/changes',                    [\App\Http\Controllers\AdminChangesController::class, 'index'])->name('admin.changes');
+        Route::post('/admin/changes/{revision}/restore', [\App\Http\Controllers\AdminChangesController::class, 'restore'])->name('admin.changes.restore');
         Route::get   ('/admin/pages/{slug}/edit',       [\App\Http\Controllers\AdminPagesController::class, 'edit'])->name('admin.pages.edit');
         Route::patch ('/admin/pages/{slug}',            [\App\Http\Controllers\AdminPagesController::class, 'update'])->name('admin.pages.update');
         Route::post  ('/admin/pages/upload-image',      [\App\Http\Controllers\AdminPagesController::class, 'uploadImage'])->name('admin.pages.upload-image');

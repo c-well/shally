@@ -172,7 +172,14 @@
       <span class="card-arrow">View →</span>
     </a>
 
-    <a href="{{ route('admin.changelog') }}" class="card">
+        <a href="{{ route('admin.changes') }}" class="card">
+      <span class="card-eyebrow">Undo</span>
+      <span class="card-title">Edit history.</span>
+      <span class="card-sub">Every content edit — bulletins, pages, lessons — with a one-click undo for each. The quick fix for a typo or a wrong change.</span>
+      <span class="card-arrow">Open &rarr;</span>
+    </a>
+
+<a href="{{ route('admin.changelog') }}" class="card">
       <span class="card-eyebrow">Dev notes</span>
       <span class="card-title">Changelog.</span>
       <span class="card-sub">Plain-English log of every site change. When something feels off, check here first.</span>

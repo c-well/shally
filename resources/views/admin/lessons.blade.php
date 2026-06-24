@@ -198,6 +198,7 @@
           </form>
         </div>
         <div class="l-actions">
+          <a class="l-pdf" href="{{ route('admin.changes', ['type' => get_class($lesson), 'id' => $lesson->id]) }}">History</a>
           <form method="POST" action="{{ route('admin.lessons.destroy', $lesson) }}"
                 data-confirm="Delete {{ $lesson->quarterLabel() }}?">
             @csrf @method('DELETE')

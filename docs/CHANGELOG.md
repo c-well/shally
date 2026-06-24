@@ -1,5 +1,15 @@
 # Shalom — Changelog
 
+## 2026-06-24 · Edit history + per-item undo (and restore points)
+
+**Two scales of undo, now two tools.** Rolling back a whole Laravel/dependency update is a different job from undoing one typo, so each gets its own mechanism.
+
+- **Restore points** (Changelog page) — last-known-good snapshots of code + database. For "one major thing": a system update, a migration, a risky structural change. A roll-back reverts everything since that point, so it captures a fresh restore point first (the roll-back is itself undoable). The self-update routine now records one automatically before each run.
+- **Edit history** (new — /admin/changes, plus a tile on the Admin hub) — every content edit kept as its own version, with a one-click undo *for that one item only*. For "50 quick text edits, one at a time": a bulletin tweak, a page paragraph, a lesson theme. Undoing one leaves everything else untouched, and the undo is itself reversible.
+
+**How it works.** A `HasRevisions` trait on Bulletin, BulletinLine, Page, and QuarterlyLesson captures the prior values of changed fields on every save — at the model layer, so it fires no matter which screen did the editing (the live bulletin builder, the pages form, the lessons form). Inline "Edit history" panel on the page editor; per-item "History" links on lessons and in the bulletin builder toolbar; and a central feed at /admin/changes showing all edits with undo. Content undo is gated to super-admins.
+
+
 ## 2026-05-23 · Session close — Dr. Calvin Watkins incident + watermark + lesson book
 
 **The incident.** The 3pm Sabbath scan auto-published a sermon under Shalom branding that was actually a Dr. Calvin Watkins guest message from a North Bronx simulcast a month ago. Today's actual Children's Day video didn't have captions yet, so the scanner walked down its candidate list and grabbed the next available one — which happened to be from a month-old service.
