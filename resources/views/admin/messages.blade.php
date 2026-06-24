@@ -87,6 +87,12 @@
         <span class="badge">{{ $unreadContacts }}</span>
       @endif
     </button>
+    <button class="tab" data-target="trash" role="tab">
+      Trash
+      @if (($trashCount ?? 0) > 0)
+        <span class="badge" style="background:var(--ink-soft);">{{ $trashCount }}</span>
+      @endif
+    </button>
   </div>
 
   {{-- Prayer requests --}}
@@ -156,6 +162,49 @@
     @empty
       <div class="empty">No contact-form messages yet.</div>
     @endforelse
+  </section>
+
+  {{-- Trash — soft-deleted prayers + contacts, restorable. Auto-swept spam is
+       hard-pruned after 30 days; manual deletes stay until you empty them. --}}
+  <section class="tab-panel" id="trash" role="tabpanel">
+    @if (($trashCount ?? 0) === 0)
+      <div class="empty">Trash is empty.</div>
+    @else
+      <p class="lede" style="margin-bottom:20px;">Deleted items are recoverable here. Auto-swept spam is permanently removed after 30 days.</p>
+
+      @foreach ($trashedContacts as $c)
+        <div class="msg" data-msg-row style="opacity:0.75;">
+          <div class="msg-row">
+            <span class="msg-name">{{ $c->name ?: '—' }}</span>
+            <span class="msg-meta">contact · deleted {{ $c->deleted_at->diffForHumans() }}@if($c->spam_swept_at) · auto-swept spam @endif</span>
+          </div>
+          <div class="msg-flags"><span class="flag">✉ {{ $c->email }}</span></div>
+          <div class="msg-body">{{ \Illuminate\Support\Str::limit($c->message, 200) }}</div>
+          <div class="msg-actions">
+            <form method="POST" action="{{ route('admin.messages.contact.restore', $c->id) }}" style="display:inline;"
+                  data-confirm-ajax="Restore this message to the inbox?" data-confirm-ok="Restore" data-restore>@csrf
+              <button type="submit" style="color:var(--teal);">↩ Restore</button>
+            </form>
+          </div>
+        </div>
+      @endforeach
+
+      @foreach ($trashedPrayers as $p)
+        <div class="msg" data-msg-row style="opacity:0.75;">
+          <div class="msg-row">
+            <span class="msg-name">{{ $p->name ?: '— anonymous —' }}</span>
+            <span class="msg-meta">prayer · deleted {{ $p->deleted_at->diffForHumans() }}</span>
+          </div>
+          <div class="msg-body">{{ \Illuminate\Support\Str::limit($p->body, 200) }}</div>
+          <div class="msg-actions">
+            <form method="POST" action="{{ route('admin.messages.prayer.restore', $p->id) }}" style="display:inline;"
+                  data-confirm-ajax="Restore this prayer request to the inbox?" data-confirm-ok="Restore" data-restore>@csrf
+              <button type="submit" style="color:var(--teal);">↩ Restore</button>
+            </form>
+          </div>
+        </div>
+      @endforeach
+    @endif
   </section>
 </main>
 
