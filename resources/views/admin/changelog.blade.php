@@ -97,7 +97,7 @@
         </form>
       @endif
     </div>
-    <p class="cl-note">A restore point is a saved last-known-good state (code lock + database). The self-update routine captures one before every update; you can capture one manually before risky changes. {{ $canRollback ? 'You can roll back to any restorable point below.' : 'Only super-admins (and assigned users) can roll back.' }}</p>
+    <p class="cl-note">A restore point is a saved last-known-good state (code lock + database). The self-update routine captures one before every update; you can capture one manually before risky changes. {{ $canRollback ? 'You can roll back to any restorable point below.' : 'Only super-admins (and assigned users) can roll back.' }} <strong>To undo a single content edit</strong> (a bulletin, page, or lesson) instead of the whole site, use <a href="{{ route('admin.changes') }}" style="color:var(--teal);">Edit history</a> &mdash; that reverts just one item.</p>
 
     @if ($checkpoints->isEmpty())
       <div class="cl-empty">No restore points yet. The first one appears after the next self-update or when you capture one.</div>

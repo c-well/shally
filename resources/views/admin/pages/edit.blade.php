@@ -194,6 +194,8 @@
       <a href="/{{ $page->slug }}" target="_blank" rel="noopener" class="public-link">View live page ↗</a>
     </div>
   </form>
+
+  @include('partials._revisions', ['model' => $page])
 </main>
 
 {{-- Markdown parser for live preview (the same library Laravel uses on the server, but client-side: marked.js) --}}

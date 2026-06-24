@@ -16,8 +16,17 @@ use League\CommonMark\Environment\Environment;
  * pay the markdown parse cost on every request. The HTML cache is regenerated
  * automatically on every save by an Eloquent observer.
  */
+use App\Concerns\HasRevisions;
+
 class Page extends Model
 {
+    use HasRevisions;
+
+    /* ── revision history (see App\Concerns\HasRevisions) ── */
+    public function revisionFields(): array { return ['title', 'eyebrow', 'body_md']; }
+    public function revisionLabel(): string { return 'Page · /' . $this->slug; }
+
+
     protected $fillable = ['slug', 'title', 'eyebrow', 'body_md', 'body_html', 'updated_by_user_id'];
 
     /** Auto-regenerate the HTML cache whenever the markdown source changes. */

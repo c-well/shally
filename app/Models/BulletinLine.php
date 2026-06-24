@@ -3,9 +3,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Concerns\HasRevisions;
+
 class BulletinLine extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasRevisions;
+
+    /* ── revision history (see App\Concerns\HasRevisions) ── */
+    public function revisionFields(): array { return ['section', 'part', 'person', 'kind']; }
+    public function revisionLabel(): string { return 'Bulletin line · ' . ($this->part ?: ($this->person ?: ($this->section ?: ('#' . $this->id)))); }
+
 
     protected $fillable = ['bulletin_id', 'section', 'part', 'person', 'kind', 'sort_order'];
     public function bulletin() { return $this->belongsTo(Bulletin::class); }

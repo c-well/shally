@@ -4,9 +4,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Concerns\HasRevisions;
+
 class Bulletin extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasRevisions;
+
+    /* ── revision history (see App\Concerns\HasRevisions) ── */
+    public function revisionFields(): array { return ['title', 'body', 'theme', 'service_date', 'service_time', 'event_name']; }
+    public function revisionLabel(): string { return 'Bulletin · ' . ($this->title ?: (optional($this->service_date)->format('M j, Y') ?: ('#' . $this->id))); }
+
 
     protected $fillable = [
         'title', 'service_date', 'body', 'pdf_path', 'is_published', 'always_show_during_week',
