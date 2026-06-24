@@ -239,6 +239,10 @@ Route::middleware('auth')->group(function () {
     Route::get  ('/admin/messages',                  [\App\Http\Controllers\AdminMessagesController::class, 'index'])->name('admin.messages');
     Route::post ('/admin/messages/prayer/{id}/read', [\App\Http\Controllers\AdminMessagesController::class, 'markPrayerRead'])->name('admin.messages.prayer.read')->whereNumber('id');
     Route::post ('/admin/messages/contact/{id}/read',[\App\Http\Controllers\AdminMessagesController::class, 'markContactRead'])->name('admin.messages.contact.read')->whereNumber('id');
+        Route::post ("/admin/messages/prayer/{id}/delete",  [\App\Http\Controllers\AdminMessagesController::class, "deletePrayer"])->name("admin.messages.prayer.delete")->whereNumber("id");
+        Route::post ("/admin/messages/contact/{id}/delete", [\App\Http\Controllers\AdminMessagesController::class, "deleteContact"])->name("admin.messages.contact.delete")->whereNumber("id");
+        Route::post ("/admin/messages/prayer/{id}/restore", [\App\Http\Controllers\AdminMessagesController::class, "restorePrayer"])->name("admin.messages.prayer.restore")->whereNumber("id");
+        Route::post ("/admin/messages/contact/{id}/restore",[\App\Http\Controllers\AdminMessagesController::class, "restoreContact"])->name("admin.messages.contact.restore")->whereNumber("id");
         Route::patch ('/admin/inbox/{ticket}/close',    [\App\Http\Controllers\AdminInboxController::class, 'close'])->name('admin.inbox.close');
 
         Route::get   ('/admin/lessons',                [\App\Http\Controllers\AdminLessonsController::class, 'index'])->name('admin.lessons');
