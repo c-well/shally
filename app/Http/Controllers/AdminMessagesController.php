@@ -16,11 +16,18 @@ class AdminMessagesController extends Controller
         $prayers  = PrayerRequest::orderByDesc('created_at')->limit(100)->get();
         $contacts = ContactMessage::orderByDesc('created_at')->limit(100)->get();
 
+        // Trash — soft-deleted items (manual deletes + auto-swept spam), restorable
+        $trashedPrayers  = PrayerRequest::onlyTrashed()->orderByDesc('deleted_at')->limit(100)->get();
+        $trashedContacts = ContactMessage::onlyTrashed()->orderByDesc('deleted_at')->limit(100)->get();
+
         return view('admin.messages', [
             'prayers'         => $prayers,
             'contacts'        => $contacts,
+            'trashedPrayers'  => $trashedPrayers,
+            'trashedContacts' => $trashedContacts,
             'unreadPrayers'   => $prayers->whereNull('read_at')->count(),
             'unreadContacts'  => $contacts->whereNull('read_at')->count(),
+            'trashCount'      => $trashedPrayers->count() + $trashedContacts->count(),
         ]);
     }
 
@@ -65,16 +72,22 @@ class AdminMessagesController extends Controller
     }
 
     /** POST /admin/messages/prayer/{id}/restore */
-    public function restorePrayer(int $id): RedirectResponse
+    public function restorePrayer(Request $request, int $id): RedirectResponse|JsonResponse
     {
         PrayerRequest::onlyTrashed()->findOrFail($id)->restore();
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['ok' => true, 'message' => 'Prayer request restored to the inbox.']);
+        }
         return back()->with('status', 'Prayer request restored.');
     }
 
     /** POST /admin/messages/contact/{id}/restore */
-    public function restoreContact(int $id): RedirectResponse
+    public function restoreContact(Request $request, int $id): RedirectResponse|JsonResponse
     {
         ContactMessage::onlyTrashed()->findOrFail($id)->restore();
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['ok' => true, 'message' => 'Message restored to the inbox.']);
+        }
         return back()->with('status', 'Message restored.');
     }
 }
