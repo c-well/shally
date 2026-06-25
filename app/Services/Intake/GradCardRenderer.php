@@ -6,75 +6,65 @@ use App\Models\IntakeSubmission;
 /**
  * Renders a 1920x1080 graduation slide (PNG) for ProPresenter.
  *
- * With a photo: portrait photo on the left, details on the right.
- * Without a photo: details centered.
- * With show_text = false ("remove text"): just the photo, full and clean, so
- * Andre can lay his own text over it in ProPresenter.
+ * Editorial, not decorative: robust type, hard restraint, space as the hero.
+ * No frames, no drop shadows, no rounded "cards" — left-aligned, generous
+ * margins, a single quiet accent. IBM Plex Serif (even color at every size,
+ * unlike a delicate display serif) for the name; Poppins for the small set
+ * matter. Pure GD + bundled fonts.
  *
- * Pure GD + the bundled brand fonts (storage/fonts). No external services.
+ * $style: 'serif' (name set in Plex Serif) or 'sans' (name set in Poppins).
  */
 class GradCardRenderer
 {
     private const W = 1920;
     private const H = 1080;
+    private const MARGIN = 150;
 
-    // Brand palette (matches the site theme-vars).
     private array $palette = [
-        'parchment' => [250, 247, 237],
-        'ink'       => [26, 35, 50],
-        'ink_soft'  => [97, 105, 120],
+        'parchment' => [249, 246, 236],
+        'ink'       => [28, 33, 44],
+        'ink_soft'  => [108, 114, 126],
+        'ink_faint' => [150, 154, 163],
         'teal'      => [47, 107, 107],
-        'line'      => [223, 216, 198],
-        'shadow'    => [200, 192, 172],
+        'line'      => [222, 215, 198],
     ];
 
-    private string $fontSerif;
-    private string $fontSerifItalic;
-    private string $fontSans;
-    private string $fontSansMed;
+    private string $serif, $serifMed, $serifSemi, $serifItalic, $sans, $sansMed, $sansReg;
+    private string $style;
 
-    public function __construct()
+    public function __construct(string $style = 'sans')
     {
-        $base = storage_path('fonts');
-        $this->fontSerif       = $base . '/CormorantGaramond.ttf';
-        $this->fontSerifItalic = $base . '/CormorantGaramond-Italic.ttf';
-        $this->fontSans        = $base . '/Poppins-SemiBold.ttf';
-        $this->fontSansMed     = $base . '/Poppins-Medium.ttf';
+        $b = storage_path('fonts');
+        $this->serif       = $b . '/IBMPlexSerif-Regular.ttf';
+        $this->serifMed    = $b . '/IBMPlexSerif-Medium.ttf';
+        $this->serifSemi   = $b . '/IBMPlexSerif-SemiBold.ttf';
+        $this->serifItalic = $b . '/IBMPlexSerif-Italic.ttf';
+        $this->sans        = $b . '/Poppins-SemiBold.ttf';
+        $this->sansMed     = $b . '/Poppins-Medium.ttf';
+        $this->sansReg     = $b . '/Poppins-Regular.ttf';
+        $this->style       = $style;
     }
 
-    /** Build the slide and return its public-relative path (e.g. intake-media/grad/12.png). */
     public function render(IntakeSubmission $sub): string
     {
         $im = imagecreatetruecolor(self::W, self::H);
         imagealphablending($im, true);
         imagefill($im, 0, 0, $this->c($im, 'parchment'));
 
-        // Elegant double inset frame — the "designed" border.
-        $this->frame($im);
+        $photo = $sub->photo_path ? $this->loadPhoto(public_path($sub->photo_path)) : null;
 
-        $photo = null;
-        if ($sub->photo_path) {
-            $photo = $this->loadPhoto(public_path($sub->photo_path));
-        }
-
-        $showText = $sub->show_text;
-
-        if ($photo && ! $showText) {
-            // Photo only — large, centered, clean.
-            $this->placePhoto($im, $photo, 200, 120, self::W - 400, self::H - 240);
+        if ($photo && ! $sub->show_text) {
+            // Photo only — clean, generous, no chrome.
+            $this->placePhoto($im, $photo, self::MARGIN, 110, self::W - self::MARGIN * 2, self::H - 220);
         } elseif ($photo) {
-            // Photo left, text right.
-            $px = 130; $py = 170; $pw = 680; $ph = self::H - 340;
+            $pw = 540; $px = self::MARGIN; $py = 150; $ph = self::H - 300;
             $this->placePhoto($im, $photo, $px, $py, $pw, $ph);
-            $this->drawDetails($im, $sub, $px + $pw + 90, self::W - 130, false);
+            $this->drawText($im, $sub, $px + $pw + 90, self::W - self::MARGIN);
         } else {
-            // No photo — center the details.
-            $this->drawDetails($im, $sub, 220, self::W - 220, true);
+            $this->drawText($im, $sub, self::MARGIN, self::W - self::MARGIN);
         }
 
         if ($photo) imagedestroy($photo);
-
-        // Footer mark.
         $this->footer($im);
 
         $dir = public_path('intake-media/grad');
@@ -82,228 +72,109 @@ class GradCardRenderer
         $rel = 'intake-media/grad/' . $sub->id . '.png';
         imagepng($im, public_path($rel), 6);
         imagedestroy($im);
-
         return $rel;
     }
 
-    /* ───────────────────────── drawing helpers ───────────────────────── */
+    /* ─────────────────────── text block ─────────────────────── */
 
-    private function frame($im): void
-    {
-        $line = $this->c($im, 'line');
-        imagesetthickness($im, 2);
-        imagerectangle($im, 46, 46, self::W - 46, self::H - 46, $line);
-        imagerectangle($im, 54, 54, self::W - 54, self::H - 54, $line);
-        imagesetthickness($im, 1);
-    }
-
-    private function footer($im): void
-    {
-        $teal = $this->c($im, 'teal');
-        $txt = 'SHALOM SDA   ·   THE CHURCH OF PEACE';
-        $w = $this->trackedWidth(15, $this->fontSans, $txt, 5);
-        $this->tracked($im, 15, (int) ((self::W - $w) / 2), self::H - 78, $teal, $this->fontSans, $txt, 5);
-    }
-
-    /** Draw text with per-character tracking (letterspacing). Returns end x. */
-    private function tracked($im, float $size, int $x, int $y, int $color, string $font, string $text, float $tracking): int
-    {
-        $cx = $x;
-        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $ch) {
-            imagettftext($im, $size, 0, (int) $cx, $y, $color, $font, $ch);
-            $cx += $this->charAdvance($size, $font, $ch) + $tracking;
-        }
-        return (int) $cx;
-    }
-
-    private function trackedWidth(float $size, string $font, string $text, float $tracking): int
-    {
-        $w = 0; $chars = preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-        foreach ($chars as $ch) $w += $this->charAdvance($size, $font, $ch) + $tracking;
-        return (int) max(0, $w - $tracking);
-    }
-
-    private function charAdvance(float $size, string $font, string $ch): float
-    {
-        if ($ch === ' ') return $size * 0.34;
-        $bb = imagettfbbox($size, 0, $font, $ch);
-        return $bb[2] - $bb[0];
-    }
-
-    /**
-     * Draw the text block. $left/$right bound the column; $center centers each line.
-     */
-    private function drawDetails($im, IntakeSubmission $sub, int $left, int $right, bool $center): void
+    private function drawText($im, IntakeSubmission $sub, int $left, int $right): void
     {
         $maxW = $right - $left;
         $year = now()->month >= 7 ? now()->year + 1 : now()->year;
 
-        $name   = trim((string) $sub->value('name'));
+        $name   = trim((string) $sub->value('name')) ?: 'Graduate';
         $level  = trim((string) $sub->value('level'));
         $school = trim((string) $sub->value('school'));
-        $degree = trim((string) $sub->value('degree'));
+        $degree = trim((string) ($sub->value('major') ?: $sub->value('degree')));
         $honors = trim((string) $sub->value('honors'));
-        $thanks = trim((string) $sub->value('thanks'));
+        $thanks = trim((string) ($sub->value('thanks') ?: $sub->value('verse')));
 
-        // Measure the whole block first so we can vertically center it.
-        $lines = [];
-        $lines[] = ['eyebrow', 'THE CHURCH OF PEACE', 22, 'teal', $this->fontSans, 46];
-        foreach ($this->wrap($name ?: 'Graduate', $this->fontSerif, 88, $maxW) as $i => $ln) {
-            $lines[] = ['name', $ln, 88, 'ink', $this->fontSerif, 96];
-        }
-        $lines[] = ['class', 'Class of ' . $year, 48, 'teal', $this->fontSerifItalic, 78];
+        $serifName = $this->style === 'serif';
+        $nameFont  = $serifName ? $this->serifMed : $this->sans;
+        $nameSize  = $serifName ? 104 : 90;
 
-        $sub1 = $level . ($school ? '  ·  ' . $school : '');
-        if (trim($sub1, ' ·')) {
-            foreach ($this->wrap($sub1, $this->fontSansMed, 28, $maxW) as $ln) {
-                $lines[] = ['meta', $ln, 28, 'ink_soft', $this->fontSansMed, 44];
-            }
+        // Build a flat list of [type, text, font, size, colorKey, advance].
+        $L = [];
+        $L[] = ['label', 'THE CHURCH OF PEACE', $this->sans, 21, 'teal', 64];
+        foreach ($this->wrap($name, $nameFont, $nameSize, $maxW) as $ln) {
+            $L[] = ['plain', $ln, $nameFont, $nameSize, 'ink', (int) ($nameSize * 1.06)];
         }
-        if ($degree) {
-            foreach ($this->wrap($degree, $this->fontSans, 30, $maxW) as $ln) {
-                $lines[] = ['degree', $ln, 30, 'ink', $this->fontSans, 46];
-            }
+        $L[] = ['gap', '', $nameFont, 0, 'ink', 22];
+        $L[] = ['plain', 'Class of ' . $year, $serifName ? $this->serif : $this->sansReg, 40, 'ink_soft', 56];
+
+        $line2 = trim($level . ($school ? '  ·  ' . $school : ''), ' ·');
+        if ($line2) foreach ($this->wrap($line2, $this->sansReg, 26, $maxW) as $ln) {
+            $L[] = ['plain', $ln, $this->sansReg, 26, 'ink_soft', 40];
         }
-        if ($honors) {
-            foreach ($this->wrap($honors, $this->fontSerifItalic, 32, $maxW) as $ln) {
-                $lines[] = ['honors', $ln, 32, 'ink_soft', $this->fontSerifItalic, 48];
-            }
+        if ($degree) foreach ($this->wrap($degree, $this->sansMed, 29, $maxW) as $ln) {
+            $L[] = ['plain', $ln, $this->sansMed, 29, 'ink', 44];
+        }
+        if ($honors) foreach ($this->wrap($honors, $this->serifItalic, 30, $maxW) as $ln) {
+            $L[] = ['plain', $ln, $this->serifItalic, 30, 'ink_soft', 46];
         }
         if ($thanks) {
-            $lines[] = ['gap', '', 0, 'line', $this->fontSans, 30];
-            $lines[] = ['rule', '', 0, 'line', $this->fontSans, 30];
-            $lines[] = ['thankslbl', 'WITH THANKS', 16, 'teal', $this->fontSans, 40];
-            foreach ($this->wrap('“' . $thanks . '”', $this->fontSerifItalic, 30, $maxW) as $ln) {
-                $lines[] = ['thanks', $ln, 30, 'ink_soft', $this->fontSerifItalic, 46];
+            $L[] = ['gap', '', $nameFont, 0, 'ink', 34];
+            $L[] = ['rule', '', $nameFont, 0, 'line', 30];
+            $L[] = ['label', 'WITH THANKS', $this->sans, 14, 'teal', 38];
+            foreach ($this->wrap('“' . $thanks . '”', $this->serifItalic, 31, $maxW) as $ln) {
+                $L[] = ['plain', $ln, $this->serifItalic, 31, 'ink', 47];
             }
         }
 
-        $totalH = 0;
-        foreach ($lines as $l) $totalH += $l[5];
-        $y = (int) ((self::H - $totalH) / 2);
+        $total = 0; foreach ($L as $l) $total += $l[5];
+        $y = (int) ((self::H - $total) / 2);
 
-        foreach ($lines as $l) {
-            [$kind, $text, $size, $colorKey, $font, $lh] = $l;
-            $y += $lh;  // allocate this line's full height ABOVE its baseline first
-            if ($kind === 'gap') { continue; }
-            if ($kind === 'rule') {
-                $rx = $center ? (int) (self::W / 2 - 70) : $left;
-                imagesetthickness($im, 2);
-                imageline($im, $rx, $y - 14, $rx + 140, $y - 14, $this->c($im, 'line'));
-                imagesetthickness($im, 1);
-                continue;
-            }
-            if ($kind === 'eyebrow' || $kind === 'thankslbl') {
-                $tr = $size * 0.28;
-                $w = $this->trackedWidth($size, $font, $text, $tr);
-                $x = $center ? (int) ((self::W - $w) / 2) : $left;
-                $this->tracked($im, $size, $x, $y, $this->c($im, $colorKey), $font, $text, $tr);
-            } else {
-                $x = $left;
-                if ($center) {
-                    $bb = imagettfbbox($size, 0, $font, $text);
-                    $w = $bb[2] - $bb[0];
-                    $x = (int) ((self::W - $w) / 2);
-                }
-                imagettftext($im, $size, 0, $x, $y, $this->c($im, $colorKey), $font, $text);
-            }
+        foreach ($L as [$kind, $text, $font, $size, $ck, $adv]) {
+            $y += $adv;
+            if ($kind === 'gap') continue;
+            if ($kind === 'rule') { imagesetthickness($im, 2); imageline($im, $left, $y - 14, $left + 70, $y - 14, $this->c($im, 'line')); imagesetthickness($im, 1); continue; }
+            if ($kind === 'label') { $this->tracked($im, $size, $left, $y, $this->c($im, $ck), $font, $text, $size * 0.30); continue; }
+            imagettftext($im, $size, 0, $left, $y, $this->c($im, $ck), $font, $text);
         }
     }
 
-    /* ───────────────────────── photo helpers ───────────────────────── */
+    private function footer($im): void
+    {
+        $txt = 'SHALOM SDA   ·   THE CHURCH OF PEACE';
+        $this->tracked($im, 13, self::MARGIN, self::H - 70, $this->c($im, 'ink_faint'), $this->sans, $txt, 4.5);
+    }
+
+    /* ─────────────────────── photo ─────────────────────── */
 
     private function placePhoto($im, $photo, int $x, int $y, int $w, int $h): void
     {
         $cropped = $this->coverCrop($photo, $w, $h);
-        // Soft lift: a faint shadow rectangle behind.
-        $sh = $this->c($im, 'shadow');
-        imagefilledrectangle($im, $x + 10, $y + 14, $x + $w + 10, $y + $h + 14, $sh);
         imagecopy($im, $cropped, $x, $y, 0, 0, $w, $h);
         imagedestroy($cropped);
-        // Round the corners against the parchment + cut the shadow's exposed corners too.
-        $this->cutRoundedCorners($im, $x, $y, $w, $h, 28, 'parchment');
-        // Thin frame line on the straight edges for definition.
-        $ln = $this->c($im, 'line');
-        imagesetthickness($im, 2);
-        imageline($im, $x + 28, $y, $x + $w - 28, $y, $ln);
-        imageline($im, $x + 28, $y + $h, $x + $w - 28, $y + $h, $ln);
-        imageline($im, $x, $y + 28, $x, $y + $h - 28, $ln);
-        imageline($im, $x + $w, $y + 28, $x + $w, $y + $h - 28, $ln);
+        // One hairline, nothing else.
         imagesetthickness($im, 1);
+        imagerectangle($im, $x, $y, $x + $w, $y + $h, $this->c($im, 'line'));
     }
 
     private function coverCrop($src, int $tw, int $th)
     {
         $sw = imagesx($src); $sh = imagesy($src);
-        $targetAR = $tw / $th;
-        $srcAR = $sw / $sh;
-        if ($srcAR > $targetAR) {
-            // Source too wide — crop the sides.
-            $cropH = $sh;
-            $cropW = (int) round($sh * $targetAR);
-            $srcX = (int) (($sw - $cropW) / 2);
-            $srcY = 0;
-        } else {
-            // Source too tall — crop top/bottom.
-            $cropW = $sw;
-            $cropH = (int) round($sw / $targetAR);
-            $srcX = 0;
-            $srcY = (int) (($sh - $cropH) / 2);
-        }
+        $tAR = $tw / $th; $sAR = $sw / $sh;
+        if ($sAR > $tAR) { $cropH = $sh; $cropW = (int) round($sh * $tAR); $sx = (int) (($sw - $cropW) / 2); $sy = 0; }
+        else            { $cropW = $sw; $cropH = (int) round($sw / $tAR); $sx = 0; $sy = (int) (($sh - $cropH) / 2); }
         $dst = imagecreatetruecolor($tw, $th);
-        imagecopyresampled($dst, $src, 0, 0, $srcX, $srcY, $tw, $th, $cropW, $cropH);
+        imagecopyresampled($dst, $src, 0, 0, $sx, $sy, $tw, $th, $cropW, $cropH);
         return $dst;
-    }
-
-    private function cutRoundedCorners($im, int $x, int $y, int $w, int $h, int $r, string $bgKey): void
-    {
-        $bg = $this->c($im, $bgKey);
-        $corners = [
-            [$x, $y, $x + $r, $y + $r],                 // TL center at (x+r,y+r)
-            [$x + $w - $r, $y, $x + $w, $y + $r],       // TR center (x+w-r, y+r)
-            [$x, $y + $h - $r, $x + $r, $y + $h],       // BL
-            [$x + $w - $r, $y + $h - $r, $x + $w, $y + $h], // BR
-        ];
-        $centers = [
-            [$x + $r, $y + $r], [$x + $w - $r, $y + $r],
-            [$x + $r, $y + $h - $r], [$x + $w - $r, $y + $h - $r],
-        ];
-        foreach ($corners as $i => $box) {
-            [$cx, $cy] = $centers[$i];
-            for ($px = $box[0]; $px < $box[2]; $px++) {
-                for ($py = $box[1]; $py < $box[3]; $py++) {
-                    $dx = $px - $cx; $dy = $py - $cy;
-                    if (($dx * $dx + $dy * $dy) > $r * $r) {
-                        imagesetpixel($im, $px, $py, $bg);
-                    }
-                }
-            }
-        }
     }
 
     private function loadPhoto(string $path): mixed
     {
         if (! is_file($path)) return null;
         $info = @getimagesize($path);
-        $img = null;
-        if ($info) {
-            $img = match ($info[2]) {
-                IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
-                IMAGETYPE_PNG  => @imagecreatefrompng($path),
-                IMAGETYPE_GIF  => @imagecreatefromgif($path),
-                IMAGETYPE_WEBP => @imagecreatefromwebp($path),
-                default        => null,
-            };
-        }
-        if (! $img) {
-            // Last resort: try an ImageMagick CLI conversion (HEIC etc.) if present.
-            $jpg = $this->convertViaCli($path);
-            if ($jpg) { $img = @imagecreatefromjpeg($jpg); @unlink($jpg); }
-        }
-        if ($img) {
-            // Honor EXIF orientation for phone photos.
-            $img = $this->applyExifOrientation($img, $path);
-        }
+        $img = $info ? match ($info[2]) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
+            IMAGETYPE_PNG  => @imagecreatefrompng($path),
+            IMAGETYPE_GIF  => @imagecreatefromgif($path),
+            IMAGETYPE_WEBP => @imagecreatefromwebp($path),
+            default        => null,
+        } : null;
+        if (! $img) { $jpg = $this->convertViaCli($path); if ($jpg) { $img = @imagecreatefromjpeg($jpg); @unlink($jpg); } }
+        if ($img) $img = $this->applyExif($img, $path);
         return $img ?: null;
     }
 
@@ -320,18 +191,34 @@ class GradCardRenderer
         return null;
     }
 
-    private function applyExifOrientation($img, string $path)
+    private function applyExif($img, string $path)
     {
         if (! function_exists('exif_read_data')) return $img;
-        $exif = @exif_read_data($path);
-        $o = $exif['Orientation'] ?? 0;
+        $o = (@exif_read_data($path)['Orientation']) ?? 0;
         if ($o === 3) return imagerotate($img, 180, 0);
         if ($o === 6) return imagerotate($img, -90, 0);
         if ($o === 8) return imagerotate($img, 90, 0);
         return $img;
     }
 
-    /* ───────────────────────── text wrapping ───────────────────────── */
+    /* ─────────────────────── type helpers ─────────────────────── */
+
+    private function tracked($im, float $size, int $x, int $y, int $color, string $font, string $text, float $tracking): int
+    {
+        $cx = $x;
+        foreach (preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $ch) {
+            imagettftext($im, $size, 0, (int) $cx, $y, $color, $font, $ch);
+            $cx += $this->adv($size, $font, $ch) + $tracking;
+        }
+        return (int) $cx;
+    }
+
+    private function adv(float $size, string $font, string $ch): float
+    {
+        if ($ch === ' ') return $size * 0.32;
+        $bb = imagettfbbox($size, 0, $font, $ch);
+        return $bb[2] - $bb[0];
+    }
 
     private function wrap(string $text, string $font, int $size, int $maxW): array
     {
@@ -340,11 +227,8 @@ class GradCardRenderer
         foreach ($words as $word) {
             $try = $cur === '' ? $word : $cur . ' ' . $word;
             $bb = imagettfbbox($size, 0, $font, $try);
-            if (($bb[2] - $bb[0]) > $maxW && $cur !== '') {
-                $lines[] = $cur; $cur = $word;
-            } else {
-                $cur = $try;
-            }
+            if (($bb[2] - $bb[0]) > $maxW && $cur !== '') { $lines[] = $cur; $cur = $word; }
+            else $cur = $try;
         }
         if ($cur !== '') $lines[] = $cur;
         return $lines ?: [''];

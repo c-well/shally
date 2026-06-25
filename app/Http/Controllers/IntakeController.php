@@ -37,24 +37,26 @@ class IntakeController extends Controller
     {
         abort_unless($form->is_active, 404);
 
-        // Time-since-render gate (same trick as the contact form).
         try {
             $rendered = (int) Crypt::decryptString((string) $request->input('rendered_at'));
-            if (time() - $rendered < 2) {
-                return back()->with('sent', true); // too fast → silently accept-and-drop
-            }
-        } catch (\Throwable $e) { /* missing/garbage token — let validation handle it */ }
+            if (time() - $rendered < 2) return back()->with('sent', true);
+        } catch (\Throwable $e) { /* missing/garbage token — validation handles it */ }
 
-        [$data, $photo] = $this->validateAgainstSchema($request, $form);
+        [$data, $files] = $this->validateAgainstSchema($request, $form);
 
-        // Persist the photo (mirror the events flyer pattern: straight into public/).
+        // Photos: the field literally named "photo" is the slide photo; any other
+        // photo field (childhood photo, etc.) is kept and its path stored in data.
         $photoPath = null;
-        if ($photo) {
+        $primary = array_key_exists('photo', $files) ? 'photo' : (array_key_first($files) ?: null);
+        foreach ($files as $key => $file) {
+            if (! $file) continue;
             $dir = public_path('intake-media/photos');
             if (! is_dir($dir)) mkdir($dir, 0755, true);
-            $name = Str::uuid() . '.' . strtolower($photo->getClientOriginalExtension());
-            $photo->move($dir, $name);
-            $photoPath = 'intake-media/photos/' . $name;
+            $name = Str::uuid() . '.' . strtolower($file->getClientOriginalExtension());
+            $file->move($dir, $name);
+            $rel = 'intake-media/photos/' . $name;
+            if ($key === $primary) $photoPath = $rel;
+            else $data[$key . '_path'] = $rel;
         }
 
         $sub = IntakeSubmission::create([
@@ -66,10 +68,10 @@ class IntakeController extends Controller
             'ip'              => $request->ip(),
         ]);
 
-        // Build the artifact for this form type.
         if ($form->output_type === 'graduation') {
             try {
-                $sub->update(['output_path' => app(GradCardRenderer::class)->render($sub)]);
+                $style = $form->setting('slide_style', 'sans');
+                $sub->update(['output_path' => (new GradCardRenderer($style))->render($sub)]);
             } catch (\Throwable $e) {
                 Log::error('Grad card render failed', ['submission' => $sub->id, 'error' => $e->getMessage()]);
             }
@@ -83,50 +85,58 @@ class IntakeController extends Controller
 
     /* ───────────────────────── validation ───────────────────────── */
 
-    /** @return array{0:array<string,mixed>,1:?\Illuminate\Http\UploadedFile} */
+    /** @return array{0:array<string,mixed>,1:array<string,?\Illuminate\Http\UploadedFile>} */
     private function validateAgainstSchema(Request $request, IntakeForm $form): array
     {
-        $rules = []; $attributes = []; $photoField = null;
+        $rules = []; $attributes = []; $photoFields = [];
         $input = $request->all();
 
         foreach ($form->fields() as $f) {
-            $key = $f['key'];
-            $visible = $this->showIf($f['show_if'] ?? null, $input);
-            $required = ($f['required'] ?? false) && $visible;
+            $key  = $f['key'];
+            $type = $f['type'] ?? 'text';
+            $vis  = $this->showIf($f['show_if'] ?? null, $input);
+            $req  = ($f['required'] ?? false) && $vis;
             $attributes[$key] = strtolower($f['label'] ?? $key);
 
-            if (($f['type'] ?? 'text') === 'photo') {
-                $photoField = $key;
-                $rules[$key] = array_filter([
-                    $required ? 'required' : 'nullable',
-                    'file', 'extensions:jpg,jpeg,png,webp,gif,heic,heif', 'max:12288',
-                ]);
-                continue;
-            }
-
-            $r = [$required ? 'required' : 'nullable'];
-            switch ($f['type'] ?? 'text') {
-                case 'email':    $r[] = 'email'; $r[] = 'max:200'; break;
-                case 'textarea': $r[] = 'string'; $r[] = 'max:5000'; break;
-                case 'select':
-                    if (! empty($f['options'])) $r[] = 'in:' . implode(',', $f['options']);
+            switch ($type) {
+                case 'photo':
+                    $photoFields[] = $key;
+                    $rules[$key] = array_filter([$req ? 'required' : 'nullable', 'file', 'extensions:jpg,jpeg,png,webp,gif,heic,heif', 'max:12288']);
                     break;
-                default:         $r[] = 'string'; $r[] = 'max:500';
+                case 'checkbox': // single consent
+                    $rules[$key] = $req ? ['accepted'] : ['nullable'];
+                    break;
+                case 'checkboxes': // multi
+                    $rules[$key] = $vis && $req ? ['required', 'array'] : ['nullable', 'array'];
+                    if (! empty($f['options'])) $rules[$key . '.*'] = ['in:' . implode(',', $f['options'])];
+                    break;
+                case 'email':    $rules[$key] = [$req ? 'required' : 'nullable', 'email', 'max:200']; break;
+                case 'tel':      $rules[$key] = [$req ? 'required' : 'nullable', 'string', 'max:40']; break;
+                case 'date':     $rules[$key] = [$req ? 'required' : 'nullable', 'date']; break;
+                case 'textarea': $rules[$key] = $vis ? [$req ? 'required' : 'nullable', 'string', 'max:5000'] : ['nullable', 'string', 'max:5000']; break;
+                case 'select':
+                    $r = [$req ? 'required' : 'nullable'];
+                    if (! empty($f['options'])) $r[] = 'in:' . implode(',', $f['options']);
+                    $rules[$key] = $vis ? $r : ['nullable', 'string', 'max:200'];
+                    break;
+                default:         $rules[$key] = $vis ? [$req ? 'required' : 'nullable', 'string', 'max:500'] : ['nullable', 'string', 'max:500'];
             }
-            // Only constrain hidden fields if a value somehow arrived.
-            $rules[$key] = $visible ? $r : ['nullable', 'string', 'max:5000'];
         }
 
         $validated = Validator::make($input, $rules, [], $attributes)->validate();
 
-        // Pull the file out separately; keep only scalar field values in data.
-        $photo = $photoField ? $request->file($photoField) : null;
-        unset($validated[$photoField]);
+        // Normalize single checkboxes to booleans; pull files out separately.
+        foreach ($form->fields() as $f) {
+            if (($f['type'] ?? '') === 'checkbox') {
+                $validated[$f['key']] = (bool) ($input[$f['key']] ?? false);
+            }
+        }
+        $files = [];
+        foreach ($photoFields as $pf) { $files[$pf] = $request->file($pf); unset($validated[$pf]); }
 
-        return [$validated, $photo];
+        return [$validated, $files];
     }
 
-    /** Evaluate a show_if condition against the submitted/known data. */
     private function showIf(?array $cond, array $data): bool
     {
         if (! $cond) return true;
@@ -145,25 +155,22 @@ class IntakeController extends Controller
         $name   = $sub->displayName();
 
         if ($emails) {
-            $body  = "New submission to \"{$form->title}\" on thechurchofpeace.org\n";
-            $body .= str_repeat('-', 60) . "\n\n";
+            $body = "New submission to \"{$form->title}\" on thechurchofpeace.org\n" . str_repeat('-', 60) . "\n\n";
             foreach ($sub->data as $k => $v) {
-                if ($v === null || $v === '') continue;
+                if ($v === null || $v === '' || $v === false) continue;
+                if (str_ends_with($k, '_path')) { $body .= "Photo (" . str_replace('_path', '', $k) . "): https://thechurchofpeace.org/{$v}\n"; continue; }
                 $label = $form->field($k)['label'] ?? $k;
-                $body .= "{$label}: {$v}\n";
+                $body .= "{$label}: " . (is_array($v) ? implode(', ', $v) : ($v === true ? 'Yes' : $v)) . "\n";
             }
-            if ($sub->photo_path)  $body .= "\nPhoto: https://thechurchofpeace.org/" . $sub->photo_path . "\n";
-            if ($sub->output_path) $body .= "Slide attached (1920x1080 PNG). Also at the admin gallery:\n";
+            if ($sub->photo_path)  $body .= "\nGraduation photo: https://thechurchofpeace.org/{$sub->photo_path}\n";
+            if ($sub->output_path) $body .= "Slide attached (1920x1080 PNG).\n";
             $body .= "Manage: https://thechurchofpeace.org/admin/intake/{$form->slug}\n";
 
             try {
                 Mail::raw($body, function ($m) use ($emails, $sub, $form, $name) {
-                    $m->to($emails)->cc('contact@c-wellpics.com')
-                      ->subject("New {$form->title} — {$name}");
+                    $m->to($emails)->cc('contact@c-wellpics.com')->subject("New {$form->title} — {$name}");
                     if ($sub->submitter_email) $m->replyTo($sub->submitter_email, $name);
-                    if ($sub->output_path && is_file(public_path($sub->output_path))) {
-                        $m->attach(public_path($sub->output_path));
-                    }
+                    if ($sub->output_path && is_file(public_path($sub->output_path))) $m->attach(public_path($sub->output_path));
                 });
             } catch (\Throwable $e) {
                 Log::error('Intake notify email failed', ['submission' => $sub->id, 'error' => $e->getMessage()]);
@@ -171,10 +178,7 @@ class IntakeController extends Controller
         }
 
         if ($smsTo = $form->setting('sms_to')) {
-            app(TwilioNotifier::class)->send(
-                $smsTo,
-                "New {$form->title}: {$name}. See thechurchofpeace.org/admin/intake/{$form->slug}"
-            );
+            app(TwilioNotifier::class)->send($smsTo, "New {$form->title}: {$name}. See thechurchofpeace.org/admin/intake/{$form->slug}");
         }
     }
 }
