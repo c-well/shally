@@ -107,6 +107,8 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
     Route::post  ('/events/{event}/flyer',[EventController::class, 'uploadFlyer'])->name('events.flyer.upload');
     Route::delete('/events/{event}/flyer',[EventController::class, 'removeFlyer'])->name('events.flyer.remove');
 
+    Route::get('/admin/events', [\App\Http\Controllers\AdminEventsController::class, 'index'])->name('admin.events');
+
     Route::get   ('/schedule',                                 [\App\Http\Controllers\ScheduleController::class, 'index'])->name('schedule.index');
 
     // All chatty XHR endpoints — throttle to 120/min per authenticated user (generous for drag-edit)
