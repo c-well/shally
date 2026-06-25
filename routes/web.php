@@ -59,6 +59,9 @@ Route::get ('/search',  [\App\Http\Controllers\SearchController::class, 'index']
 Route::get ('/contact',  [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
 Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'])
      ->middleware(['throttle:5,60', 'honeypot'])->name('contact.send');
+
+Route::get ('/intake/{form}', [\App\Http\Controllers\IntakeController::class, 'show'])->name('intake.show');
+Route::post('/intake/{form}', [\App\Http\Controllers\IntakeController::class, 'submit'])->middleware(['throttle:10,60', 'honeypot'])->name('intake.submit');
 Route::get ('/prayer',   [\App\Http\Controllers\PrayerController::class, 'show'])->name('prayer.show');
 Route::post('/prayer',   [\App\Http\Controllers\PrayerController::class, 'send'])
      ->middleware(['throttle:3,60', 'honeypot'])->name('prayer.send');
@@ -175,6 +178,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/changelog/{id}/restore',      [\App\Http\Controllers\AdminChangelogController::class, 'restore'])->name('admin.changelog.restore')->whereNumber('id');
         Route::get ('/admin/changes',                    [\App\Http\Controllers\AdminChangesController::class, 'index'])->name('admin.changes');
         Route::post('/admin/changes/{revision}/restore', [\App\Http\Controllers\AdminChangesController::class, 'restore'])->name('admin.changes.restore');
+        Route::get ('/admin/intake',                       [\App\Http\Controllers\AdminIntakeController::class, 'index'])->name('admin.intake.index');
+        Route::get ('/admin/intake/{form}',                [\App\Http\Controllers\AdminIntakeController::class, 'submissions'])->name('admin.intake.submissions');
+        Route::get ('/admin/intake/{form}/bulk',           [\App\Http\Controllers\AdminIntakeController::class, 'bulkDownload'])->name('admin.intake.bulk');
+        Route::get ('/admin/intake-sub/{submission}/download',[\App\Http\Controllers\AdminIntakeController::class, 'download'])->name('admin.intake.download');
+        Route::post('/admin/intake-sub/{submission}/toggle', [\App\Http\Controllers\AdminIntakeController::class, 'toggleText'])->name('admin.intake.toggle');
+        Route::post('/admin/intake-sub/{submission}/remove', [\App\Http\Controllers\AdminIntakeController::class, 'remove'])->name('admin.intake.remove');
+        Route::post('/admin/intake-sub/{submission}/restore',[\App\Http\Controllers\AdminIntakeController::class, 'restore'])->name('admin.intake.restore');
+
         Route::get   ('/admin/pages/{slug}/edit',       [\App\Http\Controllers\AdminPagesController::class, 'edit'])->name('admin.pages.edit');
         Route::patch ('/admin/pages/{slug}',            [\App\Http\Controllers\AdminPagesController::class, 'update'])->name('admin.pages.update');
         Route::post  ('/admin/pages/upload-image',      [\App\Http\Controllers\AdminPagesController::class, 'uploadImage'])->name('admin.pages.upload-image');
