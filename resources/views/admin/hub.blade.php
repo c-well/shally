@@ -179,7 +179,14 @@
       <span class="card-arrow">Open &rarr;</span>
     </a>
 
-    <a href="{{ route('admin.intake.index') }}" class="card">
+        <a href="{{ route('admin.events') }}" class="card">
+      <span class="card-eyebrow">Calendar</span>
+      <span class="card-title">Events.</span>
+      <span class="card-sub">Add an event in seconds — name, date, flyer. It goes live as you fill it in; take anything off the site anytime.</span>
+      <span class="card-arrow">Open &rarr;</span>
+    </a>
+
+<a href="{{ route('admin.intake.index') }}" class="card">
       <span class="card-eyebrow">Forms</span>
       <span class="card-title">Intake.</span>
       <span class="card-sub">Graduation slides, event sign-ups, and more — shareable form links, with every submission in its gallery.</span>
