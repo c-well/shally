@@ -1,5 +1,17 @@
 # Shalom — Changelog
 
+## 2026-06-25 · Intake engine + graduation slides
+
+A schema-driven form engine — one system behind every intake the church needs.
+
+- **Memorable links.** Every form is a slug: thechurchofpeace.org/intake/grad. Share it as-is.
+- **Graduation form** (live now). A clean, progressive-disclosure form matching the contact page: it stays tucked away until the graduate picks a level, then shows only the fields that fit — honors and degree appear for college and grad, not for an 8th-grader. Name, photo, special thanks.
+- **Auto-generated slides.** Each submission becomes a polished 1920x1080 PNG for ProPresenter — photo on the left, details on the right, or centered if no photo, in the church brand fonts. Rendered server-side with GD; no external service.
+- **Gallery** at /admin/intake/grad: preview every slide, download one, download them all as a zip, strip the text to use just the photo, or remove an entry with undo.
+- **Notifications.** New submissions email shalomsda3323@gmail.com and Andre with the slide attached, CC the office. SMS to Andre is wired and waits on Twilio credentials.
+
+Next on this engine: a clerk events quick-add, and a phone-friendly build-your-own-form builder.
+
 ## 2026-06-24 · Edit history + per-item undo (and restore points)
 
 **Two scales of undo, now two tools.** Rolling back a whole Laravel/dependency update is a different job from undoing one typo, so each gets its own mechanism.

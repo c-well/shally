@@ -179,6 +179,13 @@
       <span class="card-arrow">Open &rarr;</span>
     </a>
 
+    <a href="{{ route('admin.intake.index') }}" class="card">
+      <span class="card-eyebrow">Forms</span>
+      <span class="card-title">Intake.</span>
+      <span class="card-sub">Graduation slides, event sign-ups, and more — shareable form links, with every submission in its gallery.</span>
+      <span class="card-arrow">Open &rarr;</span>
+    </a>
+
 <a href="{{ route('admin.changelog') }}" class="card">
       <span class="card-eyebrow">Dev notes</span>
       <span class="card-title">Changelog.</span>
