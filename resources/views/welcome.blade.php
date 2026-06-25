@@ -3503,9 +3503,12 @@
               el.replaceChild(txt, input);
               input = txt;
               setTimeout(() => txt.focus(), 0);
-              // Re-attach blur/keydown handlers (added below) to the new element
-              txt.addEventListener('blur', commitWrap);
-              txt.addEventListener('keydown', keydownWrap);
+              // Re-attach the REAL blur/keydown handlers (defined below) to the new
+              // input. These used to point at commitWrap/keydownWrap, which never
+              // existed — so the custom-section input silently saved nothing and Tab
+              // flung focus to the top of the page. (Andre, ~2026-06.)
+              txt.addEventListener('blur', commit);
+              txt.addEventListener('keydown', onEditKeydown);
             }
 
             input.focus();
@@ -3587,11 +3590,16 @@
             if (suggestBox) suggestBox.remove();
           }
 
-          input.addEventListener('blur', commit);
-          input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && type !== 'textarea') { e.preventDefault(); input.blur(); }
+          // Named (not anonymous) so swapToCustomText can re-attach it to the
+          // custom-section text input. Tab is handled the same as Enter: commit
+          // in place and preventDefault, so tabbing out no longer destroys the
+          // input mid-focus and flings the page to the top.
+          function onEditKeydown(e) {
+            if ((e.key === 'Enter' && type !== 'textarea') || e.key === 'Tab') { e.preventDefault(); input.blur(); }
             if (e.key === 'Escape') { el.classList.remove('editing'); el.textContent = current; if (suggestBox) suggestBox.remove(); }
-          });
+          }
+          input.addEventListener('blur', commit);
+          input.addEventListener('keydown', onEditKeydown);
         });
       });
 
