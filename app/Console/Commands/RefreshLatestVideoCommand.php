@@ -30,7 +30,11 @@ class RefreshLatestVideoCommand extends Command
         $channel = config('services.youtube.channel_id');
         if (! $channel) { $this->error('No YOUTUBE_CHANNEL_ID configured.'); return self::FAILURE; }
 
-        $listUrl = "https://www.youtube.com/channel/{$channel}/videos";
+        // Full services are LIVESTREAMS, which live on the channel's /streams tab —
+        // not /videos (that surfaces old popular uploads). The live-streams system
+        // playlist is the channel id with its "UC" prefix swapped for "UULV".
+        $suffix  = preg_replace('/^UC/', '', $channel);
+        $listUrl = "https://www.youtube.com/playlist?list=UULV{$suffix}";
         $end = max(3, (int) $this->option('probe'));
 
         // 1. Recent uploads, newest first (flat = fast, ids only).
