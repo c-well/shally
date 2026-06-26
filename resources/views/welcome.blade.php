@@ -1014,6 +1014,16 @@
   .announcement:last-child { border-bottom: 0; }
   .announcement .a-title { font-weight: 500; color: var(--ink); }
   .announcement .a-detail { font-size: 14px; color: var(--ink-soft); margin-top: 4px; line-height: 1.55; white-space: pre-line; }
+  .ann-nested .a-body { display: none; }
+  .ann-nested.open .a-body { display: block; }
+  .ann-more { margin-left: 8px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: none; border: 0; cursor: pointer; }
+  .ann-nested.open .ann-more .chev { display: inline-block; transform: rotate(180deg); }
+  .a-media { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+  .a-img { max-width: 280px; max-height: 220px; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .a-video { display: inline-flex; align-items: center; gap: 7px; font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--teal); background: color-mix(in srgb, var(--teal) 8%, transparent); border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer; text-decoration: none; }
+  .a-video:hover { border-color: var(--teal); }
+  .a-play { font-size: 11px; }
+  .a-video-frame { width: 100%; max-width: 480px; aspect-ratio: 16/9; border: 0; border-radius: 8px; }
 
   /* EVENTS — wider than bulletin column on desktop, then collapse */
   .events-container {
@@ -2296,7 +2306,7 @@
               'person' => $l->person, 'kind' => $l->kind,
           ])->all();
           $anns = $bulletin->announcements->map(fn($a) => [
-              'id' => $a->id, 'title' => $a->title, 'detail' => $a->detail,
+              'id' => $a->id, 'title' => $a->title, 'detail' => $a->detail, 'image_path' => $a->image_path, 'video_url' => $a->video_url,
           ])->all();
       } elseif ($bulletin && $bulletin->published_snapshot) {
           $snap = $bulletin->published_snapshot;
@@ -2525,25 +2535,53 @@
         @if (count($anns) > 0 || $canEdit)
           <div class="announcements">
             <h3>Announcements</h3>
-            @foreach ($anns as $a)
-              @php
-                $hasTitle = !empty($a['title']);
-                $hasDetail = !empty($a['detail']);
-              @endphp
-              @if ($hasTitle || $hasDetail || $canEdit)
-                <div class="announcement">
-                  <div class="a-title @if($canEdit) editable @endif @if(!$hasTitle) empty-field @endif"
-                       @if($canEdit && isset($a['id'])) data-edit-url="{{ route('bulletins.announcements.update', [$bulletin, $a['id']]) }}" data-field="title" @endif>{{ $a['title'] ?? '' }}</div>
-                  @if ($hasDetail || $canEdit)
-                    <div class="a-detail @if($canEdit) editable @endif @if(!$hasDetail) empty-field @endif"
-                         @if($canEdit && isset($a['id'])) data-edit-url="{{ route('bulletins.announcements.update', [$bulletin, $a['id']]) }}" data-field="detail" data-type="textarea" @endif>{{ $a['detail'] ?? '' }}</div>
-                  @endif
-                  @if ($canEdit && isset($a['id']))
-                    <span class="row-actions"><button data-delete-url="{{ route('bulletins.announcements.destroy', [$bulletin, $a['id']]) }}" class="del">Delete</button></span>
-                  @endif
-                </div>
-              @endif
-            @endforeach
+            @if ($canEdit)
+              {{-- EDIT MODE — all visible, inline-editable (unchanged) --}}
+              @foreach ($anns as $a)
+                @php $hasTitle = !empty($a['title']); $hasDetail = !empty($a['detail']); @endphp
+                @if ($hasTitle || $hasDetail || $canEdit)
+                  <div class="announcement">
+                    <div class="a-title editable @if(!$hasTitle) empty-field @endif"
+                         @if(isset($a['id'])) data-edit-url="{{ route('bulletins.announcements.update', [$bulletin, $a['id']]) }}" data-field="title" @endif>{{ $a['title'] ?? '' }}</div>
+                    <div class="a-detail editable @if(!$hasDetail) empty-field @endif"
+                         @if(isset($a['id'])) data-edit-url="{{ route('bulletins.announcements.update', [$bulletin, $a['id']]) }}" data-field="detail" data-type="textarea" @endif>{{ $a['detail'] ?? '' }}</div>
+                    @if (isset($a['id']))
+                      <span class="row-actions"><button data-delete-url="{{ route('bulletins.announcements.destroy', [$bulletin, $a['id']]) }}" class="del">Delete</button></span>
+                    @endif
+                  </div>
+                @endif
+              @endforeach
+            @else
+              {{-- PUBLIC — first one expanded, the rest nested behind "More"; media lazy-loaded --}}
+              @foreach ($anns as $i => $a)
+                @php
+                  $hasTitle = !empty($a['title']); $hasDetail = !empty($a['detail']);
+                  $img = $a['image_path'] ?? null; $vid = $a['video_url'] ?? null;
+                  $embed = null;
+                  if ($vid) {
+                    if (preg_match('~(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/|youtube\.com/live/)([A-Za-z0-9_-]{11})~', $vid, $mm)) $embed = 'https://www.youtube.com/embed/' . $mm[1];
+                    elseif (preg_match('~vimeo\.com/(\d+)~', $vid, $mm)) $embed = 'https://player.vimeo.com/video/' . $mm[1];
+                  }
+                  $hasMedia = $img || $vid;
+                  $open = $i === 0;
+                @endphp
+                @if ($hasTitle || $hasDetail || $hasMedia)
+                  <div class="announcement {{ $open ? 'ann-open' : 'ann-nested' }}">
+                    <div class="a-title">{{ $a['title'] ?? '' }}@if(!$open)<button type="button" class="ann-more">More <span class="chev">&#9662;</span></button>@endif</div>
+                    <div class="a-body">
+                      @if ($hasDetail)<div class="a-detail">{{ $a['detail'] }}</div>@endif
+                      @if ($hasMedia)
+                        <div class="a-media">
+                          @if ($img)<img class="a-img" @if($open) src="/{{ $img }}" @else data-src="/{{ $img }}" @endif alt="{{ $a['title'] ?? 'Announcement' }}" loading="lazy">@endif
+                          @if ($embed)<button type="button" class="a-video" data-embed="{{ $embed }}"><span class="a-play">&#9654;</span> Watch</button>
+                          @elseif ($vid)<a class="a-video" href="{{ $vid }}" target="_blank" rel="noopener"><span class="a-play">&#9654;</span> Watch</a>@endif
+                        </div>
+                      @endif
+                    </div>
+                  </div>
+                @endif
+              @endforeach
+            @endif
             @if ($canEdit)
               <button class="add-btn" data-add-ann-url="{{ route('bulletins.announcements.store', $bulletin) }}">+ Add announcement</button>
             @endif
@@ -4662,5 +4700,24 @@ if ('serviceWorker' in navigator) {
 </script>
 @include('partials._event-tracker')
 @include('partials._confirm')
+<script>
+(function () {
+  document.querySelectorAll('.ann-more').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var ann = btn.closest('.announcement'); ann.classList.toggle('open');
+      if (ann.classList.contains('open')) ann.querySelectorAll('img[data-src]').forEach(function (img) { img.src = img.getAttribute('data-src'); img.removeAttribute('data-src'); });
+    });
+  });
+  document.querySelectorAll('.a-video[data-embed]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var f = document.createElement('iframe'); f.className = 'a-video-frame';
+      f.src = btn.getAttribute('data-embed') + '?autoplay=1&rel=0';
+      f.allow = 'autoplay; encrypted-media; fullscreen'; f.setAttribute('allowfullscreen', '');
+      btn.replaceWith(f);
+    });
+  });
+})();
+</script>
 </body>
 </html>

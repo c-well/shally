@@ -4,6 +4,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Announcement extends Model
 {
-    protected $fillable = ['bulletin_id', 'title', 'detail', 'sort_order'];
+    protected $fillable = ['bulletin_id', 'title', 'detail', 'image_path', 'video_url', 'sort_order'];
     public function bulletin() { return $this->belongsTo(Bulletin::class); }
 }

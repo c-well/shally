@@ -98,6 +98,8 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
     Route::post  ('/bulletins/{bulletin}/announcements', [BulletinController::class, 'storeAnnouncement'])->name('bulletins.announcements.store');
     Route::patch ('/bulletins/{bulletin}/announcements/{announcement}', [BulletinController::class, 'updateAnnouncement'])->name('bulletins.announcements.update');
     Route::delete('/bulletins/{bulletin}/announcements/{announcement}', [BulletinController::class, 'destroyAnnouncement'])->name('bulletins.announcements.destroy');
+    Route::post  ('/bulletins/{bulletin}/announcements/{announcement}/image', [BulletinController::class, 'uploadAnnouncementImage'])->name('bulletins.announcements.image');
+    Route::delete('/bulletins/{bulletin}/announcements/{announcement}/image', [BulletinController::class, 'removeAnnouncementImage'])->name('bulletins.announcements.image.remove');
 
     // Event editing (inline on home page)
     Route::post  ('/events',              [EventController::class, 'store'])->name('events.store');
