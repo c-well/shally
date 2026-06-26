@@ -1,5 +1,9 @@
 # Shalom — Changelog
 
+## 2026-06-26 · Messages (sermon audio archive)
+
+New public **/messages** page (in the Spiritual Life menu): the church's sermons as audio, built on the Find Peace audio pipeline. Newest featured, the rest below, each with a clean player that loads only when you press play. **Games + kids area** are spec'd in docs/HANDOFF.md for the parallel build — a bigger piece, not rushed.
+
 ## 2026-06-26 · Announcements media (images + video)
 
 Announcements can now carry an optional image and/or a video link. Add them in the new bulletin editor (v2) via a per-announcement media toggle — image upload + video URL, tucked away so the editor stays clean. On the public bulletin the first/newest announcement shows expanded; the rest are **nested behind a "More" toggle**, with the image and video **lazy-loaded on demand** so the page stays light. Re-publish the bulletin for new media to appear publicly.
