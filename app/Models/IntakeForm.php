@@ -54,4 +54,23 @@ class IntakeForm extends Model
     {
         return data_get($this->settings, $key, $default);
     }
+
+    /* ── site-menu opt-in (Andre pushes a form to the public nav) ── */
+
+    public function inMenu(): bool
+    {
+        return (bool) $this->setting('in_menu', false);
+    }
+
+    public function menuLabel(): string
+    {
+        return $this->setting('menu_label') ?: $this->title;
+    }
+
+    /** Active forms the admin has pushed to the public menu. */
+    public static function menuForms()
+    {
+        return static::where('is_active', true)->orderBy('id')->get()
+            ->filter(fn ($f) => $f->inMenu())->values();
+    }
 }

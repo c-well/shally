@@ -73,6 +73,7 @@
         <button class="btn btn-ghost" type="button" id="copyBtn">Copy</button>
       </div>
     </div>
+    <button class="btn" type="button" id="menuToggle" data-url="{{ route('admin.intake.menu', $form) }}" data-in="{{ $form->inMenu() ? '1' : '0' }}">{{ $form->inMenu() ? '✓ In site menu' : '+ Add to site menu' }}</button>
     @if ($live->whereNotNull('output_path')->isNotEmpty())
       <a class="btn btn-solid" href="{{ route('admin.intake.bulk', $form) }}">⬇ Download all ({{ $live->whereNotNull('output_path')->count() }})</a>
     @endif
@@ -144,6 +145,20 @@
     return fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); });
   }
+
+  // Add / remove from site menu
+  var menuToggle = document.getElementById('menuToggle');
+  if (menuToggle) menuToggle.addEventListener('click', function () {
+    menuToggle.disabled = true;
+    post(menuToggle.getAttribute('data-url')).then(function (res) {
+      menuToggle.disabled = false;
+      if (res.ok && res.d.ok) {
+        menuToggle.setAttribute('data-in', res.d.in_menu ? '1' : '0');
+        menuToggle.textContent = res.d.in_menu ? '✓ In site menu' : '+ Add to site menu';
+        window.shToast(res.d.message);
+      } else { window.shToast('Could not update the menu — try again.'); }
+    }).catch(function () { menuToggle.disabled = false; window.shToast('Network error.'); });
+  });
 
   // Copy form link
   var copyBtn = document.getElementById('copyBtn');

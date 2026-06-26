@@ -6,6 +6,7 @@ use App\Models\IntakeSubmission;
 use App\Services\Intake\GradCardRenderer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -45,6 +46,23 @@ class AdminIntakeController extends Controller
             'show_text' => $submission->show_text,
             'url'       => $submission->outputUrl() . '?v=' . now()->timestamp,
             'message'   => $submission->show_text ? 'Text added back.' : 'Text removed — photo only.',
+        ]);
+    }
+
+    /** Push a form onto (or off) the public site menu. */
+    public function toggleMenu(Request $request, IntakeForm $form): JsonResponse
+    {
+        $s = $form->settings ?? [];
+        $s['in_menu'] = ! ($s['in_menu'] ?? false);
+        if ($request->filled('menu_label')) $s['menu_label'] = trim((string) $request->input('menu_label'));
+        $form->settings = $s;
+        $form->save();
+        Cache::forget('intake_menu_forms');
+
+        return response()->json([
+            'ok'      => true,
+            'in_menu' => $s['in_menu'],
+            'message' => $s['in_menu'] ? 'Added to the site menu — it’s live now.' : 'Removed from the site menu.',
         ]);
     }
 

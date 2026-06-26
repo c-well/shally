@@ -342,6 +342,10 @@
 
     <a class="site-menu-link" href="{{ route('prayer.show') }}">Prayer Request <span class="arrow">→</span></a>
 
+    @foreach (\Illuminate\Support\Facades\Cache::remember('intake_menu_forms', 300, fn() => \App\Models\IntakeForm::menuForms()) as $mf)
+      <a class="site-menu-link" href="{{ url('/intake/' . $mf->slug) }}">{{ $mf->menuLabel() }} <span class="arrow">→</span></a>
+    @endforeach
+
     <div class="site-menu-section">
       <button class="site-menu-section-toggle" type="button" aria-expanded="false">
         Spiritual Life
