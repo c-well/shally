@@ -1,5 +1,9 @@
 # Shalom — Changelog
 
+## 2026-06-26 · Handoff: full design system + games spec
+
+docs/HANDOFF.md now documents the **complete design system** (exact palette vars, fonts, the "Considered" language, page scaffold, shared interactions, verify workflow) so a second Claude matches the site's look pixel-for-pixel, plus **Karlon's full games/kids spec** (teaches the Word — not entertainment; book-selectable; admin-authored levels for ages 4–9 + teens; autosave; player names + gentle leaderboards). Standing rule added: update HANDOFF + CHANGELOG at the end of every session.
+
 ## 2026-06-26 · Messages (sermon audio archive)
 
 New public **/messages** page (in the Spiritual Life menu): the church's sermons as audio, built on the Find Peace audio pipeline. Newest featured, the rest below, each with a clean player that loads only when you press play. **Games + kids area** are spec'd in docs/HANDOFF.md for the parallel build — a bigger piece, not rushed.
