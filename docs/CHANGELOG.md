@@ -1,5 +1,16 @@
 # Shalom — Changelog
 
+## 2026-06-26 · Session polish + handoff
+
+For continuity (Karlon is bringing in a second Claude on his laptop): see **docs/HANDOFF.md** for full state, conventions, access, and pending tasks.
+
+This session:
+- **Latest-service failsafe** now pulls from the channel's /streams (livestreams) — the /videos tab was surfacing an old 2022 upload. Resolves the true latest service and rolls back through pulled weeks. (sermons:refresh-latest, scheduled daily + Sat.)
+- **Grad slide**: more air (was crammed) and orientation-adaptive — the photo block takes the shape of the photo (portrait/landscape/square) and the text reflows to fit; never cropped to a portrait, never overflows.
+- **Gallery**: Andre can now edit the text on a slide and regenerate (one-off), plus bulk "photo-only / text-back on all".
+- **Bulletin v2**: the "who" field autocompletes from past entries (names; hymnal/Bible when the part calls for it). Built solid — debounced, abortable, keyboard-nav, no reopen glitch.
+- **Intake → site menu**: Andre can push a form to the public menu from its gallery; Graduate Recognition is live in the menu.
+
 ## 2026-06-25 · Intake engine + graduation slides
 
 A schema-driven form engine — one system behind every intake the church needs.
