@@ -95,6 +95,8 @@ Artisan::command('bulletins:prune', function () {
 Schedule::command('flyers:prune')->dailyAt('03:15');
 Schedule::command('flyers:warn')->dailyAt('03:00');
 Schedule::command('bulletins:prune')->dailyAt('03:30');
+Schedule::command('sermons:refresh-latest')->dailyAt('04:10');            // home-page latest-service failsafe
+Schedule::command('sermons:refresh-latest')->saturdays()->at('21:00');     // catch the new Sabbath upload
 Schedule::command('bulletins:purge-old')->dailyAt('03:45');  // hard-delete 14+ day old bulletins (PurgeOldBulletins)
 Schedule::command('feedback:purge-old')->dailyAt('03:50');   // hard-delete closed tickets > 14 days (PurgeOldTickets)
 Schedule::command('audit:purge-old')->dailyAt('03:55');      // hard-delete audit log entries > 40 days (PurgeOldAuditLogs)
