@@ -50,6 +50,14 @@
 
   .removed { margin-top: 44px; }
   .removed .grid .card { opacity: .65; }
+
+  /* per-card edit panel */
+  .edit-panel { padding: 14px 16px 16px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--teal) 3%, #fff); display: none; flex-direction: column; gap: 9px; }
+  .edit-panel.open { display: flex; }
+  .edit-panel label { font-family: 'Instrument Sans', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); display: flex; flex-direction: column; gap: 4px; }
+  .edit-panel input, .edit-panel textarea { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: var(--ink); }
+  .edit-panel textarea { min-height: 54px; resize: vertical; }
+  .edit-panel .ep-actions { display: flex; gap: 8px; margin-top: 4px; }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')
@@ -77,6 +85,10 @@
     @if ($live->whereNotNull('output_path')->isNotEmpty())
       <a class="btn btn-solid" href="{{ route('admin.intake.bulk', $form) }}">⬇ Download all ({{ $live->whereNotNull('output_path')->count() }})</a>
     @endif
+    @if ($live->whereNotNull('photo_path')->isNotEmpty())
+      <button class="btn btn-ghost" type="button" data-bulktext="remove" data-url="{{ route('admin.intake.bulktext', $form) }}">Photo-only on all</button>
+      <button class="btn btn-ghost" type="button" data-bulktext="restore" data-url="{{ route('admin.intake.bulktext', $form) }}">Text back on all</button>
+    @endif
   </div>
 
   <div class="count">{{ $live->count() }} {{ Str::plural('submission', $live->count()) }}</div>
@@ -103,6 +115,7 @@
             <div class="actions">
               @if ($s->output_path)
                 <a class="btn" href="{{ route('admin.intake.download', $s) }}">⬇ Download</a>
+                <button class="btn" type="button" data-edit-toggle>Edit text</button>
                 @if ($s->photo_path)
                   <button class="btn" type="button" data-toggle-text="{{ route('admin.intake.toggle', $s) }}">{{ $s->show_text ? 'Remove text' : 'Add text' }}</button>
                 @endif
@@ -112,6 +125,20 @@
                       data-confirm="Remove {{ $s->displayName() }}'s slide from the gallery? You can put it back from the Removed section.">Remove</button>
             </div>
           </div>
+          @if ($s->output_path)
+            <div class="edit-panel" data-edit-url="{{ route('admin.intake.edit', $s) }}">
+              <label>Name<input data-ef="name" value="{{ $s->value('name') }}"></label>
+              <label>Level / class<input data-ef="level" value="{{ $s->value('level') }}"></label>
+              <label>School<input data-ef="school" value="{{ $s->value('school') }}"></label>
+              <label>Degree / major<input data-ef="major" value="{{ $s->value('major') }}"></label>
+              <label>Honors<input data-ef="honors" value="{{ $s->value('honors') }}"></label>
+              <label>With thanks<textarea data-ef="thanks">{{ $s->value('thanks') }}</textarea></label>
+              <div class="ep-actions">
+                <button class="btn btn-solid" type="button" data-edit-save>Save &amp; regenerate</button>
+                <button class="btn btn-ghost" type="button" data-edit-cancel>Cancel</button>
+              </div>
+            </div>
+          @endif
         </div>
       @endforeach
     </div>
@@ -141,9 +168,10 @@
 <script>
 (function () {
   var token = document.querySelector('meta[name=csrf-token]').getAttribute('content');
-  function post(url) {
-    return fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); });
+  function post(url, body) {
+    var opts = { method: 'POST', headers: { 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } };
+    if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    return fetch(url, opts).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); });
   }
 
   // Add / remove from site menu
@@ -168,6 +196,38 @@
   });
 
   document.addEventListener('click', function (e) {
+    // Edit-text panel: open / cancel / save
+    if (e.target.closest('[data-edit-toggle]')) { var c0 = e.target.closest('[data-row]').querySelector('.edit-panel'); if (c0) c0.classList.toggle('open'); return; }
+    if (e.target.closest('[data-edit-cancel]')) { e.target.closest('.edit-panel').classList.remove('open'); return; }
+    var es = e.target.closest('[data-edit-save]');
+    if (es) {
+      var panel = es.closest('.edit-panel'), card2 = es.closest('[data-row]'), id2 = card2.getAttribute('data-id'), body = {};
+      panel.querySelectorAll('[data-ef]').forEach(function (f) { body[f.getAttribute('data-ef')] = f.value; });
+      es.disabled = true;
+      post(panel.getAttribute('data-edit-url'), body).then(function (res) {
+        es.disabled = false;
+        if (res.ok && res.d.ok) {
+          var img = document.getElementById('prev_' + id2); if (img) img.src = res.d.url;
+          var nm = card2.querySelector('.nm'); if (nm && body.name) nm.textContent = body.name;
+          panel.classList.remove('open'); window.shToast(res.d.message);
+        } else { window.shToast('Could not update — try again.'); }
+      }).catch(function () { es.disabled = false; window.shToast('Network error.'); });
+      return;
+    }
+    // Bulk text on/off
+    var bt = e.target.closest('[data-bulktext]');
+    if (bt) {
+      var mode = bt.getAttribute('data-bulktext');
+      var msg = mode === 'remove' ? 'Strip the text off EVERY photo slide (photo only)? You can put it back anytime.' : 'Put the text back on EVERY photo slide?';
+      window.shConfirm(msg, { okLabel: mode === 'remove' ? 'Photo-only all' : 'Text back all' }).then(function (ok) {
+        if (!ok) return; bt.disabled = true;
+        post(bt.getAttribute('data-url'), { mode: mode }).then(function (res) {
+          if (res.ok && res.d.ok) { window.shToast(res.d.message); setTimeout(function () { location.reload(); }, 800); }
+          else { bt.disabled = false; window.shToast('Could not update.'); }
+        });
+      });
+      return;
+    }
     // Toggle text overlay
     var t = e.target.closest('[data-toggle-text]');
     if (t) {
