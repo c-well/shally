@@ -3,6 +3,7 @@
 > For the next Claude picking this up, and for continuity when Karlon switches back.
 > **Use git history + `docs/CHANGELOG.md` to see what changed and when.** Append your own
 > notes here as you go. Last updated by the prior session (see latest commits).
+> **STANDING RULE: at the END of every session, update this file + docs/CHANGELOG.md** — what changed, where you left off, new conventions — so the next Claude (or Karlon) never misses a beat.
 
 ## Access
 - App: `/home/shalom/laravel` on `67.222.27.173`. SSH: `ssh -p 2200 shalom@67.222.27.173` (root also works: `ssh -p 2200 root@67.222.27.173`).
@@ -15,6 +16,44 @@
 - **New/"stand on business" surfaces use IBM Plex Sans** (web) — NOT the old admin Noto Serif/Varela Round (`admin/partials/_typography`). Do NOT `@include` that partial on Considered surfaces.
 - **Grad slide house style = sans (Poppins).** Fonts in `storage/fonts/` (IBM Plex Serif/Poppins; Cormorant is dead — it rendered badly, don't use it).
 - Palette via `@include('partials.theme-vars')`: parchment bg, ink text, ONE teal accent used sparingly.
+
+## DESIGN SYSTEM — match this exactly (Karlon is a designer; drift gets noticed)
+
+### Palette — CSS vars live in `public/css/shalom.css` `:root`. Use the vars, never raw hex.
+- Surfaces: `--parchment #fefcef`, `--cream #faf3dd`, `--line rgba(26,35,50,.10)`
+- Ink/text: `--ink #1a2332`, `--ink-soft #334455`, `--ink-faint rgba(26,35,50,.45)`
+- Brand: **`--teal #03617A` (THE accent)**, `--teal-dark #024357`, `--teal-light #e6f0f3`, `--brass #b08d3c`
+- Status: `--red #a82a1f`, `--green #2d8659`
+- **Seasonal themes**: `body[data-theme="communion|easter|christmas|mothers|thanksgiving"]` overrides parchment/teal. Always render `<body data-theme="{{ \App\Models\AppSetting::get('site_theme','default') }}">`.
+- (The grad SLIDE uses a slightly warmer teal #2F6B6B inside GD; on the WEB the canonical accent is `--teal #03617A`.)
+
+### Fonts
+- **Older site surfaces**: Cormorant Garamond (serif display/italic), Instrument Sans (tracked uppercase labels/buttons), Poppins (body), JetBrains Mono (meta). Loaded via shalom.css + Google.
+- **"Considered" surfaces (NEW — intake form, bulletin v2, Messages)**: IBM Plex Sans + IBM Plex Serif. Per-page: `IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400`.
+- **Grad SLIDE (GD)**: Poppins (name, the house style) + IBM Plex Serif italic (verse) — static TTFs in `storage/fonts/`.
+- **Cormorant Garamond is DEAD for new work** — it renders thin/inconsistent at size; Karlon rejected it. Don't reach for it.
+
+### "Considered" — the language for everything new / "stand on business"
+Robust type, hard restraint, **space is the hero**. Moodboard Karlon gave: Anthropic.com, Rafal Tomal, Typewolf.
+- Left-aligned, generous margins; hierarchy from size/weight, not decoration.
+- **ONE accent (teal), used sparingly. Hairline rules — no boxes, no drop shadows, no ornament, no rounded "cards" doing the talking.**
+- Eyebrows = small tracked uppercase labels (letter-spacing .16–.26em).
+- Headline = bold IBM Plex Sans 700 (or a robust serif); supporting text quiet.
+
+### Page scaffold (each standalone page)
+Full `<!doctype html>` doc (not a layout component). `<head>`: meta + `@include('partials.seo-head',[...])` + Google Fonts + inline `<style>` + `@include('partials.theme-vars')`. Body: `data-theme`, `@include('partials.site-menu')`, content, `@include('partials.footer')`.
+- **Admin `_typography` trap**: older admin pages `@include('admin.partials._typography')` which FORCES Noto Serif body + Varela Round headings. **Do NOT include it on Considered surfaces** — it overrides IBM Plex with serif.
+
+### Shared interactions
+- `@include('partials._confirm')` → `window.shConfirm(msg,{okLabel,danger})`, `shAlert`, `shToast`; auto-intercepts `form[data-confirm]`, `a[data-confirm]`, `form[data-confirm-ajax]`. **No native confirm()/alert() anywhere** (site-wide rule).
+- Autosave = debounce ~150–650ms → PATCH the field → subtle saved pip/toast.
+
+### Verify workflow (Karlon says "check your work" — actually do it)
+1. After Blade/PHP edits: `php artisan optimize:clear`.
+2. Render a view to a file in tinker, extract its inline `<script>`, **`node --check`** it (node is on the box at /usr/bin/node).
+3. Slides: render a PNG and LOOK at it.
+4. HTTP-probe routes (expect 200/302), tail today's error log.
+5. Headless shots: `Google Chrome --headless=new --screenshot=out.png file://page.html` — wrap with a kill-timeout, it can hang.
 
 ## What's live (built over the prior sessions)
 1. **Intake engine** — schema-driven forms. `IntakeForm`/`IntakeSubmission`, public `/intake/{slug}` (slug = the memorable link). Field types: text/email/tel/date/select/textarea/photo/checkbox/checkboxes, conditional `show_if` (progressive disclosure). `app/Http/Controllers/IntakeController.php`, view `resources/views/intake/show.blade.php`.
@@ -35,11 +74,29 @@
 
 ## Pending / next tasks
 - **Announcements media (asked for, NOT built):** let an announcement carry an optional image and/or a video link, shown **nested/collapsed and lazy-loaded ("ajaxed out") on demand** in the public bulletin. Suggested: add `image_path` + `video_url` to the `announcements` table; in bulletin v2 add a small "＋ media" affordance per announcement (upload + link); public render shows a 📷/▶ chip that expands/loads on click. Keep it secondary/clean.
-- **Kids area + games (asked for, NOT built — Karlon wants it for a Sabbath):** a `/kids` surface with simple, self-contained client-side games in the Considered look but kid-warm:
-  - **Scripture word-search / "Sudoku"** (older kids/teens/adults): a weekly puzzle over a memory verse; on completion, reveal the verse. Single-file Blade + inline JS, client-side state.
-  - **Hidden-words tap-reveal** (little kids): a Bible scene where tapping reveals hidden words/objects.
-  - **Memory-match** (little kids): card-flip matching pairs (Bible words/images).
-  - A `/kids` index linking the games + a menu entry. No backend needed for the games themselves.
+- **Kids area + games — Karlon's FULL spec (wants it for a Sabbath; build it RIGHT, not rushed):**
+
+  **Purpose first — this is the whole point.** NOT entertainment. Many Adventists balk at "games on Sabbath," so frame and build it so it **teaches, reminds, and brings the Word before you** — Scripture engagement, never distraction. Every game centers on a passage/verse/book; "winning" = knowing the Word better. Lead with that framing in the copy.
+
+  **Requirements:**
+  - **Content source:** the sermons (PeaceSermon) AND a chosen **Bible book** — the player/leader can pick a book and the game adapts its content to that book (and to a sermon).
+  - **Admin-authored levels:** admins create levels/difficulty so **ages 4–9** each get age-appropriate content, plus a **teens** version with more complexity. Levels are DATA (a table), editable in /admin.
+  - **Autosave** progress as they play.
+  - **Players in a DB + leaderboards:** capture a name; track progress/score; **gentle** leaderboards to *encourage doing better, NOT to compete* — frame as growth/streaks, not ranking pressure.
+  - **Polish:** stand-on-business animations, clean, **loads properly** (no jank/FOUC). Considered aesthetic but kid-warm (bigger, friendlier, still restrained).
+
+  **Game types (original vision):**
+  - **Scripture word-search / "Sudoku"** (older kids/teens/adults): puzzle over a passage's key words / number-Sudoku that reveals a verse on completion.
+  - **Hidden-words tap-reveal** (little kids): a Bible scene; tapping reveals hidden words/objects.
+  - **Memory-match** (little kids): flip-card matching of Bible words/images.
+
+  **Suggested architecture:**
+  - Tables: `game_levels` (admin: name, age_band [4-9|teens], book/passage or sermon_id, config JSON), `game_players` (name), `game_progress` (player_id, level_id, state JSON, score, completed_at) for autosave + leaderboards.
+  - `/kids` index (Considered, kid-warm) → pick a game + book/level.
+  - Each game = self-contained Blade + inline JS (client-side play), autosaving via a small JSON endpoint.
+  - Admin level-builder under /admin (pick book, age band, difficulty, content) — and "we as admin can create levels too."
+  - Menu entry (its own "Kids" or under Spiritual Life).
+
 - **Form builder (Phase 3):** a phone-friendly visual builder so Andre mints new `/intake/<slug>` forms himself (this is also where "generate form links on the fly" lands). The engine already supports arbitrary schemas — this is the UI to author `IntakeForm` rows.
 - **Bulletin v1→v2:** eventually retire the `/welcome` inline editor once v2 is proven; keep both for now.
 
