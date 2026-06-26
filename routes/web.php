@@ -57,6 +57,7 @@ Route::get('/peace/review/{token}/restore',        [\App\Http\Controllers\PeaceR
 Route::get('/peace/review/{token}/confirm-delete', [\App\Http\Controllers\PeaceReviewController::class, 'confirmDelete'])->where('token','[a-f0-9]{64}')->name('peace.review.confirm-delete');
 Route::get ('/search',  [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
 Route::get ('/contact',  [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
+Route::get ('/messages', [\App\Http\Controllers\MessagesController::class, 'index'])->name('messages');
 Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'])
      ->middleware(['throttle:5,60', 'honeypot'])->name('contact.send');
 

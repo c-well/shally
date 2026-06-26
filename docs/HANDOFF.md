@@ -24,7 +24,8 @@
    - **Media storage: `public/intake-media/`** — NOT `public/intake/` (that collides with the `/intake/{slug}` route).
 2. **Bulletin editor v2** — `/admin/bulletin` (`AdminBulletinController`, `resources/views/admin/bulletin.blade.php`). Frictionless drill-through: every order-of-service item is an inline part/person field that autosaves; reorder ↑↓, add item/section, delete, edit title/date/theme, switch bulletins, Go Live; announcements too. **Person field autocompletes from past entries** via `/api/suggestions` (scope rules: part says hymn/song→hymnal, scripture→Bible, else past people). It's a NEW front door onto the existing `BulletinController` endpoints — **v1 (the inline editor on `/welcome`) is UNTOUCHED and the default.** Toggle: `AppSetting('bulletin_editor')` v1|v2; opening v2 makes it the admin's default, the "Classic editor" button flips back.
 3. **Clerk events manager** — `/admin/events` (Rosharde, clerk). Quick-add name+date+flyer, autosave, auto-publish, tightened list, on/off-the-website toggle.
-4. **Latest-service failsafe** — `sermons:refresh-latest` probes the channel's **/streams** (UULV live-streams playlist) newest-first via yt-dlp, caches the first watchable full service (≥10 min) in `AppSetting('latest_service_video_id')`; `landing.blade.php` embeds that id (playlist fallback). Scheduled daily 04:10 + Sat 21:00. **Rolls back through pulled/missing weeks.**
+4. **Messages** — /messages (public, Spiritual Life menu). Public sermon-audio archive over published `PeaceSermon`s, on-brand audio player (lazy, one-at-a-time). `MessagesController` + `resources/views/messages/index.blade.php`.
+5. **Latest-service failsafe** — `sermons:refresh-latest` probes the channel's **/streams** (UULV live-streams playlist) newest-first via yt-dlp, caches the first watchable full service (≥10 min) in `AppSetting('latest_service_video_id')`; `landing.blade.php` embeds that id (playlist fallback). Scheduled daily 04:10 + Sat 21:00. **Rolls back through pulled/missing weeks.**
 
 ## Standing rules (from Karlon — important)
 - Outbound mail: **CC contact@c-wellpics.com**. Mail is sendmail; from app@thechurchofpeace.org.
@@ -34,6 +35,11 @@
 
 ## Pending / next tasks
 - **Announcements media (asked for, NOT built):** let an announcement carry an optional image and/or a video link, shown **nested/collapsed and lazy-loaded ("ajaxed out") on demand** in the public bulletin. Suggested: add `image_path` + `video_url` to the `announcements` table; in bulletin v2 add a small "＋ media" affordance per announcement (upload + link); public render shows a 📷/▶ chip that expands/loads on click. Keep it secondary/clean.
+- **Kids area + games (asked for, NOT built — Karlon wants it for a Sabbath):** a `/kids` surface with simple, self-contained client-side games in the Considered look but kid-warm:
+  - **Scripture word-search / "Sudoku"** (older kids/teens/adults): a weekly puzzle over a memory verse; on completion, reveal the verse. Single-file Blade + inline JS, client-side state.
+  - **Hidden-words tap-reveal** (little kids): a Bible scene where tapping reveals hidden words/objects.
+  - **Memory-match** (little kids): card-flip matching pairs (Bible words/images).
+  - A `/kids` index linking the games + a menu entry. No backend needed for the games themselves.
 - **Form builder (Phase 3):** a phone-friendly visual builder so Andre mints new `/intake/<slug>` forms himself (this is also where "generate form links on the fly" lands). The engine already supports arbitrary schemas — this is the UI to author `IntakeForm` rows.
 - **Bulletin v1→v2:** eventually retire the `/welcome` inline editor once v2 is proven; keep both for now.
 
