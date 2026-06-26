@@ -53,15 +53,25 @@ class GradCardRenderer
 
         $photo = $sub->photo_path ? $this->loadPhoto(public_path($sub->photo_path)) : null;
 
+        $M = self::MARGIN;
         if ($photo && ! $sub->show_text) {
             // Photo only — clean, generous, no chrome.
-            $this->placePhoto($im, $photo, self::MARGIN, 110, self::W - self::MARGIN * 2, self::H - 220);
+            $this->placePhoto($im, $photo, $M, 110, self::W - $M * 2, self::H - 220);
         } elseif ($photo) {
-            $pw = 540; $px = self::MARGIN; $py = 150; $ph = self::H - 300;
+            // Always photo-left / text-right; the photo BLOCK takes the shape of the
+            // photo (so a horizontal shot isn't cropped to a portrait), and the
+            // right-hand text simply gets whatever width is left — it always
+            // centres in the full height, so it never overflows.
+            $ar = imagesx($photo) / max(1, imagesy($photo));
+            if ($ar >= 1.25)      { $pw = 820; $ph = 500; }  // landscape — wide & short
+            elseif ($ar >= 0.95)  { $pw = 620; $ph = 620; }  // square
+            else                  { $pw = 540; $ph = 760; }  // portrait — tall & narrow
+            $px = $M; $py = (int) ((self::H - $ph) / 2);
             $this->placePhoto($im, $photo, $px, $py, $pw, $ph);
-            $this->drawText($im, $sub, $px + $pw + 90, self::W - self::MARGIN);
+            $this->drawText($im, $sub, $px + $pw + 110, self::W - $M, 110, self::H - 110);
         } else {
-            $this->drawText($im, $sub, self::MARGIN, self::W - self::MARGIN);
+            // No photo — text only, comfortable measure, lots of space.
+            $this->drawText($im, $sub, $M, min(self::W - $M, $M + 1180), 110, self::H - 110);
         }
 
         if ($photo) imagedestroy($photo);
@@ -77,7 +87,7 @@ class GradCardRenderer
 
     /* ─────────────────────── text block ─────────────────────── */
 
-    private function drawText($im, IntakeSubmission $sub, int $left, int $right): void
+    private function drawText($im, IntakeSubmission $sub, int $left, int $right, int $yTop = 110, int $yBottom = 970): void
     {
         $maxW = $right - $left;
         $year = now()->month >= 7 ? now()->year + 1 : now()->year;
@@ -94,35 +104,37 @@ class GradCardRenderer
         $nameSize  = $serifName ? 104 : 90;
 
         // Build a flat list of [type, text, font, size, colorKey, advance].
+        // Advances are generous on purpose — space is the point.
         $L = [];
-        $L[] = ['label', 'THE CHURCH OF PEACE', $this->sans, 21, 'teal', 64];
+        $L[] = ['label', 'THE CHURCH OF PEACE', $this->sans, 21, 'teal', 78];
         foreach ($this->wrap($name, $nameFont, $nameSize, $maxW) as $ln) {
-            $L[] = ['plain', $ln, $nameFont, $nameSize, 'ink', (int) ($nameSize * 1.06)];
+            $L[] = ['plain', $ln, $nameFont, $nameSize, 'ink', (int) ($nameSize * 1.14)];
         }
-        $L[] = ['gap', '', $nameFont, 0, 'ink', 22];
-        $L[] = ['plain', 'Class of ' . $year, $serifName ? $this->serif : $this->sansReg, 40, 'ink_soft', 56];
+        $L[] = ['gap', '', $nameFont, 0, 'ink', 40];
+        $L[] = ['plain', 'Class of ' . $year, $serifName ? $this->serif : $this->sansReg, 40, 'ink_soft', 66];
 
         $line2 = trim($level . ($school ? '  ·  ' . $school : ''), ' ·');
         if ($line2) foreach ($this->wrap($line2, $this->sansReg, 26, $maxW) as $ln) {
-            $L[] = ['plain', $ln, $this->sansReg, 26, 'ink_soft', 40];
+            $L[] = ['plain', $ln, $this->sansReg, 26, 'ink_soft', 50];
         }
         if ($degree) foreach ($this->wrap($degree, $this->sansMed, 29, $maxW) as $ln) {
-            $L[] = ['plain', $ln, $this->sansMed, 29, 'ink', 44];
+            $L[] = ['plain', $ln, $this->sansMed, 29, 'ink', 54];
         }
         if ($honors) foreach ($this->wrap($honors, $this->serifItalic, 30, $maxW) as $ln) {
-            $L[] = ['plain', $ln, $this->serifItalic, 30, 'ink_soft', 46];
+            $L[] = ['plain', $ln, $this->serifItalic, 30, 'ink_soft', 56];
         }
         if ($thanks) {
-            $L[] = ['gap', '', $nameFont, 0, 'ink', 34];
-            $L[] = ['rule', '', $nameFont, 0, 'line', 30];
-            $L[] = ['label', 'WITH THANKS', $this->sans, 14, 'teal', 38];
+            $L[] = ['gap', '', $nameFont, 0, 'ink', 56];
+            $L[] = ['rule', '', $nameFont, 0, 'line', 38];
+            $L[] = ['label', 'WITH THANKS', $this->sans, 14, 'teal', 48];
             foreach ($this->wrap('“' . $thanks . '”', $this->serifItalic, 31, $maxW) as $ln) {
-                $L[] = ['plain', $ln, $this->serifItalic, 31, 'ink', 47];
+                $L[] = ['plain', $ln, $this->serifItalic, 31, 'ink', 56];
             }
         }
 
         $total = 0; foreach ($L as $l) $total += $l[5];
-        $y = (int) ((self::H - $total) / 2);
+        $region = $yBottom - $yTop;
+        $y = $yTop + ($total < $region ? (int) (($region - $total) / 2) : 0);
 
         foreach ($L as [$kind, $text, $font, $size, $ck, $adv]) {
             $y += $adv;
