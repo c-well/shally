@@ -63,6 +63,12 @@
   .saved-pip.show { opacity: 1; }
   .nobull { max-width: 560px; margin: 80px auto; text-align: center; }
   .nobull .big { font-family: 'IBM Plex Serif'; font-size: 26px; color: var(--ink); margin-bottom: 14px; }
+
+  /* Autocomplete (person field) */
+  .ac { position: fixed; z-index: 200; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 14px 32px -14px rgba(0,0,0,.28); overflow-y: auto; max-height: 264px; display: none; }
+  .ac.show { display: block; }
+  .ac-item { padding: 10px 13px; font-size: 14px; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .ac-item.active { background: color-mix(in srgb, var(--teal) 12%, #fff); color: var(--teal-dark); }
 </style>
 @include('partials.theme-vars')
 {{-- Deliberately NOT including admin _typography here — bulletin v2 is held to
@@ -275,6 +281,78 @@
       });
     });
   });
+})();
+</script>
+<script>
+/* Person-field autocomplete — names (and hymns / Bible books) from past bulletins.
+   Solid by design: 150ms debounce, AbortController cancels stale requests,
+   keyboard nav, selection re-fires the autosave, closes cleanly on blur/scroll. */
+(function () {
+  if (!document.querySelector('main[data-bid]')) return;
+  var box = document.createElement('div'); box.className = 'ac'; document.body.appendChild(box);
+  var cur = null, items = [], active = -1, ctrl = null, timer = null, suppress = false;
+
+  function scopeFor(part) {
+    var p = (part || '').toLowerCase();
+    if (/\b(hymn|song)\b/.test(p)) return 'hymn';
+    if (/\b(scripture|reading|responsive|text)\b/.test(p)) return 'bible';
+    return 'person';
+  }
+  function esc(s) { return String(s).replace(/[<>&"]/g, function (c) { return { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]; }); }
+  function close() { box.classList.remove('show'); items = []; active = -1; cur = null; }
+  function place(inp) { var r = inp.getBoundingClientRect(); box.style.left = r.left + 'px'; box.style.top = (r.bottom + 4) + 'px'; box.style.minWidth = r.width + 'px'; }
+  function render() {
+    box.innerHTML = items.map(function (it, i) { return '<div class="ac-item' + (i === active ? ' active' : '') + '" data-i="' + i + '">' + esc(it) + '</div>'; }).join('');
+    box.classList.toggle('show', items.length > 0);
+  }
+  function norm(v) { return typeof v === 'string' ? v : (v && (v.label || v.name || v.book || v.title)) || ''; }
+
+  function lookup(inp) {
+    var q = inp.value.trim();
+    if (q.length < 1) { close(); return; }
+    var row = inp.closest('[data-id]');
+    var partInp = row ? row.querySelector('input[data-f="part"]') : null;
+    var scope = scopeFor(partInp ? partInp.value : '');
+    if (ctrl) ctrl.abort();
+    ctrl = new AbortController();
+    fetch('/api/suggestions?q=' + encodeURIComponent(q) + '&scope=' + scope, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, signal: ctrl.signal })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var src = scope === 'hymn' ? d.hymns : (scope === 'bible' ? d.books : d.people);
+        items = (src || []).map(norm).filter(Boolean).slice(0, 8);
+        active = -1;
+        if (cur === inp) { place(inp); render(); }
+      })
+      .catch(function () { /* aborted or network — ignore */ });
+  }
+
+  document.addEventListener('input', function (e) {
+    var inp = e.target.closest('input[data-f="person"]');
+    if (!inp) return;
+    if (suppress) { suppress = false; return; }
+    cur = inp; clearTimeout(timer);
+    timer = setTimeout(function () { if (cur === inp) lookup(inp); }, 150);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!box.classList.contains('show') || !cur) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(items.length - 1, active + 1); render(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(0, active - 1); render(); }
+    else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); pick(active); }
+    else if (e.key === 'Escape') { close(); }
+  });
+  box.addEventListener('mousedown', function (e) { var it = e.target.closest('.ac-item'); if (it) { e.preventDefault(); pick(parseInt(it.getAttribute('data-i'), 10)); } });
+  function pick(i) {
+    if (!cur || !items[i]) return;
+    var inp = cur;
+    inp.value = items[i];
+    close();
+    suppress = true;                    // don't reopen on the synthetic input
+    inp.dispatchEvent(new Event('input', { bubbles: true })); // fires the autosave
+    inp.focus();
+  }
+  document.addEventListener('focusout', function () { setTimeout(function () { if (!box.contains(document.activeElement)) close(); }, 120); });
+  window.addEventListener('scroll', close, true);
+  window.addEventListener('resize', close);
 })();
 </script>
 </body>
