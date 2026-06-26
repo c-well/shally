@@ -34,13 +34,54 @@ class AdminIntakeController extends Controller
         return view('admin.intake.submissions', compact('form', 'live', 'removed'));
     }
 
+    /** Edit the text that appears on a slide, then re-render (one-off). */
+    public function editSubmission(Request $request, IntakeSubmission $submission): JsonResponse
+    {
+        $fields = ['name', 'level', 'school', 'major', 'honors', 'thanks', 'verse'];
+        $data = $submission->data ?? [];
+        foreach ($fields as $f) {
+            if ($request->has($f)) $data[$f] = trim((string) $request->input($f));
+        }
+        $submission->data = $data;
+        if ($request->filled('name')) $submission->submitter_name = $data['name'];
+        $submission->save();
+
+        $this->regenerate($submission);
+
+        return response()->json([
+            'ok'      => true,
+            'url'     => $submission->outputUrl() . '?v=' . now()->timestamp,
+            'message' => 'Slide updated.',
+        ]);
+    }
+
+    /** Remove or restore the text overlay across every photo slide in this form. */
+    public function bulkText(Request $request, IntakeForm $form): JsonResponse
+    {
+        $show = $request->input('mode') !== 'remove';
+        $subs = $form->submissions()->where('status', 'live')->whereNotNull('photo_path')->get();
+        foreach ($subs as $s) { $s->update(['show_text' => $show]); $this->regenerate($s); }
+
+        $n = $subs->count();
+        return response()->json([
+            'ok'      => true,
+            'count'   => $n,
+            'message' => ($show ? 'Text restored on ' : 'Text removed from ') . $n . ' slide' . ($n === 1 ? '' : 's') . '. Reloading…',
+        ]);
+    }
+
+    private function regenerate(IntakeSubmission $submission): void
+    {
+        if ($submission->form->output_type !== 'graduation') return;
+        $style = $submission->form->setting('slide_style', 'sans');
+        $submission->update(['output_path' => (new GradCardRenderer($style))->render($submission)]);
+    }
+
     /** Flip the text overlay on a graduation card and re-render. */
     public function toggleText(IntakeSubmission $submission): JsonResponse
     {
         $submission->update(['show_text' => ! $submission->show_text]);
-        if ($submission->form->output_type === 'graduation') {
-            $submission->update(['output_path' => app(GradCardRenderer::class)->render($submission)]);
-        }
+        $this->regenerate($submission);
         return response()->json([
             'ok'        => true,
             'show_text' => $submission->show_text,

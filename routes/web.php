@@ -191,6 +191,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/intake-sub/{submission}/remove', [\App\Http\Controllers\AdminIntakeController::class, 'remove'])->name('admin.intake.remove');
         Route::post('/admin/intake-sub/{submission}/restore',[\App\Http\Controllers\AdminIntakeController::class, 'restore'])->name('admin.intake.restore');
         Route::post('/admin/intake/{form}/menu', [\App\Http\Controllers\AdminIntakeController::class, 'toggleMenu'])->name('admin.intake.menu');
+        Route::post('/admin/intake-sub/{submission}/edit', [\App\Http\Controllers\AdminIntakeController::class, 'editSubmission'])->name('admin.intake.edit');
+        Route::post('/admin/intake/{form}/bulk-text', [\App\Http\Controllers\AdminIntakeController::class, 'bulkText'])->name('admin.intake.bulktext');
 
         Route::get   ('/admin/pages/{slug}/edit',       [\App\Http\Controllers\AdminPagesController::class, 'edit'])->name('admin.pages.edit');
         Route::patch ('/admin/pages/{slug}',            [\App\Http\Controllers\AdminPagesController::class, 'update'])->name('admin.pages.update');
