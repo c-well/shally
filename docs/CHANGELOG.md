@@ -1,5 +1,9 @@
 # Shalom — Changelog
 
+## 2026-06-26 · Announcements media (images + video)
+
+Announcements can now carry an optional image and/or a video link. Add them in the new bulletin editor (v2) via a per-announcement media toggle — image upload + video URL, tucked away so the editor stays clean. On the public bulletin the first/newest announcement shows expanded; the rest are **nested behind a "More" toggle**, with the image and video **lazy-loaded on demand** so the page stays light. Re-publish the bulletin for new media to appear publicly.
+
 ## 2026-06-26 · Session polish + handoff
 
 For continuity (Karlon is bringing in a second Claude on his laptop): see **docs/HANDOFF.md** for full state, conventions, access, and pending tasks.

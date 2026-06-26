@@ -326,6 +326,7 @@ class BulletinController extends Controller
         $data = $request->validate([
             'title'  => 'sometimes|string|max:180',
             'detail' => 'sometimes|nullable|string|max:1000',
+            'video_url' => 'sometimes|nullable|string|max:500',
         ]);
         $announcement->update($data);
         return response()->json(['ok' => true, 'announcement' => $announcement]);
@@ -337,6 +338,59 @@ class BulletinController extends Controller
         $announcement->delete();
         return response()->json(['ok' => true]);
     }
+
+    /** POST /bulletins/{bulletin}/announcements/{announcement}/image — attach a compressed image. */
+    public function uploadAnnouncementImage(Request $request, Bulletin $bulletin, Announcement $announcement): JsonResponse
+    {
+        abort_unless($announcement->bulletin_id === $bulletin->id, 404);
+        $request->validate(['image' => ['required', 'file', 'extensions:jpg,jpeg,png,webp,gif', 'max:10240']]);
+        $dir = public_path('announcements');
+        if (! is_dir($dir)) mkdir($dir, 0755, true);
+        if ($announcement->image_path) { $old = public_path($announcement->image_path); if (is_file($old)) @unlink($old); }
+        $name = 'ann-' . $announcement->id . '-' . now()->format('YmdHis') . '-' . \Illuminate\Support\Str::random(5) . '.jpg';
+        if (! $this->compressAnnImage($request->file('image')->getRealPath(), $dir . '/' . $name, 1400, 82)) {
+            return response()->json(['ok' => false, 'error' => 'Could not process image'], 422);
+        }
+        $announcement->update(['image_path' => 'announcements/' . $name]);
+        return response()->json(['ok' => true, 'image_url' => '/announcements/' . $name]);
+    }
+
+    /** DELETE the announcement image. */
+    public function removeAnnouncementImage(Bulletin $bulletin, Announcement $announcement): JsonResponse
+    {
+        abort_unless($announcement->bulletin_id === $bulletin->id, 404);
+        if ($announcement->image_path) {
+            $abs = public_path($announcement->image_path);
+            if (is_file($abs)) @unlink($abs);
+            $announcement->update(['image_path' => null]);
+        }
+        return response()->json(['ok' => true]);
+    }
+
+    private function compressAnnImage(string $src, string $dest, int $maxW, int $q): bool
+    {
+        $info = @getimagesize($src);
+        if (! $info) return false;
+        [$w, $h, $type] = $info;
+        $im = match ($type) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($src),
+            IMAGETYPE_PNG  => @imagecreatefrompng($src),
+            IMAGETYPE_WEBP => @imagecreatefromwebp($src),
+            IMAGETYPE_GIF  => @imagecreatefromgif($src),
+            default => null,
+        };
+        if (! $im) return false;
+        if ($w > $maxW) {
+            $nh = (int) ($h * $maxW / $w);
+            $r = imagecreatetruecolor($maxW, $nh);
+            imagecopyresampled($r, $im, 0, 0, 0, 0, $maxW, $nh, $w, $h);
+            imagedestroy($im); $im = $r;
+        }
+        $ok = imagejpeg($im, $dest, $q);
+        imagedestroy($im);
+        return (bool) $ok;
+    }
+
 
     /**
      * GET /api/suggestions?q=Pas&scope=person|hymn|bible|any

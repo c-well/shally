@@ -69,6 +69,20 @@
   .ac.show { display: block; }
   .ac-item { padding: 10px 13px; font-size: 14px; color: var(--ink); cursor: pointer; white-space: nowrap; }
   .ac-item.active { background: color-mix(in srgb, var(--teal) 12%, #fff); color: var(--teal-dark); }
+
+  /* Announcement media */
+  .ann-wrap { background: #fff; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .ann-wrap .item { border: 0; border-radius: 0; }
+  .ic.on { color: var(--teal); background: color-mix(in srgb, var(--teal) 12%, transparent); }
+  .ann-media { display: none; flex-direction: column; gap: 9px; padding: 12px 14px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--teal) 3%, #fff); }
+  .ann-media.open { display: flex; }
+  .ann-photo { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--teal); cursor: pointer; border: 1px dashed var(--line); border-radius: 6px; padding: 9px 12px; background: #fff; align-self: flex-start; }
+  .ann-photo:hover { border-color: var(--teal); }
+  .ann-photo input { display: none; }
+  .ann-thumb { max-height: 96px; border-radius: 5px; align-self: flex-start; }
+  .ann-img-remove { align-self: flex-start; font: inherit; font-size: 11px; color: var(--ink-soft); background: none; border: 0; cursor: pointer; text-decoration: underline; }
+  .ann-vid-lbl { display: flex; flex-direction: column; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+  .ann-vid-lbl input { font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: var(--ink); text-transform: none; letter-spacing: 0; }
 </style>
 @include('partials.theme-vars')
 {{-- Deliberately NOT including admin _typography here — bulletin v2 is held to
@@ -154,12 +168,28 @@
   <div class="sec-label"><span>Announcements</span></div>
   <div class="items" id="anns">
     @foreach ($bulletin->announcements as $a)
-      <div class="item" data-aid="{{ $a->id }}">
-        <div class="fields" style="grid-template-columns:1fr 1.6fr">
-          <input data-af="title" value="{{ $a->title }}" placeholder="Title">
-          <input data-af="detail" value="{{ $a->detail }}" placeholder="Detail">
+      <div class="ann-wrap" data-aid="{{ $a->id }}">
+        <div class="item">
+          <div class="fields" style="grid-template-columns:1fr 1.6fr">
+            <input data-af="title" value="{{ $a->title }}" placeholder="Title">
+            <input data-af="detail" value="{{ $a->detail }}" placeholder="Detail">
+          </div>
+          <div class="ctrls">
+            <button class="ic ann-media-toggle {{ ($a->image_path || $a->video_url) ? 'on' : '' }}" title="Image / video">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </button>
+            <button class="ic adel" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+          </div>
         </div>
-        <div class="ctrls"><button class="ic adel" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div>
+        <div class="ann-media">
+          <label class="ann-photo">
+            <span class="ann-photo-state">{{ $a->image_path ? 'Image attached — tap to replace' : 'Add an image' }}</span>
+            <input type="file" class="ann-img" accept="image/*">
+          </label>
+          @if ($a->image_path)<img class="ann-thumb" src="/{{ $a->image_path }}" alt="">@endif
+          <button type="button" class="ann-img-remove" data-url="{{ route('bulletins.announcements.image.remove', [$bulletin, $a]) }}" style="{{ $a->image_path ? '' : 'display:none' }}">Remove image</button>
+          <label class="ann-vid-lbl">Video link <input data-af="video_url" value="{{ $a->video_url }}" placeholder="YouTube or Vimeo URL"></label>
+        </div>
       </div>
     @endforeach
   </div>
@@ -246,24 +276,62 @@
     });
   });
 
-  // ── announcements ──
+  // ── announcements (title/detail/video autosave; image upload; media panel) ──
   var anns = document.getElementById('anns');
   anns.addEventListener('input', function (e) {
     var inp = e.target.closest('input[data-af]'); if (!inp) return;
     var row = inp.closest('[data-aid]'); var id = row.getAttribute('data-aid'); var field = inp.getAttribute('data-af');
     debounce('ann' + id + field, function () { api('PATCH', '/bulletins/' + BID + '/announcements/' + id, (function(o){o[field]=inp.value;return o;})({})).then(savedPip); });
   });
+  anns.addEventListener('change', function (e) {
+    var fi = e.target.closest('.ann-img'); if (!fi) return;
+    var wrap = fi.closest('[data-aid]'), id = wrap.getAttribute('data-aid');
+    var f = fi.files && fi.files[0]; if (!f) return;
+    var fd = new FormData(); fd.append('image', f);
+    var state = wrap.querySelector('.ann-photo-state'); if (state) state.textContent = 'Uploading…';
+    fetch('/bulletins/' + BID + '/announcements/' + id + '/image', { method: 'POST', headers: { 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd })
+      .then(function (r) { return r.json(); }).then(function (d) {
+        if (d.ok) {
+          if (state) state.textContent = 'Image attached — tap to replace';
+          var media = wrap.querySelector('.ann-media'), thumb = media.querySelector('.ann-thumb');
+          if (!thumb) { thumb = document.createElement('img'); thumb.className = 'ann-thumb'; media.insertBefore(thumb, media.querySelector('.ann-img-remove')); }
+          thumb.src = d.image_url + '?v=' + Date.now();
+          var rm = media.querySelector('.ann-img-remove'); if (rm) rm.style.display = '';
+          wrap.querySelector('.ann-media-toggle').classList.add('on'); savedPip();
+        } else if (state) { state.textContent = 'Could not add that image'; }
+      }).catch(function () { if (state) state.textContent = 'Upload error'; });
+  });
   anns.addEventListener('click', function (e) {
-    var row = e.target.closest('[data-aid]'); if (!row || !e.target.closest('.adel')) return;
-    window.shConfirm('Delete this announcement?', { okLabel: 'Delete', danger: true }).then(function (ok) {
-      if (!ok) return; api('DELETE', '/bulletins/' + BID + '/announcements/' + row.getAttribute('data-aid')).then(function () { row.remove(); savedPip(); });
-    });
+    var wrap = e.target.closest('[data-aid]'); if (!wrap) return;
+    if (e.target.closest('.ann-media-toggle')) { wrap.querySelector('.ann-media').classList.toggle('open'); return; }
+    if (e.target.closest('.ann-img-remove')) {
+      var rm = e.target.closest('.ann-img-remove');
+      api('DELETE', rm.getAttribute('data-url')).then(function () {
+        var t = wrap.querySelector('.ann-thumb'); if (t) t.remove(); rm.style.display = 'none';
+        var st = wrap.querySelector('.ann-photo-state'); if (st) st.textContent = 'Add an image';
+        if (!wrap.querySelector('[data-af="video_url"]').value) wrap.querySelector('.ann-media-toggle').classList.remove('on');
+        savedPip();
+      });
+      return;
+    }
+    if (e.target.closest('.adel')) {
+      window.shConfirm('Delete this announcement?', { okLabel: 'Delete', danger: true }).then(function (ok) {
+        if (!ok) return; api('DELETE', '/bulletins/' + BID + '/announcements/' + wrap.getAttribute('data-aid')).then(function () { wrap.remove(); savedPip(); });
+      });
+      return;
+    }
   });
   document.getElementById('add-ann').addEventListener('click', function () {
     api('POST', '/bulletins/' + BID + '/announcements', { title: '' }).then(function (res) {
       if (res.ok && res.d.ok) {
-        var a = res.d.announcement; var div = document.createElement('div'); div.className = 'item'; div.setAttribute('data-aid', a.id);
-        div.innerHTML = '<div class="fields" style="grid-template-columns:1fr 1.6fr"><input data-af="title" value="" placeholder="Title"><input data-af="detail" value="" placeholder="Detail"></div><div class="ctrls"><button class="ic adel" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div>';
+        var a = res.d.announcement, div = document.createElement('div'); div.className = 'ann-wrap'; div.setAttribute('data-aid', a.id);
+        div.innerHTML =
+          '<div class="item"><div class="fields" style="grid-template-columns:1fr 1.6fr"><input data-af="title" value="" placeholder="Title"><input data-af="detail" value="" placeholder="Detail"></div>' +
+          '<div class="ctrls"><button class="ic ann-media-toggle" title="Image / video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>' +
+          '<button class="ic adel" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div></div>' +
+          '<div class="ann-media"><label class="ann-photo"><span class="ann-photo-state">Add an image</span><input type="file" class="ann-img" accept="image/*"></label>' +
+          '<button type="button" class="ann-img-remove" data-url="/bulletins/' + BID + '/announcements/' + a.id + '/image" style="display:none">Remove image</button>' +
+          '<label class="ann-vid-lbl">Video link <input data-af="video_url" value="" placeholder="YouTube or Vimeo URL"></label></div>';
         anns.appendChild(div); div.querySelector('input').focus(); savedPip();
       }
     });
