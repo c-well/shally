@@ -824,7 +824,8 @@
   <p class="section-sub">Streaming each Sabbath on YouTube. Catch up on a missed week below.</p>
 
   <div class="youtube-wrap">
-    <iframe src="https://www.youtube.com/embed/videoseries?list=UUe0XMb5MrFYVqV4OyUNkBmw"
+    @php $latestVid = \App\Models\AppSetting::get('latest_service_video_id'); @endphp
+  <iframe src="{{ $latestVid ? 'https://www.youtube.com/embed/'.$latestVid.'?rel=0' : 'https://www.youtube.com/embed/videoseries?list=UUe0XMb5MrFYVqV4OyUNkBmw' }}"
             title="Shalom SDA latest service"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
