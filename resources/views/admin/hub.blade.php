@@ -179,7 +179,14 @@
       <span class="card-arrow">Open &rarr;</span>
     </a>
 
-        <a href="{{ route('admin.events') }}" class="card">
+            <a href="{{ route('admin.bulletin') }}" class="card">
+      <span class="card-eyebrow">New</span>
+      <span class="card-title">Bulletin editor.</span>
+      <span class="card-sub">The new drill-through editor — every item inline, autosaves, works on phone and tablet. Switch back to classic anytime.</span>
+      <span class="card-arrow">Open &rarr;</span>
+    </a>
+
+<a href="{{ route('admin.events') }}" class="card">
       <span class="card-eyebrow">Calendar</span>
       <span class="card-title">Events.</span>
       <span class="card-sub">Add an event in seconds — name, date, flyer. It goes live as you fill it in; take anything off the site anytime.</span>
