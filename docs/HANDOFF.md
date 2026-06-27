@@ -63,8 +63,9 @@ Full `<!doctype html>` doc (not a layout component). `<head>`: meta + `@include(
    - **Media storage: `public/intake-media/`** — NOT `public/intake/` (that collides with the `/intake/{slug}` route).
 2. **Bulletin editor v2** — `/admin/bulletin` (`AdminBulletinController`, `resources/views/admin/bulletin.blade.php`). Frictionless drill-through: every order-of-service item is an inline part/person field that autosaves; reorder ↑↓, add item/section, delete, edit title/date/theme, switch bulletins, Go Live; announcements too. **Person field autocompletes from past entries** via `/api/suggestions` (scope rules: part says hymn/song→hymnal, scripture→Bible, else past people). It's a NEW front door onto the existing `BulletinController` endpoints — **v1 (the inline editor on `/welcome`) is UNTOUCHED and the default.** Toggle: `AppSetting('bulletin_editor')` v1|v2; opening v2 makes it the admin's default, the "Classic editor" button flips back.
 3. **Clerk events manager** — `/admin/events` (Rosharde, clerk). Quick-add name+date+flyer, autosave, auto-publish, tightened list, on/off-the-website toggle.
-4. **Messages** — /messages (public, Spiritual Life menu). Public sermon-audio archive over published `PeaceSermon`s, on-brand audio player (lazy, one-at-a-time). `MessagesController` + `resources/views/messages/index.blade.php`.
-5. **Latest-service failsafe** — `sermons:refresh-latest` probes the channel's **/streams** (UULV live-streams playlist) newest-first via yt-dlp, caches the first watchable full service (≥10 min) in `AppSetting('latest_service_video_id')`; `landing.blade.php` embeds that id (playlist fallback). Scheduled daily 04:10 + Sat 21:00. **Rolls back through pulled/missing weeks.**
+4. **Kids Scripture games** — /kids (3 games: word-search, memory-match, hidden-words; player = a name kept by a localStorage token; autosave + gentle stars leaderboard). Admin level-builder at /admin/games. Tables `game_levels`/`game_players`/`game_progress`; 16 curated KJV levels seeded. `KidsController` + `AdminGameLevelsController`; views `resources/views/kids/*` + `admin/games.blade.php`. Built to teach the Word, not entertain.
+5. **Messages** — /messages (public, Spiritual Life menu). Public sermon-audio archive over published `PeaceSermon`s, on-brand audio player (lazy, one-at-a-time). `MessagesController` + `resources/views/messages/index.blade.php`.
+6. **Latest-service failsafe** — `sermons:refresh-latest` probes the channel's **/streams** (UULV live-streams playlist) newest-first via yt-dlp, caches the first watchable full service (≥10 min) in `AppSetting('latest_service_video_id')`; `landing.blade.php` embeds that id (playlist fallback). Scheduled daily 04:10 + Sat 21:00. **Rolls back through pulled/missing weeks.**
 
 ## Standing rules (from Karlon — important)
 - Outbound mail: **CC contact@c-wellpics.com**. Mail is sendmail; from app@thechurchofpeace.org.
@@ -76,29 +77,7 @@ Full `<!doctype html>` doc (not a layout component). `<head>`: meta + `@include(
 - **Announcements media (DB migrated, controller done, NOT yet in public render):** `image_path` + `video_url` added to `announcements` table (migrated). `BulletinController::uploadAnnouncementImage/removeAnnouncementImage` work. Bulletin v2 editor has per-announcement media panel (image upload + video link). **TODO:** public render in `welcome.blade.php` — newest ann shows image/video inline, older ones collapsed.
 - **Form builder (BUILT — /admin/intake + /admin/intake/builder):** Andre can create/edit intake forms from the UI. Index lists all forms. Builder: title/slug/output-type/intro/thank-you, visual field editor (drag-to-reorder, all field types, show-if conditions, options), notifications, slide style. Save creates/updates `IntakeForm`. Gallery link from index row.
 - **Announcements media (asked for, NOT built):"** let an announcement carry an optional image and/or a video link, shown **nested/collapsed and lazy-loaded ("ajaxed out") on demand** in the public bulletin. Suggested: add `image_path` + `video_url` to the `announcements` table; in bulletin v2 add a small "＋ media" affordance per announcement (upload + link); public render shows a 📷/▶ chip that expands/loads on click. Keep it secondary/clean.
-- **Kids area + games — Karlon's FULL spec (wants it for a Sabbath; build it RIGHT, not rushed):**
-
-  **Purpose first — this is the whole point.** NOT entertainment. Many Adventists balk at "games on Sabbath," so frame and build it so it **teaches, reminds, and brings the Word before you** — Scripture engagement, never distraction. Every game centers on a passage/verse/book; "winning" = knowing the Word better. Lead with that framing in the copy.
-
-  **Requirements:**
-  - **Content source:** the sermons (PeaceSermon) AND a chosen **Bible book** — the player/leader can pick a book and the game adapts its content to that book (and to a sermon).
-  - **Admin-authored levels:** admins create levels/difficulty so **ages 4–9** each get age-appropriate content, plus a **teens** version with more complexity. Levels are DATA (a table), editable in /admin.
-  - **Autosave** progress as they play.
-  - **Players in a DB + leaderboards:** capture a name; track progress/score; **gentle** leaderboards to *encourage doing better, NOT to compete* — frame as growth/streaks, not ranking pressure.
-  - **Polish:** stand-on-business animations, clean, **loads properly** (no jank/FOUC). Considered aesthetic but kid-warm (bigger, friendlier, still restrained).
-
-  **Game types (original vision):**
-  - **Scripture word-search / "Sudoku"** (older kids/teens/adults): puzzle over a passage's key words / number-Sudoku that reveals a verse on completion.
-  - **Hidden-words tap-reveal** (little kids): a Bible scene; tapping reveals hidden words/objects.
-  - **Memory-match** (little kids): flip-card matching of Bible words/images.
-
-  **Suggested architecture:**
-  - Tables: `game_levels` (admin: name, age_band [4-9|teens], book/passage or sermon_id, config JSON), `game_players` (name), `game_progress` (player_id, level_id, state JSON, score, completed_at) for autosave + leaderboards.
-  - `/kids` index (Considered, kid-warm) → pick a game + book/level.
-  - Each game = self-contained Blade + inline JS (client-side play), autosaving via a small JSON endpoint.
-  - Admin level-builder under /admin (pick book, age band, difficulty, content) — and "we as admin can create levels too."
-  - Menu entry (its own "Kids" or under Spiritual Life).
-
+- **Kids games — BUILT (word-search, memory-match, hidden-words, admin builder, autosave, names, leaderboard).** Remaining nice-to-haves from Karlon's spec: a BOOK picker on /kids (levels are already book-tagged, just add a filter like the age chips); a few more curated levels per book; optionally tie a level to a specific sermon (PeaceSermon). The 'choose a book and the game adjusts' is mostly a filter away.
 - **Form builder (Phase 3):** a phone-friendly visual builder so Andre mints new `/intake/<slug>` forms himself (this is also where "generate form links on the fly" lands). The engine already supports arbitrary schemas — this is the UI to author `IntakeForm` rows.
 - **Bulletin v1→v2:** eventually retire the `/welcome` inline editor once v2 is proven; keep both for now.
 

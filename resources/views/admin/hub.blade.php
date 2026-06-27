@@ -193,6 +193,13 @@
       <span class="card-arrow">Open &rarr;</span>
     </a>
 
+    <a href="{{ route('admin.games') }}" class="card">
+      <span class="card-eyebrow">Kids</span>
+      <span class="card-title">Scripture games.</span>
+      <span class="card-sub">Build the verse games for the children — pick a book, a game, an age. They appear at /kids.</span>
+      <span class="card-arrow">Open &rarr;</span>
+    </a>
+
 <a href="{{ route('admin.intake.index') }}" class="card">
       <span class="card-eyebrow">Forms</span>
       <span class="card-title">Intake.</span>

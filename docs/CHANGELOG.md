@@ -1,5 +1,9 @@
 # Shalom — Changelog
 
+## 2026-06-27 · Kids Scripture games — all three live + admin builder
+
+/kids now has three games that bring the Word before the children — **word-search**, **memory-match**, and **hidden-words** (tap-to-reveal, read aloud). Players are just a name (kept on the device), progress autosaves, and gentle stars encourage growth, not competition. Leaders build levels at **/admin/games** (pick a book, a game, an age). 16 curated KJV levels seeded. Built to teach, not entertain.
+
 ## 2026-06-26 · Handoff: full design system + games spec
 
 docs/HANDOFF.md now documents the **complete design system** (exact palette vars, fonts, the "Considered" language, page scaffold, shared interactions, verify workflow) so a second Claude matches the site's look pixel-for-pixel, plus **Karlon's full games/kids spec** (teaches the Word — not entertainment; book-selectable; admin-authored levels for ages 4–9 + teens; autosave; player names + gentle leaderboards). Standing rule added: update HANDOFF + CHANGELOG at the end of every session.
