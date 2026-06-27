@@ -6,18 +6,20 @@
 <title>Forms — Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--parchment);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;min-height:100dvh;-webkit-font-smoothing:antialiased}
+html,body{background:var(--parchment);color:var(--ink);font-family:'Poppins',system-ui,sans-serif;min-height:100dvh;-webkit-font-smoothing:antialiased}
 *:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px}
-.top{padding:16px clamp(16px,5vw,32px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:color-mix(in srgb,var(--parchment) 94%,transparent);backdrop-filter:blur(6px);z-index:10}
-.top a,.top .lnk{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--ink-soft)}
-.top a:hover,.top .lnk:hover{color:var(--teal)}
-.newbtn{font-family:inherit;font-size:12px;font-weight:600;padding:10px 20px;border-radius:7px;border:0;background:var(--teal);color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.top{padding:22px clamp(20px,5vw,40px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.top a{font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--ink-soft)}
+.top a:hover{color:var(--teal)}
+.top .meta{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--ink-soft);opacity:.65}
+main{max-width:700px;margin:0 auto;padding:clamp(40px,7vh,72px) clamp(20px,5vw,32px) 80px}
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}
+h1{font-family:'JetBrains Mono',monospace;font-size:clamp(24px,4vw,34px);font-weight:500;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+.newbtn{font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:11px 20px;border-radius:7px;border:0;background:var(--teal);color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;white-space:nowrap}
 .newbtn:hover{background:var(--teal-dark)}
-main{max-width:700px;margin:0 auto;padding:clamp(24px,5vh,44px) clamp(16px,5vw,28px) 80px}
-h1{font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:-.02em;margin-bottom:28px}
 .empty{padding:48px 24px;text-align:center;border:1px dashed var(--line);border-radius:10px;color:var(--ink-soft)}
 .empty .big{font-size:22px;font-weight:600;color:var(--ink);margin-bottom:10px}
 .forms{display:flex;flex-direction:column;gap:10px}
@@ -38,11 +40,14 @@ h1{font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:-.02em;margin-b
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme','default') }}">
 <div class="top">
   <a href="{{ route('admin.hub') }}">← Admin</a>
-  <a href="{{ route('admin.intake.create') }}" class="newbtn">＋ New form</a>
+  <span class="meta">admin · {{ auth()->user()->name ?? '' }}</span>
 </div>
 
 <main>
-  <h1>Forms</h1>
+  <div class="page-head">
+    <h1>Forms</h1>
+    <a href="{{ route('admin.intake.create') }}" class="newbtn">＋ New form</a>
+  </div>
 
   @if ($forms->isEmpty())
     <div class="empty">
