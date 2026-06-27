@@ -26,6 +26,51 @@ class AdminIntakeController extends Controller
         return view('admin.intake.index', ['forms' => $forms]);
     }
 
+
+    public function create(): View
+    {
+        return view('admin.intake.builder', ['form' => null]);
+    }
+
+    public function builderEdit(IntakeForm $form): View
+    {
+        return view('admin.intake.builder', compact('form'));
+    }
+
+    public function save(Request $request, ?IntakeForm $form = null): JsonResponse
+    {
+        $data = $request->validate([
+            'title'           => 'required|string|max:180',
+            'slug'            => 'required|string|max:80|regex:/^[a-z0-9-]+$/',
+            'output_type'     => 'required|in:none,graduation',
+            'intro'           => 'nullable|string|max:1000',
+            'schema'          => 'required|array',
+            'schema.fields'   => 'required|array|min:1',
+            'settings'        => 'nullable|array',
+        ]);
+        $isNew = ($form === null || ! $form->exists);
+        if ($isNew) {
+            if (IntakeForm::where('slug', $data['slug'])->exists()) {
+                return response()->json(['ok' => false, 'message' => 'That slug is already taken — choose another URL.'], 422);
+            }
+        }
+        $payload = [
+            'title'       => $data['title'],
+            'output_type' => $data['output_type'],
+            'intro'       => $data['intro'] ?? null,
+            'schema'      => ['fields' => $data['schema']['fields']],
+            'settings'    => $data['settings'] ?? [],
+            'is_active'   => true,
+        ];
+        if ($isNew) {
+            $payload['slug']       = $data['slug'];
+            $payload['created_by'] = auth()->id();
+            $form = IntakeForm::create($payload);
+        } else {
+            $form->update($payload);
+        }
+        return response()->json(['ok' => true, 'slug' => $form->slug]);
+    }
     public function submissions(IntakeForm $form): View
     {
         $live    = $form->submissions()->where('status', 'live')->latest('id')->get();
