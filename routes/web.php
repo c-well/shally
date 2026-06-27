@@ -203,6 +203,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/intake-sub/{submission}/remove', [\App\Http\Controllers\AdminIntakeController::class, 'remove'])->name('admin.intake.remove');
         Route::post('/admin/intake-sub/{submission}/restore',[\App\Http\Controllers\AdminIntakeController::class, 'restore'])->name('admin.intake.restore');
         Route::post('/admin/intake/{form}/menu', [\App\Http\Controllers\AdminIntakeController::class, 'toggleMenu'])->name('admin.intake.menu');
+        Route::get   ('/admin/games',                 [\App\Http\Controllers\AdminGameLevelsController::class, 'index'])->name('admin.games');
+        Route::post  ('/admin/games',                 [\App\Http\Controllers\AdminGameLevelsController::class, 'store'])->name('admin.games.store');
+        Route::patch ('/admin/games/{level}',         [\App\Http\Controllers\AdminGameLevelsController::class, 'update'])->name('admin.games.update');
+        Route::post  ('/admin/games/{level}/toggle',  [\App\Http\Controllers\AdminGameLevelsController::class, 'toggle'])->name('admin.games.toggle');
+        Route::delete('/admin/games/{level}',         [\App\Http\Controllers\AdminGameLevelsController::class, 'destroy'])->name('admin.games.destroy');
         Route::post('/admin/intake-sub/{submission}/edit', [\App\Http\Controllers\AdminIntakeController::class, 'editSubmission'])->name('admin.intake.edit');
         Route::post('/admin/intake/{form}/bulk-text', [\App\Http\Controllers\AdminIntakeController::class, 'bulkText'])->name('admin.intake.bulktext');
 

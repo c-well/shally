@@ -49,6 +49,22 @@
   .stars-big { font-size: 40px; letter-spacing: 6px; margin-top: 14px; }
   .pop { animation: pop .5s ease; }
   @keyframes pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.12)} 100%{transform:scale(1)} }
+  /* Memory match */
+  .mm { margin: 26px auto 0; display: grid; gap: 10px; max-width: 460px; }
+  .mcard { aspect-ratio: 3/4; border: 2px solid var(--teal); border-radius: 14px; background: var(--teal); color: #fff; font-weight: 600; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 6px; text-align: center; }
+  .mcard .w { display: none; }
+  .mcard.up, .mcard.done { background: #fff; color: var(--ink); font-size: clamp(13px,3.6vw,17px); animation: flip .34s ease; }
+  .mcard.up .q, .mcard.done .q { display: none; }
+  .mcard.up .w, .mcard.done .w { display: inline; }
+  .mcard.done { background: color-mix(in srgb, var(--teal) 14%, #fff); }
+  @keyframes flip { 0% { transform: rotateY(82deg); } 100% { transform: rotateY(0); } }
+
+  /* Hidden words */
+  .hw { margin: 26px auto 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 600px; }
+  .htile { font: inherit; font-size: clamp(17px,4vw,21px); font-weight: 600; padding: 12px 18px; border-radius: 12px; border: 2px dashed var(--line); background: #fff; color: var(--ink-soft); cursor: pointer; transition: all .18s; }
+  .htile:hover { border-color: var(--teal); }
+  .htile.on { border-style: solid; border-color: var(--teal); background: color-mix(in srgb, var(--teal) 10%, #fff); color: var(--ink); animation: pop .35s ease; cursor: default; }
+
   .soon { margin-top: 40px; padding: 30px; background: #fff; border: 1px dashed var(--line); border-radius: 14px; color: var(--ink-soft); }
 </style>
 @include('partials.theme-vars')
@@ -68,8 +84,12 @@
     <p class="hint">Find every word hidden in the puzzle — then you'll see the whole verse.</p>
     <div class="ws"><div class="ws-grid" id="grid"></div></div>
     <div class="words" id="wordlist"></div>
-  @else
-    <div class="soon">This game is being built — check back soon.</div>
+  @elseif ($level->game_type === 'memory_match')
+    <p class="hint">Flip the cards two at a time and find the matching words.</p>
+    <div class="mm" id="mm"></div>
+  @elseif ($level->game_type === 'hidden_words')
+    <p class="hint">Tap each word to uncover the verse — say it out loud!</p>
+    <div class="hw" id="hw"></div>
   @endif
 </main>
 
@@ -95,7 +115,7 @@
   </div>
 </div>
 
-@php $levelData = ['id' => $level->id, 'type' => $level->game_type, 'band' => $level->age_band, 'reference' => $level->reference]; @endphp
+@php $levelData = ['id' => $level->id, 'type' => $level->game_type, 'band' => $level->age_band, 'reference' => $level->reference, 'verse' => $level->verse_text]; @endphp
 <script>
 const LEVEL = @json($levelData);
 const WORDS = @json($keywords);
@@ -126,9 +146,63 @@ function save(state, completed, stars) {
     .then(r => r.json()).then(d => { if (d.ok) { player.total_stars = d.total_stars; localStorage.setItem('cop_kid', JSON.stringify(player)); paintWho(); } });
 }
 
-// ── Word search ─────────────────────────────────────────────────────
 function start() {
-  if (LEVEL.type !== 'word_search') return;
+  if (LEVEL.type === 'word_search') startWordSearch();
+  else if (LEVEL.type === 'memory_match') startMemory();
+  else if (LEVEL.type === 'hidden_words') startHidden();
+}
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+// ── Memory match ────────────────────────────────────────────────────
+function startMemory() {
+  const words = WORDS.slice(0, Math.min(LEVEL.band === 'little' ? 5 : 6, WORDS.length));
+  const deck = shuffle(words.concat(words));
+  const mm = document.getElementById('mm');
+  mm.style.gridTemplateColumns = 'repeat(' + Math.min(4, Math.ceil(deck.length / 3)) + ', 1fr)';
+  deck.forEach(function (w) {
+    const card = document.createElement('button'); card.className = 'mcard'; card.dataset.w = w;
+    card.innerHTML = '<span class="q">?</span><span class="w">' + w + '</span>';
+    mm.appendChild(card);
+  });
+  let flipped = [], matched = 0, lock = false;
+  mm.addEventListener('click', function (e) {
+    const card = e.target.closest('.mcard');
+    if (!card || lock || card.classList.contains('done') || card.classList.contains('up')) return;
+    card.classList.add('up'); flipped.push(card);
+    if (flipped.length === 2) {
+      lock = true;
+      if (flipped[0].dataset.w === flipped[1].dataset.w) {
+        flipped.forEach(c => { c.classList.add('done'); c.classList.remove('up'); });
+        matched++; flipped = []; lock = false;
+        save({ matched: matched }, matched === words.length, 3);
+        if (matched === words.length) win();
+      } else {
+        setTimeout(function () { flipped.forEach(c => c.classList.remove('up')); flipped = []; lock = false; }, 800);
+      }
+    }
+  });
+}
+
+// ── Hidden words (tap to reveal, read aloud) ────────────────────────
+function startHidden() {
+  const words = LEVEL.verse.replace(/[.;,:!?]/g, '').split(/\s+/).filter(Boolean);
+  const hw = document.getElementById('hw');
+  let revealed = 0;
+  words.forEach(function (w) {
+    const tile = document.createElement('button'); tile.className = 'htile'; tile.textContent = '• • •';
+    tile.addEventListener('click', function () {
+      if (tile.classList.contains('on')) return;
+      tile.classList.add('on'); tile.textContent = w;
+      try { const u = new SpeechSynthesisUtterance(w); u.rate = 0.82; speechSynthesis.speak(u); } catch (e) {}
+      revealed++; save({ revealed: revealed }, revealed === words.length, 3);
+      if (revealed === words.length) win();
+    });
+    hw.appendChild(tile);
+  });
+}
+
+// ── Word search ─────────────────────────────────────────────────────
+function startWordSearch() {
   const size = LEVEL.band === 'teens' ? 13 : 11;
   const dirs = LEVEL.band === 'teens' ? [[0,1],[1,0],[1,1],[-1,1],[0,-1],[1,-1]] : [[0,1],[1,0],[1,1]];
   const words = WORDS.filter(w => w.length <= size);
