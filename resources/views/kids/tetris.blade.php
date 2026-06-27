@@ -23,10 +23,17 @@
   .hdr h1 { font-family: 'IBM Plex Serif', serif; font-size: clamp(20px,4.5vw,28px); font-weight: 500; }
 
   .wrap { display: flex; gap: 18px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
-  .board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; width: min(300px, 86vw); aspect-ratio: 10/18; background: color-mix(in srgb, var(--ink) 8%, transparent); padding: 4px; border-radius: 10px; touch-action: none; }
-  .tc { background: var(--cream); border-radius: 3px; }
-  .tc.c1 { background: #2f8f9d; } .tc.c2 { background: #d4a24a; } .tc.c3 { background: #8a6db0; }
-  .tc.c4 { background: #5aa56b; } .tc.c5 { background: #c97b5a; } .tc.c6 { background: #5a7fb0; } .tc.c7 { background: #b0813c; }
+  .board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; width: min(304px, 86vw); aspect-ratio: 10/18; background: linear-gradient(162deg, #fbf6ea, #f2ebd8); padding: 7px; border-radius: 16px; border: 1px solid var(--line); box-shadow: inset 0 2px 12px rgba(26,35,50,.07), 0 14px 36px -20px rgba(26,35,50,.32); touch-action: none; }
+  .tc { background: rgba(26,35,50,.04); border-radius: 4px; }
+  .tc.c1, .tc.c2, .tc.c3, .tc.c4, .tc.c5, .tc.c6, .tc.c7 {
+    background: linear-gradient(150deg, color-mix(in srgb, var(--bc) 80%, #fff), var(--bc) 56%, color-mix(in srgb, var(--bc) 82%, #000));
+    box-shadow: inset 0 1.5px 0 rgba(255,255,255,.5), inset 0 -3px 5px rgba(0,0,0,.17), 0 1px 2px rgba(0,0,0,.14);
+    border-radius: 5px;
+  }
+  .tc.c1 { --bc: #2e7e8c; } .tc.c2 { --bc: #c0923f; } .tc.c3 { --bc: #7d6796; } .tc.c4 { --bc: #5f9469; } .tc.c5 { --bc: #bd7a5a; } .tc.c6 { --bc: #5e7aa0; } .tc.c7 { --bc: #a8883d; }
+  .tc.ghost { background: transparent !important; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bc) 36%, transparent) !important; }
+  .tc.clearing { animation: clearFlash .24s ease forwards; }
+  @keyframes clearFlash { 0% { background: #fff; box-shadow: 0 0 16px rgba(255,255,255,.95); transform: scale(1); } 100% { background: #fff; opacity: .12; transform: scale(.82); } }
 
   .side { width: min(300px, 86vw); display: flex; flex-direction: column; gap: 14px; }
   .stats { display: flex; gap: 14px; font-size: 13px; color: var(--ink-soft); }
@@ -175,20 +182,39 @@ function spawn() { const t = nextType; nextType = rand(TYPES); const s = SHAPES[
 function speed() { const lv = Math.floor(lines / 8); dropMs = Math.max(130, (720 - lv * 55) * penalty); }
 function lockPiece() {
   cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS) board[R][X] = cur.c; } }));
-  clearLines(); pieceCount++;
+  cur = null;
+  const full = [];
+  for (let r = 0; r < ROWS; r++) if (board[r].every(c => c)) full.push(r);
+  render();
+  if (full.length) animateClear(full); else afterLock();
+}
+function animateClear(full) {
+  paused = true;
+  full.forEach(r => { for (let c = 0; c < COLS; c++) boardEl.children[r * COLS + c].classList.add('clearing'); });
+  setTimeout(function () {
+    board = board.filter((_, r) => full.indexOf(r) === -1);
+    while (board.length < ROWS) board.unshift(Array(COLS).fill(0));
+    const n = full.length;
+    lines += n; score += [0, 40, 100, 300, 1200][n]; revealed = Math.min(words.length, revealed + n);
+    renderStats(); renderVerse(); speed(); paused = false; render();
+    if (revealed >= words.length) { winVerse(); return; }
+    afterLock();
+  }, 250);
+}
+function afterLock() {
+  pieceCount++;
   if (!over) { spawn(); if (pieceCount % 5 === 0 && QUESTIONS.length) askQuestion(); }
   render();
 }
-function clearLines() {
-  let n = 0;
-  for (let r = ROWS - 1; r >= 0; r--) { if (board[r].every(c => c)) { board.splice(r, 1); board.unshift(Array(COLS).fill(0)); n++; r++; } }
-  if (n) { lines += n; score += [0, 40, 100, 300, 1200][n]; revealed = Math.min(words.length, revealed + n); renderStats(); renderVerse(); speed(); if (revealed >= words.length) winVerse(); }
-}
 function render() {
   const disp = board.map(r => r.slice());
-  if (cur && !over) cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS && X >= 0 && X < COLS) disp[R][X] = cur.c; } }));
+  if (cur && !over) {
+    let gr = cur.r; while (!collide(cur.m, gr + 1, cur.x)) gr++;                 // ghost landing row
+    cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = gr + i, X = cur.x + j; if (R >= 0 && R < ROWS && X >= 0 && X < COLS && !disp[R][X]) disp[R][X] = -cur.c; } }));
+    cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS && X >= 0 && X < COLS) disp[R][X] = cur.c; } }));
+  }
   const cells = boardEl.children;
-  for (let i = 0; i < ROWS * COLS; i++) cells[i].className = 'tc' + (disp[(i / COLS) | 0][i % COLS] ? ' c' + disp[(i / COLS) | 0][i % COLS] : '');
+  for (let i = 0; i < ROWS * COLS; i++) { const v = disp[(i / COLS) | 0][i % COLS]; cells[i].className = v > 0 ? 'tc c' + v : (v < 0 ? 'tc ghost c' + (-v) : 'tc'); }
 }
 function renderStats() { document.getElementById('st-lines').textContent = lines; document.getElementById('st-score').textContent = score; }
 function renderVerse() { verseEl.innerHTML = words.map((w, i) => i < revealed ? '<span class="vw got">' + w + '</span>' : '<span class="vw">' + w.replace(/[A-Za-z0-9]/g, '_') + '</span>').join(' '); }

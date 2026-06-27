@@ -1,5 +1,9 @@
 # Shalom — Changelog
 
+## 2026-06-27 · Verse Tetris — premium look
+
+Reskinned the Tetris board out of flat-square "8-bit" territory: refined gradient blocks with soft depth in a sophisticated palette, a soft glass board, a ghost piece showing the landing spot, and a smooth line-clear animation. Considered, not cheesy. (8-bit/retro skins can come later as an option.)
+
 ## 2026-06-27 · Verse Tetris (teens)
 
 A real Tetris for the teens at /kids. Clear a line and the next word of the memory verse appears — you build the Word by playing well. Every few pieces, a question about Jesus: get it right and you earn a "re-morph" to reshape the falling piece; get it wrong and the game speeds up. 24 Jesus questions + 4 verse levels seeded; selectable in the admin level builder. Bible knowledge IS the difficulty dial.
