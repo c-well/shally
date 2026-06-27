@@ -186,7 +186,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/changelog/{id}/restore',      [\App\Http\Controllers\AdminChangelogController::class, 'restore'])->name('admin.changelog.restore')->whereNumber('id');
         Route::get ('/admin/changes',                    [\App\Http\Controllers\AdminChangesController::class, 'index'])->name('admin.changes');
         Route::post('/admin/changes/{revision}/restore', [\App\Http\Controllers\AdminChangesController::class, 'restore'])->name('admin.changes.restore');
-        Route::get ('/admin/intake',                       [\App\Http\Controllers\AdminIntakeController::class, 'index'])->name('admin.intake.index');
+        Route::get ('/admin/intake/builder',      [\App\Http\Controllers\AdminIntakeController::class, 'create'])->name('admin.intake.create');
+    Route::post('/admin/intake/builder',      [\App\Http\Controllers\AdminIntakeController::class, 'save'])->name('admin.intake.store');
+    Route::get ('/admin/intake/{form}/builder', [\App\Http\Controllers\AdminIntakeController::class, 'builderEdit'])->name('admin.intake.builder.edit');
+    Route::post('/admin/intake/{form}/builder', [\App\Http\Controllers\AdminIntakeController::class, 'save'])->name('admin.intake.builder.update');
+    Route::get ('/admin/intake',                       [\App\Http\Controllers\AdminIntakeController::class, 'index'])->name('admin.intake.index');
         Route::get ('/admin/intake/{form}',                [\App\Http\Controllers\AdminIntakeController::class, 'submissions'])->name('admin.intake.submissions');
         Route::get ('/admin/intake/{form}/bulk',           [\App\Http\Controllers\AdminIntakeController::class, 'bulkDownload'])->name('admin.intake.bulk');
         Route::get ('/admin/intake-sub/{submission}/download',[\App\Http\Controllers\AdminIntakeController::class, 'download'])->name('admin.intake.download');
