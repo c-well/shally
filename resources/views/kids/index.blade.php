@@ -71,13 +71,14 @@
   @php
     $byType = $levels->groupBy('game_type');
     $meta = [
+      'verse_tetris' => ['Verse Tetris', '🧱', 'Real Tetris — clear lines to build the verse; questions about Jesus power you up. (Teens)'],
       'word_search'  => ['Word Search', '🔎', 'Find the hidden words, then read the whole verse.'],
       'memory_match' => ['Memory Match', '🃏', 'Flip and match the pairs to reveal the verse.'],
       'hidden_words' => ['Hidden Words', '✨', 'Tap to uncover each word of the verse.'],
     ];
   @endphp
 
-  @foreach (['word_search','memory_match','hidden_words'] as $gt)
+  @foreach (['verse_tetris','word_search','memory_match','hidden_words'] as $gt)
     @if (($byType[$gt] ?? collect())->isNotEmpty())
       <div class="sec" data-sec>
         <h2>{{ $meta[$gt][1] }} {{ $meta[$gt][0] }}</h2>

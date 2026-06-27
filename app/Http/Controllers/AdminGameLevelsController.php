@@ -48,7 +48,7 @@ class AdminGameLevelsController extends Controller
     {
         $req = $partial ? 'sometimes|' : 'required|';
         return $request->validate([
-            'game_type'  => $req . 'in:word_search,memory_match,hidden_words',
+            'game_type'  => $req . 'in:word_search,verse_tetris,memory_match,hidden_words',
             'age_band'   => $req . 'in:little,older,teens',
             'book'       => $req . 'string|max:40',
             'reference'  => $req . 'string|max:60',

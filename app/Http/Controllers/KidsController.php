@@ -31,6 +31,15 @@ class KidsController extends Controller
     public function play(GameLevel $level): View
     {
         abort_unless($level->is_active, 404);
+
+        if ($level->game_type === 'verse_tetris') {
+            return view('kids.tetris', [
+                'level'     => $level,
+                'questions' => \App\Models\GameQuestion::active()->inRandomOrder()->limit(24)
+                    ->get(['question', 'options', 'answer', 'teaching']),
+            ]);
+        }
+
         return view('kids.play', ['level' => $level, 'keywords' => $level->keywords()]);
     }
 
