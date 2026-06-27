@@ -357,6 +357,7 @@
           <a class="site-menu-sub-link" href="{{ route('hymnal') }}">Hymnal</a>
           <a class="site-menu-sub-link" href="{{ route('peace-notes') }}">Peace Notes</a>
           <a class="site-menu-sub-link" href="{{ route('messages') }}">Messages</a>
+          <a class="site-menu-sub-link" href="{{ route('kids') }}">Scripture Games (Kids)</a>
           <a class="site-menu-sub-link" href="{{ route('lesson.show') }}">Sabbath School Lesson</a>
         </div>
       </div>

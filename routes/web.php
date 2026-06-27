@@ -58,6 +58,11 @@ Route::get('/peace/review/{token}/confirm-delete', [\App\Http\Controllers\PeaceR
 Route::get ('/search',  [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
 Route::get ('/contact',  [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
 Route::get ('/messages', [\App\Http\Controllers\MessagesController::class, 'index'])->name('messages');
+Route::get ('/kids', [\App\Http\Controllers\KidsController::class, 'index'])->name('kids');
+Route::get ('/kids/play/{level}', [\App\Http\Controllers\KidsController::class, 'play'])->name('kids.play');
+Route::post('/kids/register', [\App\Http\Controllers\KidsController::class, 'register'])->middleware('throttle:20,10')->name('kids.register');
+Route::post('/kids/save', [\App\Http\Controllers\KidsController::class, 'save'])->middleware('throttle:200,1')->name('kids.save');
+Route::get ('/kids/leaderboard', [\App\Http\Controllers\KidsController::class, 'leaderboard'])->name('kids.leaderboard');
 Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'])
      ->middleware(['throttle:5,60', 'honeypot'])->name('contact.send');
 
