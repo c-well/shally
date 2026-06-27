@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-06-27 · Verse Tetris — mobile + pause
+
+Made Verse Tetris play right on a phone. Rebuilt the layout as a single fixed-height screen (`100dvh`) so the board, score, verse, and controls all fit at once — no more scrolling to reach the buttons. The board now sizes to the available height. Added a **pause button** (⏸ in the top bar; also the `P` key) with a Resume overlay. Added **touch gestures on the board**: tap to rotate, swipe left/right to move, swipe down to drop (the on-screen ◀ ⟳ ▶ ▼ ⤓ buttons still work). Re-morph is now a tap-to-open shape picker. The name moved into the info row so the top bar stays clean.
+
+**Files:** resources/views/kids/tetris.blade.php
+
 ## 2026-06-27 · Verse Tetris — premium look
 
 Reskinned the Tetris board out of flat-square "8-bit" territory: refined gradient blocks with soft depth in a sophisticated palette, a soft glass board, a ghost piece showing the landing spot, and a smooth line-clear animation. Considered, not cheesy. (8-bit/retro skins can come later as an option.)
