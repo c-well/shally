@@ -1,5 +1,9 @@
 # Shalom — Changelog
 
+## 2026-06-27 · Verse Tetris (teens)
+
+A real Tetris for the teens at /kids. Clear a line and the next word of the memory verse appears — you build the Word by playing well. Every few pieces, a question about Jesus: get it right and you earn a "re-morph" to reshape the falling piece; get it wrong and the game speeds up. 24 Jesus questions + 4 verse levels seeded; selectable in the admin level builder. Bible knowledge IS the difficulty dial.
+
 ## 2026-06-27 · Kids Scripture games — all three live + admin builder
 
 /kids now has three games that bring the Word before the children — **word-search**, **memory-match**, and **hidden-words** (tap-to-reveal, read aloud). Players are just a name (kept on the device), progress autosaves, and gentle stars encourage growth, not competition. Leaders build levels at **/admin/games** (pick a book, a game, an age). 16 curated KJV levels seeded. Built to teach, not entertain.

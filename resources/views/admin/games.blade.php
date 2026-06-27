@@ -58,7 +58,7 @@
     @csrf
     <h2>Add a level</h2>
     <div class="row">
-      <div><label>Game</label><select name="game_type"><option value="word_search">Word search</option><option value="memory_match">Memory match</option><option value="hidden_words">Hidden words</option></select></div>
+      <div><label>Game</label><select name="game_type"><option value="word_search">Word search</option><option value="verse_tetris">Verse Tetris</option><option value="memory_match">Memory match</option><option value="hidden_words">Hidden words</option></select></div>
       <div><label>Age</label><select name="age_band"><option value="little">Little (4–6)</option><option value="older">Kids (7–9)</option><option value="teens">Teens</option></select></div>
       <div><label>Book</label><input name="book" placeholder="e.g. John" required></div>
     </div>
@@ -75,7 +75,7 @@
   @foreach ($levels as $l)
     <div class="lvl {{ $l->is_active ? '' : 'off' }}" data-id="{{ $l->id }}">
       <div class="hd">
-        <span class="badge">{{ ['word_search'=>'Word search','memory_match'=>'Memory','hidden_words'=>'Hidden words'][$l->game_type] }}</span>
+        <span class="badge">{{ ['word_search'=>'Word search','verse_tetris'=>'Verse Tetris','memory_match'=>'Memory','hidden_words'=>'Hidden words'][$l->game_type] }}</span>
         <span class="badge">{{ ['little'=>'4–6','older'=>'7–9','teens'=>'Teens'][$l->age_band] ?? $l->age_band }}</span>
         <span class="sp"></span>
         <button class="mini {{ $l->is_active ? 'on' : '' }}" data-toggle="{{ route('admin.games.toggle', $l) }}" data-on="{{ $l->is_active ? 1 : 0 }}">{{ $l->is_active ? 'Live' : 'Hidden' }}</button>
