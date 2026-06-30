@@ -208,6 +208,11 @@ Route::middleware('auth')->group(function () {
         Route::patch ('/admin/games/{level}',         [\App\Http\Controllers\AdminGameLevelsController::class, 'update'])->name('admin.games.update');
         Route::post  ('/admin/games/{level}/toggle',  [\App\Http\Controllers\AdminGameLevelsController::class, 'toggle'])->name('admin.games.toggle');
         Route::delete('/admin/games/{level}',         [\App\Http\Controllers\AdminGameLevelsController::class, 'destroy'])->name('admin.games.destroy');
+        Route::get   ('/admin/mystery',                  [\App\Http\Controllers\AdminMysteryController::class, 'index'])->name('admin.mystery');
+        Route::post  ('/admin/mystery',                  [\App\Http\Controllers\AdminMysteryController::class, 'store'])->name('admin.mystery.store');
+        Route::patch ('/admin/mystery/{question}',       [\App\Http\Controllers\AdminMysteryController::class, 'update'])->name('admin.mystery.update');
+        Route::post  ('/admin/mystery/{question}/toggle',[\App\Http\Controllers\AdminMysteryController::class, 'toggle'])->name('admin.mystery.toggle');
+        Route::delete('/admin/mystery/{question}',       [\App\Http\Controllers\AdminMysteryController::class, 'destroy'])->name('admin.mystery.destroy');
         Route::post('/admin/intake-sub/{submission}/edit', [\App\Http\Controllers\AdminIntakeController::class, 'editSubmission'])->name('admin.intake.edit');
         Route::post('/admin/intake/{form}/bulk-text', [\App\Http\Controllers\AdminIntakeController::class, 'bulkText'])->name('admin.intake.bulktext');
 
