@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Telemetry — log a row to page_views per public successful GET (skips admin/api/bots)
         $middleware->append(\App\Http\Middleware\TrackPageView::class);
         // Trust the cPanel reverse proxy for client-IP / scheme detection
+        // Undercover game actions are authenticated by room/host/player tokens, not the
+        // session cookie, and pages may be LiteSpeed-cached (stale CSRF) — exempt them.
+        $middleware->validateCsrfTokens(except: ['youth/room', 'youth/room/*']);
         $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
