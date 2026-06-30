@@ -200,6 +200,13 @@
       <span class="card-arrow">Open &rarr;</span>
     </a>
 
+    <a href="{{ route('admin.mystery') }}" class="card">
+      <span class="card-eyebrow">Teens</span>
+      <span class="card-title">Undercover.</span>
+      <span class="card-sub">The question bank for the youth-night mystery game — write the questions the app asks players to work out who is who.</span>
+      <span class="card-arrow">Open &rarr;</span>
+    </a>
+
 <a href="{{ route('admin.intake.index') }}" class="card">
       <span class="card-eyebrow">Forms</span>
       <span class="card-title">Intake.</span>
