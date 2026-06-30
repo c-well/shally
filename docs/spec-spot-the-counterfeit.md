@@ -1,6 +1,6 @@
 # Spec — Teen hidden-identity mystery game (working title: "Undercover")
 
-Status: **scoped 2026-06-28, building now.** Pivoted from a simple Kahoot vote room to a hidden-identity detective mystery (Karlon, 2026-06-28). Verse Tetris is live; this is the next teen build.
+Status: **Phases 1–4 SHIPPED 2026-06-28** (playable at /youth). Remaining: leader-vetted question content, menu placement, polish (reconnect, big-room tuning). Pivoted from a simple Kahoot vote room to a hidden-identity detective mystery (Karlon, 2026-06-28). Verse Tetris is live; this is the next teen build.
 
 ## The idea in one line
 A live youth-night mystery: everyone joins **anonymously** (the app hides each kid behind a codename). The app quietly asks everyone questions and **leaks anonymized clues**; the room's job is to slowly figure out **who is who** — and, hardest of all, **who the Crook is**. There's also a hidden **Cop** trying to catch the crook. It takes time, it's social, it's a get-to-know-each-other engine wearing a mystery costume.

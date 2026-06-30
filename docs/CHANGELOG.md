@@ -1,5 +1,15 @@
 # Shalom — Changelog
 
+## 2026-06-28 · Undercover — the live game (Phases 2–4)
+
+The teen hidden-identity mystery is fully playable at **/youth**. A leader hosts (big room code on a projector); teens join from their phones with no login. The app deals secret codenames + roles (1 Crook, 1 Cop, the rest Citizens — scales up for big rooms), then runs rounds: each round it asks everyone a question privately, and the answers build each codename's public "profile." The room talks it out and matches **who is who**, while hunting the **Crook** — who hides simply by *staying quiet* (never by lying). The **Cop** can privately check "is this codename the Crook?" twice. After the rounds, the room votes, then **everyone is unmasked** — the payoff and the get-to-know-you reward. Gentle stars to each player.
+
+Realtime is short-poll (no WebSocket daemon on cPanel). Room actions are authenticated by room/host/player tokens and CSRF-exempt (so a LiteSpeed-cached page can't break them). Verified end-to-end with a headless 6-player game: roles dealt, rounds advanced, crook stayed silent, cop's check returned true, accusation caught the crook, scoring correct (Cop +20 catch +15 bonus, Citizens +20, Crook 0).
+
+Still ahead: real (leader-vetted) questions beyond the 14 seeds, where to link it in the menu, and polish (reconnect, big-room tuning).
+
+**Files:** app/Http/Controllers/MysteryGameController.php, app/Models/GameRoom.php + GameRoomPlayer.php + Mystery{Answer,Guess,Investigation}.php, resources/views/youth/{landing,host,play}.blade.php, routes/web.php, bootstrap/app.php, database/migrations/2026_06_28_000002_add_crook_vote_to_game_room_players.php
+
 ## 2026-06-28 · Undercover (teen mystery) — Phase 1: question bank
 
 Started the teen hidden-identity mystery game ("Undercover" — working title). The room joins anonymously, the app asks everyone questions and leaks anonymized clues, and the kids work out **who is who** — and who the hidden **Crook** is (a hidden **Cop** helps). Design conviction, locked: **no one is ever asked to lie** — the app does the concealing; the Crook/Cop stay hidden simply by staying silent. No elimination.
