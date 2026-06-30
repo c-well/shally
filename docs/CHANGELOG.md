@@ -1,5 +1,13 @@
 # Shalom — Changelog
 
+## 2026-06-28 · Undercover (teen mystery) — Phase 1: question bank
+
+Started the teen hidden-identity mystery game ("Undercover" — working title). The room joins anonymously, the app asks everyone questions and leaks anonymized clues, and the kids work out **who is who** — and who the hidden **Crook** is (a hidden **Cop** helps). Design conviction, locked: **no one is ever asked to lie** — the app does the concealing; the Crook/Cop stay hidden simply by staying silent. No elimination.
+
+This phase ships the foundation: the seven game tables, and a **leader question bank at /admin/mystery** (write the questions the app asks, mark which can become clues, edits save as you type) with 14 safe starter questions seeded. Card added to the admin hub. The live room (lobby, rounds, cop, accusation, reveal) is the next phases.
+
+**Files:** database/migrations/2026_06_28_create_mystery_tables.php, app/Models/MysteryQuestion.php, app/Http/Controllers/AdminMysteryController.php, resources/views/admin/mystery.blade.php, resources/views/admin/hub.blade.php, routes/web.php, docs/spec-spot-the-counterfeit.md
+
 ## 2026-06-27 · Verse Tetris — mobile + pause
 
 Made Verse Tetris play right on a phone. Rebuilt the layout as a single fixed-height screen (`100dvh`) so the board, score, verse, and controls all fit at once — no more scrolling to reach the buttons. The board now sizes to the available height. Added a **pause button** (⏸ in the top bar; also the `P` key) with a Resume overlay. Added **touch gestures on the board**: tap to rotate, swipe left/right to move, swipe down to drop (the on-screen ◀ ⟳ ▶ ▼ ⤓ buttons still work). Re-morph is now a tap-to-open shape picker. The name moved into the info row so the top bar stays clean.
