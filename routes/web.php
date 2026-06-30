@@ -63,6 +63,18 @@ Route::get ('/kids/play/{level}', [\App\Http\Controllers\KidsController::class, 
 Route::post('/kids/register', [\App\Http\Controllers\KidsController::class, 'register'])->middleware('throttle:20,10')->name('kids.register');
 Route::post('/kids/save', [\App\Http\Controllers\KidsController::class, 'save'])->middleware('throttle:200,1')->name('kids.save');
 Route::get ('/kids/leaderboard', [\App\Http\Controllers\KidsController::class, 'leaderboard'])->name('kids.leaderboard');
+Route::get ('/youth',                         [\App\Http\Controllers\MysteryGameController::class, 'landing'])->name('youth');
+Route::post('/youth/room',                    [\App\Http\Controllers\MysteryGameController::class, 'createRoom'])->middleware('throttle:30,1')->name('youth.room.create');
+Route::get ('/youth/host/{code}',            [\App\Http\Controllers\MysteryGameController::class, 'hostView'])->name('youth.host');
+Route::get ('/youth/play/{code}',            [\App\Http\Controllers\MysteryGameController::class, 'playView'])->name('youth.play');
+Route::post('/youth/room/{code}/start',      [\App\Http\Controllers\MysteryGameController::class, 'start']);
+Route::post('/youth/room/{code}/join',       [\App\Http\Controllers\MysteryGameController::class, 'join'])->middleware('throttle:60,1');
+Route::post('/youth/room/{code}/answer',     [\App\Http\Controllers\MysteryGameController::class, 'answer'])->middleware('throttle:120,1');
+Route::post('/youth/room/{code}/guess',      [\App\Http\Controllers\MysteryGameController::class, 'guess'])->middleware('throttle:400,1');
+Route::post('/youth/room/{code}/investigate',[\App\Http\Controllers\MysteryGameController::class, 'investigate']);
+Route::post('/youth/room/{code}/accuse',     [\App\Http\Controllers\MysteryGameController::class, 'accuse']);
+Route::post('/youth/room/{code}/advance',    [\App\Http\Controllers\MysteryGameController::class, 'advance']);
+Route::get ('/youth/room/{code}/state',      [\App\Http\Controllers\MysteryGameController::class, 'state'])->middleware('throttle:1200,1')->name('youth.state');
 Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'])
      ->middleware(['throttle:5,60', 'honeypot'])->name('contact.send');
 
