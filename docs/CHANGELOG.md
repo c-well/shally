@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-01 · Intake: image adjust + refined card buttons
+
+The submission gallery (Graduate Recognition and any photo intake) now has an **✂ Adjust image** editor: rotate a sideways photo, crop, and reshape it (Free / Square / Landscape / Portrait), then it regenerates the 1920×1080 slide. Non-destructive — the pristine upload is kept, so you can always re-crop from the original. Built with Cropper.js in the browser (the edited image is uploaded and the slide re-rendered by GD), so it doesn't depend on the missing server image extensions. Also gave the card buttons real hierarchy — **Download** is now the solid primary; Adjust / Edit text / Remove text / Remove are refined outline buttons (they'd looked flat and cramped). Verified end-to-end (validate → preserve original → save → regenerate). The same editor sets us up for pastors' sermon-note photos down the line.
+
+**Files:** app/Http/Controllers/AdminIntakeController.php (adjust), app/Models/IntakeSubmission.php, resources/views/admin/intake/submissions.blade.php, routes/web.php, database/migrations/2026_07_01_add_photo_original_to_intake_submissions.php
+
 ## 2026-07-01 · Fix: recognition-card download 500 (fileinfo)
 
 The per-card "⬇ Download" on the intake gallery (e.g. Graduate Recognition slides) was throwing a 500 — the branded "We'll be right back / Reconnecting" error page — because `AdminIntakeController::download()` let Laravel auto-guess the file's MIME type, and this server has **no `php_fileinfo`** (missing on web AND CLI) with the shell `file` fallback also blocked on the web SAPI. Fixed by passing an explicit `Content-Type: image/png` so the response never calls the MIME guesser. (Bulk "Download all" and the feedback-image route were already safe — explicit types; the bulletin PDF is dompdf, not affected.) Not related to the Undercover build. Root cause is environmental: enabling `fileinfo` in cPanel → Select PHP Version would fix this whole class permanently (also the HEIC-upload issue flagged earlier).
