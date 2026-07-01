@@ -13,7 +13,7 @@ class IntakeSubmission extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'intake_form_id', 'data', 'photo_path', 'output_path', 'show_text',
+        'intake_form_id', 'data', 'photo_path', 'photo_original_path', 'output_path', 'show_text',
         'status', 'submitter_name', 'submitter_email', 'ip',
     ];
 
@@ -54,5 +54,12 @@ class IntakeSubmission extends Model
     public function outputUrl(): ?string
     {
         return $this->output_path ? '/' . ltrim($this->output_path, '/') : null;
+    }
+
+    /** The pristine uploaded photo (falls back to the working copy). Used by the editor. */
+    public function originalUrl(): ?string
+    {
+        $p = $this->photo_original_path ?: $this->photo_path;
+        return $p ? '/' . ltrim($p, '/') : null;
     }
 }

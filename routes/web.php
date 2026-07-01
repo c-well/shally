@@ -226,6 +226,7 @@ Route::middleware('auth')->group(function () {
         Route::post  ('/admin/mystery/{question}/toggle',[\App\Http\Controllers\AdminMysteryController::class, 'toggle'])->name('admin.mystery.toggle');
         Route::delete('/admin/mystery/{question}',       [\App\Http\Controllers\AdminMysteryController::class, 'destroy'])->name('admin.mystery.destroy');
         Route::post('/admin/intake-sub/{submission}/edit', [\App\Http\Controllers\AdminIntakeController::class, 'editSubmission'])->name('admin.intake.edit');
+        Route::post('/admin/intake-sub/{submission}/adjust', [\App\Http\Controllers\AdminIntakeController::class, 'adjust'])->name('admin.intake.adjust');
         Route::post('/admin/intake/{form}/bulk-text', [\App\Http\Controllers\AdminIntakeController::class, 'bulkText'])->name('admin.intake.bulktext');
 
         Route::get   ('/admin/pages/{slug}/edit',       [\App\Http\Controllers\AdminPagesController::class, 'edit'])->name('admin.pages.edit');
