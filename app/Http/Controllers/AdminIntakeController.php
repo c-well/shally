@@ -164,6 +164,46 @@ class AdminIntakeController extends Controller
         return response()->json(['ok' => true, 'message' => 'Back in the gallery.']);
     }
 
+    /**
+     * Replace a submission's photo with a browser-edited version (rotate/crop/aspect)
+     * and regenerate the slide. The pristine original is kept once, so the editor can
+     * always re-crop from scratch. Validated via GD (getimagesize) — no php_fileinfo.
+     */
+    public function adjust(Request $request, IntakeSubmission $submission): JsonResponse
+    {
+        $file = $request->file('image');
+        if (! $file || ! $file->isValid()) {
+            return response()->json(['ok' => false, 'message' => 'No image was received.'], 422);
+        }
+        if ($file->getSize() > 15 * 1024 * 1024) {
+            return response()->json(['ok' => false, 'message' => 'That image is too large.'], 422);
+        }
+        $info = @getimagesize($file->getPathname());
+        if (! $info || ! in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF], true)) {
+            return response()->json(['ok' => false, 'message' => 'That file is not a valid image.'], 422);
+        }
+
+        // Preserve the pristine original once (non-destructive re-editing).
+        if (! $submission->photo_original_path && $submission->photo_path) {
+            $submission->update(['photo_original_path' => $submission->photo_path]);
+        }
+
+        $ext = $info[2] === IMAGETYPE_PNG ? 'png' : ($info[2] === IMAGETYPE_WEBP ? 'webp' : 'jpg');
+        $dir = public_path('intake-media/photos');
+        if (! is_dir($dir)) mkdir($dir, 0755, true);
+        $name = $submission->id . '-' . now()->format('YmdHis') . '.' . $ext;
+        $file->move($dir, $name);
+
+        $submission->update(['photo_path' => 'intake-media/photos/' . $name]);
+        $this->regenerate($submission);
+
+        return response()->json([
+            'ok'      => true,
+            'url'     => $submission->outputUrl() . '?v=' . now()->timestamp,
+            'message' => 'Image updated.',
+        ]);
+    }
+
     /** Download one slide as a nicely-named PNG. */
     public function download(IntakeSubmission $submission): BinaryFileResponse
     {
