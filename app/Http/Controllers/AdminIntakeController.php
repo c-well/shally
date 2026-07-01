@@ -168,7 +168,7 @@ class AdminIntakeController extends Controller
     public function download(IntakeSubmission $submission): BinaryFileResponse
     {
         abort_unless($submission->output_path && is_file(public_path($submission->output_path)), 404);
-        return response()->download(public_path($submission->output_path), $this->niceName($submission));
+        return response()->download(public_path($submission->output_path), $this->niceName($submission), ['Content-Type' => 'image/png']);
     }
 
     /** Zip every live slide for this form and stream it. */

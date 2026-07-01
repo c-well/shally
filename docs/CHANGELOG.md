@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-01 · Fix: recognition-card download 500 (fileinfo)
+
+The per-card "⬇ Download" on the intake gallery (e.g. Graduate Recognition slides) was throwing a 500 — the branded "We'll be right back / Reconnecting" error page — because `AdminIntakeController::download()` let Laravel auto-guess the file's MIME type, and this server has **no `php_fileinfo`** (missing on web AND CLI) with the shell `file` fallback also blocked on the web SAPI. Fixed by passing an explicit `Content-Type: image/png` so the response never calls the MIME guesser. (Bulk "Download all" and the feedback-image route were already safe — explicit types; the bulletin PDF is dompdf, not affected.) Not related to the Undercover build. Root cause is environmental: enabling `fileinfo` in cPanel → Select PHP Version would fix this whole class permanently (also the HEIC-upload issue flagged earlier).
+
+**Files:** app/Http/Controllers/AdminIntakeController.php
+
 ## 2026-06-28 · Undercover — the live game (Phases 2–4)
 
 The teen hidden-identity mystery is fully playable at **/youth**. A leader hosts (big room code on a projector); teens join from their phones with no login. The app deals secret codenames + roles (1 Crook, 1 Cop, the rest Citizens — scales up for big rooms), then runs rounds: each round it asks everyone a question privately, and the answers build each codename's public "profile." The room talks it out and matches **who is who**, while hunting the **Crook** — who hides simply by *staying quiet* (never by lying). The **Cop** can privately check "is this codename the Crook?" twice. After the rounds, the room votes, then **everyone is unmasked** — the payoff and the get-to-know-you reward. Gentle stars to each player.
