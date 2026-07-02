@@ -106,13 +106,16 @@
   }
 
   .mark-top { text-align: center; padding: 2.5rem 2rem 0; }
-  .back-quiet {
+  /* Must out-rank .mark-top a (which is the Xtreem script wordmark style) */
+  .mark-top a.back-quiet {
+    font-family: 'Poppins', sans-serif;
     display: block; text-align: center; margin-top: 0.9rem;
     font-size: 0.68rem; letter-spacing: 0.24em; text-transform: uppercase;
     color: var(--ink-faint); text-decoration: none; font-weight: 400;
+    line-height: 1.4;
     transition: color 0.2s;
   }
-  .back-quiet:hover { color: var(--brass-bright); }
+  .mark-top a.back-quiet:hover { color: var(--brass-bright); }
   .mark-top a {
     font-family: 'Xtreem', 'Poppins', sans-serif;
     font-style: normal; font-weight: 500;
