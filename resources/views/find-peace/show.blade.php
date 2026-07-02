@@ -75,6 +75,22 @@
 }
 @endverbatim</script>
 @endif
+<script type="application/ld+json">{!! json_encode(array_filter([
+  '@context'      => 'https://schema.org',
+  '@type'         => 'Article',
+  'headline'      => $sermon->title,
+  'description'   => $sermon->heart_line,
+  'author'        => $sermon->speaker ? ['@type' => 'Person', 'name' => $sermon->speaker] : null,
+  'datePublished' => $sermon->published_at?->toDateString() ?? $sermon->sermon_date?->toDateString(),
+  'url'           => url('/find-peace/' . $sermon->slug),
+  'publisher'     => ['@type' => 'Organization', 'name' => 'The Church of Peace', 'url' => url('/')],
+  'audio'         => $sermon->audio_url ? array_filter([
+      '@type'      => 'AudioObject',
+      'contentUrl' => url($sermon->audio_url),
+      'name'       => $sermon->title,
+      'duration'   => $sermon->audio_duration_seconds ? 'PT' . intdiv($sermon->audio_duration_seconds, 60) . 'M' . ($sermon->audio_duration_seconds % 60) . 'S' : null,
+  ]) : null,
+]), JSON_UNESCAPED_SLASHES) !!}</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -90,6 +106,13 @@
   }
 
   .mark-top { text-align: center; padding: 2.5rem 2rem 0; }
+  .back-quiet {
+    display: block; text-align: center; margin-top: 0.9rem;
+    font-size: 0.68rem; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--ink-faint); text-decoration: none; font-weight: 400;
+    transition: color 0.2s;
+  }
+  .back-quiet:hover { color: var(--brass-bright); }
   .mark-top a {
     font-family: 'Xtreem', 'Poppins', sans-serif;
     font-style: normal; font-weight: 500;
@@ -789,7 +812,9 @@ $linkifyScripture = function ($text) use ($linkifyTopics) {
 };
 @endphp
 
-<div class="mark-top"><a href="{{ route('find-peace.index') }}">shalom</a></div>
+<div class="mark-top"><a href="{{ route('find-peace.index') }}">shalom</a>
+  <a class="back-quiet" href="{{ route('find-peace.index') }}">← all messages</a>
+</div>
 
 <section class="sermon-page">
   <div class="container">
