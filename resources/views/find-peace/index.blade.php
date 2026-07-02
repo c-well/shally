@@ -10,6 +10,14 @@
 <meta property="og:title" content="Finding Peace · Shalom">
 <meta property="og:description" content="A quiet place. Tell us where you are.">
 <meta property="og:url" content="{{ url('/find-peace') }}">
+<script type="application/ld+json">{!! json_encode([
+  '@context' => 'https://schema.org',
+  '@type'    => 'WebSite',
+  'name'        => 'Finding Peace',
+  'url'         => url('/find-peace'),
+  'description' => 'A quiet place for anyone seeking God — messages of peace, one question at a time.',
+  'publisher'   => ['@type' => 'Organization', 'name' => 'The Church of Peace', 'url' => url('/')],
+], JSON_UNESCAPED_SLASHES) !!}</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,31 +32,43 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  .hero {
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 2rem; position: relative; text-align: center;
-  }
   @font-face {
     font-family: 'Xtreem';
     src: url('/fonts/XtreemMedium.ttf') format('truetype');
     font-weight: 500; font-style: normal; font-display: swap;
   }
-  .mark {
-    position: absolute; top: 2rem; left: 50%; transform: translateX(-50%);
+  /* Quiet top nav — Find Peace's own menu, deliberately not the church header. */
+  .fp-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 860px; margin: 0 auto;
+    padding: 1.6rem clamp(1.2rem, 4vw, 2rem) 0.5rem;
+  }
+  .fp-nav .mark {
     font-family: 'Xtreem', 'Poppins', sans-serif;
     font-style: normal; font-weight: 500;
-    color: var(--ink);
-    text-transform: lowercase;
-    font-size: clamp(56px, 11vw, 88px);
+    color: var(--ink); text-transform: lowercase;
+    font-size: clamp(38px, 6vw, 52px);
     letter-spacing: -0.02em; line-height: 0.8;
+    text-decoration: none;
+  }
+  .fp-nav-links { display: flex; gap: clamp(0.9rem, 3vw, 1.6rem); }
+  .fp-nav-links a {
+    font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-soft); text-decoration: none; font-weight: 400;
+    padding: 0.4rem 0; transition: color 0.2s;
+  }
+  .fp-nav-links a:hover { color: var(--brass-bright); }
+
+  .hero {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 2rem 2rem 3.5rem; position: relative; text-align: center;
   }
   .hero-content { max-width: 640px; width: 100%; }
   .hero h1 {
     font-size: clamp(2rem, 5vw, 2.75rem);
     font-weight: 200; letter-spacing: -0.01em;
-    color: var(--ink); margin-top: clamp(80px, 14vw, 120px); margin-bottom: 0.75rem; line-height: 1.2;
+    color: var(--ink); margin-top: clamp(20px, 4vw, 44px); margin-bottom: 0.75rem; line-height: 1.2;
   }
   .hero .sub { font-size: 1.05rem; color: var(--ink-soft); font-weight: 300; margin-bottom: 2.5rem; }
   .search-wrap { position: relative; margin-bottom: 1.5rem; }
@@ -128,9 +148,8 @@
   .search-status.hidden { display: none; }
 
   .scroll-cue {
-    position: absolute; bottom: 1.4rem; left: 50%;
-    transform: translateX(-50%);
     display: inline-flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    margin-top: 2.2rem;
     font-size: 0.92rem; color: var(--ink-soft);
     letter-spacing: 0.18em; text-transform: uppercase;
     animation: cue-pulse 3s ease-in-out infinite;
@@ -166,6 +185,18 @@
   .topic-list .arrow { color: var(--brass); transition: transform 0.3s, color 0.2s; }
   .topic-list a:hover .arrow { transform: translateX(4px); color: var(--brass-bright); }
 
+  /* Topics — the words people are actually carrying. Every chip is a real page. */
+  .topics-band { padding: 4.5rem 2rem; border-top: 1px solid var(--line); }
+  .topics-cloud { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem; max-width: 760px; margin: 0 auto; }
+  .topic-pill {
+    display: inline-block; padding: 0.5rem 1rem;
+    font-size: 0.85rem; font-weight: 300; line-height: 1;
+    color: var(--ink-soft); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 999px;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .topic-pill:hover { color: var(--brass-bright); border-color: var(--brass); background: color-mix(in srgb, var(--brass) 6%, transparent); }
+
   .footer { text-align: center; padding: 4rem 2rem 3rem; border-top: 1px solid var(--line); }
   .footer-mark {
     font-family: 'Xtreem', 'Poppins', sans-serif;
@@ -181,7 +212,9 @@
 
   /* ── Mobile fit (≤620px): make hero + cards + cue all fit without overflow ─── */
   @media (max-width: 620px) {
-    .hero { min-height: auto; padding: 1.5rem 1rem 4rem; }
+    .fp-nav { padding-top: 1.1rem; }
+    .fp-nav-links a { font-size: 0.64rem; letter-spacing: 0.16em; }
+    .hero { min-height: auto; padding: 1.2rem 1rem 3rem; }
     .hero h1 { font-size: clamp(1.6rem, 8vw, 2rem); margin-bottom: 0.6rem; }
     .hero .sub { font-size: 0.9rem; margin-bottom: 1.4rem; }
     .search-input { font-size: 0.95rem; padding: 0.85rem 1rem; }
@@ -206,8 +239,16 @@
 </head>
 <body>
 
+<nav class="fp-nav" aria-label="Finding Peace">
+  <a class="mark" href="{{ route('find-peace.index') }}">shalom</a>
+  <div class="fp-nav-links">
+    <a href="#recent">Messages</a>
+    <a href="#topics">Topics</a>
+    <a href="{{ route('find-peace.saved') }}">Yours</a>
+  </div>
+</nav>
+
 <section class="hero">
-  <div class="mark">shalom</div>
   <div class="hero-content">
     <h1>Peace finds you here.</h1>
     <p class="sub">Tell us where you are.</p>
@@ -266,6 +307,17 @@
 <section class="recent-band">
   <div class="container empty-state">
     <p>The first message is being prepared.</p>
+  </div>
+</section>
+@endif
+
+@if(($topics ?? collect())->isNotEmpty())
+<section class="topics-band" id="topics">
+  <div class="section-label">What are you carrying?</div>
+  <div class="topics-cloud">
+    @foreach($topics as $t)
+      <a class="topic-pill" href="{{ route('find-peace.topic', $t->slug) }}">{{ strtolower($t->name) }}</a>
+    @endforeach
   </div>
 </section>
 @endif

@@ -1,5 +1,13 @@
 # Shalom — Changelog
 
+## 2026-07-01 · Find Peace: discoverable + navigable (stays OFF the church menu)
+
+Find Peace is deliberately not part of the church site — it's a doorway seekers stumble onto. This pass makes the stumbling work and gives them somewhere to go once they land. Audit found the sitemap already solid (124 URLs: hub + 17 published sermons + 85 topic pages, correct canonicals/OG/robots; the 5 sermons not listed are drafts/discarded — correct filtering). What was missing: (1) the index page hid everything below a full-viewport empty hero, (2) the 85 topic pages were linked from nowhere on the site (sitemap-only orphans), (3) no nav of its own, (4) no Article/AudioObject structured data on sermon pages (FAQPage existed).
+
+Shipped: compact hero (question + Q&A cards + messages all above/at the fold), a quiet nav of its own (shalom mark + Messages · Topics · Yours), a "What are you carrying?" band with all 88 topic pills (fear, shame, loneliness… every chip a real page — internal links Google can walk), WebSite JSON-LD on the index, Article+AudioObject JSON-LD + an explicit "← all messages" back link on every sermon page. Aesthetic untouched: dark, calm, Poppins, brass.
+
+**Files:** resources/views/find-peace/index.blade.php, resources/views/find-peace/show.blade.php, app/Http/Controllers/FindPeaceController.php
+
 ## 2026-07-01 · Intake: image adjust + refined card buttons
 
 The submission gallery (Graduate Recognition and any photo intake) now has an **✂ Adjust image** editor: rotate a sideways photo, crop, and reshape it (Free / Square / Landscape / Portrait), then it regenerates the 1920×1080 slide. Non-destructive — the pristine upload is kept, so you can always re-crop from the original. Built with Cropper.js in the browser (the edited image is uploaded and the slide re-rendered by GD), so it doesn't depend on the missing server image extensions. Also gave the card buttons real hierarchy — **Download** is now the solid primary; Adjust / Edit text / Remove text / Remove are refined outline buttons (they'd looked flat and cramped). Verified end-to-end (validate → preserve original → save → regenerate). The same editor sets us up for pastors' sermon-note photos down the line.

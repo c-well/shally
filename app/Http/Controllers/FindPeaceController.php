@@ -40,10 +40,14 @@ class FindPeaceController extends Controller
             ->get()
             ->toArray();
 
+        // Topic pills — the words people are actually carrying (every one a real page)
+        $topics = \App\Models\PeaceTopic::has('sermons')->orderBy('name')->get(['name', 'slug']);
+
         return view('find-peace.index', [
             'recent'      => $recent,
             'featuredQAs' => $featuredQAs,
             'qaCorpus'    => $qaCorpus,
+            'topics'      => $topics,
         ]);
     }
 
