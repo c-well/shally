@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-02 · Analytics fix + menu polish
+
+Two audit items closed. (1) **Visitor analytics finally real**: the `v_sid` cookie was written raw but read through Laravel's decrypting cookie reader, so it never survived a round-trip — every page view counted as a brand-new visitor (uniques == views exactly) and no journey could be traced. Exempted it from cookie encryption (`bootstrap/app.php`); verified live: two requests, one visitor id, both paths recorded under one session. Historic "unique visitor" numbers before today are inflated — treat 2026-07-02 as day one for real visitor data. (2) **Menu polish**: the accordion chevron's off-brand green (#2d8659) → brand teal; added **Undercover (Youth)** to Spiritual Life; "Scripture Games (Kids)" → "Scripture Games" (teens play there too).
+
+**Files:** bootstrap/app.php, resources/views/partials/site-menu.blade.php
+
 ## 2026-07-01 · Find Peace: discoverable + navigable (stays OFF the church menu)
 
 Find Peace is deliberately not part of the church site — it's a doorway seekers stumble onto. This pass makes the stumbling work and gives them somewhere to go once they land. Audit found the sitemap already solid (124 URLs: hub + 17 published sermons + 85 topic pages, correct canonicals/OG/robots; the 5 sermons not listed are drafts/discarded — correct filtering). What was missing: (1) the index page hid everything below a full-viewport empty hero, (2) the 85 topic pages were linked from nowhere on the site (sitemap-only orphans), (3) no nav of its own, (4) no Article/AudioObject structured data on sermon pages (FAQPage existed).

@@ -123,7 +123,7 @@
   .site-menu-section-toggle { border-bottom: 0; }
   .site-menu-section-toggle .chev {
     width: 22px; height: 22px;
-    color: #2d8659;          /* green accent — makes the affordance visible */
+    color: var(--teal, #03617A);   /* brand teal — one accent everywhere */
     opacity: 0.85;
     transition: transform 0.25s ease, opacity 0.15s;
   }
@@ -357,7 +357,8 @@
           <a class="site-menu-sub-link" href="{{ route('hymnal') }}">Hymnal</a>
           <a class="site-menu-sub-link" href="{{ route('peace-notes') }}">Peace Notes</a>
           <a class="site-menu-sub-link" href="{{ route('messages') }}">Messages</a>
-          <a class="site-menu-sub-link" href="{{ route('kids') }}">Scripture Games (Kids)</a>
+          <a class="site-menu-sub-link" href="{{ route('kids') }}">Scripture Games</a>
+          <a class="site-menu-sub-link" href="{{ route('youth') }}">Undercover (Youth)</a>
           <a class="site-menu-sub-link" href="{{ route('lesson.show') }}">Sabbath School Lesson</a>
         </div>
       </div>
