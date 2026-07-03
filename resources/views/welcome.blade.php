@@ -2231,6 +2231,12 @@
     <button class="bt-icon-btn" id="undo-btn" type="button" disabled aria-label="Undo" title="Undo (⌘Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg></button>
     <button class="bt-icon-btn" id="redo-btn" type="button" disabled aria-label="Redo" title="Redo (⌘⇧Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/></svg></button>
     <a class="bt-icon-btn" href="{{ route('admin.changes', ['type' => get_class($bulletin), 'id' => $bulletin->id]) }}" title="Edit history (saved versions)" aria-label="Edit history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></a>
+    {{-- Two-way door: classic ⇄ new editor. The v2 page has "Classic editor";
+         without this, flipping to classic was a DEAD END (Andre, 2026-07-04). --}}
+    <form method="POST" action="{{ route('admin.bulletin.prefer') }}" style="display:contents;">
+      @csrf<input type="hidden" name="version" value="v2">
+      <button class="bt-icon-btn" type="submit" title="Switch to the new editor" aria-label="Switch to the new editor" style="width:auto; padding:0 12px; font-family:'Instrument Sans',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.12em; white-space:nowrap;">NEW EDITOR ⇄</button>
+    </form>
     <span class="bt-spacer"></span>
     {{-- GO_LIVE_FORM_FALLBACK — real form so a plain tap publishes even when JS is broken. --}}
     <form method="POST" action="{{ route('bulletins.publish', $bulletin) }}" style="display:contents;" id="publish-form">
