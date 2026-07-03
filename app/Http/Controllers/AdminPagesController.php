@@ -6,6 +6,7 @@ use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Process;
 use Illuminate\View\View;
 
 /**
@@ -116,7 +117,7 @@ class AdminPagesController extends Controller
         // HEIC/HEIF: convert to JPG first via ImageMagick, then load via GD
         if (in_array($ext, ['heic', 'heif']) || !in_array($ext, ['jpg','jpeg','png','webp','gif'])) {
             $tmp = tempnam(sys_get_temp_dir(), 'pg') . '.webp';
-            exec('/usr/bin/convert ' . escapeshellarg($path) . ' ' . escapeshellarg($tmp), $_, $rc);
+            try { $rc = Process::timeout(60)->run('/usr/bin/convert ' . escapeshellarg($path) . ' ' . escapeshellarg($tmp))->exitCode(); } catch (\Throwable $e) { $rc = 1; }
             if ($rc !== 0) return false;
             $img = @imagecreatefromjpeg($tmp);
             @unlink($tmp);

@@ -1,5 +1,13 @@
 # Shalom — Changelog
 
+## 2026-07-03 · Audit round 2 — deep fixes
+
+Proper class-sweep audit (after the hero-upload miss) turned up and fixed: (1) **7-day cron outage** — the account's cron silently stopped Jun 25 (heartbeat proof); revived by re-registering the crontab; fresh DB backup taken; (2) **cron watchdog** — TrackPageView now piggybacks a cache-gated check on normal web traffic: if the scheduler heartbeat goes >60 min stale it emails the super-admins (max once/6h) with the exact revive command — web traffic doesn't depend on cron, so this can't go blind the way cron did; (3) **/admin/lessons PDF upload** would 500 (mimes: rule needs the missing fileinfo) — now extensions:pdf + %PDF magic-byte check; (4) **restore-point capture** died at its last step on web (shell_exec is disabled) — now a pure-PHP glob; (5) **PDF event flyers un-broken** — exec() is disabled on web but proc_open is NOT (probe-verified), so the ImageMagick conversion now runs via Process; same fix applied to the pages + grad-card converter fallbacks (HEIC fallback path now actually works); (6) Twilio SMS call got a 15s timeout (was unbounded).
+
+Also corrected an audit claim: the Peace "run now" button was NOT broken — proc_open works on the web SAPI (exec/shell_exec/passthru/system are the blocked ones). Probe file confirmed disable_functions exactly.
+
+**Files:** app/Http/Middleware/TrackPageView.php, app/Http/Controllers/{AdminLessonsController,AdminChangelogController,EventController,AdminPagesController}.php, app/Services/Intake/{TwilioNotifier,GradCardRenderer}.php
+
 ## 2026-07-02 · Fix: hero slide upload 500 (fileinfo again) + full app sweep
 
 The hero-slides upload (/admin/slides) was 500ing before validation even ran. Root cause is ironic: the upload pipeline itself is fileinfo-free (GD → webp), but a LEFTOVER DEBUG BLOCK from the old HEIC investigation ("remove once we know") called guessExtension()/getMimeType() on every upload — both need the php_fileinfo extension this host doesn't have. Removed the debug block (it long since did its job). Swept the entire app for the class: fixed the slides error-path (mime_content_type — would have been a FATAL, function doesn't exist without fileinfo) and AdminMediaController's audio/image kind detection + audio mime (now extension-derived; images still verified by GD decode, so a mislabeled file fails safely). Verified end-to-end in-process: 2400px JPEG → validated → resized → webp on disk → Slide row; test slide cleaned up. That's the third fileinfo casualty (intake download, now slides + media) — enabling fileinfo in cPanel → Select PHP Version remains the permanent fix.

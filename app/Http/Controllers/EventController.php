@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 
 class EventController extends Controller
@@ -152,7 +153,12 @@ class EventController extends Controller
             $quality,
             escapeshellarg($destPath)
         );
-        exec($cmd, $output, $code);
-        return $code === 0 && is_file($destPath);
+        // exec() is disabled on the web SAPI but proc_open is not — use Process.
+        try {
+            $p = Process::timeout(120)->run($cmd);
+            return $p->successful() && is_file($destPath);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }

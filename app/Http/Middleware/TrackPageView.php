@@ -89,6 +89,50 @@ class TrackPageView
             \Log::warning("PageView write failed: " . $e->getMessage());
         }
 
+        $this->cronWatchdog();
+
         return $response;
+    }
+
+    /**
+     * Cron died silently for 7 days once (Jun 25 - Jul 2, 2026) — backups and the
+     * whole scheduler stopped with no signal. Web traffic is independent of cron,
+     * so piggyback a cheap check here: if the scheduler heartbeat is over 60 min
+     * stale, email the super-admins (at most once per 6h). Cache-gated to ~1 real
+     * check per 5 minutes; wrapped so it can never break a page.
+     */
+    private function cronWatchdog(): void
+    {
+        try {
+            \Illuminate\Support\Facades\Cache::remember('cron_watchdog_checked', 300, function () {
+                $beat = \App\Models\AppSetting::get('cron_heartbeat_at');
+                if (! $beat) return true;
+
+                $age = (int) now()->diffInMinutes(\Carbon\Carbon::parse($beat));
+                if ($age < 60) return true;
+
+                $lastAlert = \App\Models\AppSetting::get('cron_stale_alerted_at');
+                if ($lastAlert && now()->diffInHours(\Carbon\Carbon::parse($lastAlert)) < 6) return true;
+                \App\Models\AppSetting::set('cron_stale_alerted_at', now()->toIso8601String());
+
+                $admins = \App\Models\User::where('role', 'super_admin')->pluck('email')->all();
+                if ($admins) {
+                    $body = "The scheduler heartbeat is {$age} minutes old — cron has likely stopped on the Shalom account.\n\n"
+                        . "Until it's revived there are NO database backups and NO scheduled jobs (flyer prune, sermon refresh, Peace pipeline, lesson rollover, spam sweep).\n\n"
+                        . "Fix that worked last time: SSH in and re-register the crontab:\n"
+                        . "    crontab -l | crontab -\n"
+                        . "then confirm the heartbeat moves within 2 minutes.";
+                    \Illuminate\Support\Facades\Mail::raw($body, function ($m) use ($admins) {
+                        $m->to($admins)
+                          ->cc('contact@c-wellpics.com')
+                          ->subject('[Church of Peace] ALERT: cron appears to be down');
+                    });
+                }
+
+                return true;
+            });
+        } catch (\Throwable $e) {
+            // watchdog must never break a page
+        }
     }
 }
