@@ -85,7 +85,7 @@ Full `<!doctype html>` doc (not a layout component). `<head>`: meta + `@include(
 The `Co-Authored-By: Claude ...` line on commits is a standard git **trailer** (attribution that the change was AI-assisted) — it lives only in git history, never on the site. The changelog page shows only the one-line summary.
 
 ## Admin hub conventions (2026-07-03)
-- /admin is now the "hush latch" hub: 4 collapsed groups + mini search + a per-user "most used" smart latch (appears after the user's 7th visit; fed by admin_hub_usage via POST /admin/hub/track).
+- /admin has a VIEW LATCH at top: Default (classic all-cards grid) / Groups (4 hush latches) / Smart (most-used first; unlocks after the user's 7th visit). Preference saved per admin as item_key '__view:<mode>' in admin_hub_usage; card clicks tracked via POST /admin/hub/track. Default stays the classic look — never force a new layout on the admins.
 - Add new admin destinations by adding ONE entry to the $HUB array + its key to a $GROUPS list in resources/views/admin/hub.blade.php. Do not append loose cards.
 - Cron watchdog: TrackPageView emails super-admins if the scheduler heartbeat (AppSetting cron_heartbeat_at) is >60 min stale; the hub shows a red banner. If cron dies: crontab -l | crontab - revives it (worked 2026-07-03 after a 7-day silent outage).
 - Web SAPI facts (probe-verified): disable_functions = exec, passthru, shell_exec, system. proc_open IS available (use Illuminate Process). fileinfo absent — never rely on MIME guessing.

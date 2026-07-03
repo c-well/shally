@@ -164,7 +164,11 @@ Route::middleware('auth')->group(function () {
         // Hush-latch usage learning: one row per (user, card); '__visits' counts hub loads.
         Route::post('/admin/hub/track', function (\Illuminate\Http\Request $r) {
             $key = substr((string) $r->input('key'), 0, 64);
-            if ($key !== '') {
+            if (str_starts_with($key, '__view:')) {
+                // View preference (default|groups|smart) — one row per user, latest wins.
+                \DB::table('admin_hub_usage')->where('user_id', auth()->id())->where('item_key', 'like', '__view:%')->delete();
+                \DB::table('admin_hub_usage')->insert(['user_id' => auth()->id(), 'item_key' => $key, 'clicks' => 1, 'created_at' => now(), 'updated_at' => now()]);
+            } elseif ($key !== '') {
                 $row = \DB::table('admin_hub_usage')->where(['user_id' => auth()->id(), 'item_key' => $key])->first();
                 if ($row) {
                     \DB::table('admin_hub_usage')->where('id', $row->id)->update(['clicks' => $row->clicks + 1, 'updated_at' => now()]);
