@@ -82,10 +82,14 @@ class AdminIntakeController extends Controller
     /** Edit the text that appears on a slide, then re-render (one-off). */
     public function editSubmission(Request $request, IntakeSubmission $submission): JsonResponse
     {
-        $fields = ['name', 'level', 'school', 'major', 'honors', 'thanks', 'verse'];
+        $fields = ['name', 'level', 'school', 'major', 'honors', 'thanks', 'verse', 'class_year'];
         $data = $submission->data ?? [];
         foreach ($fields as $f) {
             if ($request->has($f)) $data[$f] = trim((string) $request->input($f));
+        }
+        // class_year must be a sane 4-digit year or it's dropped (keeps the render clean)
+        if (isset($data['class_year']) && ! preg_match('/^20\d\d$/', $data['class_year'])) {
+            unset($data['class_year']);
         }
         $submission->data = $data;
         if ($request->filled('name')) $submission->submitter_name = $data['name'];

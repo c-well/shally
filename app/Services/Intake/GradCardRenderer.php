@@ -90,7 +90,10 @@ class GradCardRenderer
     private function drawText($im, IntakeSubmission $sub, int $left, int $right, int $yTop = 110, int $yBottom = 970): void
     {
         $maxW = $right - $left;
-        $year = now()->month >= 7 ? now()->year + 1 : now()->year;
+        // Class year is EDITABLE on the submission (admin gallery), defaulting to the
+        // year they submitted. The old month-heuristic stamped July+ renders "2027" —
+        // wrong for June/July graduates and impossible to correct.
+        $year = (int) ($sub->value('class_year') ?: ($sub->created_at?->year ?? now()->year));
 
         $name   = trim((string) $sub->value('name')) ?: 'Graduate';
         $level  = trim((string) $sub->value('level'));
