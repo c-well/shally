@@ -18,20 +18,6 @@ class AdminSlidesController extends Controller
     public function store(Request $request): RedirectResponse
     {
         @set_time_limit(120);
-        // SLIDE_UPLOAD_DEBUG — log every attempt regardless of validation outcome so we
-        // can see what users are actually trying to upload. Remove once we know.
-        if ($request->hasFile('image')) {
-            $f = $request->file('image');
-            \Log::info('Slide upload attempt', [
-                'name'      => $f->getClientOriginalName(),
-                'ext'       => $f->getClientOriginalExtension(),
-                'guessed'   => $f->guessExtension(),
-                'size_kb'   => round($f->getSize() / 1024),
-                'mime'      => $f->getMimeType(),
-                'real_path' => $f->getRealPath(),
-                'is_valid'  => $f->isValid(),
-            ]);
-        }
         $data = $request->validate([
             // Broader list — Affinity, Photoshop, phones, GIMP can all export these.
             'image'       => 'required|file|max:25600|extensions:jpg,jpeg,png,webp,gif,heic,heif,tif,tiff,bmp',
@@ -52,7 +38,7 @@ class AdminSlidesController extends Controller
             \Log::warning('Slide upload: image unreadable', [
                 'name' => $f->getClientOriginalName(),
                 'size' => $f->getSize(),
-                'mime' => @mime_content_type($f->getRealPath()) ?: 'unknown',
+                'mime' => @getimagesize($f->getRealPath())['mime'] ?? 'unknown',  // no fileinfo on this host
                 'hint' => $hint,
             ]);
             return back()->withInput()->withErrors([

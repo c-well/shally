@@ -69,8 +69,10 @@ class AdminMediaController extends Controller
             "file" => "required|file|max:81920", // 80MB cap (covers audio + image)
         ]);
         $f = $request->file("file");
-        $mime = $f->getMimeType() ?: "application/octet-stream";
-        $kind = str_starts_with($mime, "audio/") ? "audio" : "image";
+        // No fileinfo on this host — getMimeType() throws. Classify by extension,
+        // then verify: images must decode via GD below, so a mislabeled file still fails safely.
+        $ext  = strtolower($f->getClientOriginalExtension());
+        $kind = in_array($ext, ["mp3", "m4a", "aac", "wav", "ogg", "oga", "flac", "opus"], true) ? "audio" : "image";
 
         $sub = $kind === "audio" ? "uploads/library-audio" : "uploads/library-images";
         $dir = public_path($sub);
@@ -111,6 +113,14 @@ class AdminMediaController extends Controller
         } else {
             // Audio — stream straight to disk, no transcoding
             $ext = strtolower($f->getClientOriginalExtension() ?: "mp3");
+            $mime = match ($ext) {
+                "mp3"          => "audio/mpeg",
+                "m4a", "aac"   => "audio/mp4",
+                "wav"          => "audio/wav",
+                "ogg", "oga", "opus" => "audio/ogg",
+                "flac"         => "audio/flac",
+                default        => "application/octet-stream",
+            };
             $name = \Str::slug(pathinfo($f->getClientOriginalName(), PATHINFO_FILENAME))
                   . "-" . substr(bin2hex(random_bytes(4)), 0, 6) . "." . $ext;
             $f->move($dir, $name);
