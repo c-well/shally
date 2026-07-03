@@ -95,12 +95,12 @@ class GradCardRenderer
         // wrong for June/July graduates and impossible to correct.
         $year = (int) ($sub->value('class_year') ?: ($sub->created_at?->year ?? now()->year));
 
-        $name   = trim((string) $sub->value('name')) ?: 'Graduate';
-        $level  = trim((string) $sub->value('level'));
-        $school = trim((string) $sub->value('school'));
-        $degree = trim((string) ($sub->value('major') ?: $sub->value('degree')));
-        $honors = trim((string) $sub->value('honors'));
-        $thanks = trim((string) ($sub->value('thanks') ?: $sub->value('verse')));
+        $name   = $this->clean($sub->value('name')) ?: 'Graduate';
+        $level  = $this->clean($sub->value('level'));
+        $school = $this->clean($sub->value('school'));
+        $degree = $this->clean($sub->value('major') ?: $sub->value('degree'));
+        $honors = $this->clean($sub->value('honors'));
+        $thanks = $this->clean($sub->value('thanks') ?: $sub->value('verse'));
 
         $serifName = $this->style === 'serif';
         $nameFont  = $serifName ? $this->serifMed : $this->sans;
@@ -217,6 +217,27 @@ class GradCardRenderer
         if ($o === 6) return imagerotate($img, -90, 0);
         if ($o === 8) return imagerotate($img, 90, 0);
         return $img;
+    }
+
+    /**
+     * Strip emoji/pictographs before drawing. The card fonts (Plex/Poppins TTF)
+     * have no emoji glyphs, so GD renders them as garbled boxes — Andre saw
+     * "winding characters" on Melody's card (🙌🏾 in the thanks line). The
+     * submission's stored text keeps its emoji; only the render is cleaned.
+     */
+    private function clean(mixed $text): string
+    {
+        $t = trim((string) $text);
+        if ($t === '') return '';
+        $t = (string) preg_replace(
+            '/[\x{1F000}-\x{1FFFF}\x{2600}-\x{27BF}\x{2B00}-\x{2BFF}\x{FE00}-\x{FE0F}\x{200D}\x{20E3}\x{2190}-\x{21FF}\x{2300}-\x{23FF}]/u',
+            '',
+            $t
+        );
+        // collapse whitespace + orphaned space-before-punctuation left by removals
+        $t = (string) preg_replace('/\s{2,}/', ' ', $t);
+        $t = (string) preg_replace('/\s+([.,;:!?])/', '$1', $t);
+        return trim($t);
     }
 
     /* ─────────────────────── type helpers ─────────────────────── */
