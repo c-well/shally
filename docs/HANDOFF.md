@@ -89,3 +89,7 @@ The `Co-Authored-By: Claude ...` line on commits is a standard git **trailer** (
 - Add new admin destinations by adding ONE entry to the $HUB array + its key to a $GROUPS list in resources/views/admin/hub.blade.php. Do not append loose cards.
 - Cron watchdog: TrackPageView emails super-admins if the scheduler heartbeat (AppSetting cron_heartbeat_at) is >60 min stale; the hub shows a red banner. If cron dies: crontab -l | crontab - revives it (worked 2026-07-03 after a 7-day silent outage).
 - Web SAPI facts (probe-verified): disable_functions = exec, passthru, shell_exec, system. proc_open IS available (use Illuminate Process). fileinfo absent — never rely on MIME guessing.
+
+## Deploy + design rules (2026-07-03, Karlon)
+- **ZERO DOWNTIME:** every deploy goes through `/home/shalom/bin/safe-deploy.sh staged:target [...]` — lints first, backs up, raises the branded "Be right back" 503 for seconds only, probes /, /lesson, /find-peace, /kids for 200, AUTO-ROLLS-BACK on failure. Never edit live PHP in place; never leave the site serving errors. Render-test auth-gated views via tinker (auth()->loginUsingId + view()->render()) since probes can't reach them.
+- **NO PILL BUTTONS:** buttons/inputs use border-radius 3-8px. 999px is for badge/count bubbles only. Check design specs + sibling views before styling anything new.

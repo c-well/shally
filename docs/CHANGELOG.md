@@ -1,5 +1,13 @@
 # Shalom — Changelog
 
+## 2026-07-03 · Zero-downtime deploys (Karlon's rule) + button-spec fix
+
+New standing rule after last night's two brief self-inflicted 500 windows: **the site never serves errors during an update, big or small.** Built `/home/shalom/bin/safe-deploy.sh` — every deploy now (1) lints all staged PHP and refuses to start on any failure, (2) backs up the files it will replace (last 20 sets kept in ~/deploy-backups), (3) raises the branded "Be right back" page for only the seconds of the swap, (4) clears caches, brings the site up, and probes /, /lesson, /find-peace, /kids for 200, and (5) **auto-rolls-back from the backups if any probe fails**. First real use: deploying today's hub fix — lint → backup → swap → all probes 200.
+
+Also fixed a design-spec violation Karlon caught: the new hub view-switcher and search were pill-shaped (999px). The site's buttons use a small radius (3–8px across every admin surface); pills are reserved for badge bubbles. Both corrected; rule documented in HANDOFF.
+
+**Files:** /home/shalom/bin/safe-deploy.sh, resources/views/admin/hub.blade.php, docs/HANDOFF.md
+
 ## 2026-07-03 · Admin hub — view latch (corrected per Karlon)
 
 Redone per instruction: the hub no longer forces a new look. A **view latch at the top** gives each admin the choice — **Default** (all cards out, the exact familiar grid — nothing jarring), **Groups** (everything nested in the four hush latches), or **Smart ★** (their most-used destinations first, learned from real clicks, with everything else behind the latches below). Smart unlocks after that admin's 7th visit — until then the option shows its progress (e.g. "3/7") and stays disabled. The choice is remembered per admin (stored server-side), so each person's hub opens the way they like it. Mini search sits beside the latch and reveals matches in whichever view is active.
