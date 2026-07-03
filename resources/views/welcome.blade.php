@@ -540,7 +540,7 @@
   }
   .undo-toast button:hover { background: #a78939; }
   /* Undo/Redo icon buttons in header — WCAG AA visibility (3:1 non-text contrast, 44px tap target).
-     Disabled state stays visible enough to read (0.55 opacity → still ~3.5:1 against parchment). */
+     Disabled state stays visible enough to read (0.55 opacity @include('partials._ar') still ~3.5:1 against parchment). */
   .icon-btn {
     padding: 0 !important;
     width: 44px; height: 44px; min-width: 44px;
@@ -600,8 +600,8 @@
   /* When bulletin has unpublished changes, the Go Live trigger goes green AND pulses.
      The hover state stays green (NOT a different shade) — that fixes the previous
      inconsistency where Admin hovered to teal but dirty Go Live hovered to dark green.
-     Now: not dirty → both triggers identical (ink → teal hover).
-          dirty       → Go Live alone is green + pulse, hover stays green. */
+     Now: not dirty @include('partials._ar') both triggers identical (ink @include('partials._ar') teal hover).
+          dirty       @include('partials._ar') Go Live alone is green + pulse, hover stays green. */
   /* PowerBook sleep-light breath — slow 3.6s sinusoidal swell on the button itself.
      No expanding ring, no ricochet. The button surface gently brightens and dims
      like the tiny white LED on a closed PowerBook G3/G4. The inset highlight at
@@ -1294,7 +1294,7 @@
      Two items share the same vertical space. The MAIN greeting (Sabbath line
      or peace verse) is the anchor — bigger, more confident. The Daily Psalm
      is the passing thought — smaller, italic, with citation. They sequentially
-     fade (one fully out → gap → next fully in), not cross-fade.
+     fade (one fully out @include('partials._ar') gap @include('partials._ar') next fully in), not cross-fade.
 
      Cycle: 22s — generous enough to actually read each one. ─────────────── */
   .closing .closing-rotator {
@@ -2265,9 +2265,9 @@
 
   // Find this Sabbath's Friday anchor (midnight local)
   $friday = clone $now; $friday->setTime(0, 0);
-  if ($dow === 6)       $friday->modify('-1 day');      // already Sat → Fri was yesterday
+  if ($dow === 6)       $friday->modify('-1 day');      // already Sat @include('partials._ar') Fri was yesterday
   elseif ($dow === 5)   {}                              // it's Fri today
-  else                  $friday->modify('next friday'); // Sun–Thu → upcoming Fri
+  else                  $friday->modify('next friday'); // Sun–Thu @include('partials._ar') upcoming Fri
 
   $saturday = clone $friday; $saturday->modify('+1 day');
 
@@ -2385,7 +2385,7 @@
             <div class="clerk-pdf-row" style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
               <a href="{{ route('bulletins.pdf', $bulletin) }}" target="_blank" rel="noopener"
                  style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#03617A;color:#fff;text-decoration:none;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;"
-                 title="Download current bulletin as PDF">Download PDF →</a>
+                 title="Download current bulletin as PDF">Download PDF @include('partials._ar')</a>
               @if ($bulletin->hasAvailablePreviousVersion())
                 <a href="{{ route('bulletins.pdf', $bulletin) }}?version=previous" target="_blank" rel="noopener"
                    style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:transparent;color:#03617A;border:1px solid #03617A;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;text-decoration:none;"
@@ -2427,7 +2427,7 @@
               cursor: pointer; flex-shrink: 0;
               transition: background 0.15s;
             " onmouseover="this.style.background='#9a7a32'" onmouseout="this.style.background='#b08d3c'">
-              Start →
+              Start @include('partials._ar')
             </button>
           </div>
         @endif
@@ -2440,7 +2440,7 @@
           <div class="order-list-hint">
             Tap the <span class="swatch-part">left field</span> (the program item, e.g. "Opening Hymn") to edit what's happening — autocompletes hymns when relevant.
             Tap the <span class="swatch-person">right field</span> (italic) to enter who's leading.
-            Need to clean up old name entries? <a href="#" id="manage-names-from-hint">Open Manage names ↗</a>
+            Need to clean up old name entries? <a href="#" id="manage-names-from-hint">Open Manage names @include('partials._arup')</a>
           </div>
         @endif
         @php
@@ -2477,9 +2477,9 @@
               $hasPart = !empty($line['part']);
               $hasPerson = !empty($line['person']);
               // Karlon's canonical autocomplete rules — applied to BOTH part AND person fields:
-              //   • line context contains "song" or "hymn"   → scope=hymn   (numbers from hymnal)
-              //   • line context contains "scripture"        → scope=bible  (Bible book names)
-              //   • everything else                          → scope=person (names from past bulletins)
+              //   • line context contains "song" or "hymn"   @include('partials._ar') scope=hymn   (numbers from hymnal)
+              //   • line context contains "scripture"        @include('partials._ar') scope=bible  (Bible book names)
+              //   • everything else                          @include('partials._ar') scope=person (names from past bulletins)
               // Both columns get the same scope so Andre can type the value into either field
               // without the wrong-suggestions confusion (he kept typing hymns into the person column).
               // SCOPE_LEAKAGE_FIXED — was including $prevPart (previous line's part), which leaked 'hymn' scope onto person lines right after Opening Hymn. Each line's scope is its own.

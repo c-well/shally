@@ -69,7 +69,7 @@
 <div class="stage">
 
   <header class="top">
-    <a href="/">← Back to bulletin</a>
+    <a href="/">@include('partials._arl') Back to bulletin</a>
     <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-soft);opacity:0.5;">v1.0</span>
   </header>
 
@@ -101,8 +101,8 @@
         </div>
 
         <div class="actions">
-          <a href="{{ route('login') }}" class="link">← Use email</a>
-          <button type="submit" class="btn-primary">Sign in →</button>
+          <a href="{{ route('login') }}" class="link">@include('partials._arl') Use email</a>
+          <button type="submit" class="btn-primary">Sign in @include('partials._ar')</button>
         </div>
       </form>
     </div>

@@ -203,10 +203,10 @@
     <div style="display:flex; gap:10px; align-items:center;">
       @auth
         @if(in_array(auth()->user()->role, ['super_admin'], true))
-          <a href="{{ route('admin.hub') }}" class="home-link">← Admin</a>
+          <a href="{{ route('admin.hub') }}" class="home-link">@include('partials._arl') Admin</a>
         @endif
       @endauth
-      <a href="/" class="home-link">← Bulletin</a>
+      <a href="/" class="home-link">@include('partials._arl') Bulletin</a>
     </div>
   </div>
 

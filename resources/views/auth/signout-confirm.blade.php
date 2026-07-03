@@ -50,7 +50,7 @@
 <body>
 <div class="stage">
 <header class="top">
-  <a href="/">← Home</a>
+  <a href="/">@include('partials._arl') Home</a>
   <span class="meta">sign out</span>
 </header>
 
@@ -63,7 +63,7 @@
     <div class="ctas">
       <form method="POST" action="{{ route('logout') }}">
         @csrf
-        <button type="submit" class="btn-primary">Yes, sign me out →</button>
+        <button type="submit" class="btn-primary">Yes, sign me out @include('partials._ar')</button>
       </form>
       <a href="/" class="btn-ghost">Stay signed in</a>
     </div>
@@ -73,7 +73,7 @@
     <p class="lede">No need to do anything — you're already a public visitor.</p>
 
     <div class="ctas">
-      <a href="/" class="btn-primary">Go to the home page →</a>
+      <a href="/" class="btn-primary">Go to the home page @include('partials._ar')</a>
       <a href="{{ route('login') }}" class="btn-ghost">Sign in instead</a>
     </div>
   @endauth

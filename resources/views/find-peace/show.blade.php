@@ -22,7 +22,7 @@
             </label>
           @endforeach
         </div>
-        <button type="submit" class="poll-submit" disabled>See what scripture says →</button>
+        <button type="submit" class="poll-submit" disabled>See what scripture says @include('partials._ar')</button>
       </form>
       <div class="poll-results" hidden>
         @if($poll->scripture_explainer)
@@ -816,7 +816,7 @@ $linkifyScripture = function ($text) use ($linkifyTopics) {
 @endphp
 
 <div class="mark-top"><a href="{{ route('find-peace.index') }}">shalom</a>
-  <a class="back-quiet" href="{{ route('find-peace.index') }}">← all messages</a>
+  <a class="back-quiet" href="{{ route('find-peace.index') }}">@include('partials._arl') all messages</a>
 </div>
 
 <section class="sermon-page">
@@ -1569,7 +1569,7 @@ document.querySelectorAll('.reaction').forEach(btn => {
       <input type="hidden" name="form_opened_at" id="seeker-opened-at" value="0">
       <input type="hidden" name="qa_id" id="seeker-qa-id" value="">
       <input type="email" name="email" id="seeker-email" placeholder="your email" required autocomplete="email">
-      <button type="submit" class="submit" id="seeker-submit">Send link →</button>
+      <button type="submit" class="submit" id="seeker-submit">Send link @include('partials._ar')</button>
     </form>
     <button type="button" class="cancel" id="seeker-cancel">Maybe later</button>
     <p class="fine">No spam. Unsubscribe with one click. Email goes to <span style="font-family:'JetBrains Mono',ui-monospace,monospace;">hello@thechurchofpeace.org</span> — replies welcome.</p>
@@ -1615,7 +1615,7 @@ document.querySelectorAll('.reaction').forEach(btn => {
       </a>
     </div>
     <div class="share-more-toggle">
-      <button type="button" id="share-more-btn">More sharing options →</button>
+      <button type="button" id="share-more-btn">More sharing options @include('partials._ar')</button>
     </div>
     <button type="button" class="share-modal-cancel" id="share-cancel">Never mind</button>
   </div>

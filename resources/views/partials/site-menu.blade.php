@@ -322,7 +322,7 @@
   </div>
 
   <nav class="site-menu-nav">
-    <a class="site-menu-link" href="{{ url('/') }}">Home <span class="arrow">→</span></a>
+    <a class="site-menu-link" href="{{ url('/') }}">Home <span class="arrow">@include('partials._ar')</span></a>
 
     <div class="site-menu-section">
       <button class="site-menu-section-toggle" type="button" aria-expanded="false">
@@ -338,12 +338,12 @@
       </div>
     </div>
 
-    <a class="site-menu-link" href="{{ route('visit') }}">Visit Us <span class="arrow">→</span></a>
+    <a class="site-menu-link" href="{{ route('visit') }}">Visit Us <span class="arrow">@include('partials._ar')</span></a>
 
-    <a class="site-menu-link" href="{{ route('prayer.show') }}">Prayer Request <span class="arrow">→</span></a>
+    <a class="site-menu-link" href="{{ route('prayer.show') }}">Prayer Request <span class="arrow">@include('partials._ar')</span></a>
 
     @foreach (\Illuminate\Support\Facades\Cache::remember('intake_menu_forms', 300, fn() => \App\Models\IntakeForm::menuForms()) as $mf)
-      <a class="site-menu-link" href="{{ url('/intake/' . $mf->slug) }}">{{ $mf->menuLabel() }} <span class="arrow">→</span></a>
+      <a class="site-menu-link" href="{{ url('/intake/' . $mf->slug) }}">{{ $mf->menuLabel() }} <span class="arrow">@include('partials._ar')</span></a>
     @endforeach
 
     <div class="site-menu-section">
@@ -365,9 +365,9 @@
     </div>
 
     @php $bullHref = (auth()->check() && in_array(auth()->user()->role,['super_admin','clerk']) && \App\Models\AppSetting::get('bulletin_editor','v1')==='v2') ? route('admin.bulletin') : url('/welcome'); @endphp
-    <a class="site-menu-link" href="{{ $bullHref }}">Bulletin <span class="arrow">→</span></a>
+    <a class="site-menu-link" href="{{ $bullHref }}">Bulletin <span class="arrow">@include('partials._ar')</span></a>
 
-    <a class="site-menu-link" href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener">Donate <span class="arrow">→</span></a>
+    <a class="site-menu-link" href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener">Donate <span class="arrow">@include('partials._ar')</span></a>
 
     @auth
       @if ((auth()->user()->role === 'super_admin' || auth()->user()->role === 'clerk') && ($bulletin ?? null))
@@ -426,10 +426,10 @@
 
       <form method="POST" action="{{ route('logout') }}" style="margin:0;">
         @csrf
-        <button type="submit" class="site-menu-link site-menu-link-signout site-menu-sub-link-form">Sign out <span class="arrow">→</span></button>
+        <button type="submit" class="site-menu-link site-menu-link-signout site-menu-sub-link-form">Sign out <span class="arrow">@include('partials._ar')</span></button>
       </form>
     @else
-      <a class="site-menu-link" href="{{ route('login') }}">Sign in <span class="arrow">→</span></a>
+      <a class="site-menu-link" href="{{ route('login') }}">Sign in <span class="arrow">@include('partials._ar')</span></a>
     @endauth
   </nav>
 </div>

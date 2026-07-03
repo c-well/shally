@@ -228,12 +228,12 @@
 
     <nav class="week-nav" aria-label="Week navigation">
       <a href="{{ route('lesson.week', ['lesson' => max(1, $lessonNum - 1)]) }}"
-         class="{{ $lessonNum <= 1 ? 'disabled' : '' }}">← Prev</a>
+         class="{{ $lessonNum <= 1 ? 'disabled' : '' }}">@include('partials._arl') Prev</a>
       @if ($range && $range['lesson'] !== $lessonNum)
         <a href="{{ route('lesson.show') }}" class="now">This week</a>
       @endif
       <a href="{{ route('lesson.week', ['lesson' => min(13, $lessonNum + 1)]) }}"
-         class="{{ $lessonNum >= 13 ? 'disabled' : '' }}">Next →</a>
+         class="{{ $lessonNum >= 13 ? 'disabled' : '' }}">Next @include('partials._ar')</a>
     </nav>
   </section>
 
@@ -316,8 +316,8 @@
         </div>
 
         <nav class="day-foot-nav" aria-label="Day navigation">
-          <button type="button" class="day-prev" data-target="{{ max(1, $did - 1) }}" {{ $did === 1 ? 'disabled' : '' }}>← Previous day</button>
-          <button type="button" class="day-next" data-target="{{ min(7, $did + 1) }}" {{ $did === 7 ? 'disabled' : '' }}>Next day →</button>
+          <button type="button" class="day-prev" data-target="{{ max(1, $did - 1) }}" {{ $did === 1 ? 'disabled' : '' }}>@include('partials._arl') Previous day</button>
+          <button type="button" class="day-next" data-target="{{ min(7, $did + 1) }}" {{ $did === 7 ? 'disabled' : '' }}>Next day @include('partials._ar')</button>
         </nav>
       </article>
     @endforeach

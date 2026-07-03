@@ -216,8 +216,8 @@
   <div class="cross-links">
     <h3>Going deeper</h3>
     <p>Looking for scripture instead? The Bible page has KJV and ESV with the same search experience.</p>
-    <a href="{{ route('bible') }}">Bible (KJV & ESV) →</a>
-    <a href="{{ route('lesson.show') }}">Sabbath School lesson →</a>
+    <a href="{{ route('bible') }}">Bible (KJV & ESV) @include('partials._ar')</a>
+    <a href="{{ route('lesson.show') }}">Sabbath School lesson @include('partials._ar')</a>
   </div>
 </main>
 

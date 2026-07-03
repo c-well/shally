@@ -194,7 +194,7 @@
 <div class="stage">
 
   <header class="top-brand">
-    <a href="/">← Back to bulletin</a>
+    <a href="/">@include('partials._arl') Back to bulletin</a>
     <span class="version-badge" title="The Church of Peace · Build 1.0">v1.0</span>
   </header>
 
@@ -234,18 +234,18 @@
           @else
             <span></span>
           @endif
-          <button type="submit" class="btn-primary">Sign in →</button>
+          <button type="submit" class="btn-primary">Sign in @include('partials._ar')</button>
         </div>
       </form>
 
       <div class="divider">Or</div>
 
       <a href="{{ route('magic-link.request') }}" class="magic-link-btn">
-        Email me a sign-in link →
+        Email me a sign-in link @include('partials._ar')
       </a>
 
       <a href="{{ route('pin-login') }}" class="magic-link-btn" style="margin-top: 10px;">
-        Sign in with PIN →
+        Sign in with PIN @include('partials._ar')
       </a>
 
     </div>

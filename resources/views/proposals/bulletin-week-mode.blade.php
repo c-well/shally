@@ -66,7 +66,7 @@
     padding: 4px 0 4px 20px; position: relative;
   }
   .proposal-card ul li::before {
-    content: '→'; position: absolute; left: 0; color: var(--teal); font-weight: bold;
+    content: '@include('partials._ar')'; position: absolute; left: 0; color: var(--teal); font-weight: bold;
   }
 
   .compare {
@@ -171,7 +171,7 @@
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 <header class="top">
-  <a href="{{ url('/welcome') }}">← Bulletin</a>
+  <a href="{{ url('/welcome') }}">@include('partials._arl') Bulletin</a>
   <span class="meta">proposal · bulletin week-mode</span>
 </header>
 

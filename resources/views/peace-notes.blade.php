@@ -213,7 +213,7 @@
   @endif
 
   <div class="ctas">
-    <a href="https://www.youtube.com/c/ShalomSDAChurchBX/videos" target="_blank" rel="noopener" class="btn-ghost">Watch live on YouTube ↗</a>
+    <a href="https://www.youtube.com/c/ShalomSDAChurchBX/videos" target="_blank" rel="noopener" class="btn-ghost">Watch live on YouTube @include('partials._arup')</a>
   </div>
 </main>
 

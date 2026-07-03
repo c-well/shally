@@ -89,7 +89,7 @@
               <div class="ref">{{ $lvl->reference }}</div>
               <div class="t">{{ $lvl->title ?: $lvl->book }}</div>
               <div class="bk">{{ $lvl->book }} · {{ ['little'=>'Ages 4–6','older'=>'Ages 7–9','teens'=>'Teens'][$lvl->age_band] ?? $lvl->age_band }}</div>
-              <div class="go">Play →</div>
+              <div class="go">Play @include('partials._ar')</div>
             </a>
           @endforeach
         </div>

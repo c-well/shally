@@ -91,7 +91,7 @@
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 <div class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <div class="right">
     <form method="POST" action="{{ route('admin.bulletin.prefer') }}" style="display:inline;">@csrf<input type="hidden" name="version" value="v1"><button class="lnk" type="submit">Classic editor ⇄</button></form>
     @if ($bulletin)
@@ -106,7 +106,7 @@
   <div class="nobull">
     <div class="big">No bulletin yet.</div>
     <p style="color:var(--ink-soft)">Create this week's bulletin from the classic editor, then come back here to drill through it.</p>
-    <a class="addbtn" style="display:inline-block;margin-top:18px" href="/welcome">Open classic editor →</a>
+    <a class="addbtn" style="display:inline-block;margin-top:18px" href="/welcome">Open classic editor @include('partials._ar')</a>
   </div>
 @else
 <main data-bid="{{ $bulletin->id }}">

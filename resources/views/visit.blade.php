@@ -110,7 +110,7 @@
       <div class="row"><strong>Subway:</strong> 2 / 5 to Burke Av · walk toward Gunhill Rd · 4 min</div>
       <div class="row"><strong>Bus:</strong> Bx39 / Bx41 stops nearby</div>
       <div class="row"><strong>Parking:</strong> street on White Plains & adjacent side streets</div>
-      <a href="https://maps.google.com/?q=3323+White+Plains+Road+Bronx+NY+10467" target="_blank" rel="noopener" class="open-maps">Open in Maps ↗</a>
+      <a href="https://maps.google.com/?q=3323+White+Plains+Road+Bronx+NY+10467" target="_blank" rel="noopener" class="open-maps">Open in Maps @include('partials._arup')</a>
     </div>
     <div class="address-map">
       <iframe
@@ -157,7 +157,7 @@
   </section>
 
   <div class="ctas">
-    <a href="{{ url('/') }}" class="btn-primary">See this Sabbath's bulletin →</a>
+    <a href="{{ url('/') }}" class="btn-primary">See this Sabbath's bulletin @include('partials._ar')</a>
     <a href="{{ route('contact.show') }}" class="btn-ghost">Ask a question</a>
   </div>
 </main>

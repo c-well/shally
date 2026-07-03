@@ -273,7 +273,7 @@
               <p class="qa-card-answer">{{ $qa->answer }}</p>
               <a href="{{ route('find-peace.show', $qa->sermon->slug) }}?qa={{ $qa->id }}" class="qa-card-readmore">
                 Read full message
-                <span aria-hidden="true">→</span>
+                <span aria-hidden="true">@include('partials._ar')</span>
               </a>
             </div>
           </details>
@@ -296,7 +296,7 @@
         <li>
           <a href="{{ route('find-peace.show', $sermon->slug) }}">
             <span>{{ $sermon->title }}@if($i === 0) <span class="new-badge">· NEW</span>@endif</span>
-            <span class="arrow">→</span>
+            <span class="arrow">@include('partials._ar')</span>
           </a>
         </li>
       @endforeach
@@ -322,7 +322,7 @@
 </section>
 @endif
 
-<div style="text-align: center; padding: 1rem 0 0; font-size: 0.85rem;"><a href="{{ route('peace.share.show') }}" style="color: var(--brass); text-decoration: none;">Got your own question or experience? Add yours →</a></div>
+<div style="text-align: center; padding: 1rem 0 0; font-size: 0.85rem;"><a href="{{ route('peace.share.show') }}" style="color: var(--brass); text-decoration: none;">Got your own question or experience? Add yours @include('partials._ar')</a></div>
 <footer class="footer">
   <div class="footer-mark">shalom</div>
   <p class="footer-text">Peace, wellness, and freedom — for every member of our community.</p>

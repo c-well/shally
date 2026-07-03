@@ -488,7 +488,7 @@
      framed photograph rather than empty void. Previously used `cover` which guaranteed
      fills but cropped portrait shots (heads cut off). */
   .slider-section { padding: 0; max-width: 100%; margin: 0; background: var(--parchment); }
-  /* Editable intro block above the slider — admin-managed at /admin/pages → slider-intro.
+  /* Editable intro block above the slider — admin-managed at /admin/pages @include('partials._ar') slider-intro.
      Stays out of the slider's fixed dimensions; sits above on its own row. */
   .slider-intro { max-width: 760px; margin: 0 auto; padding: 56px 24px 32px; text-align: center; }
   .slider-intro-eyebrow {
@@ -689,7 +689,7 @@
   </div>
   @php
     // LIVE_STATE — read from cache only (peace:check-live cron writes every 5 min).
-    // Fail-safe: stale (>15 min) or missing → treat as not live.
+    // Fail-safe: stale (>15 min) or missing @include('partials._ar') treat as not live.
     $liveCheckedAt = \App\Models\AppSetting::get('is_live_checked_at');
     $isLiveCacheFresh = $liveCheckedAt && \Carbon\Carbon::parse($liveCheckedAt)->gt(now()->subMinutes(15));
     $isLive = $isLiveCacheFresh && \App\Models\AppSetting::get('is_live') === '1';
@@ -708,7 +708,7 @@
     </div>
   @else
     {{-- DORMANT — normal two-button hero (unchanged) --}}
-    <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin →</a>
+    <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin @include('partials._ar')</a>
     <a href="{{ route('lesson.show') }}" class="hero-cta-secondary">Sabbath School lesson</a>
   @endif
   <div class="verse-toggle-wrap"><button class="verse-toggle hidden" id="verse-toggle" type="button"><span class="verse-toggle-dot"></span><span id="verse-toggle-text">Show verse of the day</span></button></div>
@@ -800,19 +800,19 @@
       <span class="fc-eyebrow">Sabbath</span>
       <span class="fc-title">This week's bulletin.</span>
       <span class="fc-sub">Order of service, who's leading what, and the announcements — refreshed every Sabbath.</span>
-      <span class="fc-arrow">Read →</span>
+      <span class="fc-arrow">Read @include('partials._ar')</span>
     </a>
     <a href="{{ route('lesson.show') }}" class="feature-card">
       <span class="fc-eyebrow">Adult Bible Study Guide</span>
       <span class="fc-title">Sabbath School lesson.</span>
       <span class="fc-sub">This quarter's full guide. Download the PDF or follow the daily readings.</span>
-      <span class="fc-arrow">Open →</span>
+      <span class="fc-arrow">Open @include('partials._ar')</span>
     </a>
     <a href="{{ route('peace-notes') }}" class="feature-card">
       <span class="fc-eyebrow">Podcast</span>
       <span class="fc-title">Peace Notes.</span>
       <span class="fc-sub">Conversations from the pulpit and beyond — listen any time.</span>
-      <span class="fc-arrow">Listen →</span>
+      <span class="fc-arrow">Listen @include('partials._ar')</span>
     </a>
   </div>
 </section>
@@ -867,7 +867,7 @@
   <div class="donate-band">
     <h3>Support the ministry.</h3>
     <p>Tithes, offerings, and gifts run securely through Adventist Giving.</p>
-    <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener">Give now ↗</a>
+    <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener">Give now @include('partials._arup')</a>
   </div>
 </section>
 

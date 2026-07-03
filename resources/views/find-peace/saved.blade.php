@@ -69,7 +69,7 @@
         <p class="answer-snip">{{ \Illuminate\Support\Str::limit($qa->answer, 200) }}</p>
         <div class="actions">
           @if($qa->sermon)
-            <a href="{{ route('find-peace.show', $qa->sermon->slug) }}?qa={{ $qa->id }}">Read the full message →</a>
+            <a href="{{ route('find-peace.show', $qa->sermon->slug) }}?qa={{ $qa->id }}">Read the full message @include('partials._ar')</a>
           @endif
           <button type="button" class="remove-btn" data-remove-id="{{ $qa->id }}">Remove from saved</button>
         </div>
@@ -79,14 +79,14 @@
     <div class="empty">
       <h2>Nothing saved yet.</h2>
       <p>When something speaks to you on Finding Peace, tap the bookmark on it. It'll show up here.</p>
-      <p style="margin-top:1.2rem;"><a href="{{ route('find-peace.index') }}">← Back to Finding Peace</a></p>
+      <p style="margin-top:1.2rem;"><a href="{{ route('find-peace.index') }}">@include('partials._arl') Back to Finding Peace</a></p>
     </div>
   @endif
 
   <div class="footer-bar">
     <span>{{ $seeker->email }}</span>
     <span style="flex: 1; text-align: center;">
-      <a href="{{ route('peace.share.show') }}" style="color: var(--brass); text-decoration: none; font-weight: 500;">Add your own question or experience →</a>
+      <a href="{{ route('peace.share.show') }}" style="color: var(--brass); text-decoration: none; font-weight: 500;">Add your own question or experience @include('partials._ar')</a>
     </span>
     <form method="POST" action="{{ route('peace.auth.logout') }}" style="display:inline;">
       @csrf

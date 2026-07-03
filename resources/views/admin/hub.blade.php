@@ -108,32 +108,32 @@
   $_unreadTotal   = $_unreadPrayer + $_unreadContact;
 
   $HUB = [
-    'messages'  => ['Inbox', 'Messages.', 'Prayer requests & contact-form messages from visitors.', 'Open →', route('admin.messages')],
-    'users'     => ['People', 'Users.', 'Add Andre, the elders, members. Set their PIN.', 'Manage →', route('admin.users')],
-    'logs'      => ['Activity', 'Audit log.', 'Every sign-in, magic link, and error from the last 40 days.', 'View →', route('admin.logs')],
-    'changes'   => ['Undo', 'Edit history.', 'Every content edit — bulletins, pages, lessons — with a one-click undo for each.', 'Open →', route('admin.changes')],
-    'bulletin'  => ['New', 'Bulletin editor.', 'The drill-through editor — every item inline, autosaves, works on phone and tablet.', 'Open →', route('admin.bulletin')],
-    'events'    => ['Calendar', 'Events.', 'Add an event in seconds — name, date, flyer. Live as you fill it in.', 'Open →', route('admin.events')],
-    'games'     => ['Kids', 'Scripture games.', 'Build the verse games — pick a book, a game, an age. They appear at /kids.', 'Open →', route('admin.games')],
-    'mystery'   => ['Teens', 'Undercover.', 'The question bank for the youth-night mystery game.', 'Open →', route('admin.mystery')],
-    'intake'    => ['Forms', 'Intake.', 'Graduation slides, sign-ups — shareable links, every submission in its gallery.', 'Open →', route('admin.intake.index')],
-    'changelog' => ['Dev notes', 'Changelog.', 'Plain-English log of every site change. When something feels off, look here first.', 'Open →', route('admin.changelog')],
-    'spend'     => ['Cost', 'API spend.', "Live tally of Shalom's Anthropic API calls · per-source + per-model.", 'Open →', route('admin.anthropic-usage')],
-    'names'     => ['Cleanup', 'Bulletin names.', "Hide typos or names you don't want appearing in autocomplete.", 'Tidy →', route('admin.names')],
-    'schedule'  => ['Departments', 'Schedule.', "Who's serving on Sabbath: ushers, deacons, music, platform.", 'Open →', route('schedule.index')],
-    'lessons'   => ['Sabbath school', 'Lessons.', 'Quarterly PDF + readings — now rolls over automatically each quarter.', 'Manage →', route('admin.lessons')],
-    'sermons'   => ['Peace Notes', 'Sermons.', 'Upload audio sermons to the public archive · listen, edit, delete.', 'Manage →', route('admin.sermons.index')],
-    'peace'     => ['Ministry', 'Finding Peace.', 'Edit auto-processed sermons · tweak Q&As, scriptures, topics.', 'Manage →', route('admin.peace.index')],
-    'slides'    => ['Home page', 'Hero slides.', 'Photos that rotate on the home page · upload, reorder, retire.', 'Manage →', route('admin.slides.index')],
-    'media'     => ['Library', 'Media pool.', 'All uploaded images and audio · pick, copy URL, delete.', 'Open →', route('admin.media.index')],
-    'analytics' => ['Telemetry', 'Analytics.', 'First-party page views, top paths, devices, referrers · privacy-first.', 'View →', route('admin.analytics')],
-    'buginbox'  => ['Bug reports', 'Inbox.', 'Read incoming bug reports + feedback. Close when handled.', 'Open →', route('admin.inbox')],
-    'pg_landing'=> ['Front door', 'Home / landing.', 'Hero, schedule, this-week cards, latest sermon, donate band.', 'Preview ↗', route('admin.pages.edit', 'landing')],
-    'pg_about'  => ['Our story', 'About.', 'Who Shalom is, the culture, what to expect from a Sabbath here.', 'Preview ↗', route('admin.pages.edit', 'about')],
-    'pg_visit'  => ['First-timer', 'Visit us.', 'Address, map, parking, dress, FAQ.', 'Preview ↗', route('admin.pages.edit', 'visit')],
-    'pg_beliefs'=> ['Doctrine', 'What we believe.', '12 of the 28 SDA Fundamentals in plain language.', 'Preview ↗', route('admin.pages.edit', 'beliefs')],
-    'pg_notes'  => ['Sermon archive', 'Peace Notes.', 'Latest sermon embedded · titles list · YouTube channel link.', 'Preview ↗', route('admin.pages.edit', 'peace-notes')],
-    'pg_contact'=> ['Get in touch', 'Contact form.', 'Public form · sends to contact@ with CC to c-wellpics.', 'Preview ↗', route('admin.pages.edit', 'contact')],
+    'messages'  => ['Inbox', 'Messages.', 'Prayer requests & contact-form messages from visitors.', 'Open @include('partials._ar')', route('admin.messages')],
+    'users'     => ['People', 'Users.', 'Add Andre, the elders, members. Set their PIN.', 'Manage @include('partials._ar')', route('admin.users')],
+    'logs'      => ['Activity', 'Audit log.', 'Every sign-in, magic link, and error from the last 40 days.', 'View @include('partials._ar')', route('admin.logs')],
+    'changes'   => ['Undo', 'Edit history.', 'Every content edit — bulletins, pages, lessons — with a one-click undo for each.', 'Open @include('partials._ar')', route('admin.changes')],
+    'bulletin'  => ['New', 'Bulletin editor.', 'The drill-through editor — every item inline, autosaves, works on phone and tablet.', 'Open @include('partials._ar')', route('admin.bulletin')],
+    'events'    => ['Calendar', 'Events.', 'Add an event in seconds — name, date, flyer. Live as you fill it in.', 'Open @include('partials._ar')', route('admin.events')],
+    'games'     => ['Kids', 'Scripture games.', 'Build the verse games — pick a book, a game, an age. They appear at /kids.', 'Open @include('partials._ar')', route('admin.games')],
+    'mystery'   => ['Teens', 'Undercover.', 'The question bank for the youth-night mystery game.', 'Open @include('partials._ar')', route('admin.mystery')],
+    'intake'    => ['Forms', 'Intake.', 'Graduation slides, sign-ups — shareable links, every submission in its gallery.', 'Open @include('partials._ar')', route('admin.intake.index')],
+    'changelog' => ['Dev notes', 'Changelog.', 'Plain-English log of every site change. When something feels off, look here first.', 'Open @include('partials._ar')', route('admin.changelog')],
+    'spend'     => ['Cost', 'API spend.', "Live tally of Shalom's Anthropic API calls · per-source + per-model.", 'Open @include('partials._ar')', route('admin.anthropic-usage')],
+    'names'     => ['Cleanup', 'Bulletin names.', "Hide typos or names you don't want appearing in autocomplete.", 'Tidy @include('partials._ar')', route('admin.names')],
+    'schedule'  => ['Departments', 'Schedule.', "Who's serving on Sabbath: ushers, deacons, music, platform.", 'Open @include('partials._ar')', route('schedule.index')],
+    'lessons'   => ['Sabbath school', 'Lessons.', 'Quarterly PDF + readings — now rolls over automatically each quarter.', 'Manage @include('partials._ar')', route('admin.lessons')],
+    'sermons'   => ['Peace Notes', 'Sermons.', 'Upload audio sermons to the public archive · listen, edit, delete.', 'Manage @include('partials._ar')', route('admin.sermons.index')],
+    'peace'     => ['Ministry', 'Finding Peace.', 'Edit auto-processed sermons · tweak Q&As, scriptures, topics.', 'Manage @include('partials._ar')', route('admin.peace.index')],
+    'slides'    => ['Home page', 'Hero slides.', 'Photos that rotate on the home page · upload, reorder, retire.', 'Manage @include('partials._ar')', route('admin.slides.index')],
+    'media'     => ['Library', 'Media pool.', 'All uploaded images and audio · pick, copy URL, delete.', 'Open @include('partials._ar')', route('admin.media.index')],
+    'analytics' => ['Telemetry', 'Analytics.', 'First-party page views, top paths, devices, referrers · privacy-first.', 'View @include('partials._ar')', route('admin.analytics')],
+    'buginbox'  => ['Bug reports', 'Inbox.', 'Read incoming bug reports + feedback. Close when handled.', 'Open @include('partials._ar')', route('admin.inbox')],
+    'pg_landing'=> ['Front door', 'Home / landing.', 'Hero, schedule, this-week cards, latest sermon, donate band.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'landing')],
+    'pg_about'  => ['Our story', 'About.', 'Who Shalom is, the culture, what to expect from a Sabbath here.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'about')],
+    'pg_visit'  => ['First-timer', 'Visit us.', 'Address, map, parking, dress, FAQ.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'visit')],
+    'pg_beliefs'=> ['Doctrine', 'What we believe.', '12 of the 28 SDA Fundamentals in plain language.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'beliefs')],
+    'pg_notes'  => ['Sermon archive', 'Peace Notes.', 'Latest sermon embedded · titles list · YouTube channel link.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'peace-notes')],
+    'pg_contact'=> ['Get in touch', 'Contact form.', 'Public form · sends to contact@ with CC to c-wellpics.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'contact')],
   ];
 
   $TOOL_KEYS = ['messages','users','logs','changes','bulletin','events','games','mystery','intake','changelog','spend','names','schedule','lessons','sermons','peace','slides','media','analytics','buginbox'];
@@ -170,7 +170,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="/">← Back to bulletin</a>
+  <a href="/">@include('partials._arl') Back to bulletin</a>
   <span class="meta">admin · {{ auth()->user()->name }}</span>
 </header>
 
@@ -211,7 +211,7 @@
           using {{ $expensiveCall->model }} — {{ $expensiveCall->created_at->diffForHumans() }}.
         </div>
       </div>
-      <a href="{{ route('admin.anthropic-usage') }}" style="flex-shrink:0;padding:10px 18px;background:#a82a1f;color:#fff;text-decoration:none;border-radius:5px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;">Investigate →</a>
+      <a href="{{ route('admin.anthropic-usage') }}" style="flex-shrink:0;padding:10px 18px;background:#a82a1f;color:#fff;text-decoration:none;border-radius:5px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;">Investigate @include('partials._ar')</a>
     </div>
   @endif
 

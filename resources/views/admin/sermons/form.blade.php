@@ -72,7 +72,7 @@
 
 @include('partials.site-menu')
 <header class="top">
-  <a href="{{ route('admin.sermons.index') }}">← Sermons</a>
+  <a href="{{ route('admin.sermons.index') }}">@include('partials._arl') Sermons</a>
   <span class="meta">{{ $sermon->exists ? 'editing' : 'new sermon' }}</span>
 </header>
 <main>
@@ -163,7 +163,7 @@
       <input id="video_url" type="url" name="video_url" maxlength="500"
              value="{{ old('video_url', $sermon->video_url) }}"
              placeholder="https://www.youtube.com/watch?v=...">
-      <span class="hint">YouTube, Vimeo, or Facebook video URL · shows as a "Watch on YouTube ↗" link in the sermon player.</span>
+      <span class="hint">YouTube, Vimeo, or Facebook video URL · shows as a "Watch on YouTube @include('partials._arup')" link in the sermon player.</span>
     </div>
 
     <div class="field">
@@ -183,7 +183,7 @@
     </div>
 
     <div class="actions">
-      <button type="submit">{{ $sermon->exists ? 'Save changes →' : 'Add sermon →' }}</button>
+      <button type="submit">{{ $sermon->exists ? 'Save changes @include('partials._ar')' : 'Add sermon @include('partials._ar')' }}</button>
       <a href="{{ route('admin.sermons.index') }}">Cancel</a>
     </div>
   </form>
@@ -199,13 +199,13 @@
     <input type="search" id="media-picker-search" placeholder="Search…" style="padding:9px 12px; border:1px solid var(--line); border-radius:4px; font:inherit; font-size:13px; margin-bottom:14px;">
     <div id="media-picker-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px; overflow-y:auto; flex:1;"></div>
     <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
-      <a href="{{ route('admin.media.index') }}" target="_blank" rel="noopener" style="font-family:'Instrument Sans',sans-serif; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft); text-decoration:none;">Manage library ↗</a>
+      <a href="{{ route('admin.media.index') }}" target="_blank" rel="noopener" style="font-family:'Instrument Sans',sans-serif; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft); text-decoration:none;">Manage library @include('partials._arup')</a>
       <button type="button" id="media-picker-cancel" style="padding:9px 18px; background:transparent; border:1px solid var(--line); border-radius:4px; cursor:pointer; font-family:'Instrument Sans',sans-serif; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft);">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- HEIC → JPEG client-side conversion for the cover input (iPhone photos). -->
+<!-- HEIC @include('partials._ar') JPEG client-side conversion for the cover input (iPhone photos). -->
 <script>
 (function () {
   const fi = document.getElementById('cover');

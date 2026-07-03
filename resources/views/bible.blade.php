@@ -221,8 +221,8 @@
   <div class="cross-links">
     <h3>Going deeper this week</h3>
     <p>The Sabbath School lesson is studying a memory verse all members are working through. Peace Notes is the pastor's weekly reflection.</p>
-    <a href="{{ route('lesson.show') }}">This week's lesson →</a>
-    <a href="{{ route('peace-notes') }}">Peace Notes →</a>
+    <a href="{{ route('lesson.show') }}">This week's lesson @include('partials._ar')</a>
+    <a href="{{ route('peace-notes') }}">Peace Notes @include('partials._ar')</a>
   </div>
 </main>
 

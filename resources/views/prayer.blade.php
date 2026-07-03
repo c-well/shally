@@ -133,7 +133,7 @@
       <span class="lbl-text">Keep private — only share with the prayer team<small>Uncheck if you'd like the request shared with the wider congregation during prayer time.</small></span>
     </label>
 
-    <button type="submit" class="submit">Send prayer request →</button>
+    <button type="submit" class="submit">Send prayer request @include('partials._ar')</button>
   </form>
 </main>
 
