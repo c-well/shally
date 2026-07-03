@@ -681,7 +681,7 @@
   <div class="hero-eyebrow">{{ $heroPage?->eyebrow ?? "Shalom Seventh-day Adventist · Bronx, NY" }}</div>
   <h1>Welcome to <em>The Church of Peace</em>.</h1>
   <div class="lede-stage" id="lede-stage">
-    <div class="lede lede-welcome">@if($heroPage && $heroPage->body_html){!! $heroPage->body_html !!}@else<p><em>&quot;Where two or three gather in my name, there am I with them.&quot;</em> (Matt. 18:20) Every Sabbath, we gather at 3323 White Plains Road to do just that.</p>@endif</div>
+    <div class="lede lede-welcome">@if($heroPage && $heroPage->body_html){!! \Str::arrowize($heroPage->body_html) !!}@else<p><em>&quot;Where two or three gather in my name, there am I with them.&quot;</em> (Matt. 18:20) Every Sabbath, we gather at 3323 White Plains Road to do just that.</p>@endif</div>
     <div class="lede lede-verse" aria-hidden="true">
       <p class="verse-text">"For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life."</p>
       <p class="verse-ref">— John 3:16 · this week's Sabbath School memory verse</p>
@@ -756,7 +756,7 @@
         <h2 class="slider-intro-title">{{ $sliderIntro->title }}</h2>
       @endif
       @if (!empty($sliderIntro->body_html))
-        <div class="slider-intro-body">{!! $sliderIntro->body_html !!}</div>
+        <div class="slider-intro-body">{!! \Str::arrowize($sliderIntro->body_html) !!}</div>
       @endif
     </div>
   @endif

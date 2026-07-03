@@ -151,7 +151,7 @@
     // Split the admin-edited body so the sermon list injects right after the
     // first paragraph (the lede). Anything after the first <p>...</p> shows
     // BELOW the sermons. Keeps the lede flush against the cards as Karlon asked.
-    $bodyHtml = $page?->body_html ?? '';
+    $bodyHtml = \Str::arrowize($page?->body_html ?? '');
     $bodyTop = '';
     $bodyRest = '';
     if ($bodyHtml) {

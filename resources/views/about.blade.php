@@ -70,7 +70,7 @@
 
   <article class="prose">
     @if ($page?->body_html)
-      {!! $page->body_html !!}
+      {!! \Str::arrowize($page->body_html) !!}
     @else
       <p><em>This page hasn't been set up yet. <a href="{{ route('admin.pages.index') }}">Add it in admin.</a></em></p>
     @endif

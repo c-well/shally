@@ -97,7 +97,7 @@
   @endif
   <h1>{{ $page?->title ?? 'Get in touch.' }}</h1>
   @if ($page?->body_html)
-    <div class="prose">{!! $page->body_html !!}</div>
+    <div class="prose">{!! \Str::arrowize($page->body_html) !!}</div>
   @endif
 
   @if (session('sent'))

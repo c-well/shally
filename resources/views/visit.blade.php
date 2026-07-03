@@ -123,7 +123,7 @@
 
   @if ($page?->body_html)
     <article class="prose">
-      {!! $page->body_html !!}
+      {!! \Str::arrowize($page->body_html) !!}
     </article>
   @endif
 
