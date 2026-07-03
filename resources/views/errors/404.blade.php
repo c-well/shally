@@ -133,7 +133,7 @@
     <cite>Matthew 7:7</cite>
   </blockquote>
 
-  <a href="/" class="home">Take me home →</a>
+  <a href="/" class="home">Take me home @include('partials._ar')</a>
 
   <div class="also">
     <a href="/">Bulletin</a><span class="sep">·</span>

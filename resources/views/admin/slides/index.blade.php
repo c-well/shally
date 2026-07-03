@@ -72,7 +72,7 @@
 
 @include('partials.site-menu')
 <header class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <span class="meta">hero slides</span>
 </header>
 <main>
@@ -103,7 +103,7 @@
       <label for="link_url">Click destination (optional)</label>
       <input id="link_url" type="url" name="link_url" maxlength="500" placeholder="https://...">
     </div>
-    <button type="submit">Upload slide →</button>
+    <button type="submit">Upload slide @include('partials._ar')</button>
   </form>
 
   <div class="slides">
@@ -137,7 +137,7 @@
   </div>
 </main>
 
-<!-- HEIC → JPEG client-side conversion (iPhone photos). Lazy-loads heic2any only when an HEIC file is selected. -->
+<!-- HEIC @include('partials._ar') JPEG client-side conversion (iPhone photos). Lazy-loads heic2any only when an HEIC file is selected. -->
 <script>
 (function () {
   const fileInput = document.getElementById("image");

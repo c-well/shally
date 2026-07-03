@@ -94,7 +94,7 @@
     <div class="flash-done">
       <span class="ok">Received</span>
       <div class="msg">{{ session('intake_done') }}</div>
-      <a href="{{ route('intake.show', $form) }}" class="again">Submit another →</a>
+      <a href="{{ route('intake.show', $form) }}" class="again">Submit another @include('partials._ar')</a>
     </div>
   @else
     <form class="intake" method="POST" action="{{ route('intake.submit', $form) }}" enctype="multipart/form-data" novalidate>

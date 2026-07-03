@@ -108,12 +108,12 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.pages.index') }}">← Site pages</a>
+  <a href="{{ route('admin.pages.index') }}">@include('partials._arl') Site pages</a>
   <span class="meta">editing /{{ $page->slug }}</span>
   <div class="actions">
-    <a href="/{{ $page->slug }}" target="_blank" rel="noopener">View live ↗</a>
+    <a href="/{{ $page->slug }}" target="_blank" rel="noopener">View live @include('partials._arup')</a>
     <span class="upload-progress" id="upload-progress">Uploading…</span>
-    <button type="submit" form="page-form" class="save-btn" id="save-btn">Save changes →</button>
+    <button type="submit" form="page-form" class="save-btn" id="save-btn">Save changes @include('partials._ar')</button>
   </div>
 </header>
 
@@ -128,7 +128,7 @@
   @if ($page->slug === 'home')
     <!-- SLIDES_CROSSLINK: home page has a separate slides surface -->
     <div style="margin: 0 0 24px; padding: 14px 18px; background: color-mix(in srgb, var(--brass) 7%, transparent); border-left: 3px solid #b08d3c; border-radius: 0 4px 4px 0; font-size: 13px; color: #334455; line-height: 1.55;">
-      <strong style="color:#1a2332;">Hero slides for the home page live here →</strong>
+      <strong style="color:#1a2332;">Hero slides for the home page live here @include('partials._ar')</strong>
       <a href="{{ route('admin.slides.index') }}" style="color:#03617A; text-decoration:underline; margin-left:4px;">Manage hero slides</a>.
       (The slider that appears between the schedule and "what's happening" on the home page.)
     </div>
@@ -191,7 +191,7 @@
           Never edited yet
         @endif
       </div>
-      <a href="/{{ $page->slug }}" target="_blank" rel="noopener" class="public-link">View live page ↗</a>
+      <a href="/{{ $page->slug }}" target="_blank" rel="noopener" class="public-link">View live page @include('partials._arup')</a>
     </div>
   </form>
 

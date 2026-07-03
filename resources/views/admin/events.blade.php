@@ -84,7 +84,7 @@
 </head>
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 <div class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <span class="meta">EVENTS</span>
 </div>
 <main>

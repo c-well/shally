@@ -48,7 +48,7 @@
 @include('partials.theme-vars')
 </head>
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
-<div class="top"><a href="{{ route('admin.hub') }}">← Admin</a><span class="meta">SCRIPTURE GAMES</span></div>
+<div class="top"><a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a><span class="meta">SCRIPTURE GAMES</span></div>
 <main>
   <h1>Scripture games.</h1>
   <p class="lede">Each level is a real verse. Add as many as you like — pick a book, a game, and an age, and it shows up for the kids at <b>/kids</b>. Edits save as you type.</p>

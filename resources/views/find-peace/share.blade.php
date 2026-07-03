@@ -143,7 +143,7 @@
       </select>
 
       <div class="actions">
-        <button type="submit" class="submit">Send to pastor →</button>
+        <button type="submit" class="submit">Send to pastor @include('partials._ar')</button>
         <a href="{{ route('find-peace.index') }}" class="cancel-link">Never mind</a>
       </div>
     </form>
@@ -194,7 +194,7 @@
       </div>
 
       <div class="actions">
-        <button type="submit" class="submit">Send →</button>
+        <button type="submit" class="submit">Send @include('partials._ar')</button>
         <a href="{{ route('find-peace.index') }}" class="cancel-link">Never mind</a>
       </div>
     </form>

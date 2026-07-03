@@ -53,7 +53,7 @@
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 <div class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <span class="meta">EDIT HISTORY</span>
 </div>
 
@@ -62,7 +62,7 @@
   <p class="lede">Every content edit — bulletins, pages, lessons — with a one-click undo for each. This reverts just that one item to how it was, and nothing else. For rolling back a whole system update, see the <a href="{{ route('admin.changelog') }}">Changelog</a>.</p>
 
   @if ($filtered)
-    <div class="rev-filterbar">Showing one record. <a href="{{ route('admin.changes') }}">← Show all edits</a></div>
+    <div class="rev-filterbar">Showing one record. <a href="{{ route('admin.changes') }}">@include('partials._arl') Show all edits</a></div>
   @endif
 
   @if ($revisions->isEmpty())

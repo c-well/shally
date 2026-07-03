@@ -75,7 +75,7 @@
 
 @include('partials.site-menu')
 <header class="top">
-  <a href="{{ url('/admin') }}">← Admin</a>
+  <a href="{{ url('/admin') }}">@include('partials._arl') Admin</a>
   <span class="meta">analytics</span>
 </header>
 
@@ -142,7 +142,7 @@
     <div class="trend-legend">
       <span><span class="dot"></span> Views</span>
       <span><span class="dot uniq"></span> Unique visitors</span>
-      <span style="margin-left:auto; opacity:0.6;">{{ $filled[0]->d ?? '' }} → {{ end($filled)->d ?? '' }}</span>
+      <span style="margin-left:auto; opacity:0.6;">{{ $filled[0]->d ?? '' }} @include('partials._ar') {{ end($filled)->d ?? '' }}</span>
     </div>
   </div>
 
@@ -389,7 +389,7 @@
               <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace;">{{ $s->events }}</td>
               <td style="padding:9px 6px; text-align:right; font-family:'JetBrains Mono',monospace;">{{ $s->pages }}</td>
               <td style="padding:9px 6px; text-align:right;">
-                <a href="{{ route('admin.analytics') }}?days={{ $days }}&session={{ $s->session_id }}" style="font-family:'Instrument Sans',sans-serif; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); text-decoration:none;">View trail →</a>
+                <a href="{{ route('admin.analytics') }}?days={{ $days }}&session={{ $s->session_id }}" style="font-family:'Instrument Sans',sans-serif; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); text-decoration:none;">View trail @include('partials._ar')</a>
               </td>
             </tr>
           @endforeach

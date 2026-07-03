@@ -42,11 +42,11 @@
   <div class="card">
     <label>Enter the room code</label>
     <input id="code" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="••••">
-    <button class="btn" id="joinBtn">Join the game →</button>
+    <button class="btn" id="joinBtn">Join the game @include('partials._ar')</button>
     <div class="err" id="err"></div>
   </div>
 
-  <div class="host"><a id="hostBtn">Leading the night? Host a game →</a></div>
+  <div class="host"><a id="hostBtn">Leading the night? Host a game @include('partials._ar')</a></div>
 </main>
 <script>
 const CSRF = document.querySelector('meta[name=csrf-token]').content;

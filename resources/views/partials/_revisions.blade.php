@@ -35,7 +35,7 @@
         </li>
       @endforeach
     </ul>
-    <a class="rev-inline-all" href="{{ route('admin.changes', ['type' => get_class($model), 'id' => $model->getKey()]) }}">Full history for this item →</a>
+    <a class="rev-inline-all" href="{{ route('admin.changes', ['type' => get_class($model), 'id' => $model->getKey()]) }}">Full history for this item @include('partials._ar')</a>
   @endif
 </section>
 <script>

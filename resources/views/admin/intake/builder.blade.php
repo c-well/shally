@@ -94,10 +94,10 @@ main{max-width:720px;margin:0 auto;padding:clamp(40px,7vh,64px) clamp(20px,5vw,3
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme','default') }}">
 
 <div class="top">
-  <a href="{{ route('admin.intake.index') }}" class="top-back">← Forms</a>
+  <a href="{{ route('admin.intake.index') }}" class="top-back">@include('partials._arl') Forms</a>
   <div class="top-right">
     @if ($form)
-      <a href="{{ route('admin.intake.submissions', $form) }}" class="top-link">Gallery →</a>
+      <a href="{{ route('admin.intake.submissions', $form) }}" class="top-link">Gallery @include('partials._ar')</a>
     @endif
     <button class="savebtn" id="saveBtn">{{ $form ? 'Save changes' : 'Create form' }}</button>
   </div>

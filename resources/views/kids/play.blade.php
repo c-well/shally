@@ -72,7 +72,7 @@
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 <div class="top">
-  <a href="{{ route('kids') }}">← Games</a>
+  <a href="{{ route('kids') }}">@include('partials._arl') Games</a>
   <div class="who" id="who"></div>
 </div>
 
@@ -99,7 +99,7 @@
     <h2>Hi there! 👋</h2>
     <p>What should we call you? Your stars are saved so you can keep growing.</p>
     <input id="nameInput" type="text" maxlength="60" placeholder="Your name" autocomplete="off">
-    <div><button class="btn" id="nameGo">Let's go →</button></div>
+    <div><button class="btn" id="nameGo">Let's go @include('partials._ar')</button></div>
   </div>
 </div>
 
@@ -110,7 +110,7 @@
     <h2>You did it!</h2>
     <p>You learned <b>{{ $level->reference }}</b></p>
     <div class="verse">“{{ $level->verse_text }}”</div>
-    <div><a class="btn" href="{{ route('kids') }}">More games →</a></div>
+    <div><a class="btn" href="{{ route('kids') }}">More games @include('partials._ar')</a></div>
     <div><button class="btn btn-ghost" onclick="location.reload()">Play again</button></div>
   </div>
 </div>

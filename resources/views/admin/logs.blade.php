@@ -248,7 +248,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   @if (! empty($isKarlon))
     <span id="retention-badge" class="meta toggle" title="Tap to toggle"
           data-default="40-day retention"
@@ -405,17 +405,17 @@
     @if ($logs->hasPages())
       <nav class="pager" role="navigation" aria-label="Audit log pagination">
         @if ($logs->onFirstPage())
-          <span class="muted">← Previous</span>
+          <span class="muted">@include('partials._arl') Previous</span>
         @else
-          <a href="{{ $logs->previousPageUrl() }}">← Previous</a>
+          <a href="{{ $logs->previousPageUrl() }}">@include('partials._arl') Previous</a>
         @endif
 
         <span class="pos">Page {{ $logs->currentPage() }} of {{ $logs->lastPage() }}</span>
 
         @if ($logs->hasMorePages())
-          <a href="{{ $logs->nextPageUrl() }}">Next →</a>
+          <a href="{{ $logs->nextPageUrl() }}">Next @include('partials._ar')</a>
         @else
-          <span class="muted">Next →</span>
+          <span class="muted">Next @include('partials._ar')</span>
         @endif
       </nav>
     @endif

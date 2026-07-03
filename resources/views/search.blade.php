@@ -141,8 +141,8 @@
   <div class="cross-links">
     <h3>Looking for scripture or hymns?</h3>
     <p>Those have their own dedicated search pages so they don't crowd these results.</p>
-    <a href="{{ route('bible') }}">Search the Bible →</a>
-    <a href="{{ route('hymnal') }}">Search the Hymnal →</a>
+    <a href="{{ route('bible') }}">Search the Bible @include('partials._ar')</a>
+    <a href="{{ route('hymnal') }}">Search the Hymnal @include('partials._ar')</a>
   </div>
 </main>
 

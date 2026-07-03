@@ -113,7 +113,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <span class="meta">sabbath school</span>
 </header>
 
@@ -163,7 +163,7 @@
       <input id="pdf" type="file" name="pdf" accept="application/pdf">
     </div>
     <div class="actions">
-      <button type="submit">Save quarter →</button>
+      <button type="submit">Save quarter @include('partials._ar')</button>
     </div>
   </form>
 

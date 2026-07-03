@@ -68,7 +68,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:var(--ink-soft);opacity:0.65;">security</span>
 </header>
 
@@ -124,7 +124,7 @@
           <option value="permanent">Permanent</option>
         </select>
       </div>
-      <button type="submit" class="btn">Block →</button>
+      <button type="submit" class="btn">Block @include('partials._ar')</button>
     </form>
   </details>
 
@@ -210,7 +210,7 @@
     <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 14px;">
       <strong>{{ number_format($csf['total_blocked']) }} IPs blocked at firewall level.</strong>
       Sample (10 most-recent additions). Updated {{ \Illuminate\Support\Carbon::parse($csf['updated_at'])->diffForHumans() }}.
-      Full management via <code style="background:color-mix(in srgb, var(--ink) 5%, transparent);padding:2px 6px;border-radius:3px;">cPanel → Security → ConfigServer Security</code>.
+      Full management via <code style="background:color-mix(in srgb, var(--ink) 5%, transparent);padding:2px 6px;border-radius:3px;">cPanel @include('partials._ar') Security @include('partials._ar') ConfigServer Security</code>.
     </p>
     <div class="csf-list">
       @foreach ($csf['recent_top'] as $line)

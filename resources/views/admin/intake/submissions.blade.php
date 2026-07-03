@@ -91,7 +91,7 @@
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 <div class="top">
-  <a class="back" href="{{ route('admin.intake.index') }}">← Intake forms</a>
+  <a class="back" href="{{ route('admin.intake.index') }}">@include('partials._arl') Intake forms</a>
   <span class="meta">{{ strtoupper($form->slug) }}</span>
 </div>
 

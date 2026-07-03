@@ -106,8 +106,8 @@
         </div>
 
         <div class="actions">
-          <a href="{{ route('login') }}" class="link">← Use password</a>
-          <button type="submit" class="btn-primary">Send link →</button>
+          <a href="{{ route('login') }}" class="link">@include('partials._arl') Use password</a>
+          <button type="submit" class="btn-primary">Send link @include('partials._ar')</button>
         </div>
       </form>
     </div>

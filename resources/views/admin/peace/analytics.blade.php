@@ -54,7 +54,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.peace.index') }}">← Peace admin</a>
+  <a href="{{ route('admin.peace.index') }}">@include('partials._arl') Peace admin</a>
   <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:var(--ink-soft);opacity:0.65;">analytics</span>
 </header>
 

@@ -73,7 +73,7 @@
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 <div class="game">
   <div class="topbar">
-    <a class="back" href="{{ route('kids') }}">← Games</a>
+    <a class="back" href="{{ route('kids') }}">@include('partials._arl') Games</a>
     <div class="tb-mid"><div class="tb-ref">{{ $level->reference }}</div><div class="tb-title">{{ $level->title ?: $level->book }}</div></div>
     <button class="pausebtn" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
   </div>
@@ -101,7 +101,7 @@
 <div class="ov" id="pauseOv"><div class="card">
   <h2>Paused</h2>
   <p style="color:var(--ink-soft);margin-top:8px">Take a breath.</p>
-  <div><button class="btn" id="resumeBtn">Resume →</button></div>
+  <div><button class="btn" id="resumeBtn">Resume @include('partials._ar')</button></div>
   <div><a class="btn btn-ghost" href="{{ route('kids') }}">Quit to games</a></div>
 </div></div>
 
@@ -120,7 +120,7 @@
   <div class="qq" id="qText"></div>
   <div class="qopts" id="qOpts"></div>
   <div class="qresult" id="qResult"></div>
-  <button class="btn" id="qCont" style="display:none">Keep playing →</button>
+  <button class="btn" id="qCont" style="display:none">Keep playing @include('partials._ar')</button>
 </div></div>
 
 {{-- Win --}}
@@ -129,7 +129,7 @@
   <h2>Verse mastered!</h2>
   <p style="color:var(--ink-soft);margin-top:8px">You built <b>{{ $level->reference }}</b> word by word.</p>
   <div class="verse-final">“{{ $level->verse_text }}”</div>
-  <div><a class="btn" href="{{ route('kids') }}">More games →</a></div>
+  <div><a class="btn" href="{{ route('kids') }}">More games @include('partials._ar')</a></div>
   <div><button class="btn btn-ghost" onclick="location.reload()">Play again</button></div>
 </div></div>
 
@@ -147,7 +147,7 @@
   <h2>Hi there! 👋</h2>
   <p style="color:var(--ink-soft);margin-top:10px">What should we call you? Your stars are saved.</p>
   <input id="nameInput" type="text" maxlength="60" placeholder="Your name" autocomplete="off">
-  <div><button class="btn" id="nameGo">Let's go →</button></div>
+  <div><button class="btn" id="nameGo">Let's go @include('partials._ar')</button></div>
 </div></div>
 
 @php $levelData = ['id' => $level->id, 'reference' => $level->reference, 'verse' => $level->verse_text]; @endphp

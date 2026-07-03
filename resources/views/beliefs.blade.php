@@ -76,7 +76,7 @@
   </article>
 
   <div class="ctas">
-    <a href="https://www.adventist.org/beliefs/" target="_blank" rel="noopener" class="btn-primary">Read all 28 ↗</a>
+    <a href="https://www.adventist.org/beliefs/" target="_blank" rel="noopener" class="btn-primary">Read all 28 @include('partials._arup')</a>
     <a href="{{ route('visit') }}" class="btn-ghost">Plan your visit</a>
   </div>
 </main>

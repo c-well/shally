@@ -65,7 +65,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.peace.index') }}">← Peace admin</a>
+  <a href="{{ route('admin.peace.index') }}">@include('partials._arl') Peace admin</a>
   <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:var(--ink-soft);opacity:0.65;">automation</span>
 </header>
 
@@ -104,7 +104,7 @@
         data-confirm="Fire peace:scan-channel right now? This costs ~$0.13 in API and triggers an email.">
     @csrf
     <input type="hidden" name="confirm" value="yes">
-    <button type="submit" class="btn">Fire now →</button>
+    <button type="submit" class="btn">Fire now @include('partials._ar')</button>
     <span style="font-size:12px;color:var(--ink-soft);">Useful if you missed Saturday or want a manual test run.</span>
   </form>
 

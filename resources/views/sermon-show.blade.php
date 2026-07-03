@@ -283,7 +283,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="5 3 19 12 5 21 5 3"/>
             </svg>
-            Watch video ↗
+            Watch video @include('partials._arup')
           </a>
         @endif
         <span class="util-size">{{ $sermon->audioSizeHuman() }}</span>
@@ -395,7 +395,7 @@
   <nav class="prev-next" aria-label="Sermon navigation">
     @if ($prev)
       <a href="{{ route('peace-notes.show', $prev->slug) }}" class="pn-card">
-        <div class="lbl">← Previous</div>
+        <div class="lbl">@include('partials._arl') Previous</div>
         <div class="ttl">{{ $prev->title }}</div>
       </a>
     @else
@@ -404,7 +404,7 @@
 
     @if ($next)
       <a href="{{ route('peace-notes.show', $next->slug) }}" class="pn-card next">
-        <div class="lbl">Next →</div>
+        <div class="lbl">Next @include('partials._ar')</div>
         <div class="ttl">{{ $next->title }}</div>
       </a>
     @else

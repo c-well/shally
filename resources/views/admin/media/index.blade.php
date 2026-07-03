@@ -52,7 +52,7 @@
 
 @include('partials.site-menu')
 <header class="top">
-  <a href="{{ url('/admin') }}">← Admin</a>
+  <a href="{{ url('/admin') }}">@include('partials._arl') Admin</a>
   <span class="meta">media library</span>
 </header>
 

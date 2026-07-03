@@ -90,7 +90,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.peace.index') }}">← Peace</a>
+  <a href="{{ route('admin.peace.index') }}">@include('partials._arl') Peace</a>
   <span class="meta">edit sermon</span>
 </header>
 
@@ -100,7 +100,7 @@
     {{ strtoupper($sermon->sermon_date->format('M j Y')) }}
     @if($sermon->speaker) · {{ $sermon->speaker }} @endif
     @if($sermon->processing_status === 'published')
-      · <a href="{{ route('find-peace.show', $sermon->slug) }}" target="_blank" class="public-link">View public page ↗</a>
+      · <a href="{{ route('find-peace.show', $sermon->slug) }}" target="_blank" class="public-link">View public page @include('partials._arup')</a>
     @endif
   </p>
 
@@ -115,7 +115,7 @@
   @if($sermon->youtube_video_id)
   <details class="boundary-panel" style="margin-bottom:28px;padding:18px 22px;background:color-mix(in srgb, var(--brass) 5%, transparent);border:1px solid var(--line);border-radius:6px;">
     <summary style="cursor:pointer;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--brass);">
-      Boundary editor · current span {{ gmdate('H:i:s', $sermon->sermon_start_seconds) }} → {{ gmdate('H:i:s', $sermon->sermon_end_seconds) }} ({{ gmdate('i:s', $sermon->sermon_end_seconds - $sermon->sermon_start_seconds) }}) ▾
+      Boundary editor · current span {{ gmdate('H:i:s', $sermon->sermon_start_seconds) }} @include('partials._ar') {{ gmdate('H:i:s', $sermon->sermon_end_seconds) }} ({{ gmdate('i:s', $sermon->sermon_end_seconds - $sermon->sermon_start_seconds) }}) ▾
     </summary>
 
     <p style="margin:14px 0 16px;font-size:13px;color:var(--ink-soft);">
@@ -180,7 +180,7 @@
       {{-- ACTIONS --}}
       <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
         <button type="button" id="playRangeBtn" style="padding:9px 16px;background:#fff;color:var(--brass);border:1px solid var(--brass);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
-          ▸ Play IN→OUT
+          ▸ Play IN@include('partials._ar')OUT
         </button>
         <button type="submit" name="action" value="save_only"
                 onclick="event.preventDefault();var b=this;shConfirm('Save boundaries only? Audio + content stay as-is (you can re-slice later).',{danger:true}).then(function(o){if(o)b.form.requestSubmit(b);});"
@@ -358,7 +358,7 @@
           <input type="text" name="end" pattern="[0-9]+:[0-5][0-9]" placeholder="{{ $dh }}" required
                  style="width:100%;padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:14px;">
         </label>
-        <button type="submit" style="padding:9px 18px;background:var(--teal);color:#fff;border:0;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;">Re-trim →</button>
+        <button type="submit" style="padding:9px 18px;background:var(--teal);color:#fff;border:0;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;">Re-trim @include('partials._ar')</button>
       </div>
       <div style="margin-top:14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink);flex-wrap:wrap;">
         <span style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;">Compressor</span>
@@ -373,10 +373,10 @@
                 formnovalidate
                 onclick="event.preventDefault();var b=this;shConfirm('Re-encode the current audio with this compressor? Boundaries stay the same. Old file is replaced.',{danger:true}).then(function(o){if(o)b.form.requestSubmit(b);});"
                 style="margin-left:8px;padding:7px 14px;background:#fff;color:var(--teal);border:1px solid var(--teal);border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;cursor:pointer;">
-          Apply compressor only →
+          Apply compressor only @include('partials._ar')
         </button>
       </div>
-      <p style="margin:10px 0 0;font-size:11px;color:var(--ink-soft);opacity:0.8;">Example: <code style="font-family:'JetBrains Mono',monospace;">5:15</code> → <code style="font-family:'JetBrains Mono',monospace;">35:50</code>. Result will be ~30:35 with a clean fade-out tail.</p>
+      <p style="margin:10px 0 0;font-size:11px;color:var(--ink-soft);opacity:0.8;">Example: <code style="font-family:'JetBrains Mono',monospace;">5:15</code> @include('partials._ar') <code style="font-family:'JetBrains Mono',monospace;">35:50</code>. Result will be ~30:35 with a clean fade-out tail.</p>
     </form>
   </details>
   @endif

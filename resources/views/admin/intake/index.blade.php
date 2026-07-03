@@ -39,7 +39,7 @@ h1{font-family:'JetBrains Mono',monospace;font-size:clamp(24px,4vw,34px);font-we
 </head>
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme','default') }}">
 <div class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <span class="meta">admin · {{ auth()->user()->name ?? '' }}</span>
 </div>
 

@@ -56,7 +56,7 @@
 @include('partials.theme-vars')
 </head>
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
-<div class="top"><a href="{{ route('admin.hub') }}">← Admin</a><span class="meta">UNDERCOVER · QUESTION BANK</span></div>
+<div class="top"><a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a><span class="meta">UNDERCOVER · QUESTION BANK</span></div>
 <main>
   <h1>Undercover — question bank.</h1>
   <p class="lede">These are the questions the game asks each teen privately. A <b>clueable</b> answer can surface to the room (anonymized) as a clue to who's who. Pick a kind, write the prompt, list the options — it's ready for the next game night. Edits save as you type.</p>

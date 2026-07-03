@@ -41,6 +41,16 @@ class TrackPageView
         $ua = (string) $request->userAgent();
         $uaLower = strtolower($ua);
         foreach (self::BOT_AGENTS as $b) if (str_contains($uaLower, $b)) return $response;
+        // Crawlers that spoof REAL browser strings give themselves away with museum-piece
+        // versions (Chrome 73, Windows 7, iOS 13...). Found inflating /lesson 2026-07:
+        // 29% of all recorded views. No real member runs these.
+        if ($ua === '' ||
+            preg_match('/Chrome\/[1-9][0-9]?[.]/', $ua) ||          // Chrome <= 99 (2022)
+            str_contains($ua, 'Windows NT 6.') ||                    // Windows 7 / 8
+            preg_match('/Mac OS X 10_([0-9]|1[01])_/', $ua) ||       // macOS <= 10.11
+            preg_match('/iPhone OS (9|1[0-3])_/', $ua)) {            // iOS <= 13
+            return $response;
+        }
 
         // Session cookie for unique-visitor counting (30-day persistence)
         $sid = $request->cookie("v_sid");

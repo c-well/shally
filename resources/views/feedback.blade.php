@@ -159,7 +159,7 @@
 
 
 
-    <button type="submit" class="send">Send →</button>
+    <button type="submit" class="send">Send @include('partials._ar')</button>
   </form>
 
   {{-- ─── Ticket history ─── --}}

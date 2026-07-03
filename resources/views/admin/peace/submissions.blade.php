@@ -95,7 +95,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.peace.index') }}">← Peace admin</a>
+  <a href="{{ route('admin.peace.index') }}">@include('partials._arl') Peace admin</a>
   <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.14em;color:var(--ink-soft);opacity:0.65;">submissions</span>
 </header>
 
@@ -181,7 +181,7 @@
             <input type="hidden" name="action" value="reply">
             <textarea name="pastor_reply" placeholder="Type your reply — this will be emailed to {{ $sub->subscriber->email ?? 'the seeker' }} from app@thechurchofpeace.org, with replies forwarded back to you." required>{{ $sub->pastor_reply }}</textarea>
             <div style="margin-top: 10px;">
-              <button type="submit" class="btn">Send reply →</button>
+              <button type="submit" class="btn">Send reply @include('partials._ar')</button>
             </div>
           </form>
         </details>

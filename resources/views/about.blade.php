@@ -77,7 +77,7 @@
   </article>
 
   <div class="ctas">
-    <a href="{{ route('visit') }}" class="btn-primary">Plan your visit →</a>
+    <a href="{{ route('visit') }}" class="btn-primary">Plan your visit @include('partials._ar')</a>
     <a href="{{ route('contact.show') }}" class="btn-ghost">Get in touch</a>
   </div>
 </main>

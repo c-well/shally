@@ -37,7 +37,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <span class="meta">site pages</span>
 </header>
 
@@ -61,7 +61,7 @@
             never edited
           @endif
         </div>
-        <span class="arrow">Edit →</span>
+        <span class="arrow">Edit @include('partials._ar')</span>
       </a>
     @empty
       <div class="empty">No pages yet — run the migration to seed the initial set.</div>

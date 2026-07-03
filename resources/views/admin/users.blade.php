@@ -165,7 +165,7 @@
 @include('partials.site-menu')
 
 <header class="top">
-  <a href="{{ route('admin.hub') }}">← Admin</a>
+  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
   <span class="meta">admin · users</span>
 </header>
 
@@ -203,7 +203,7 @@
       <label class="lbl" for="pin">PIN (optional)</label>
       <input id="pin" type="tel" name="pin" inputmode="numeric" pattern="\d{4,8}" minlength="4" maxlength="8" placeholder="8581" value="{{ old('pin') }}">
     </div>
-    <button type="submit">Add →</button>
+    <button type="submit">Add @include('partials._ar')</button>
   </form>
 
   <section class="users-section">

@@ -68,7 +68,7 @@
       <div class="empty">No messages on this topic yet.</div>
     @endif
 
-    <a href="{{ route('find-peace.index') }}" class="footer-link">← All of Finding Peace</a>
+    <a href="{{ route('find-peace.index') }}" class="footer-link">@include('partials._arl') All of Finding Peace</a>
   </div>
 </body>
 </html>

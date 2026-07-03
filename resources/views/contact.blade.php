@@ -164,7 +164,7 @@
         @error('message')<span class="err">{{ $message }}</span>@enderror
       </div>
 
-      <button type="submit" class="submit">Send →</button>
+      <button type="submit" class="submit">Send @include('partials._ar')</button>
     </form>
   </div>
 </main>
