@@ -20,7 +20,7 @@
 
   .range-pills { display: inline-flex; gap: 6px; margin: 4px 0 22px; }
   .range-pills a {
-    padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px;
+    padding: 7px 14px; border: 1px solid var(--line); border-radius: var(--r-btn, 8px);
     font-family: "Instrument Sans", sans-serif; font-size: 10px; font-weight: 700;
     letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--ink-soft); text-decoration: none; transition: all 0.15s;

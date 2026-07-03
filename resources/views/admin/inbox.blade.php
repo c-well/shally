@@ -29,7 +29,7 @@
     padding: 7px 16px;
     background: transparent;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--r-btn, 8px);
     font-family: 'Instrument Sans', sans-serif;
     font-size: 11px; font-weight: 600;
     letter-spacing: 0.14em; text-transform: uppercase;
