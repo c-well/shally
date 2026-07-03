@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-03 · Admin hub — view latch (corrected per Karlon)
+
+Redone per instruction: the hub no longer forces a new look. A **view latch at the top** gives each admin the choice — **Default** (all cards out, the exact familiar grid — nothing jarring), **Groups** (everything nested in the four hush latches), or **Smart ★** (their most-used destinations first, learned from real clicks, with everything else behind the latches below). Smart unlocks after that admin's 7th visit — until then the option shows its progress (e.g. "3/7") and stays disabled. The choice is remembered per admin (stored server-side), so each person's hub opens the way they like it. Mini search sits beside the latch and reveals matches in whichever view is active.
+
+**Files:** resources/views/admin/hub.blade.php, routes/web.php (view-preference handling in the track route)
+
 ## 2026-07-03 · Admin hub — the hush latch
 
 The admin hub's 26 cards were an unscannable wall. Rebuilt: everything now lives behind **four latches** — This week (bulletin, events, schedule, slides, lessons, names) · People & inbox (messages, users, intake, bug reports) · Ministries, games & site (Peace, sermons, kids/teens games, media, the six site pages) · System & insights (analytics, audit, edit history, changelog, API spend). All collapsed by default; each latch shows a count + a one-line peek; unread messages bubble up to the People latch.
