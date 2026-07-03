@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-03 · Fix: Adjust-image editor was dead (CSP) + Sariah's photo righted
+
+Andre's report: the Adjust editor's Save/rotate buttons did nothing. Root cause in his console: the site's Content-Security-Policy (correctly) blocks cdnjs.cloudflare.com, so Cropper.js never loaded — the feature was dead in real browsers from day one, and my verification missed it because I tested the rendered page outside the live origin where the CSP header doesn't apply. Fixed by SELF-HOSTING Cropper (public/vendor/cropperjs/) — no CSP loosening, no CDN dependency; verified both assets serve 200 from the site itself. Also fixed Sariah's slide directly: her photo carries EXIF orientation 3 (upside down) which browsers honor but GD ignores (no exif extension) — auto-oriented the file (original preserved), regenerated, verified upright. Swept all other grad photos: none affected. And closed the class: the renderer's EXIF handling now falls back to ImageMagick identify via Process when the exif extension is absent, so future rotated uploads render upright automatically.
+
+**Files:** resources/views/admin/intake/submissions.blade.php, app/Services/Intake/GradCardRenderer.php, public/vendor/cropperjs/*
+
 ## 2026-07-03 · Fix: emoji on grad cards rendered as garbled characters
 
 Andre's catch: Melody's slide showed "winding characters" — her thanks line ends with 🙌🏾, and the card renderer draws text with IBM Plex/Poppins TTFs through GD, which have no emoji glyphs, so emoji come out as garbled boxes that read like an error. The renderer now strips emoji/pictographs (and their skin-tone/joiner modifiers) at draw time and tidies the spacing/punctuation left behind — "kept me🙌🏾." renders as "kept me." Typographic quotes, accents, and normal punctuation are untouched, and the submission's stored text keeps its emoji (only the drawn card is cleaned). All 8 live slides regenerated; Melody's verified clean.

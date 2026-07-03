@@ -211,8 +211,20 @@ class GradCardRenderer
 
     private function applyExif($img, string $path)
     {
-        if (! function_exists('exif_read_data')) return $img;
-        $o = (@exif_read_data($path)['Orientation']) ?? 0;
+        $o = 0;
+        if (function_exists('exif_read_data')) {
+            $o = (int) ((@exif_read_data($path)['Orientation']) ?? 0);
+        } else {
+            // No exif extension on this host — read orientation via ImageMagick.
+            // (proc_open is available on the web SAPI; exec/shell_exec are not.)
+            try {
+                $out = \Illuminate\Support\Facades\Process::timeout(20)
+                    ->run('/usr/bin/identify -format %[EXIF:Orientation] ' . escapeshellarg($path))->output();
+                $o = (int) trim($out);
+            } catch (\Throwable $e) {
+                $o = 0;
+            }
+        }
         if ($o === 3) return imagerotate($img, 180, 0);
         if ($o === 6) return imagerotate($img, -90, 0);
         if ($o === 8) return imagerotate($img, 90, 0);
