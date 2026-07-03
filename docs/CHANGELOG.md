@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-02 · Fix: hero slide upload 500 (fileinfo again) + full app sweep
+
+The hero-slides upload (/admin/slides) was 500ing before validation even ran. Root cause is ironic: the upload pipeline itself is fileinfo-free (GD → webp), but a LEFTOVER DEBUG BLOCK from the old HEIC investigation ("remove once we know") called guessExtension()/getMimeType() on every upload — both need the php_fileinfo extension this host doesn't have. Removed the debug block (it long since did its job). Swept the entire app for the class: fixed the slides error-path (mime_content_type — would have been a FATAL, function doesn't exist without fileinfo) and AdminMediaController's audio/image kind detection + audio mime (now extension-derived; images still verified by GD decode, so a mislabeled file fails safely). Verified end-to-end in-process: 2400px JPEG → validated → resized → webp on disk → Slide row; test slide cleaned up. That's the third fileinfo casualty (intake download, now slides + media) — enabling fileinfo in cPanel → Select PHP Version remains the permanent fix.
+
+**Files:** app/Http/Controllers/AdminSlidesController.php, app/Http/Controllers/AdminMediaController.php
+
 ## 2026-07-02 · Lesson quarter rollover — fixed now, automated forever
 
 /lesson was still showing "Growing in a Relationship With God · Lesson 1" — Q2 ended June 26 and nobody (me included) added Q3, so the page fell back to Lesson 1 of the old quarter. Fixed now: **Q3 2026 · First and Second Corinthians** (Jun 27 → Sep 25) created from the real Adventech data, all 130 reading-days synced, print PDF attached, live and showing the correct current week.
