@@ -141,8 +141,10 @@ class AdminChangelogController extends Controller
         try {
             $p = Process::timeout(600)->run('/home/shalom/bin/backup-db.sh');
             if ($p->successful()) {
-                $latest = trim((string) shell_exec('ls -t /home/shalom/db-backups/shalom_app_*.sql.gz 2>/dev/null | head -1'));
-                $dbDest = $latest ?: null;
+                // shell_exec is disabled on the web SAPI — pure-PHP newest-file lookup.
+                $dumps = glob('/home/shalom/db-backups/shalom_app_*.sql.gz') ?: [];
+                usort($dumps, fn ($a, $b) => filemtime($b) <=> filemtime($a));
+                $dbDest = $dumps[0] ?? null;
             }
         } catch (\Throwable $e) {}
 

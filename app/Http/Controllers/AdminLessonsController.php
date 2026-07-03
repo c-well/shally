@@ -28,12 +28,17 @@ class AdminLessonsController extends Controller
             'starts_on' => 'required|date',
             'ends_on'   => 'required|date|after_or_equal:starts_on',
             'pdf_url'   => 'nullable|url|max:500',
-            'pdf'       => 'nullable|file|mimes:pdf|max:51200',  // 50MB
+            'pdf'       => 'nullable|file|extensions:pdf|max:51200',  // 50MB — extensions: not mimes: (no fileinfo on this host)
         ]);
 
         $pdfPath = null;
         if ($request->hasFile('pdf')) {
             $f = $request->file('pdf');
+            // Magic-byte check replaces the MIME guess fileinfo would have done.
+            $head = (string) @file_get_contents($f->getPathname(), false, null, 0, 5);
+            if (! str_starts_with($head, '%PDF')) {
+                return back()->withInput()->withErrors(['pdf' => 'That file does not look like a real PDF.']);
+            }
             $name = sprintf('en_%dt%d.pdf', $data['year'], $data['quarter']);
             $f->move(public_path('lessons'), $name);
             $pdfPath = 'lessons/' . $name;

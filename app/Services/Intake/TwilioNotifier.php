@@ -26,6 +26,7 @@ class TwilioNotifier
         $sid = config('services.twilio.sid');
         try {
             $resp = Http::asForm()
+                ->timeout(15)
                 ->withBasicAuth($sid, config('services.twilio.token'))
                 ->post("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages.json", [
                     'To'   => $to,

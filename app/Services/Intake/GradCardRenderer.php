@@ -192,13 +192,16 @@ class GradCardRenderer
 
     private function convertViaCli(string $path): ?string
     {
-        foreach (['magick', 'convert'] as $bin) {
-            $which = trim((string) @shell_exec('command -v ' . $bin . ' 2>/dev/null'));
-            if ($which) {
-                $out = sys_get_temp_dir() . '/intake_' . uniqid() . '.jpg';
-                @shell_exec(escapeshellarg($which) . ' ' . escapeshellarg($path) . '[0] ' . escapeshellarg($out) . ' 2>/dev/null');
-                if (is_file($out) && filesize($out) > 0) return $out;
+        // shell_exec is disabled on the web SAPI; proc_open (Process) is not.
+        foreach (['/usr/bin/magick', '/usr/bin/convert'] as $bin) {
+            if (! is_file($bin)) continue;
+            $out = sys_get_temp_dir() . '/intake_' . uniqid() . '.jpg';
+            try {
+                \Illuminate\Support\Facades\Process::timeout(60)->run(escapeshellarg($bin) . ' ' . escapeshellarg($path) . '[0] ' . escapeshellarg($out));
+            } catch (\Throwable $e) {
+                continue;
             }
+            if (is_file($out) && filesize($out) > 0) return $out;
         }
         return null;
     }
