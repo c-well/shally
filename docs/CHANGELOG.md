@@ -1,5 +1,13 @@
 # Shalom — Changelog
 
+## 2026-07-04 · Arrows systemized (Untitled UI circle set) + honest analytics + SEO verdict
+
+Karlon's call: the tiny text arrows (→ ↗) looked lame. All 200+ glyphs across 65 views are now real SVG icons from Untitled UI's circle-arrow set, served from THREE partials (partials/_ar, _arup, _arl) — restyling every arrow on the site is a one-file edit. CMS-stored page content (pages.body_html) gets the same treatment at render time via a new Str::arrowize() macro, so editors can keep typing → and the site draws the icon. Email templates deliberately keep text glyphs (mail clients strip SVG).
+
+Also: the bot filter now rejects crawlers spoofing museum-piece browsers (Chrome ≤99, Windows 7, iOS ≤13) and 4,315 junk rows were purged — analytics dropped from 15,131 to 10,821 honest views. SEO audit verdict: on-site plumbing is genuinely good (Church schema, unique titles, canonicals/OG, 124-URL sitemap, FAQ/Article schema on Find Peace); the growth lever is off-site — Google Business Profile above all.
+
+**Files:** partials/_ar{,up,l}.blade.php (new), 65 swept views, app/Providers/AppServiceProvider.php (arrowize), app/Http/Middleware/TrackPageView.php
+
 ## 2026-07-03 · Fix: Adjust-image editor was dead (CSP) + Sariah's photo righted
 
 Andre's report: the Adjust editor's Save/rotate buttons did nothing. Root cause in his console: the site's Content-Security-Policy (correctly) blocks cdnjs.cloudflare.com, so Cropper.js never loaded — the feature was dead in real browsers from day one, and my verification missed it because I tested the rendered page outside the live origin where the CSP header doesn't apply. Fixed by SELF-HOSTING Cropper (public/vendor/cropperjs/) — no CSP loosening, no CDN dependency; verified both assets serve 200 from the site itself. Also fixed Sariah's slide directly: her photo carries EXIF orientation 3 (upside down) which browsers honor but GD ignores (no exif extension) — auto-oriented the file (original preserved), regenerated, verified upright. Swept all other grad photos: none affected. And closed the class: the renderer's EXIF handling now falls back to ImageMagick identify via Process when the exif extension is absent, so future rotated uploads render upright automatically.

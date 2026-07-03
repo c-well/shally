@@ -25,6 +25,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // CMS-stored page HTML may contain text arrows typed by editors (→ ↗ ←).
+        // Swap them for the site icon partials at render time so DB content stays
+        // portable and the one-file arrow restyle (partials/_ar*) covers everything.
+        \Illuminate\Support\Str::macro('arrowize', function (?string $html): string {
+            if ($html === null || $html === '') return '';
+            static $ar = null, $arup = null, $arl = null;
+            $ar   ??= trim(view('partials._ar')->render());
+            $arup ??= trim(view('partials._arup')->render());
+            $arl  ??= trim(view('partials._arl')->render());
+            return str_replace(["→", "↗", "←"], [$ar, $arup, $arl], $html);
+        });
+
         Event::listen(MessageSending::class, \App\Listeners\AddGlobalCcToMessages::class);
 
         // ─── Audit log: capture every auth event. We swallow exceptions so
