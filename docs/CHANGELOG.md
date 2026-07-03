@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-03 · Fix: graduate class year wrong (2027) and uneditable
+
+Some grad slides said Class of 2026 and others 2027: the renderer COMPUTED the year with a school-year heuristic (July onward → next year), so anything regenerated after July 1 flipped to 2027 — and since the year was computed, not stored, nobody could correct it. Now: class year is a real, editable field on the submission ("Class year" in the gallery's Edit text panel, sanitized to a 4-digit year), defaulting to the year the graduate submitted. Renderer reads the field; heuristic deleted. Backfilled all 8 submissions and regenerated all 8 live slides — every one now reads Class of 2026, verified on the live PNG. Editability stays where it belongs: intake submissions are admin-editable; the general inbox and prayer requests remain read-only.
+
+**Files:** app/Services/Intake/GradCardRenderer.php, app/Http/Controllers/AdminIntakeController.php, resources/views/admin/intake/submissions.blade.php
+
 ## 2026-07-03 · Zero-downtime deploys (Karlon's rule) + button-spec fix
 
 New standing rule after last night's two brief self-inflicted 500 windows: **the site never serves errors during an update, big or small.** Built `/home/shalom/bin/safe-deploy.sh` — every deploy now (1) lints all staged PHP and refuses to start on any failure, (2) backs up the files it will replace (last 20 sets kept in ~/deploy-backups), (3) raises the branded "Be right back" page for only the seconds of the swap, (4) clears caches, brings the site up, and probes /, /lesson, /find-peace, /kids for 200, and (5) **auto-rolls-back from the backups if any probe fails**. First real use: deploying today's hub fix — lint → backup → swap → all probes 200.

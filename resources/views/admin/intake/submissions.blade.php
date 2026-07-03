@@ -159,6 +159,7 @@
           @if ($s->output_path)
             <div class="edit-panel" data-edit-url="{{ route('admin.intake.edit', $s) }}">
               <label>Name<input data-ef="name" value="{{ $s->value('name') }}"></label>
+              <label>Class year<input data-ef="class_year" value="{{ $s->value('class_year') ?: $s->created_at->year }}" inputmode="numeric" maxlength="4"></label>
               <label>Level / class<input data-ef="level" value="{{ $s->value('level') }}"></label>
               <label>School<input data-ef="school" value="{{ $s->value('school') }}"></label>
               <label>Degree / major<input data-ef="major" value="{{ $s->value('major') }}"></label>
