@@ -1,5 +1,17 @@
 # Shalom — Changelog
 
+## 2026-07-03 · Admin hub — the hush latch
+
+The admin hub's 26 cards were an unscannable wall. Rebuilt: everything now lives behind **four latches** — This week (bulletin, events, schedule, slides, lessons, names) · People & inbox (messages, users, intake, bug reports) · Ministries, games & site (Peace, sermons, kids/teens games, media, the six site pages) · System & insights (analytics, audit, edit history, changelog, API spend). All collapsed by default; each latch shows a count + a one-line peek; unread messages bubble up to the People latch.
+
+**Mini search** sits above the latches — type anything ("slides", "spend", "games") and matching cards reveal instantly across all groups; Enter opens the first match; Esc restores the hush.
+
+**It learns.** Every card click is recorded per admin (new admin_hub_usage table + track route). From an admin's **7th visit** onward, a starred "**Your most used**" latch appears first, auto-open, holding their top six destinations in click order. Verified: simulated 8 visits + clicks → smart latch present, bulletin (most-clicked) first; synthetic test data cleaned after.
+
+Kept: theme picker, Anthropic cost-spike banner, unread badge. Added: a red **cron-down banner** on the hub when the scheduler heartbeat is >60 min stale (pairs with the new watchdog email).
+
+**Files:** resources/views/admin/hub.blade.php, routes/web.php (track route), database/migrations/2026_07_03_create_admin_hub_usage.php
+
 ## 2026-07-03 · Audit round 2 — deep fixes
 
 Proper class-sweep audit (after the hero-upload miss) turned up and fixed: (1) **7-day cron outage** — the account's cron silently stopped Jun 25 (heartbeat proof); revived by re-registering the crontab; fresh DB backup taken; (2) **cron watchdog** — TrackPageView now piggybacks a cache-gated check on normal web traffic: if the scheduler heartbeat goes >60 min stale it emails the super-admins (max once/6h) with the exact revive command — web traffic doesn't depend on cron, so this can't go blind the way cron did; (3) **/admin/lessons PDF upload** would 500 (mimes: rule needs the missing fileinfo) — now extensions:pdf + %PDF magic-byte check; (4) **restore-point capture** died at its last step on web (shell_exec is disabled) — now a pure-PHP glob; (5) **PDF event flyers un-broken** — exec() is disabled on web but proc_open is NOT (probe-verified), so the ImageMagick conversion now runs via Process; same fix applied to the pages + grad-card converter fallbacks (HEIC fallback path now actually works); (6) Twilio SMS call got a 15s timeout (was unbounded).

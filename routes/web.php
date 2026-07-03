@@ -161,6 +161,19 @@ Route::middleware('auth')->group(function () {
     // Admin hub + tools (super_admin only)
     Route::middleware('role:super_admin')->group(function () {
         Route::view  ('/admin',                        'admin.hub')->name('admin.hub');
+        // Hush-latch usage learning: one row per (user, card); '__visits' counts hub loads.
+        Route::post('/admin/hub/track', function (\Illuminate\Http\Request $r) {
+            $key = substr((string) $r->input('key'), 0, 64);
+            if ($key !== '') {
+                $row = \DB::table('admin_hub_usage')->where(['user_id' => auth()->id(), 'item_key' => $key])->first();
+                if ($row) {
+                    \DB::table('admin_hub_usage')->where('id', $row->id)->update(['clicks' => $row->clicks + 1, 'updated_at' => now()]);
+                } else {
+                    \DB::table('admin_hub_usage')->insert(['user_id' => auth()->id(), 'item_key' => $key, 'clicks' => 1, 'created_at' => now(), 'updated_at' => now()]);
+                }
+            }
+            return response()->json(['ok' => true]);
+        })->name('admin.hub.track');
         Route::view  ('/admin/names',                  'admin.names')->name('admin.names');
         Route::get   ('/admin/logs',                   [\App\Http\Controllers\AdminLogsController::class, 'index'])->name('admin.logs');
         Route::get   ('/admin/security',                          [\App\Http\Controllers\AdminSecurityController::class, 'index'])->name('admin.security');
