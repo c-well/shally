@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-03 · Fix: emoji on grad cards rendered as garbled characters
+
+Andre's catch: Melody's slide showed "winding characters" — her thanks line ends with 🙌🏾, and the card renderer draws text with IBM Plex/Poppins TTFs through GD, which have no emoji glyphs, so emoji come out as garbled boxes that read like an error. The renderer now strips emoji/pictographs (and their skin-tone/joiner modifiers) at draw time and tidies the spacing/punctuation left behind — "kept me🙌🏾." renders as "kept me." Typographic quotes, accents, and normal punctuation are untouched, and the submission's stored text keeps its emoji (only the drawn card is cleaned). All 8 live slides regenerated; Melody's verified clean.
+
+**Files:** app/Services/Intake/GradCardRenderer.php
+
 ## 2026-07-03 · Fix: graduate class year wrong (2027) and uneditable
 
 Some grad slides said Class of 2026 and others 2027: the renderer COMPUTED the year with a school-year heuristic (July onward → next year), so anything regenerated after July 1 flipped to 2027 — and since the year was computed, not stored, nobody could correct it. Now: class year is a real, editable field on the submission ("Class year" in the gallery's Edit text panel, sanitized to a 4-digit year), defaulting to the year the graduate submitted. Renderer reads the field; heuristic deleted. Backfilled all 8 submissions and regenerated all 8 live slides — every one now reads Class of 2026, verified on the live PNG. Editability stays where it belongs: intake submissions are admin-editable; the general inbox and prayer requests remain read-only.
