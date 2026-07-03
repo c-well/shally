@@ -23,7 +23,7 @@
   .toolbar input[type="search"] { padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px; font: inherit; font-size: 13px; min-width: 220px; }
   .toolbar input[type="search"]:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
   .filter-pills { display: inline-flex; gap: 6px; }
-  .filter-pills a { padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; font-family: "Instrument Sans", sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: all 0.15s; }
+  .filter-pills a { padding: 7px 14px; border: 1px solid var(--line); border-radius: var(--r-btn, 8px); font-family: "Instrument Sans", sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: all 0.15s; }
   .filter-pills a:hover { color: var(--teal); border-color: var(--teal); }
   .filter-pills a.active { background: var(--teal); color: #fff; border-color: var(--teal); }
   .upload-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; background: var(--teal); color: #fff; border: 0; border-radius: 4px; cursor: pointer; font-family: "Instrument Sans", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }

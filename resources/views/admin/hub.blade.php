@@ -26,17 +26,17 @@
   .viewbar { margin: 26px 0 6px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 12px 16px; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
   .viewbar-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); white-space: nowrap; }
   /* Buttons follow the site spec: small radius (6-8px), never pills. */
-  .viewseg { display: inline-flex; background: var(--parchment); border: 1px solid var(--line); border-radius: 8px; padding: 3px; gap: 2px; }
+  .viewseg { display: inline-flex; background: var(--parchment); border: 1px solid var(--line); border-radius: var(--r-btn, 8px); padding: 3px; gap: 2px; }
   .viewseg button {
     font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    border: 0; background: transparent; color: var(--ink-soft); border-radius: 6px;
+    border: 0; background: transparent; color: var(--ink-soft); border-radius: calc(var(--r-btn, 8px) - 2px);
     padding: 8px 16px; cursor: pointer; transition: background .15s, color .15s; white-space: nowrap;
   }
   .viewseg button.on { background: var(--teal); color: #fff; }
   .viewseg button:disabled { opacity: .45; cursor: default; }
   .hub-search-wrap { position: relative; flex: 1; min-width: 220px; }
   .hub-search-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; }
-  #hub-search { width: 100%; font: inherit; font-size: 14px; padding: 10px 14px 10px 38px; background: var(--parchment); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; }
+  #hub-search { width: 100%; font: inherit; font-size: 14px; padding: 10px 14px 10px 38px; background: var(--parchment); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r-field, 8px); }
   #hub-search:focus { border-color: var(--teal); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); }
 
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-top: 34px; }

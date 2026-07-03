@@ -82,7 +82,7 @@ main{max-width:720px;margin:0 auto;padding:clamp(40px,7vh,64px) clamp(20px,5vw,3
 .addfld:hover{border-color:var(--teal);color:var(--teal);border-style:solid}
 
 .pill-group{display:flex;flex-wrap:wrap;gap:8px}
-.pill{font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:9px 18px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink-soft);cursor:pointer;transition:all .12s}
+.pill{font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:9px 18px;border:1px solid var(--line);border-radius:var(--r-btn, 8px);background:#fff;color:var(--ink-soft);cursor:pointer;transition:all .12s}
 .pill.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 .pill:hover:not(.on){border-color:var(--teal);color:var(--teal)}
 
