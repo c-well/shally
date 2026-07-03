@@ -1,5 +1,13 @@
 # Shalom — Changelog
 
+## 2026-07-02 · Lesson quarter rollover — fixed now, automated forever
+
+/lesson was still showing "Growing in a Relationship With God · Lesson 1" — Q2 ended June 26 and nobody (me included) added Q3, so the page fell back to Lesson 1 of the old quarter. Fixed now: **Q3 2026 · First and Second Corinthians** (Jun 27 → Sep 25) created from the real Adventech data, all 130 reading-days synced, print PDF attached, live and showing the correct current week.
+
+Moving forward this is nobody's job anymore: new `lesson:ensure-current` runs daily at 4:20am NY. If no quarter covers next Sabbath, it derives the next year/quarter, pulls the real theme + dates from Adventech (never invents them), creates the row, syncs every reading, attaches the fustero PDF if published, and emails the super-admins that /lesson rolled over. If Adventech hasn't published the next quarter yet (they return their app shell for unknown slugs) it exits quietly and retries the next day. Verified both paths live: normal run → "covered"; forced 120-day lookahead → correctly detected the gap and correctly declined the unpublished Q4.
+
+**Files:** app/Console/Commands/EnsureCurrentQuarterCommand.php, routes/console.php
+
 ## 2026-07-02 · Analytics fix + menu polish
 
 Two audit items closed. (1) **Visitor analytics finally real**: the `v_sid` cookie was written raw but read through Laravel's decrypting cookie reader, so it never survived a round-trip — every page view counted as a brand-new visitor (uniques == views exactly) and no journey could be traced. Exempted it from cookie encryption (`bootstrap/app.php`); verified live: two requests, one visitor id, both paths recorded under one session. Historic "unique visitor" numbers before today are inflated — treat 2026-07-02 as day one for real visitor data. (2) **Menu polish**: the accordion chevron's off-brand green (#2d8659) → brand teal; added **Undercover (Youth)** to Spiritual Life; "Scripture Games (Kids)" → "Scripture Games" (teens play there too).

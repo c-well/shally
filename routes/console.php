@@ -101,6 +101,7 @@ Schedule::command('bulletins:purge-old')->dailyAt('03:45');  // hard-delete 14+ 
 Schedule::command('feedback:purge-old')->dailyAt('03:50');   // hard-delete closed tickets > 14 days (PurgeOldTickets)
 Schedule::command('audit:purge-old')->dailyAt('03:55');      // hard-delete audit log entries > 40 days (PurgeOldAuditLogs)
 Schedule::command('bulletins:clear-stale-previous-snapshots')->hourly();  // reclaim previous_published_* cols 8+h after supersession
+Schedule::command('lesson:ensure-current')->dailyAt('04:20')->timezone('America/New_York'); // auto-roll the Sabbath School quarter (Q3 2026 was missed manually — never again)
 
 // Rotate the markdown feedback log when it grows past 5MB so the tail-read in ClaudeAssistant
 // stays fast and the file doesn't run away with disk quota on the cPanel account.
