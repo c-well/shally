@@ -330,7 +330,7 @@ class BulletinController extends Controller
     {
         $data = $request->validate([
             'title'  => 'nullable|string|max:180',
-            'detail' => 'nullable|string|max:1000',
+            'detail' => 'nullable|string|max:5000',
             'is_web_only' => 'sometimes|boolean',
         ]);
         $maxOrder = $bulletin->announcements()->max('sort_order') ?? -1;
@@ -348,7 +348,7 @@ class BulletinController extends Controller
         abort_unless($announcement->bulletin_id === $bulletin->id, 404);
         $data = $request->validate([
             'title'  => 'sometimes|string|max:180',
-            'detail' => 'sometimes|nullable|string|max:1000',
+            'detail' => 'sometimes|nullable|string|max:5000',
             'video_url' => 'sometimes|nullable|string|max:500',
             'is_web_only' => 'sometimes|boolean',
         ]);

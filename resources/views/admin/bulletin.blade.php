@@ -50,7 +50,7 @@
   .ctrls { display: flex; gap: 2px; flex-shrink: 0; }
   /* Drag-to-reorder handle (announcements). touch-action:none only here, so the page
      still scrolls from anywhere else on the row — safe on mobile. */
-  .drag { flex-shrink: 0; width: 24px; align-self: stretch; display: flex; align-items: center; justify-content: center; color: var(--ink-faint, #9aa0aa); cursor: grab; touch-action: none; border-radius: 6px; margin-left: -6px; }
+  .drag { flex-shrink: 0; width: 24px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; align-self: stretch; display: flex; align-items: center; justify-content: center; color: var(--ink-faint, #9aa0aa); cursor: grab; touch-action: none; border-radius: 6px; margin-left: -6px; }
   .drag svg { width: 17px; height: 17px; }
   .drag:hover { color: var(--teal); background: var(--parchment); }
   .ann-wrap.dragging { opacity: .6; }
@@ -77,6 +77,7 @@
   .empty { padding: 26px; text-align: center; border: 1px dashed var(--line); border-radius: 9px; color: var(--ink-soft); }
   .saved-pip { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--ink-soft); opacity: 0; transition: opacity .2s; pointer-events: none; }
   .saved-pip.show { opacity: 1; }
+  .saved-pip.err { color: #fff; background: #a33d3d; padding: 6px 14px; border-radius: 7px; font-weight: 600; }
   .nobull { max-width: 560px; margin: 80px auto; text-align: center; }
   .nobull .big { font-family: 'IBM Plex Serif'; font-size: 26px; color: var(--ink); margin-bottom: 14px; }
 
@@ -219,7 +220,8 @@
   var BID = main.getAttribute('data-bid');
   var token = document.querySelector('meta[name=csrf-token]').getAttribute('content');
   var pip = document.getElementById('pip');
-  function savedPip() { pip.classList.add('show'); clearTimeout(pip._t); pip._t = setTimeout(function(){ pip.classList.remove('show'); }, 1100); }
+  function savedPip() { pip.textContent = 'Saved'; pip.classList.remove('err'); pip.classList.add('show'); clearTimeout(pip._t); pip._t = setTimeout(function(){ pip.classList.remove('show'); }, 1100); }
+  function errPip(msg) { pip.textContent = msg || 'Not saved — try again'; pip.classList.add('err', 'show'); clearTimeout(pip._t); pip._t = setTimeout(function(){ pip.classList.remove('show', 'err'); pip.textContent = 'Saved'; }, 3200); }
   function api(method, url, body) {
     return fetch(url, { method: method, headers: { 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : null })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); });
@@ -370,7 +372,7 @@
   anns.addEventListener('input', function (e) {
     var inp = e.target.closest('input[data-af], textarea[data-af]'); if (!inp) return;
     var row = inp.closest('[data-aid]'); var id = row.getAttribute('data-aid'); var field = inp.getAttribute('data-af');
-    debounce('ann' + id + field, function () { api('PATCH', '/bulletins/' + BID + '/announcements/' + id, (function(o){o[field]=inp.value;return o;})({})).then(savedPip); });
+    debounce('ann' + id + field, function () { api('PATCH', '/bulletins/' + BID + '/announcements/' + id, (function(o){o[field]=inp.value;return o;})({})).then(function (res) { (res.ok && res.d && res.d.ok) ? savedPip() : errPip(res.d && res.d.message ? res.d.message : null); }); });
   });
   anns.addEventListener('change', function (e) {
     var fi = e.target.closest('.ann-img'); if (!fi) return;
