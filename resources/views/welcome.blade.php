@@ -3421,7 +3421,7 @@
         </label>
         <label class="ev-row">
           <span>Notes</span>
-          <textarea name="notes" maxlength="1000" rows="3" placeholder="Optional"></textarea>
+          <textarea name="notes" maxlength="1000" rows="3" placeholder="Optional — for a series, paste the full details here (nights, times, dates), then tap ✨ Smart fill below and the schedule builds itself."></textarea>
         </label>
         <div class="ev-recur">
           <div class="ev-recur-head">Repeats? For a series (crusade, week of prayer) — fill once, the calendar knows every night.
