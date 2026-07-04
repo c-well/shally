@@ -51,7 +51,8 @@
   .cell.out:hover { background: color-mix(in srgb, var(--cream) 40%, #fff); }
   .dn { font-size: 14px; font-weight: 600; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; }
   .cell.out .dn { color: var(--ink-faint); font-weight: 500; }
-  .dn.today { background: var(--teal); color: #fff; }
+  .dn.today, .dn.sel { background: var(--teal); color: #fff; }
+  .cell, .wband, .tg-col, .adcell, .seg button, .navbtn { -webkit-tap-highlight-color: transparent; }
   .ev { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; line-height: 1.25; padding: 3px 7px; border-radius: 6px; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ev .dot { width: 6px; height: 6px; }
   .ev.service { background: var(--teal-light, #e6f0f3); color: var(--teal-dark); }
@@ -345,6 +346,9 @@
   // ── Day sheet (tap a day in month/week) ──
   const sheetOv = document.getElementById('sheetOv');
   function openSheet(ds) {
+    document.querySelectorAll('.dn.sel').forEach(el => el.classList.remove('sel'));
+    const cell = document.querySelector('.cell[data-day="' + ds + '"] .dn');
+    if (cell) cell.classList.add('sel');
     const d = parse(ds);
     document.getElementById('sheetTitle').textContent =
       ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate();
