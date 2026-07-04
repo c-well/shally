@@ -176,13 +176,14 @@
 </section>
 
 {{-- ═══ BACK PAGE ═══ --}}
-@if (!empty($snapshot['announcements']))
+@php $foldedAnns = \App\Models\Bulletin::foldAnnouncements($snapshot['announcements'] ?? []); @endphp
+@if (!empty($foldedAnns))
 <section class="sheet back">
   <div class="page">
 
     <div class="title">Announcements</div>
 
-    @foreach ($snapshot['announcements'] as $a)
+    @foreach ($foldedAnns as $a)
       @php
         $aTitle  = trim((string)($a['title'] ?? ''));
         $aDetail = trim((string)($a['detail'] ?? ''));

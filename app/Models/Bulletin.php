@@ -38,6 +38,37 @@ class Bulletin extends Model
     public function lines()         { return $this->hasMany(BulletinLine::class)->orderBy('sort_order'); }
     public function announcements() { return $this->hasMany(Announcement::class)->orderBy('sort_order'); }
 
+    /**
+     * Fold title-less announcements into the one above (Rosharde's parent/child pattern):
+     * a row with an empty title means "these lines belong to the previous announcement" —
+     * its detail is appended as extra bullet lines. Used by the PDF renders; the editor
+     * and public page keep the rows separate so inline editing still works per-row.
+     * Also strips leading manual bullet markers (o, -, •, *) so bullets don't double up.
+     */
+    public static function foldAnnouncements(array $anns): array
+    {
+        $folded = [];
+        foreach ($anns as $a) {
+            $title  = trim((string) ($a['title'] ?? ''));
+            $detail = trim((string) ($a['detail'] ?? ''));
+            if ($title === '' && $detail !== '' && ! empty($folded)) {
+                $i = count($folded) - 1;
+                $folded[$i]['detail'] = trim(($folded[$i]['detail'] ?? '') . "\n" . $detail);
+                continue;
+            }
+            if ($title === '' && $detail === '') continue;
+            $folded[] = $a;
+        }
+        foreach ($folded as &$a) {
+            $lines = preg_split("/\r?\n/", (string) ($a['detail'] ?? ''));
+            $a['detail'] = implode("\n", array_map(
+                fn ($l) => preg_replace('/^\s*(?:o|O|•|\*|-)\s+/u', '', $l),
+                $lines
+            ));
+        }
+        return $folded;
+    }
+
     /* ─────── Event helpers ─────── */
 
     public function isEvent(): bool { return $this->kind === 'event_night'; }

@@ -23,26 +23,26 @@
   .col { position: absolute; top: 0; width: 5.5in; height: 8.5in; }
   .col.leftcol  { left: 0; border-right: 0.5pt dashed #c4c4c4; }   /* cut/fold line */
   .col.rightcol { left: 5.5in; }
-  .page { padding: 0.5in 0.42in; }
+  .page { padding: 0.38in 0.42in; }
   .caps { text-transform: uppercase; }
 
   /* ── FRONT (order of service) — header trimmed to fit the narrower 5.5in column ── */
-  .front .welcome-top { text-align: center; line-height: 1.15; margin-bottom: 20pt; }
-  .front .welcome-top .small-top   { font-size: 14pt; font-weight: 700; letter-spacing: 0.5pt; }
-  .front .welcome-top .church-name { font-size: 18pt; font-weight: 400; letter-spacing: 0.4pt; margin-top: 4pt; }
-  .front .welcome-top .date        { font-size: 11pt; margin-top: 4pt; font-weight: 400; }
+  .front .welcome-top { text-align: center; line-height: 1.15; margin-bottom: 13pt; }
+  .front .welcome-top .small-top   { font-size: 12pt; font-weight: 700; letter-spacing: 0.5pt; }
+  .front .welcome-top .church-name { font-size: 16pt; font-weight: 400; letter-spacing: 0.4pt; margin-top: 3pt; }
+  .front .welcome-top .date        { font-size: 10pt; margin-top: 3pt; font-weight: 400; }
 
-  .program-row { width: 100%; border-collapse: collapse; font-family: Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.35; margin: 6pt 0; }
+  .program-row { width: 100%; border-collapse: collapse; font-family: Georgia, "Times New Roman", serif; font-size: 10.5pt; line-height: 1.3; margin: 4.5pt 0; }
   .program-row td { vertical-align: bottom; padding: 0; }
   .program-row td.left  { font-weight: 700; white-space: nowrap; padding-right: 4pt; }
   .program-row td.dots  { width: 100%; border-bottom: 1pt dotted #222; padding: 0 3pt 3pt 3pt; }
   .program-row td.right { font-weight: 400; white-space: nowrap; padding-left: 4pt; text-align: right; }
   .program-row td.right.italic { font-style: italic; }
 
-  .program-centered { text-align: center; font-family: Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.3; font-weight: 700; margin: 9pt 0 2pt; }
-  .program-centered.subtitle { font-size: 10.5pt; font-weight: 400; font-style: italic; margin: 2pt 0 7pt; }
+  .program-centered { text-align: center; font-family: Georgia, "Times New Roman", serif; font-size: 10.5pt; line-height: 1.3; font-weight: 700; margin: 7pt 0 1.5pt; }
+  .program-centered.subtitle { font-size: 10pt; font-weight: 400; font-style: italic; margin: 1.5pt 0 5pt; }
 
-  .front-footer { text-align: center; font-size: 9.5pt; line-height: 1.4; margin-top: 18pt; padding-top: 9pt; }
+  .front-footer { text-align: center; font-size: 9pt; line-height: 1.4; margin-top: 12pt; padding-top: 6pt; }
   .front-footer .email { text-decoration: underline; }
 
   /* ── BACK (announcements) ── */
@@ -129,7 +129,8 @@
   <div class="col back {{ $c === 0 ? 'leftcol' : 'rightcol' }}">
     <div class="page">
       <div class="title">Announcements</div>
-      @foreach ($snapshot['announcements'] ?? [] as $a)
+      @php $foldedAnns ??= \App\Models\Bulletin::foldAnnouncements($snapshot['announcements'] ?? []); @endphp
+      @foreach ($foldedAnns as $a)
         @php
           $aTitle  = trim((string)($a['title'] ?? ''));
           $aDetail = trim((string)($a['detail'] ?? ''));

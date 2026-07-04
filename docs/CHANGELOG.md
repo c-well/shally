@@ -1,5 +1,13 @@
 # Shalom — Changelog
 
+## 2026-07-04 · Announcement parents/children + 2-up front page fits
+
+Rosharde's pattern is now the feature: an announcement row with a BLANK title means "these lines belong to the announcement above" — on both PDFs it folds in as extra bullets under the parent (her "Upcoming Events:" parent now shows the Evangelistic series AND the 12/6 Retro Night row that used to vanish). Manual bullet markers she types (o, -, •, *) are stripped so bullets don't double up. Folding happens at PDF render only (Bulletin::foldAnnouncements); the editor and public page keep rows separate so per-row inline editing still works. Verified on the live bulletin: blank-title row present in data → rendered as a child bullet.
+
+Also: the 2-up front page was clipping its footer (the email line). Tightened the front column's rhythm — slightly smaller header (16pt church name), 10.5pt program rows, trimmed margins — so all 18 rows + the full 3-line footer INCLUDING the email fit with breathing room, no tiny fonts, still exactly 2 pages.
+
+**Files:** app/Models/Bulletin.php, resources/views/bulletins/pdf.blade.php, resources/views/bulletins/pdf-2up.blade.php
+
 ## 2026-07-04 · Calendar — Phase 2 (Day + Week + instant view engine)
 
 Studied the real adminkc/genesis calendar as root (Karlon's go-ahead) and ported its fluidity pattern: load the data ONCE (controller ships a 36-month aggregated window as JSON), render every view client-side — so Day/Week/Month switching and month-to-month paging are INSTANT, zero round-trips (the genesis trick: views are pure renders over one local dataset). Shipped: Week view (7 columns, today ringed in teal, entries with time+location), Day view (typed cards — Service/Sermon/Event with source links), tap-any-day bottom-sheet with that day's cards, keyboard nav (arrows + T for today), and DEEP LINKS — /calendar?v=week&d=2026-07-04 opens exactly that view and the URL updates as you browse, so any view of any date is copy-linkable (first brick of the share feature). Year stays a labeled "soon". Still unlinked from nav while it matures.
