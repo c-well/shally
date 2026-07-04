@@ -60,6 +60,62 @@ class EventController extends Controller
         return response()->json(['ok' => true, 'event' => $event->fresh('department')]);
     }
 
+    /**
+     * POST /events/smart-parse — Andre types the details once (title/date/notes),
+     * Claude reads them and fills the recurrence grid. Human reviews, then saves.
+     */
+    public function smartParse(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'title' => 'nullable|string|max:180',
+            'date'  => 'nullable|date',
+            'notes' => 'nullable|string|max:2000',
+        ]);
+        $apiKey = config('services.anthropic.key');
+        abort_unless($apiKey, 503, 'Assistant not configured');
+
+        $text = "Event title: " . ($data['title'] ?? '(none)') . "\n"
+              . "Start date: " . ($data['date'] ?? '(none)') . "\n"
+              . "Details: " . ($data['notes'] ?? '(none)');
+
+        try {
+            $client = new \Anthropic\Client(apiKey: $apiKey);
+            $resp = $client->messages->create(
+                model: 'claude-haiku-4-5-20251001',
+                maxTokens: 500,
+                system: [[
+                    'type' => 'text',
+                    'text' => "You extract recurring event schedules for a church calendar. Today is " . now('America/New_York')->toDateString() . ". "
+                        . "Given an event description, return ONLY a JSON object (no prose, no fences) with keys: "
+                        . "recur_until (\"YYYY-MM-DD\" last day of the series, or null if not recurring), "
+                        . "times (object mapping weekday numbers 0-6 where 0=Sunday to arrays of times like \"7:30 pm\"; "
+                        . "include ONLY weekdays that have services; empty object if not recurring), "
+                        . "stream_url (a URL to watch online if one is mentioned, else null). "
+                        . "Weekday numbers: 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday. NEVER confuse Saturday (6) with Sunday (0). "
+                        . "Phrases like \"nightly except Mondays and Thursdays\" mean every day EXCEPT those; days given their own time (e.g. \"Saturdays 10am\") use that time INSTEAD of the nightly time. "
+                        . "If a date range like \"July 4th-25th\" has no year, infer it from today and the start date. "
+                        . "Example — input: \"nightly 7pm except Tuesdays; Saturdays 10am & 5pm, through Aug 2 2026\" → "
+                        . "{\"recur_until\":\"2026-08-02\",\"times\":{\"0\":[\"7:00 pm\"],\"1\":[\"7:00 pm\"],\"3\":[\"7:00 pm\"],\"4\":[\"7:00 pm\"],\"5\":[\"7:00 pm\"],\"6\":[\"10:00 am\",\"5:00 pm\"]},\"stream_url\":null}",
+                ]],
+                messages: [['role' => 'user', 'content' => $text]],
+            );
+            $raw = trim($resp->content[0]->text ?? '');
+            $raw = preg_replace('/^```(?:json)?|```$/m', '', $raw);
+            $out = json_decode(trim($raw), true);
+            if (! is_array($out)) return response()->json(['ok' => false, 'error' => 'parse'], 422);
+
+            return response()->json([
+                'ok'          => true,
+                'recur_until' => $out['recur_until'] ?? null,
+                'times'       => $this->cleanRecurTimes(is_array($out['times'] ?? null) ? $out['times'] : null) ?? (object) [],
+                'stream_url'  => filter_var($out['stream_url'] ?? null, FILTER_VALIDATE_URL) ?: null,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('events.smart-parse failed', ['error' => $e->getMessage()]);
+            return response()->json(['ok' => false, 'error' => 'api'], 502);
+        }
+    }
+
     /** Keep only weekdays 0-6 with non-empty string time lists (max 4 each). */
     private function cleanRecurTimes(?array $raw): ?array
     {

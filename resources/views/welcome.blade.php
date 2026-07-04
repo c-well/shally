@@ -804,7 +804,10 @@
 
   /* ── Calendar event modal — same site DNA as the series modal ── */
   .ev-recur { border-top: 1px dashed var(--line); margin-top: 14px; padding-top: 12px; }
-  .ev-recur-head { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 10px; }
+  .ev-recur-head { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .ev-smart { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--teal); background: color-mix(in srgb, var(--teal) 7%, #fff); border: 1px solid color-mix(in srgb, var(--teal) 30%, var(--line)); border-radius: 7px; padding: 6px 12px; cursor: pointer; }
+  .ev-smart:hover { border-color: var(--teal); }
+  .ev-smart:disabled { opacity: .55; cursor: wait; }
   .ev-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
   .ev-day span { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 3px; text-align: center; }
   .ev-day input { width: 100%; font-size: 11px; padding: 7px 5px; text-align: center; border: 1px solid var(--line); border-radius: 6px; background: var(--parchment); }
@@ -3421,7 +3424,9 @@
           <textarea name="notes" maxlength="1000" rows="3" placeholder="Optional"></textarea>
         </label>
         <div class="ev-recur">
-          <div class="ev-recur-head">Repeats? For a series (crusade, week of prayer) — fill once, the calendar knows every night.</div>
+          <div class="ev-recur-head">Repeats? For a series (crusade, week of prayer) — fill once, the calendar knows every night.
+            <button type="button" class="ev-smart" id="ev-smart-fill" data-url="{{ route('events.smart-parse') }}">✨ Smart fill from Notes</button>
+          </div>
           <div class="ev-row-grid">
             <label class="ev-row"><span>Repeats until</span><input type="date" name="recur_until"></label>
             <label class="ev-row"><span>Watch link <small style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink-soft);">(their YouTube, for Tune In)</small></span><input type="url" name="stream_url" placeholder="https://youtube.com/…"></label>
@@ -4438,6 +4443,24 @@
       evCancelBtn?.addEventListener('click', closeEventModal);
       evCloseBtn?.addEventListener('click', closeEventModal);
       evModal?.addEventListener('click', (e) => { if (e.target === evModal) closeEventModal(); });
+
+      document.getElementById('ev-smart-fill')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        const notes = evForm.elements.notes.value.trim();
+        if (!notes) { showSaved('Type the details into Notes first'); return; }
+        btn.disabled = true; const was = btn.textContent; btn.textContent = 'Reading the details…';
+        try {
+          const res = await post(btn.dataset.url, {
+            title: evForm.elements.title.value, date: evForm.elements.date.value, notes,
+          });
+          if (res.recur_until) evForm.elements.recur_until.value = res.recur_until;
+          if (res.stream_url && !evForm.elements.stream_url.value) evForm.elements.stream_url.value = res.stream_url;
+          const times = res.times || {};
+          for (let i = 0; i < 7; i++) evForm.elements['rt' + i].value = (times[i] || times[String(i)] || []).join(', ');
+          showSaved(Object.keys(times).length ? 'Schedule filled — look it over, then Save' : 'No repeating pattern found in Notes');
+        } catch (err) { showSaved('Could not read it — fill the grid by hand'); }
+        btn.disabled = false; btn.textContent = was;
+      });
 
       evForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
