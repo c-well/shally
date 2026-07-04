@@ -203,13 +203,16 @@ class BulletinController extends Controller
         $label    = $isPrevious ? '-previous' : '';
         $filename = "bulletin-{$date}{$label}.pdf";
 
-        $response = Pdf::loadView('bulletins.pdf', [
+        // ?layout=2up → one landscape sheet, bulletin printed twice for a cut-in-half
+        // double-sided print (2 identical bulletins per sheet). Default stays portrait.
+        $twoUp = $request->query('layout') === '2up';
+        $response = Pdf::loadView($twoUp ? 'bulletins.pdf-2up' : 'bulletins.pdf', [
                 'snapshot'            => $snapshot,
                 'isPrevious'          => $isPrevious,
                 'previousPublishedAt' => $previousPublishedAt,
             ])
-            ->setPaper('letter', 'portrait')
-            ->download($filename);
+            ->setPaper('letter', $twoUp ? 'landscape' : 'portrait')
+            ->download(($twoUp ? '2up-' : '') . $filename);
 
         // Prevent shared/CDN cache poisoning: the PDF content depends on whether the requester
         // is a clerk (live draft) or a guest (published snapshot). A shared cache that stored
