@@ -36,6 +36,7 @@
   .ann ul { margin: 0; padding: 0; list-style: none; }
   .ann li { font-size: 16px; line-height: 1.65; color: var(--ink); padding-left: 22px; position: relative; margin: 10px 0; }
   .ann li::before { content: ''; position: absolute; left: 4px; top: 0.62em; width: 7px; height: 7px; border-radius: 999px; background: color-mix(in srgb, var(--teal) 45%, #fff); border: 1.5px solid var(--teal); }
+  .ann li.bf::before { background: var(--teal); }
 
   .empty { text-align: center; color: var(--ink-soft); padding: 80px 0; }
   .close { text-align: center; margin-top: clamp(48px,8vh,72px); font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--ink-soft); }
@@ -68,7 +69,7 @@
           @if ($isMission || count($lines) <= 1)
             @foreach ($lines as $l)<p>{{ $l }}</p>@endforeach
           @else
-            <ul>@foreach ($lines as $l)<li>{{ $l }}</li>@endforeach</ul>
+            <ul>@foreach ($lines as $l)@php $bf = str_starts_with($l, '•'); @endphp<li @if($bf)class="bf"@endif>{{ $bf ? ltrim(substr($l, strlen('•'))) : $l }}</li>@endforeach</ul>
           @endif
         </div>
       </section>
