@@ -10,6 +10,12 @@
 
      CSS + JS are inline so this partial is fully self-contained.
      ============================================================ --}}
+{{-- The menu is included on every page — it must not depend on the host page's
+     font loads (menu rendered bold-fallback on pages without Cormorant, caught by
+     Karlon 2026-07-04). Browsers dedupe identical stylesheet links. --}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   /* ─── Header ─── */
   .site-menu-header {
