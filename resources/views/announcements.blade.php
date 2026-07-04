@@ -17,25 +17,30 @@
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Instrument Sans', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   *:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 4px; }
 
-  main { max-width: 640px; margin: 0 auto; padding: clamp(30px,6vh,56px) clamp(18px,5vw,28px) 90px; }
-  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--teal); text-align: center; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(38px,8vw,52px); font-weight: 500; letter-spacing: -0.02em; text-align: center; margin-top: 10px; line-height: 1.05; }
-  .when { text-align: center; font-size: 14px; color: var(--ink-soft); margin-top: 10px; }
+  main { max-width: 660px; margin: 0 auto; padding: clamp(56px,10vh,100px) clamp(20px,5vw,28px) clamp(90px,12vh,140px); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: var(--teal); text-align: center; }
+  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(42px,9vw,58px); font-weight: 500; letter-spacing: -0.02em; text-align: center; margin-top: 14px; line-height: 1.03; }
+  .when { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-top: 16px; }
 
-  .ann { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; margin-top: 18px; }
-  .ann:first-of-type { margin-top: 34px; }
-  .ann h2 { font-size: 16px; font-weight: 700; letter-spacing: 0.01em; color: var(--ink); }
-  .ann .body { margin-top: 8px; font-size: 15px; line-height: 1.65; color: var(--ink-soft); }
-  .ann .body p + p { margin-top: 8px; }
-  .ann ul { margin: 8px 0 0; padding-left: 20px; }
-  .ann li { font-size: 15px; line-height: 1.6; color: var(--ink-soft); margin: 5px 0; }
-  .ann.mission { text-align: center; background: color-mix(in srgb, var(--teal) 5%, #fff); border-color: color-mix(in srgb, var(--teal) 25%, var(--line)); }
-  .ann.mission .body { color: var(--ink); font-family: 'Cormorant Garamond', serif; font-size: 18px; font-style: italic; }
+  /* Mission — the week's centerpiece: upright serif, roomy, quietly framed in teal */
+  .ann.mission { text-align: center; background: color-mix(in srgb, var(--teal) 5%, #fff); border: 1px solid color-mix(in srgb, var(--teal) 22%, var(--line)); border-radius: 18px; padding: 34px 30px; margin-top: clamp(40px,7vh,60px); }
+  .ann.mission h2 { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--teal); }
+  .ann.mission .body { margin-top: 14px; color: var(--ink); font-family: 'Cormorant Garamond', serif; font-style: normal; font-size: 21px; line-height: 1.55; }
 
-  .empty { text-align: center; color: var(--ink-soft); padding: 60px 0; }
-  .close { text-align: center; margin-top: 40px; font-size: 15px; color: var(--ink-soft); font-style: italic; }
-  .backrow { text-align: center; margin-top: 26px; }
-  .backrow a { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); text-decoration: none; border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 11px 18px; display: inline-block; }
+  .ann { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 26px 28px; margin-top: 24px; box-shadow: 0 1px 3px rgba(26,35,50,.04); }
+  .ann:not(.mission) { position: relative; overflow: hidden; }
+  .ann:not(.mission)::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: color-mix(in srgb, var(--teal) 55%, transparent); }
+  .ann h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); }
+  .ann .body { margin-top: 12px; font-size: 16px; line-height: 1.7; color: var(--ink); }
+  .ann .body p + p { margin-top: 10px; }
+  .ann ul { margin: 0; padding: 0; list-style: none; }
+  .ann li { font-size: 16px; line-height: 1.65; color: var(--ink); padding-left: 22px; position: relative; margin: 10px 0; }
+  .ann li::before { content: ''; position: absolute; left: 4px; top: 0.62em; width: 7px; height: 7px; border-radius: 999px; background: color-mix(in srgb, var(--teal) 45%, #fff); border: 1.5px solid var(--teal); }
+
+  .empty { text-align: center; color: var(--ink-soft); padding: 80px 0; }
+  .close { text-align: center; margin-top: clamp(48px,8vh,72px); font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--ink-soft); }
+  .backrow { text-align: center; margin-top: 30px; }
+  .backrow a { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); text-decoration: none; border: 1px solid var(--line); background: #fff; border-radius: 9px; padding: 13px 22px; display: inline-block; }
 </style>
 @include('partials.theme-vars')
 </head>
