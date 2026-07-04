@@ -96,6 +96,7 @@
     <form method="POST" action="{{ route('admin.bulletin.prefer') }}" style="display:inline;">@csrf<input type="hidden" name="version" value="v1"><button class="lnk" type="submit">Classic editor ⇄</button></form>
     @if ($bulletin)
       <a class="lnk" href="{{ route('bulletins.pdf', $bulletin) }}" target="_blank" rel="noopener">PDF ↓</a>
+      <a class="lnk" href="{{ route('bulletins.pdf', $bulletin) }}?layout=2up" target="_blank" rel="noopener" title="One landscape sheet, bulletin twice — print 2-sided, cut in half">2-UP ↓</a>
       <span class="status {{ $bulletin->is_published ? 'live' : 'draft' }}" id="status">{{ $bulletin->is_published ? 'Published' : 'Draft' }}</span>
       <button class="golive" id="golive" data-url="{{ route('bulletins.publish', $bulletin) }}">Go Live</button>
     @endif
