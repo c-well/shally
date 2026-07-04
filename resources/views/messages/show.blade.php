@@ -20,9 +20,16 @@
   h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(34px,7vw,48px); font-weight: 500; letter-spacing: -0.02em; text-align: center; margin-top: 12px; line-height: 1.08; }
   .who { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-top: 14px; }
 
-  .player { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin-top: clamp(30px,5vh,44px); box-shadow: 0 1px 3px rgba(26,35,50,.04); }
-  .player audio { width: 100%; display: block; }
-  .player .hint { font-size: 11px; color: var(--ink-faint); margin-top: 8px; text-align: center; }
+  .player-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px 14px; margin-top: clamp(30px,5vh,44px); box-shadow: 0 1px 3px rgba(26,35,50,.04); }
+  .player { display: flex; align-items: center; gap: 14px; }
+  .pp { flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%; border: 0; background: var(--teal); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+  .pp:hover { background: var(--teal-dark, var(--teal)); }
+  .pp svg { width: 21px; height: 21px; }
+  .track { flex: 1; min-width: 0; }
+  .bar { height: 6px; background: color-mix(in srgb, var(--ink) 10%, transparent); border-radius: 999px; cursor: pointer; position: relative; overflow: hidden; }
+  .prog { position: absolute; inset: 0 100% 0 0; background: var(--teal); border-radius: 999px; }
+  .time { margin-top: 7px; font-size: 12px; color: var(--ink-soft); display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+  .hint { font-size: 11px; color: var(--ink-faint); margin-top: 10px; text-align: center; }
 
   .heart { font-family: 'Cormorant Garamond', serif; font-size: 21px; line-height: 1.55; text-align: center; color: var(--ink); margin-top: clamp(30px,5vh,42px); }
   .summary { margin-top: 26px; }
@@ -62,8 +69,15 @@
   <div class="who">{{ $sermon->speaker }}</div>
 
   @if ($sermon->audio_status === 'ready' && $sermon->audio_url)
-    <div class="player">
-      <audio controls preload="none" src="{{ $sermon->audio_url }}"></audio>
+    @php $durS = $sermon->audio_duration_seconds; $durFmt = $durS ? sprintf('%d:%02d', intdiv($durS, 60), $durS % 60) : ''; @endphp
+    <div class="player-card">
+      <div class="player" data-audio="{{ $sermon->audio_url }}">
+        <button class="pp" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+        <div class="track">
+          <div class="bar"><div class="prog"></div></div>
+          <div class="time"><span class="cur">0:00</span><span class="dur">{{ $durFmt }}</span></div>
+        </div>
+      </div>
       <div class="hint">The message only — song service and announcements not included.</div>
     </div>
   @endif
@@ -128,6 +142,34 @@
 </main>
 
 <script>
+(function () {
+  var PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  var PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+  function fmt(s) { s = Math.floor(s || 0); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+  var p = document.querySelector('.player'); if (!p) return;
+  var btn = p.querySelector('.pp'), bar = p.querySelector('.bar'), prog = p.querySelector('.prog'),
+      cur = p.querySelector('.cur'), dur = p.querySelector('.dur'), audio = null;
+  function ensure() {
+    if (audio) return audio;
+    audio = new Audio(); audio.preload = 'none'; audio.src = p.getAttribute('data-audio');
+    audio.addEventListener('timeupdate', function () {
+      if (audio.duration) prog.style.right = (100 - (audio.currentTime / audio.duration) * 100) + '%';
+      cur.textContent = fmt(audio.currentTime);
+    });
+    audio.addEventListener('loadedmetadata', function () { if (audio.duration) dur.textContent = fmt(audio.duration); });
+    audio.addEventListener('ended', function () { btn.innerHTML = PLAY; prog.style.right = '100%'; });
+    return audio;
+  }
+  btn.addEventListener('click', function () {
+    ensure();
+    if (audio.paused) { audio.play(); btn.innerHTML = PAUSE; }
+    else { audio.pause(); btn.innerHTML = PLAY; }
+  });
+  bar.addEventListener('click', function (e) {
+    ensure(); if (!audio.duration) return;
+    var r = bar.getBoundingClientRect(); audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  });
+})();
 document.getElementById('shareBtn')?.addEventListener('click', async function () {
   const url = location.href;
   const text = 'Check out this message — “' + this.dataset.title + '” by ' + this.dataset.speaker + '. It spoke to me:';
