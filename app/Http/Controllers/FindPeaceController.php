@@ -104,6 +104,25 @@ class FindPeaceController extends Controller
         return response()->json(['results' => $results]);
     }
 
+    /**
+     * GET /sermons/{slug} — the CHURCH-side listening room (Karlon 2026-07-04:
+     * "Find Peace is not for the church"). Same message data, church clothes:
+     * members listen here; Find Peace stays the seekers\' front door and keeps
+     * the SEO (this page canonicals to it).
+     */
+    public function churchShow(string $slug): View|\Illuminate\Http\RedirectResponse
+    {
+        $sermon = PeaceSermon::where('slug', $slug)->whereNotNull('published_at')
+            ->with(['scriptures' => fn ($q) => $q->orderBy('display_order')])
+            ->first();
+        if (! $sermon && preg_match('/^(.+)-[A-Za-z0-9_-]{6}$/', $slug, $m)) {
+            $clean = PeaceSermon::where('slug', $m[1])->whereNotNull('published_at')->first();
+            if ($clean) return redirect()->route('sermons.show', $clean->slug, 301);
+        }
+        abort_unless($sermon, 404);
+        return view('sermons.show', ['sermon' => $sermon]);
+    }
+
     public function show(string $slug): View|\Illuminate\Http\RedirectResponse
     {
         $sermon = PeaceSermon::where('slug', $slug)
