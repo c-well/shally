@@ -49,6 +49,12 @@
   .errors { padding: 12px 16px; background: rgba(168,42,31,0.08); border-left: 4px solid #a82a1f; border-radius: 0 4px 4px 0; margin-bottom: 16px; }
   .errors ul { padding-left: 18px; font-size: 13px; color: #a82a1f; }
   .help { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+  /* Bookends readable + tappable on every device (Karlon 2026-07-04) */
+  .top { padding: 24px 28px; }
+  .top a { font-size: 13.5px !important; padding: 10px 12px; margin: -10px -12px; }
+  .top .meta { font-size: 12.5px !important; }
+  @media (max-width: 700px) { .top { padding: 16px 16px; } }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')

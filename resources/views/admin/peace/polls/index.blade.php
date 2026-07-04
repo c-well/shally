@@ -33,6 +33,12 @@
   .badge.off { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink-soft); }
   .counts { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); }
   .edit-btn { padding: 7px 14px; background: var(--teal); color: #fff; text-decoration: none; border-radius: 4px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* Bookends readable + tappable on every device (Karlon 2026-07-04) */
+  .top { padding: 24px 28px; }
+  .top a { font-size: 13.5px !important; padding: 10px 12px; margin: -10px -12px; }
+  .top .meta { font-size: 12.5px !important; }
+  @media (max-width: 700px) { .top { padding: 16px 16px; } }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')

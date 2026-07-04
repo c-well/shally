@@ -81,6 +81,12 @@
 
   .public-link { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); text-decoration: none; }
   .public-link:hover { text-decoration: underline; }
+
+  /* Bookends readable + tappable on every device (Karlon 2026-07-04) */
+  .top { padding: 24px 28px; }
+  .top a { font-size: 13.5px !important; padding: 10px 12px; margin: -10px -12px; }
+  .top .meta { font-size: 12.5px !important; }
+  @media (max-width: 700px) { .top { padding: 16px 16px; } }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')
@@ -345,6 +351,25 @@
     <p style="margin:14px 0 16px;font-size:13px;color:var(--ink-soft);">
       Offsets are relative to the <em>current</em> audio file (the one already trimmed by the pipeline). Use <strong>MM:SS</strong> format. End must be after start. A 3-second fade-out is always applied. To extend <em>past</em> the current end, leave it for Claude — that needs the full source.
     </p>
+    {{-- Audition deck: HEAR the message, mark start/end from the playhead (Karlon 2026-07-04:
+         "how am I supposed to know where to come in and end — I can't hear the audio") --}}
+    <div class="audition">
+      <button type="button" class="aud-pp" id="audPP" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+      <div class="aud-track">
+        <div class="aud-bar" id="audBar"><div class="aud-prog" id="audProg"></div></div>
+        <div class="aud-time"><span id="audCur">0:00</span><span>{{ $dh }}</span></div>
+      </div>
+      <div class="aud-marks">
+        <button type="button" class="aud-mark" id="markStart">Playhead → Start</button>
+        <button type="button" class="aud-mark" id="markEnd">Playhead → End</button>
+      </div>
+      <div class="aud-skips">
+        <button type="button" class="aud-skip" data-d="-30">-30s</button>
+        <button type="button" class="aud-skip" data-d="-5">-5s</button>
+        <button type="button" class="aud-skip" data-d="5">+5s</button>
+        <button type="button" class="aud-skip" data-d="30">+30s</button>
+      </div>
+    </div>
     <form method="POST" action="{{ route('admin.peace.trim', $sermon->slug) }}" data-confirm="Re-trim this audio? The original boundaries will be lost (backup is kept server-side).">
       @csrf
       <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;">
@@ -509,5 +534,51 @@
 </main>
 @include('partials._confirm')
 
+<style>
+  .audition { display: grid; grid-template-columns: auto 1fr; gap: 12px 14px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 14px 0 18px; }
+  .aud-pp { width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--teal); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .aud-pp svg { width: 18px; height: 18px; }
+  .aud-bar { height: 8px; background: color-mix(in srgb, var(--ink) 10%, transparent); border-radius: 999px; cursor: pointer; position: relative; overflow: hidden; }
+  .aud-prog { position: absolute; inset: 0 100% 0 0; background: var(--teal); }
+  .aud-time { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+  .aud-marks, .aud-skips { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
+  .aud-mark { flex: 1; min-width: 140px; padding: 11px 10px; border: 1px solid var(--teal); background: color-mix(in srgb, var(--teal) 7%, #fff); color: var(--teal); border-radius: 7px; font: 700 11px 'Instrument Sans', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+  .aud-mark:hover { background: var(--teal); color: #fff; }
+  .aud-skip { padding: 9px 14px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); border-radius: 7px; font: 600 12px 'JetBrains Mono', monospace; cursor: pointer; }
+  .aud-skip:hover { border-color: var(--teal); color: var(--teal); }
+</style>
+<script>
+(function () {
+  var wrap = document.querySelector('.audition'); if (!wrap) return;
+  var audio = new Audio(); audio.preload = 'none'; audio.src = @json($sermon->audio_url);
+  var pp = document.getElementById('audPP'), bar = document.getElementById('audBar'),
+      prog = document.getElementById('audProg'), cur = document.getElementById('audCur');
+  var PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  var PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+  function fmt(t) { t = Math.floor(t || 0); return Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2); }
+  audio.addEventListener('timeupdate', function () {
+    if (audio.duration) prog.style.right = (100 - audio.currentTime / audio.duration * 100) + '%';
+    cur.textContent = fmt(audio.currentTime);
+  });
+  audio.addEventListener('ended', function () { pp.innerHTML = PLAY; });
+  pp.addEventListener('click', function () {
+    if (audio.paused) { audio.play(); pp.innerHTML = PAUSE; } else { audio.pause(); pp.innerHTML = PLAY; }
+  });
+  bar.addEventListener('click', function (e) {
+    if (!audio.duration) return;
+    var r = bar.getBoundingClientRect(); audio.currentTime = (e.clientX - r.left) / r.width * audio.duration;
+  });
+  document.querySelectorAll('.aud-skip').forEach(function (b) {
+    b.addEventListener('click', function () { audio.currentTime = Math.max(0, audio.currentTime + parseInt(b.dataset.d, 10)); });
+  });
+  var trimForm = document.querySelector('form[action*="/trim"]');
+  document.getElementById('markStart').addEventListener('click', function () {
+    trimForm.querySelector('input[name="start"]').value = fmt(audio.currentTime); this.textContent = 'Start = ' + fmt(audio.currentTime);
+  });
+  document.getElementById('markEnd').addEventListener('click', function () {
+    trimForm.querySelector('input[name="end"]').value = fmt(audio.currentTime); this.textContent = 'End = ' + fmt(audio.currentTime);
+  });
+})();
+</script>
 </body>
 </html>

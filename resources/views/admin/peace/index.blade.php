@@ -37,6 +37,18 @@
   .flag-nosermon { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink-soft); }
   .edit-btn { padding: 7px 14px; background: var(--teal); color: #fff; text-decoration: none; border-radius: 4px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; transition: background 0.15s; }
   .edit-btn:hover { background: var(--teal-dark); }
+  /* Ministry toolbar — one uniform rank, wraps to a clean grid on phones */
+  .pm-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px; margin: -8px 0 34px; }
+  .pmt { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 10px; border: 1px solid var(--line); background: #fff; color: var(--teal); border-radius: 8px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; text-decoration: none; text-align: center; }
+  .pmt:hover { border-color: var(--teal); }
+  .pmt.gold { background: var(--brass); border-color: var(--brass); color: #fff; }
+  .pmt-n { background: #fff; color: var(--brass); border-radius: 6px; padding: 1px 7px; font-size: 11px; }
+
+  /* Bookends readable + tappable on every device (Karlon 2026-07-04) */
+  .top { padding: 24px 28px; }
+  .top a { font-size: 13.5px !important; padding: 10px 12px; margin: -10px -12px; }
+  .top .meta { font-size: 12.5px !important; }
+  @media (max-width: 700px) { .top { padding: 16px 16px; } }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')
@@ -53,10 +65,14 @@
 <main>
   <h1>Peace.</h1>
   <p class="lede">Sermons in the Finding Peace ministry. Click any title to edit fields, Q&As, scriptures, or flag as offsite / no-sermon.</p>
-  <p style="margin: -20px 0 32px; font-size: 14px;">
-    <a href="{{ route('admin.peace.polls.index') }}" style="display:inline-block;padding:8px 16px;background:var(--teal);color:#fff;text-decoration:none;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;">Manage polls @include('partials._ar')</a> <a href="{{ route('admin.peace.schedule') }}" style="display:inline-block;padding:8px 16px;background:transparent;color:var(--teal);border:1px solid var(--teal);text-decoration:none;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin-left:8px;">Schedule @include('partials._ar')</a> <a href="{{ route('admin.peace.analytics') }}" style="display:inline-block;padding:8px 16px;background:transparent;color:var(--teal);border:1px solid var(--teal);text-decoration:none;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin-left:8px;">Analytics @include('partials._ar')</a> <a href="{{ route('admin.peace.subscribers') }}" style="display:inline-block;padding:8px 16px;background:transparent;color:var(--teal);border:1px solid var(--teal);text-decoration:none;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin-left:8px;">Subscribers @include('partials._ar')</a> @php $pendingSubs = \App\Models\PeaceUserSubmission::where('status','pending')->count(); @endphp
-  <a href="{{ route('admin.peace.submissions') }}" style="display:inline-block;padding:8px 16px;background:{{ $pendingSubs > 0 ? 'var(--brass)' : 'transparent' }};color:{{ $pendingSubs > 0 ? '#fff' : 'var(--teal)' }};border:1px solid {{ $pendingSubs > 0 ? 'var(--brass)' : 'var(--teal)' }};text-decoration:none;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin-left:8px;">@if($pendingSubs > 0) {{ $pendingSubs }} new @endif Submissions @include('partials._ar')</a>
-  </p>
+  <div class="pm-tools">
+    <a class="pmt" href="{{ route('admin.peace.polls.index') }}">Manage polls</a>
+    <a class="pmt" href="{{ route('admin.peace.schedule') }}">Schedule</a>
+    <a class="pmt" href="{{ route('admin.peace.analytics') }}">Analytics</a>
+    <a class="pmt" href="{{ route('admin.peace.subscribers') }}">Subscribers</a>
+    @php $pendingSubs = \App\Models\PeaceUserSubmission::where('status','pending')->count(); @endphp
+    <a class="pmt {{ $pendingSubs > 0 ? 'gold' : '' }}" href="{{ route('admin.peace.submissions') }}">Submissions @if($pendingSubs > 0)<span class="pmt-n">{{ $pendingSubs }}</span>@endif</a>
+  </div>
 
   @if (session('status'))
     <div class="status">{{ session('status') }}</div>
