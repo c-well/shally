@@ -559,5 +559,6 @@
   render();
 })();
 </script>
+@include('partials._event-tracker')
 </body>
 </html>
