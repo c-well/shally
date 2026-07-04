@@ -1,7 +1,7 @@
       <div class="ann-wrap {{ trim((string) $a->title) === '' ? 'child' : '' }} {{ $a->is_web_only ? 'webonly' : '' }}" data-aid="{{ $a->id }}">
         <div class="item">
           <span class="drag" title="Drag to reorder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>
-          <div class="fields" style="grid-template-columns:1fr 1.6fr">
+          <div class="fields af">
             <input data-af="title" value="{{ $a->title }}" placeholder="Title (blank = bullets for the section above)">
             <textarea data-af="detail" rows="1" placeholder="Detail (Enter = new line → its own bullet)">{{ $a->detail }}</textarea>
           </div>
