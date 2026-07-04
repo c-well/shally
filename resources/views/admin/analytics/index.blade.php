@@ -6,7 +6,7 @@
 <title>Analytics — Admin · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: "Poppins", system-ui, sans-serif; }
@@ -31,7 +31,7 @@
   .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 26px; }
   .totals .stat { padding: 18px 20px; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
   .totals .stat .label { font-family: "JetBrains Mono", monospace; font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
-  .totals .stat .value { font-family: "Cormorant Garamond", serif; font-size: 36px; font-weight: 500; color: var(--ink); line-height: 1; }
+  .totals .stat .value { font-family: "Instrument Sans", sans-serif; font-size: 36px; font-weight: 500; color: var(--ink); line-height: 1; }
   .totals .stat .sub { margin-top: 4px; font-size: 11px; color: var(--ink-soft); opacity: 0.7; font-family: "JetBrains Mono", monospace; letter-spacing: 0.06em; }
 
   .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 22px; margin-bottom: 22px; }

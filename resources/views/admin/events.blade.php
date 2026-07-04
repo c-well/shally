@@ -7,7 +7,7 @@
 <title>Events — The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -24,7 +24,7 @@
   .qa { margin-top: 30px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: grid; grid-template-columns: 1fr 300px; gap: 26px; }
   @media (max-width: 720px) { .qa { grid-template-columns: 1fr; gap: 20px; } }
   .qa-head { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .qa-head h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; }
+  .qa-head h2 { font-family: 'Instrument Sans', sans-serif; font-size: 26px; font-weight: 500; }
   .pill { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; background: color-mix(in srgb, var(--ink-soft) 12%, transparent); color: var(--ink-soft); white-space: nowrap; }
   .pill.live { background: color-mix(in srgb, var(--teal) 15%, transparent); color: var(--teal-dark); }
   .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
@@ -45,10 +45,10 @@
   .pv-card { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--parchment); }
   .pv-tile { background: var(--teal); color: #fff; text-align: center; padding: 12px 0; }
   .pv-tile .m { font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; }
-  .pv-tile .d { font-family: 'Cormorant Garamond', serif; font-size: 46px; line-height: 1; font-weight: 500; }
+  .pv-tile .d { font-family: 'Instrument Sans', sans-serif; font-size: 46px; line-height: 1; font-weight: 500; }
   .pv-tile .w { font-family: 'Instrument Sans', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.2em; opacity: .85; }
   .pv-body { padding: 14px 16px; }
-  .pv-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: var(--ink); }
+  .pv-title { font-family: 'Instrument Sans', sans-serif; font-size: 22px; font-weight: 500; color: var(--ink); }
   .pv-time { font-size: 12.5px; color: var(--ink-soft); margin-top: 3px; }
   .pv-flyer { width: 100%; border-top: 1px solid var(--line); display: block; }
   .pv-empty { padding: 28px 16px; text-align: center; font-size: 12.5px; color: var(--ink-soft); font-style: italic; }
@@ -66,10 +66,10 @@
   .ev.hidden-ev { opacity: .62; }
   .ev-tile { flex-shrink: 0; width: 84px; background: color-mix(in srgb, var(--teal) 8%, #fff); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px 0; }
   .ev-tile .m { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.16em; color: var(--teal-dark); }
-  .ev-tile .d { font-family: 'Cormorant Garamond', serif; font-size: 34px; line-height: 1; color: var(--ink); }
+  .ev-tile .d { font-family: 'Instrument Sans', sans-serif; font-size: 34px; line-height: 1; color: var(--ink); }
   .ev-tile .w { font-family: 'Instrument Sans', sans-serif; font-size: 8px; font-weight: 700; letter-spacing: 0.16em; color: var(--ink-soft); }
   .ev-main { flex: 1; padding: 14px 16px; min-width: 0; }
-  .ev-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: var(--ink); }
+  .ev-title { font-family: 'Instrument Sans', sans-serif; font-size: 22px; font-weight: 500; color: var(--ink); }
   .ev-meta { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
   .ev-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
   .mini { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 6px; padding: 7px 11px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--ink-soft); }

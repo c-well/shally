@@ -6,7 +6,7 @@
 <title>Sermons — Admin · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -16,7 +16,7 @@
   .top a:hover { color: var(--teal); }
   .top .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--ink-soft); opacity: 0.65; }
   main { max-width: 920px; margin: 0 auto; padding: clamp(48px, 9vh, 88px) clamp(20px, 5vw, 32px) 80px; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 7vw, 72px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; }
+  h1 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(48px, 7vw, 72px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; }
   .lede { margin-top: 22px; font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 580px; }
   .add-btn {
     display: inline-block; margin-top: 26px; padding: 12px 22px;
@@ -33,7 +33,7 @@
   .row { display: grid; grid-template-columns: 90px 1fr auto auto; gap: 18px; align-items: center; padding: 18px 4px; border-bottom: 1px solid var(--line); }
   .row:last-child { border-bottom: 0; }
   .row .date { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); }
-  .row .title { font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 500; line-height: 1.2; color: var(--ink); }
+  .row .title { font-family: 'Instrument Sans', sans-serif; font-size: 21px; font-weight: 500; line-height: 1.2; color: var(--ink); }
   .row .meta { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
   .row .edit-btn, .row .del-btn {
     padding: 7px 14px; border-radius: 4px;

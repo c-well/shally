@@ -7,7 +7,7 @@
 <title>API spend — Admin · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -24,11 +24,11 @@
   .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 2.5rem; }
   .total-card { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; }
   .total-card .label { font-family: 'Instrument Sans', sans-serif; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; font-weight: 600; }
-  .total-card .value { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 500; color: var(--ink); line-height: 1; }
+  .total-card .value { font-family: 'Instrument Sans', sans-serif; font-size: 2.2rem; font-weight: 500; color: var(--ink); line-height: 1; }
   .total-card .value.small { font-size: 1.6rem; }
   .total-card .sub { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
 
-  h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 500; margin: 2.5rem 0 1rem; color: var(--ink); }
+  h2 { font-family: 'Instrument Sans', sans-serif; font-size: 1.6rem; font-weight: 500; margin: 2.5rem 0 1rem; color: var(--ink); }
 
   table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
   table th { font-family: 'Instrument Sans', sans-serif; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); padding: 12px 14px; text-align: left; background: color-mix(in srgb, var(--ink) 3%, transparent); font-weight: 600; }

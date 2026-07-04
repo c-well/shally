@@ -8,7 +8,7 @@
 <title>Peace · Subscribers · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
@@ -21,7 +21,7 @@
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 30px; }
   .kpi { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 16px 20px; }
   .kpi .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
-  .kpi .num { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 500; color: var(--ink); line-height: 1; }
+  .kpi .num { font-family: 'Instrument Sans', sans-serif; font-size: 30px; font-weight: 500; color: var(--ink); line-height: 1; }
   .row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
   .row:last-child { border-bottom: none; }
   .email { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink); }

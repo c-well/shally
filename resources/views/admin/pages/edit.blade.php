@@ -7,7 +7,7 @@
 <title>Edit /{{ $page->slug }} — Admin · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -68,10 +68,10 @@
   }
 
   /* Preview rendering — match the brand prose look */
-  .preview-body { font-family: 'Cormorant Garamond', serif; font-size: 17px; line-height: 1.7; color: var(--ink); }
-  .preview-body h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; font-style: italic; margin: 1em 0 0.5em; color: var(--ink); }
-  .preview-body h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; margin: 1.2em 0 0.4em; color: var(--ink); }
-  .preview-body h3 { font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 500; margin: 1em 0 0.4em; color: var(--ink); }
+  .preview-body { font-family: 'Instrument Sans', sans-serif; font-size: 17px; line-height: 1.7; color: var(--ink); }
+  .preview-body h1 { font-family: 'Instrument Sans', sans-serif; font-size: 32px; font-weight: 500; font-style: italic; margin: 1em 0 0.5em; color: var(--ink); }
+  .preview-body h2 { font-family: 'Instrument Sans', sans-serif; font-size: 26px; font-weight: 500; margin: 1.2em 0 0.4em; color: var(--ink); }
+  .preview-body h3 { font-family: 'Instrument Sans', sans-serif; font-size: 21px; font-weight: 500; margin: 1em 0 0.4em; color: var(--ink); }
   .preview-body p { margin-bottom: 1em; }
   .preview-body blockquote { margin: 1.2em 0; padding: 12px 18px; border-left: 3px solid var(--teal); background: color-mix(in srgb, var(--teal) 5%, transparent); font-style: italic; color: var(--ink-soft); }
   .preview-body ul, .preview-body ol { margin: 1em 0 1em 1.4em; }

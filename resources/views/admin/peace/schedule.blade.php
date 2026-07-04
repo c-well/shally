@@ -8,7 +8,7 @@
 <title>Peace · Schedule · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
@@ -41,7 +41,7 @@
   .sermon-row { display: grid; grid-template-columns: 100px 1fr auto; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--line); }
   .sermon-row:last-child { border-bottom: none; }
   .sermon-row .date { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--ink-soft); text-transform: uppercase; }
-  .sermon-row .title { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--ink); }
+  .sermon-row .title { font-family: 'Instrument Sans', sans-serif; font-size: 16px; color: var(--ink); }
   .sermon-row .title a { color: var(--ink); text-decoration: none; }
   .sermon-row .title a:hover { color: var(--teal); }
   .sermon-row .stat { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }

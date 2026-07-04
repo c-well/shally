@@ -8,7 +8,7 @@
 <title>Peace · Submissions · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
@@ -23,7 +23,7 @@
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 30px; }
   .kpi { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 16px 20px; }
   .kpi .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
-  .kpi .num { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 500; color: var(--ink); line-height: 1; }
+  .kpi .num { font-family: 'Instrument Sans', sans-serif; font-size: 30px; font-weight: 500; color: var(--ink); line-height: 1; }
   .kpi.warn .num { color: var(--brass); }
   .kpi.ok .num { color: var(--green); }
 
@@ -61,7 +61,7 @@
   .stat-pill.replied  { background: color-mix(in srgb, var(--teal) 10%, transparent); color: var(--teal); }
 
   .sub-body { font-size: 14px; line-height: 1.65; color: var(--ink); margin-bottom: 14px; white-space: pre-wrap; }
-  .sub-attribution { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--ink-soft); font-size: 13px; margin-bottom: 14px; }
+  .sub-attribution { font-family: 'Instrument Sans', sans-serif; font-style: italic; color: var(--ink-soft); font-size: 13px; margin-bottom: 14px; }
   .sub-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 12px; border-top: 1px dashed var(--line); }
   .btn { padding: 7px 14px; background: var(--teal); color: #fff; border: 0; border-radius: 4px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; text-decoration: none; }
   .btn:hover { background: var(--teal-dark); }
