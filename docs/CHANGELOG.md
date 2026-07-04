@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-04 · Calendar — Phase 2 (Day + Week + instant view engine)
+
+Studied the real adminkc/genesis calendar as root (Karlon's go-ahead) and ported its fluidity pattern: load the data ONCE (controller ships a 36-month aggregated window as JSON), render every view client-side — so Day/Week/Month switching and month-to-month paging are INSTANT, zero round-trips (the genesis trick: views are pure renders over one local dataset). Shipped: Week view (7 columns, today ringed in teal, entries with time+location), Day view (typed cards — Service/Sermon/Event with source links), tap-any-day bottom-sheet with that day's cards, keyboard nav (arrows + T for today), and DEEP LINKS — /calendar?v=week&d=2026-07-04 opens exactly that view and the URL updates as you browse, so any view of any date is copy-linkable (first brick of the share feature). Year stays a labeled "soon". Still unlinked from nav while it matures.
+
+**Files:** app/Http/Controllers/CalendarController.php, resources/views/calendar/index.blade.php (new; month.blade.php superseded)
+
 ## 2026-07-04 · Calendar — Phase 1 (aggregation + month view)
 
 The events area is becoming a living calendar (Karlon's v2 vision). Phase 1 shipped: a public month view at /calendar that AGGREGATES three existing sources into one grid — Events (dept-colored), Bulletins (each service_date → "Sabbath Worship"; the Sermon line → "X preached"), and the dated sermon archive (fills history no bulletin covers). Proven live: "Pastor Kevin Brown preached" on the calendar is pulled from the bulletin's sermon line — nobody typed it into the calendar. One source of truth: add a date to a bulletin, the calendar knows. Shalom palette only (teal=services, brass=sermons, green=events), Instrument font, woven into the site (shared header/menu/CSS). Deployed UNLINKED (nav unchanged) so the live team isn't disturbed while it's built out. Decisions locked: public-to-view + managers-edit; "editable in the calendar" will write back to source (no drift). Next: Week/Day views, inline editing w/ write-back + autosave, share/copy-link, then Year view, then per-device responsive passes.
