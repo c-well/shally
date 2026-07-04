@@ -61,7 +61,7 @@
 
   /* ── WEEK ── */
   .week { display: grid; grid-template-columns: repeat(7,1fr); gap: 10px; }
-  .wday { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 11px; min-height: 340px; cursor: pointer; transition: border-color .12s; }
+  .wday { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 11px; aspect-ratio: 1 / 1; min-height: 0; overflow-y: auto; cursor: pointer; transition: border-color .12s; }
   .wday:hover { border-color: var(--teal); }
   .wday.wtoday { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 10%, transparent); }
   .whead { display: flex; align-items: baseline; gap: 8px; padding-bottom: 9px; border-bottom: 1px solid var(--line); margin-bottom: 9px; }
@@ -105,7 +105,7 @@
     .ev { font-size: 0; padding: 0; margin-top: 4px; gap: 3px; background: transparent !important; display: inline-flex; }
     .ev .dot { width: 7px; height: 7px; display: inline-block; }
     .week { grid-template-columns: 1fr; }
-    .wday { min-height: 0; }
+    .wday { aspect-ratio: auto; }   /* stacked on mobile — squares would be huge */
     .cal-title { order: -1; width: 100%; flex-basis: 100%; }
   }
 </style>
