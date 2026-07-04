@@ -59,7 +59,37 @@
   .ev.event   { background: #e3f0e8; color: #1f6843; }
   .more { font-size: 11px; color: var(--ink-faint); font-weight: 600; margin-top: 4px; padding-left: 7px; }
 
-  /* ── WEEK — agenda bands: a full-width row per day, entries get real room ── */
+  /* ── WEEK (desktop): clean iCal-style time grid — day columns, trimmed hour axis,
+        all-day shelf on top. Mobile keeps the agenda bands below. ── */
+  .tgrid { background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(26,35,50,.04); }
+  .tg-head { display: grid; grid-template-columns: 64px repeat(7,1fr); border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--cream) 45%, #fff); }
+  .tg-head .th { padding: 11px 0 9px; text-align: center; }
+  .tg-head .th .d { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: var(--ink-soft); }
+  .tg-head .th .n { font-size: 19px; font-weight: 600; line-height: 1.15; }
+  .tg-head .th.today .n { color: var(--teal); }
+  .tg-allday { display: grid; grid-template-columns: 64px repeat(7,1fr); border-bottom: 1px solid var(--line); min-height: 40px; }
+  .tg-allday .lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: var(--ink-faint); text-transform: uppercase; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+  .tg-allday .adcell { border-left: 1px solid var(--line); padding: 5px 6px; cursor: pointer; min-width: 0; }
+  .adchip { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--ink); padding: 3px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .adchip .wdot { width: 7px; height: 7px; border-radius: 999px; flex-shrink: 0; }
+  .tg-body { display: grid; grid-template-columns: 64px repeat(7,1fr); position: relative; }
+  .tg-rail { position: relative; }
+  .tg-rail .hr { height: var(--hh); position: relative; }
+  .tg-rail .hr span { position: absolute; top: -7px; right: 8px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: var(--ink-faint); }
+  .tg-col { border-left: 1px solid var(--line); position: relative; cursor: pointer; }
+  .tg-col.today { background: color-mix(in srgb, var(--teal) 3%, #fff); }
+  .tg-col .hline { height: var(--hh); border-bottom: 1px solid color-mix(in srgb, var(--ink) 5%, transparent); }
+  .tg-col .hline:last-child { border-bottom: 0; }
+  .tblock { position: absolute; left: 5px; right: 5px; border-radius: 7px; padding: 6px 9px 6px 11px; overflow: hidden; font-size: 12.5px; font-weight: 600; line-height: 1.3; color: var(--ink); }
+  .tblock::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px; }
+  .tblock .tt { font-size: 10.5px; font-weight: 500; color: var(--ink-soft); margin-top: 1px; }
+  .tblock.service { background: color-mix(in srgb, var(--teal) 8%, #fff); } .tblock.service::before { background: var(--teal); }
+  .tblock.sermon  { background: color-mix(in srgb, var(--brass) 10%, #fff); } .tblock.sermon::before { background: var(--brass); }
+  .tblock.event   { background: color-mix(in srgb, #2d8659 9%, #fff); } .tblock.event::before { background: #2d8659; }
+  .weekwrap-mobile { display: none; }
+  @media (max-width: 760px) { .tgrid { display: none; } .weekwrap-mobile { display: block; } }
+
+  /* ── WEEK (mobile agenda bands) ── */
   .week { display: flex; flex-direction: column; gap: 10px; }
   .wband { display: flex; gap: 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color .12s; align-items: center; }
   .wband:hover { border-color: var(--teal); }
@@ -221,24 +251,68 @@
     title.innerHTML = MONTHS[s.getMonth()].slice(0,3) + ' ' + s.getDate() + ' – '
       + (s.getMonth() === e.getMonth() ? '' : MONTHS[e.getMonth()].slice(0,3) + ' ') + e.getDate()
       + ' <span class="dim">' + e.getFullYear() + '</span>';
-    let html = '<div class="week">';
+    const mins = t => {                     // "10:30 am" -> minutes, else null (all-day)
+      const m = /^(\d{1,2}):(\d{2})\s*(am|pm)$/i.exec((t || '').trim());
+      if (!m) return null;
+      let h = parseInt(m[1], 10) % 12; if (/pm/i.test(m[3])) h += 12;
+      return h * 60 + parseInt(m[2], 10);
+    };
+    // hour range: trimmed to church life, expanded by actual data
+    let lo = 8 * 60, hi = 21 * 60;
+    const days = [];
     for (let i = 0; i < 7; i++) {
       const ds = addDays(start, i);
-      const d = parse(ds);
       const es = entriesOf(ds);
-      html += '<div class="wband ' + (ds === TODAY ? 'wtoday' : '') + (es.length ? '' : ' wempty') + '" data-day="' + ds + '">'
-            + '<div class="wrail"><span class="wdow">' + DOWS[i] + '</span><span class="wdom">' + d.getDate() + '</span></div>'
-            + '<div class="wcards">';
-      if (!es.length) {
-        html += '<span class="wnone">—</span>';
-      } else {
-        es.forEach(ev => {
-          html += '<div class="wev ' + ev.t + '"><span class="wdot"></span>' + esc(ev.n) + '</div>';
-        });
-      }
-      html += '</div></div>';
+      const timed = [], allday = [];
+      es.forEach(ev => { const mm = mins(ev.time); (mm === null ? allday : timed).push({ ...ev, mm }); });
+      timed.forEach(ev => { lo = Math.min(lo, Math.floor(ev.mm / 60) * 60); hi = Math.max(hi, ev.mm + 120); });
+      days.push({ ds, timed, allday });
     }
-    stage.innerHTML = html + '</div>';
+    lo = Math.max(6 * 60, lo); hi = Math.min(23 * 60, Math.max(hi, lo + 6 * 60));
+    const HH = 52, hours = [];
+    for (let m = lo; m < hi; m += 60) hours.push(m);
+    const hlabel = m => { const h = Math.floor(m / 60); return h === 12 ? 'Noon' : (h % 12 || 12) + (h < 12 ? ' AM' : ' PM'); };
+
+    let html = '<div class="tgrid" style="--hh:' + HH + 'px">';
+    html += '<div class="tg-head"><div></div>' + days.map((d, i) => {
+      const dt = parse(d.ds);
+      return '<div class="th ' + (d.ds === TODAY ? 'today' : '') + '"><div class="d">' + DOWS[i] + '</div><div class="n">' + dt.getDate() + '</div></div>';
+    }).join('') + '</div>';
+    html += '<div class="tg-allday"><div class="lbl">all-day</div>' + days.map(d =>
+      '<div class="adcell" data-day="' + d.ds + '">' + d.allday.map(ev =>
+        '<div class="adchip"><span class="wdot ' + '"></span>'.replace('wdot ', 'wdot" style="background:' + (ev.t === 'service' ? 'var(--teal)' : ev.t === 'sermon' ? 'var(--brass)' : '#2d8659') + ';') + esc(ev.n) + '</div>'
+      ).join('') + '</div>').join('') + '</div>';
+    html += '<div class="tg-body"><div class="tg-rail">' + hours.map(m => '<div class="hr"><span>' + (m === lo ? '' : hlabel(m)) + '</span></div>').join('') + '</div>';
+    days.forEach(d => {
+      html += '<div class="tg-col ' + (d.ds === TODAY ? 'today' : '') + '" data-day="' + d.ds + '">'
+            + hours.map(() => '<div class="hline"></div>').join('');
+      const placed = [];
+      d.timed.forEach(ev => {
+        const top = (ev.mm - lo) / 60 * HH;
+        const height = Math.max(34, 1.5 * HH - 6);
+        const clash = placed.some(p => Math.abs(p - top) < height);
+        html += '<div class="tblock ' + ev.t + '" style="top:' + (top + 1) + 'px;height:' + height + 'px;'
+              + (clash ? 'left:50%;' : '') + '">' + esc(ev.n)
+              + '<div class="tt">' + esc(ev.time) + '</div></div>';
+        placed.push(top);
+      });
+      html += '</div>';
+    });
+    html += '</div></div>';
+
+    // mobile: agenda bands (same data, stacked)
+    html += '<div class="weekwrap-mobile"><div class="week">';
+    days.forEach((d, i) => {
+      const dt = parse(d.ds);
+      const es = entriesOf(d.ds);
+      html += '<div class="wband ' + (d.ds === TODAY ? 'wtoday' : '') + (es.length ? '' : ' wempty') + '" data-day="' + d.ds + '">'
+            + '<div class="wrail"><span class="wdow">' + DOWS[i] + '</span><span class="wdom">' + dt.getDate() + '</span></div>'
+            + '<div class="wcards">'
+            + (es.length ? es.map(ev => '<div class="wev ' + ev.t + '"><span class="wdot"></span>' + esc(ev.n) + '</div>').join('') : '<span class="wnone">—</span>')
+            + '</div></div>';
+    });
+    html += '</div></div>';
+    stage.innerHTML = html;
   }
 
   // ── DAY ──
