@@ -771,6 +771,10 @@
   }
   .theme-pop.open { display: block; }
   /* ── Event card actions + modal editor ── */
+  .eyebrow-end { display: inline-flex; align-items: center; gap: 16px; }
+  .cal-peek { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); text-decoration: none; }
+  .cal-peek:hover .arrow { transform: translateX(3px); }
+  .cal-peek .arrow { display: inline-block; transition: transform .2s; }
   .event { position: relative; }
   .event-body { min-width: 0; }
   .event-time {
@@ -1062,6 +1066,8 @@
     border-radius: 2px;
     overflow: hidden;
   }
+  .event-filler { background: var(--parchment); }
+  @media (max-width: 900px) { .event-filler { display: none; } }
   .event {
     background: var(--parchment);
     padding: 40px 40px;
@@ -2672,9 +2678,12 @@
   <div class="events-container">
     <div class="eyebrow">
       <span>Upcoming</span>
-      @if ($canEdit)
-        <button class="btn" id="event-add-btn" type="button">+ Add event</button>
-      @endif
+      <span class="eyebrow-end">
+        <a class="cal-peek" href="{{ route('calendar') }}">Browse the calendar <span class="arrow">@include('partials._ar')</span></a>
+        @if ($canEdit)
+          <button class="btn" id="event-add-btn" type="button">+ Add event</button>
+        @endif
+      </span>
     </div>
     @if ($upcomingEvents->count())
       <div class="events-grid">
@@ -2758,6 +2767,7 @@
             @endif
           </div>
         @endforeach
+        @if ($upcomingEvents->count() % 2 === 1)<div class="event event-filler" aria-hidden="true"></div>@endif
       </div>
     @else
       <p class="reading" style="color: var(--ink-soft); font-style: italic;">No events posted yet.</p>
