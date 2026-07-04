@@ -262,8 +262,10 @@ class ProcessSermonCommand extends Command
 
     private function slugify(string $title, string $videoId): string
     {
+        // Clean, human slugs (SEO — Karlon 2026-07-04). Video-id suffix only on collision.
         $base = Str::slug($title);
         if ($base === '') $base = $videoId;
+        if (! \App\Models\PeaceSermon::where('slug', $base)->exists()) return $base;
         return $base . '-' . substr($videoId, 0, 6);
     }
 

@@ -104,7 +104,7 @@ class FindPeaceController extends Controller
         return response()->json(['results' => $results]);
     }
 
-    public function show(string $slug): View
+    public function show(string $slug): View|\Illuminate\Http\RedirectResponse
     {
         $sermon = PeaceSermon::where('slug', $slug)
             ->whereNotNull('published_at')
@@ -113,7 +113,15 @@ class FindPeaceController extends Controller
                 'scriptures' => fn($q) => $q->orderBy('display_order'),
                 'topics',
             ])
-            ->firstOrFail();
+            ->first();
+
+        // Legacy URLs carried a video-id suffix (not-your-address-hiRMwR).
+        // Slugs cleaned 2026-07-04 for SEO — old links 301 home to the clean one.
+        if (! $sermon && preg_match('/^(.+)-[A-Za-z0-9_-]{6}$/', $slug, $m)) {
+            $clean = PeaceSermon::where('slug', $m[1])->whereNotNull('published_at')->first();
+            if ($clean) return redirect()->route('find-peace.show', $clean->slug, 301);
+        }
+        abort_unless($sermon, 404);
 
         // "If this spoke to you, also hear…" — rank siblings by shared-topic count
         // (closer match = better UX + better internal linking for SEO; fallback to recency).
