@@ -7,7 +7,7 @@
 <title>{{ $sermon->exists ? 'Edit' : 'Add' }} sermon — Admin · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -17,7 +17,7 @@
   .top a:hover { color: var(--teal); }
   .top .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--ink-soft); opacity: 0.65; }
   main { max-width: 720px; margin: 0 auto; padding: 28px clamp(20px, 5vw, 32px) 80px; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px, 6vw, 56px); font-weight: 500; font-style: italic; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 24px; }
+  h1 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(40px, 6vw, 56px); font-weight: 500; font-style: italic; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 24px; }
 
   .flash { margin-bottom: 22px; padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; }
   .flash.error { background: rgba(192,57,43,0.08); border-left-color: #c0392b; }
@@ -183,7 +183,7 @@
     </div>
 
     <div class="actions">
-      <button type="submit">{{ $sermon->exists ? 'Save changes @include('partials._ar')' : 'Add sermon @include('partials._ar')' }}</button>
+      <button type="submit">{{ $sermon->exists ? 'Save changes' : 'Add sermon' }} @include('partials._ar')</button>
       <a href="{{ route('admin.sermons.index') }}">Cancel</a>
     </div>
   </form>

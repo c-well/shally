@@ -1,5 +1,13 @@
 # Shalom — Changelog
 
+## 2026-07-04 · Cormorant banned from admin + all numerals (Karlon)
+
+Cormorant Garamond's oldstyle figures render numbers as squiggles ("July 2026" on the schedule, the "9"/"3" on event tiles). Per Karlon: removed Cormorant from the ENTIRE admin area — all 29 admin views (+ /schedule) now use Instrument Sans for display text (JetBrains Mono headers stay); the unused Cormorant font load was stripped from those pages too. On the public side, the three numeral-bearing spots (event tile day, duty-roster date, peace-notes cover date) switched to Instrument Sans — Cormorant remains for public prose and headers, where it belongs.
+
+Also repaired two self-inflicted breaks from the earlier arrow sweep that Blade compiled but PHP rejected at render (glyphs inside @php/echo strings became nested-quote includes): the admin hub's card data (hub was erroring live behind the auth wall — public probes can't see admin pages) and the sermons form save button. Added the missing verification step to the toolkit: php-lint every COMPILED view after bulk blade changes — all views now lint clean.
+
+**Files:** 29 admin views + schedule.blade.php, welcome.blade.php, peace-notes.blade.php, admin/hub.blade.php, admin/sermons/form.blade.php
+
 ## 2026-07-04 · Arrows systemized (Untitled UI circle set) + honest analytics + SEO verdict
 
 Karlon's call: the tiny text arrows (→ ↗) looked lame. All 200+ glyphs across 65 views are now real SVG icons from Untitled UI's circle-arrow set, served from THREE partials (partials/_ar, _arup, _arl) — restyling every arrow on the site is a one-file edit. CMS-stored page content (pages.body_html) gets the same treatment at render time via a new Str::arrowize() macro, so editors can keep typing → and the site draws the icon. Email templates deliberately keep text glyphs (mail clients strip SVG).

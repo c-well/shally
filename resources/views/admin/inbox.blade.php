@@ -11,10 +11,10 @@
 <title>Inbox — admin · Shalom</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--parchment); color: var(--ink); font-family: 'Cormorant Garamond', serif; min-height: 100dvh; }
+  html, body { background: var(--parchment); color: var(--ink); font-family: 'Instrument Sans', sans-serif; min-height: 100dvh; }
   .top { padding: 22px clamp(20px, 5vw, 40px); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }
   .top a { font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; color: var(--ink-soft); }
   .top a:hover { color: var(--teal); }
@@ -76,7 +76,7 @@
   .ticket-status.closed  { background: rgba(94,199,144,0.15); color: #1f6843; }
 
   .ticket-body {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Instrument Sans', sans-serif;
     font-size: 18px; line-height: 1.55;
     color: var(--ink);
     margin-bottom: 14px;

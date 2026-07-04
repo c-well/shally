@@ -7,7 +7,7 @@
 <title>{{ $form->title }} — submissions · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/vendor/cropperjs/cropper.min.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,7 +41,7 @@
   .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(26,35,50,.03); }
   .card .preview { aspect-ratio: 16/9; background: var(--parchment); display: block; width: 100%; object-fit: cover; border-bottom: 1px solid var(--line); }
   .card .body { padding: 15px 17px 17px; display: flex; flex-direction: column; gap: 3px; }
-  .card .nm { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: var(--ink); }
+  .card .nm { font-family: 'Instrument Sans', sans-serif; font-size: 22px; font-weight: 500; color: var(--ink); }
   .card .sub { font-size: 12px; color: var(--ink-soft); }
   .card .when { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-soft); opacity: .7; margin-top: 2px; }
 
@@ -54,7 +54,7 @@
   .card .actions .btn-danger:hover { background: color-mix(in srgb, var(--red, #b23b3b) 7%, #fff); border-color: var(--red, #b23b3b); color: var(--red, #b23b3b); }
 
   .empty { padding: 40px; text-align: center; background: #fff; border: 1px dashed var(--line); border-radius: 10px; color: var(--ink-soft); }
-  .empty .big { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-style: italic; color: var(--ink); margin-bottom: 8px; }
+  .empty .big { font-family: 'Instrument Sans', sans-serif; font-size: 24px; font-style: italic; color: var(--ink); margin-bottom: 8px; }
 
   .removed { margin-top: 44px; }
   .removed .grid .card { opacity: .65; }

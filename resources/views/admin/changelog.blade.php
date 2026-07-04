@@ -7,7 +7,7 @@
 <title>Changelog — The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -22,7 +22,7 @@
   .lede { font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 600px; margin-bottom: 2.5rem; }
 
   .doc { line-height: 1.65; color: var(--ink); }
-  .doc h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 500; margin: 2.5rem 0 0.6rem; padding-top: 1.5rem; border-top: 1px solid var(--line); color: var(--ink); }
+  .doc h2 { font-family: 'Instrument Sans', sans-serif; font-size: 1.6rem; font-weight: 500; margin: 2.5rem 0 0.6rem; padding-top: 1.5rem; border-top: 1px solid var(--line); color: var(--ink); }
   .doc > h2:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
   .doc h3 { font-family: 'Instrument Sans', sans-serif; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; margin: 1.2rem 0 0.4rem; }
   .doc p { margin: 0 0 0.8rem; font-size: 0.93rem; }
@@ -46,7 +46,7 @@
   .cl-flash { padding: 12px 16px; margin-bottom: 22px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 3px solid var(--teal); border-radius: 0 4px 4px 0; font-size: 14px; color: var(--ink); }
   .cl-section { margin-bottom: 2.6rem; }
   .cl-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .cl-h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 500; color: var(--ink); margin-bottom: 0.4rem; }
+  .cl-h2 { font-family: 'Instrument Sans', sans-serif; font-size: 1.6rem; font-weight: 500; color: var(--ink); margin-bottom: 0.4rem; }
   .cl-note { font-size: 13px; color: var(--ink-soft); line-height: 1.55; margin-bottom: 1rem; max-width: 640px; }
   .cl-empty { padding: 18px; background: #fff; border: 1px dashed var(--line); border-radius: 6px; font-size: 13px; color: var(--ink-soft); font-style: italic; }
   .cl-cps { display: flex; flex-direction: column; gap: 8px; }

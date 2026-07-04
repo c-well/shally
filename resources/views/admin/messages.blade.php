@@ -8,7 +8,7 @@
 <title>Messages — Admin · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>  :root { --pulse:#36c980; }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
@@ -19,7 +19,7 @@
   .top .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--ink-soft); opacity: 0.65; }
 
   main { max-width: 980px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px) 80px; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 38px); font-weight: 500; letter-spacing: -0.015em; line-height: 1.05; margin-bottom: 6px; }
+  h1 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(28px, 4vw, 38px); font-weight: 500; letter-spacing: -0.015em; line-height: 1.05; margin-bottom: 6px; }
   .lede { font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 640px; }
 
   .tabs { display: flex; gap: 28px; border-bottom: 1px solid var(--line); margin: 28px 0 24px; }
@@ -37,12 +37,12 @@
 
   .msg { display: block; padding: 18px 0; border-bottom: 1px solid var(--line); }
   .msg-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
-  .msg-name { font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 500; color: var(--ink); }
+  .msg-name { font-family: 'Instrument Sans', sans-serif; font-size: 21px; font-weight: 500; color: var(--ink); }
   .msg-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); opacity: 0.7; }
   .msg-flags { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); }
   .msg-flags .flag { display: inline-block; padding: 2px 7px; border-radius: 3px; background: color-mix(in srgb, var(--teal) 8%, transparent); margin-right: 4px; }
   .msg-flags .flag.danger { color: var(--warn); background: rgba(168,42,31,0.06); }
-  .msg-body { font-family: 'Cormorant Garamond', serif; font-size: 17px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; margin-top: 6px; max-width: 720px; }
+  .msg-body { font-family: 'Instrument Sans', sans-serif; font-size: 17px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; margin-top: 6px; max-width: 720px; }
   .msg-actions { margin-top: 10px; display: inline-flex; gap: 12px; align-items: center; }
   .msg-actions a, .msg-actions button { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); background: transparent; border: 0; cursor: pointer; text-decoration: none; padding: 0; }
   .msg-actions a:hover, .msg-actions button:hover { color: var(--teal-dark); text-decoration: underline; }

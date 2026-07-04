@@ -7,7 +7,7 @@
 <title>Sabbath School lessons — The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -19,7 +19,7 @@
   .top .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--ink-soft); opacity: 0.65; }
 
   main { max-width: 920px; margin: 0 auto; padding: clamp(48px, 9vh, 88px) clamp(20px, 5vw, 32px) 80px; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 7vw, 72px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; }
+  h1 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(48px, 7vw, 72px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; }
   .lede { margin-top: 22px; font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 540px; }
 
   .flash { margin-top: 26px; background: color-mix(in srgb, var(--brass) 10%, transparent); border-left: 3px solid var(--brass); padding: 14px 18px; border-radius: 0 4px 4px 0; font-size: 14px; line-height: 1.5; }
@@ -59,7 +59,7 @@
   }
   .lesson-row:last-child { border-bottom: 0; }
   .l-quarter { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink-soft); }
-  .l-theme { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 500; color: var(--ink); }
+  .l-theme { font-family: 'Instrument Sans', sans-serif; font-size: 19px; font-weight: 500; color: var(--ink); }
   .l-dates { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
   .l-pdf {
     font-family: 'Instrument Sans', sans-serif; font-size: 10px;

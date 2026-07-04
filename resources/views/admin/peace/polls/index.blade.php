@@ -8,7 +8,7 @@
 <title>Peace · Polls · The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
@@ -17,14 +17,14 @@
   .top a { font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; color: var(--ink-soft); }
   .top a:hover { color: var(--teal); }
   main { max-width: 980px; margin: 0 auto; padding: 0 32px 80px; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 38px); font-weight: 500; line-height: 1.05; margin-bottom: 8px; }
+  h1 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(28px, 4vw, 38px); font-weight: 500; line-height: 1.05; margin-bottom: 8px; }
   .lede { font-size: 15px; color: var(--ink-soft); max-width: 600px; margin-bottom: 24px; }
   .actions { margin-bottom: 32px; }
   .btn { display: inline-block; padding: 9px 18px; background: var(--teal); color: #fff; text-decoration: none; border-radius: 4px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; border: 0; cursor: pointer; }
   .btn:hover { background: var(--teal-dark); }
   .status { padding: 14px 18px; background: color-mix(in srgb, var(--teal) 8%, transparent); border-left: 4px solid var(--teal); border-radius: 0 6px 6px 0; margin-bottom: 24px; font-size: 14px; }
   .poll-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 18px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--line); }
-  .poll-q { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 500; }
+  .poll-q { font-family: 'Instrument Sans', sans-serif; font-size: 19px; font-weight: 500; }
   .poll-q a { color: var(--ink); text-decoration: none; }
   .poll-q a:hover { color: var(--teal); }
   .poll-meta { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }

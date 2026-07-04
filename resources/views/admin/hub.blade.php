@@ -7,7 +7,7 @@
 <title>Admin — The Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -19,7 +19,7 @@
   .top .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--ink-soft); opacity: 0.65; }
 
   main { max-width: 1080px; margin: 0 auto; padding: clamp(40px, 7vh, 70px) clamp(20px, 5vw, 32px) 80px; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 7vw, 72px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; color: var(--ink); }
+  h1 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(48px, 7vw, 72px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; color: var(--ink); }
   .lede { margin-top: 18px; font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: 540px; }
 
   /* ── The top latch: view choice + search in one quiet bar ── */
@@ -50,7 +50,7 @@
   }
   .card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 12px 28px -16px color-mix(in srgb, var(--teal) 40%, transparent); }
   .card-eyebrow { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--teal); }
-  .card-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; letter-spacing: -0.01em; color: var(--ink); margin-top: 6px; }
+  .card-title { font-family: 'Instrument Sans', sans-serif; font-size: 26px; font-weight: 500; letter-spacing: -0.01em; color: var(--ink); margin-top: 6px; }
   .card-sub { font-size: 13px; line-height: 1.5; color: var(--ink-soft); margin-top: 4px; }
   .card-arrow { margin-top: 14px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); }
   .card-badge {
@@ -62,13 +62,13 @@
   .card-badge.pulse { animation: hubBadgePulse 2.4s ease-in-out infinite; }
   @keyframes hubBadgePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(209,43,31,0.55); } 50% { box-shadow: 0 0 0 7px rgba(209,43,31,0); } }
 
-  .sec-h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 5vw, 52px); font-weight: 500; letter-spacing: -0.02em; margin: 72px 0 8px; color: var(--ink); }
+  .sec-h2 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(36px, 5vw, 52px); font-weight: 500; letter-spacing: -0.02em; margin: 72px 0 8px; color: var(--ink); }
 
   /* ── Group latches (Groups + Smart views) ── */
   .latch { margin-top: 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
   .latch-head { width: 100%; display: flex; align-items: center; gap: 14px; padding: 20px 22px; background: transparent; border: 0; cursor: pointer; text-align: left; color: var(--ink); }
   .latch-head:hover .latch-title { color: var(--teal); }
-  .latch-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; transition: color .15s; }
+  .latch-title { font-family: 'Instrument Sans', sans-serif; font-size: 26px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; transition: color .15s; }
   .latch-count { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; color: var(--ink-soft); background: color-mix(in srgb, var(--ink) 6%, transparent); border-radius: 999px; padding: 3px 9px; letter-spacing: 0.08em; }
   .latch-peek { flex: 1; min-width: 0; font-size: 12px; color: var(--ink-soft); opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .latch-badge { min-width: 20px; height: 20px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; background: #d12b1f; color: #fff; border-radius: 999px; font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; }
@@ -108,32 +108,32 @@
   $_unreadTotal   = $_unreadPrayer + $_unreadContact;
 
   $HUB = [
-    'messages'  => ['Inbox', 'Messages.', 'Prayer requests & contact-form messages from visitors.', 'Open @include('partials._ar')', route('admin.messages')],
-    'users'     => ['People', 'Users.', 'Add Andre, the elders, members. Set their PIN.', 'Manage @include('partials._ar')', route('admin.users')],
-    'logs'      => ['Activity', 'Audit log.', 'Every sign-in, magic link, and error from the last 40 days.', 'View @include('partials._ar')', route('admin.logs')],
-    'changes'   => ['Undo', 'Edit history.', 'Every content edit — bulletins, pages, lessons — with a one-click undo for each.', 'Open @include('partials._ar')', route('admin.changes')],
-    'bulletin'  => ['New', 'Bulletin editor.', 'The drill-through editor — every item inline, autosaves, works on phone and tablet.', 'Open @include('partials._ar')', route('admin.bulletin')],
-    'events'    => ['Calendar', 'Events.', 'Add an event in seconds — name, date, flyer. Live as you fill it in.', 'Open @include('partials._ar')', route('admin.events')],
-    'games'     => ['Kids', 'Scripture games.', 'Build the verse games — pick a book, a game, an age. They appear at /kids.', 'Open @include('partials._ar')', route('admin.games')],
-    'mystery'   => ['Teens', 'Undercover.', 'The question bank for the youth-night mystery game.', 'Open @include('partials._ar')', route('admin.mystery')],
-    'intake'    => ['Forms', 'Intake.', 'Graduation slides, sign-ups — shareable links, every submission in its gallery.', 'Open @include('partials._ar')', route('admin.intake.index')],
-    'changelog' => ['Dev notes', 'Changelog.', 'Plain-English log of every site change. When something feels off, look here first.', 'Open @include('partials._ar')', route('admin.changelog')],
-    'spend'     => ['Cost', 'API spend.', "Live tally of Shalom's Anthropic API calls · per-source + per-model.", 'Open @include('partials._ar')', route('admin.anthropic-usage')],
-    'names'     => ['Cleanup', 'Bulletin names.', "Hide typos or names you don't want appearing in autocomplete.", 'Tidy @include('partials._ar')', route('admin.names')],
-    'schedule'  => ['Departments', 'Schedule.', "Who's serving on Sabbath: ushers, deacons, music, platform.", 'Open @include('partials._ar')', route('schedule.index')],
-    'lessons'   => ['Sabbath school', 'Lessons.', 'Quarterly PDF + readings — now rolls over automatically each quarter.', 'Manage @include('partials._ar')', route('admin.lessons')],
-    'sermons'   => ['Peace Notes', 'Sermons.', 'Upload audio sermons to the public archive · listen, edit, delete.', 'Manage @include('partials._ar')', route('admin.sermons.index')],
-    'peace'     => ['Ministry', 'Finding Peace.', 'Edit auto-processed sermons · tweak Q&As, scriptures, topics.', 'Manage @include('partials._ar')', route('admin.peace.index')],
-    'slides'    => ['Home page', 'Hero slides.', 'Photos that rotate on the home page · upload, reorder, retire.', 'Manage @include('partials._ar')', route('admin.slides.index')],
-    'media'     => ['Library', 'Media pool.', 'All uploaded images and audio · pick, copy URL, delete.', 'Open @include('partials._ar')', route('admin.media.index')],
-    'analytics' => ['Telemetry', 'Analytics.', 'First-party page views, top paths, devices, referrers · privacy-first.', 'View @include('partials._ar')', route('admin.analytics')],
-    'buginbox'  => ['Bug reports', 'Inbox.', 'Read incoming bug reports + feedback. Close when handled.', 'Open @include('partials._ar')', route('admin.inbox')],
-    'pg_landing'=> ['Front door', 'Home / landing.', 'Hero, schedule, this-week cards, latest sermon, donate band.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'landing')],
-    'pg_about'  => ['Our story', 'About.', 'Who Shalom is, the culture, what to expect from a Sabbath here.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'about')],
-    'pg_visit'  => ['First-timer', 'Visit us.', 'Address, map, parking, dress, FAQ.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'visit')],
-    'pg_beliefs'=> ['Doctrine', 'What we believe.', '12 of the 28 SDA Fundamentals in plain language.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'beliefs')],
-    'pg_notes'  => ['Sermon archive', 'Peace Notes.', 'Latest sermon embedded · titles list · YouTube channel link.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'peace-notes')],
-    'pg_contact'=> ['Get in touch', 'Contact form.', 'Public form · sends to contact@ with CC to c-wellpics.', 'Preview @include('partials._arup')', route('admin.pages.edit', 'contact')],
+    'messages'  => ['Inbox', 'Messages.', 'Prayer requests & contact-form messages from visitors.', 'Open', route('admin.messages')],
+    'users'     => ['People', 'Users.', 'Add Andre, the elders, members. Set their PIN.', 'Manage', route('admin.users')],
+    'logs'      => ['Activity', 'Audit log.', 'Every sign-in, magic link, and error from the last 40 days.', 'View', route('admin.logs')],
+    'changes'   => ['Undo', 'Edit history.', 'Every content edit — bulletins, pages, lessons — with a one-click undo for each.', 'Open', route('admin.changes')],
+    'bulletin'  => ['New', 'Bulletin editor.', 'The drill-through editor — every item inline, autosaves, works on phone and tablet.', 'Open', route('admin.bulletin')],
+    'events'    => ['Calendar', 'Events.', 'Add an event in seconds — name, date, flyer. Live as you fill it in.', 'Open', route('admin.events')],
+    'games'     => ['Kids', 'Scripture games.', 'Build the verse games — pick a book, a game, an age. They appear at /kids.', 'Open', route('admin.games')],
+    'mystery'   => ['Teens', 'Undercover.', 'The question bank for the youth-night mystery game.', 'Open', route('admin.mystery')],
+    'intake'    => ['Forms', 'Intake.', 'Graduation slides, sign-ups — shareable links, every submission in its gallery.', 'Open', route('admin.intake.index')],
+    'changelog' => ['Dev notes', 'Changelog.', 'Plain-English log of every site change. When something feels off, look here first.', 'Open', route('admin.changelog')],
+    'spend'     => ['Cost', 'API spend.', "Live tally of Shalom's Anthropic API calls · per-source + per-model.", 'Open', route('admin.anthropic-usage')],
+    'names'     => ['Cleanup', 'Bulletin names.', "Hide typos or names you don't want appearing in autocomplete.", 'Tidy', route('admin.names')],
+    'schedule'  => ['Departments', 'Schedule.', "Who's serving on Sabbath: ushers, deacons, music, platform.", 'Open', route('schedule.index')],
+    'lessons'   => ['Sabbath school', 'Lessons.', 'Quarterly PDF + readings — now rolls over automatically each quarter.', 'Manage', route('admin.lessons')],
+    'sermons'   => ['Peace Notes', 'Sermons.', 'Upload audio sermons to the public archive · listen, edit, delete.', 'Manage', route('admin.sermons.index')],
+    'peace'     => ['Ministry', 'Finding Peace.', 'Edit auto-processed sermons · tweak Q&As, scriptures, topics.', 'Manage', route('admin.peace.index')],
+    'slides'    => ['Home page', 'Hero slides.', 'Photos that rotate on the home page · upload, reorder, retire.', 'Manage', route('admin.slides.index')],
+    'media'     => ['Library', 'Media pool.', 'All uploaded images and audio · pick, copy URL, delete.', 'Open', route('admin.media.index')],
+    'analytics' => ['Telemetry', 'Analytics.', 'First-party page views, top paths, devices, referrers · privacy-first.', 'View', route('admin.analytics')],
+    'buginbox'  => ['Bug reports', 'Inbox.', 'Read incoming bug reports + feedback. Close when handled.', 'Open', route('admin.inbox')],
+    'pg_landing'=> ['Front door', 'Home / landing.', 'Hero, schedule, this-week cards, latest sermon, donate band.', 'Preview', route('admin.pages.edit', 'landing')],
+    'pg_about'  => ['Our story', 'About.', 'Who Shalom is, the culture, what to expect from a Sabbath here.', 'Preview', route('admin.pages.edit', 'about')],
+    'pg_visit'  => ['First-timer', 'Visit us.', 'Address, map, parking, dress, FAQ.', 'Preview', route('admin.pages.edit', 'visit')],
+    'pg_beliefs'=> ['Doctrine', 'What we believe.', '12 of the 28 SDA Fundamentals in plain language.', 'Preview', route('admin.pages.edit', 'beliefs')],
+    'pg_notes'  => ['Sermon archive', 'Peace Notes.', 'Latest sermon embedded · titles list · YouTube channel link.', 'Preview', route('admin.pages.edit', 'peace-notes')],
+    'pg_contact'=> ['Get in touch', 'Contact form.', 'Public form · sends to contact@ with CC to c-wellpics.', 'Preview', route('admin.pages.edit', 'contact')],
   ];
 
   $TOOL_KEYS = ['messages','users','logs','changes','bulletin','events','games','mystery','intake','changelog','spend','names','schedule','lessons','sermons','peace','slides','media','analytics','buginbox'];
@@ -187,7 +187,7 @@
       <div style="font-size:28px;line-height:1;">⚠</div>
       <div style="flex:1;min-width:0;">
         <div style="font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#a82a1f;margin-bottom:4px;">Cron appears to be down</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ink);line-height:1.3;">The scheduler heartbeat is <strong>{{ $_beatAge }} minutes</strong> old — backups and scheduled jobs are not running. An alert email has been sent.</div>
+        <div style="font-family:'Instrument Sans', sans-serif;font-size:1.2rem;color:var(--ink);line-height:1.3;">The scheduler heartbeat is <strong>{{ $_beatAge }} minutes</strong> old — backups and scheduled jobs are not running. An alert email has been sent.</div>
       </div>
     </div>
   @endif
@@ -205,7 +205,7 @@
         <div style="font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#a82a1f;margin-bottom:4px;">
           Anthropic cost spike — last 24h
         </div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--ink);line-height:1.25;">
+        <div style="font-family:'Instrument Sans', sans-serif;font-size:1.25rem;color:var(--ink);line-height:1.25;">
           One call cost <strong>${{ number_format($expensiveCall->cost_usd, 4) }}</strong>
           from <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(168,42,31,0.08);padding:1px 6px;border-radius:3px;">{{ $expensiveCall->source }}</code>
           using {{ $expensiveCall->model }} — {{ $expensiveCall->created_at->diffForHumans() }}.
@@ -298,7 +298,7 @@
               <span class="card-eyebrow">{{ $eyebrow }}</span>
               <span class="card-title">{{ $title }}</span>
               <span class="card-sub">{{ $sub }}</span>
-              <span class="card-arrow">{{ $arrow }}</span>
+              <span class="card-arrow">{{ $arrow }} @include(str_starts_with($k, 'pg_') ? 'partials._arup' : 'partials._ar')</span>
               @if ($k === 'messages' && $_unreadTotal > 0)
                 <span class="card-badge @if($_unreadPrayer > 0) pulse @endif">{{ $_unreadTotal }}</span>
               @endif
@@ -326,7 +326,7 @@
               <span class="card-eyebrow">{{ $eyebrow }}</span>
               <span class="card-title">{{ $title }}</span>
               <span class="card-sub">{{ $sub }}</span>
-              <span class="card-arrow">{{ $arrow }}</span>
+              <span class="card-arrow">{{ $arrow }} @include(str_starts_with($k, 'pg_') ? 'partials._arup' : 'partials._ar')</span>
               @if ($k === 'messages' && $_unreadTotal > 0)
                 <span class="card-badge @if($_unreadPrayer > 0) pulse @endif">{{ $_unreadTotal }}</span>
               @endif
@@ -354,7 +354,7 @@
               <span class="card-eyebrow">{{ $eyebrow }}</span>
               <span class="card-title">{{ $title }}</span>
               <span class="card-sub">{{ $sub }}</span>
-              <span class="card-arrow">{{ $arrow }}</span>
+              <span class="card-arrow">{{ $arrow }} @include(str_starts_with($k, 'pg_') ? 'partials._arup' : 'partials._ar')</span>
             </a>
           @endforeach
         </div></div>

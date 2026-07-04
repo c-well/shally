@@ -8,7 +8,7 @@
 <title>{{ $sermon->title }} · Peace Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; }
@@ -18,7 +18,7 @@
   .top a:hover { color: var(--teal); }
   .top .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--ink-soft); opacity: 0.65; }
   main { max-width: 880px; margin: 0 auto; padding: 0 32px 80px; }
-  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(26px, 4vw, 36px); font-weight: 500; line-height: 1.05; margin-bottom: 4px; }
+  h1 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(26px, 4vw, 36px); font-weight: 500; line-height: 1.05; margin-bottom: 4px; }
   .sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 32px; }
   .sub a { color: var(--teal); text-decoration: none; }
 
@@ -43,7 +43,7 @@
     font: inherit; font-size: 15px;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .field textarea { min-height: 100px; resize: vertical; line-height: 1.55; font-family: 'Cormorant Garamond', serif; font-size: 16px; }
+  .field textarea { min-height: 100px; resize: vertical; line-height: 1.55; font-family: 'Instrument Sans', sans-serif; font-size: 16px; }
   .field input:focus, .field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 12%, transparent); outline: none; }
 
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -72,7 +72,7 @@
 
   .ref-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 12px; }
   .ref-row .ref-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--brass); letter-spacing: 0.16em; text-transform: uppercase; min-width: 120px; }
-  .ref-row .ref-text { flex: 1; color: var(--ink-soft); font-family: 'Cormorant Garamond', serif; font-size: 14px; }
+  .ref-row .ref-text { flex: 1; color: var(--ink-soft); font-family: 'Instrument Sans', sans-serif; font-size: 14px; }
 
   .add-row { display: flex; gap: 8px; padding-top: 14px; border-top: 1px dashed var(--line); margin-top: 14px; }
   .add-row input { flex: 1; }
@@ -172,7 +172,7 @@
       </div>
 
       {{-- LIVE CAPTION (synced to player position) --}}
-      <div id="liveCaption" style="margin:18px 0;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:4px;min-height:38px;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--ink-soft);font-size:14px;">
+      <div id="liveCaption" style="margin:18px 0;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:4px;min-height:38px;font-family:'Instrument Sans', sans-serif;font-style:italic;color:var(--ink-soft);font-size:14px;">
         <span style="font-family:'JetBrains Mono',monospace;font-style:normal;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--brass);margin-right:8px;">caption @ <span id="capTime">--:--:--</span></span>
         <span id="capText">click play above to see live captions</span>
       </div>

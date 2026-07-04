@@ -7,7 +7,7 @@
 <title>Department Schedule · Church of Peace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" defer></script>
 <style>  :root { --paper:#fff; --gold:#b89a4a; --past:#c9c2af; }
   *{box-sizing:border-box; margin:0; padding:0;} html,body{overflow-x:hidden; max-width:100%; background:var(--cream);}
@@ -22,7 +22,7 @@
     display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;
     padding:18px 20px; background:var(--paper); border:1px solid var(--line); border-radius:6px;
   }
-  .topbar-title{font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:500; line-height:1.05;}
+  .topbar-title{font-family:'Instrument Sans', sans-serif; font-size:26px; font-weight:500; line-height:1.05;}
   .topbar-title small{display:block; font-family:'Instrument Sans',sans-serif; font-size:9px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; margin-top:6px;}
   .home-link{font-family:'Instrument Sans',sans-serif; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft); font-weight:600; text-decoration:none; padding:8px 14px; border:1px solid var(--line); border-radius:4px;}
   .home-link:hover{color:var(--teal); border-color:var(--teal);}
@@ -44,7 +44,7 @@
   }
   .arrow:hover{border-color:var(--teal); color:var(--teal);}
   .arrow:disabled{opacity:0.35; cursor:not-allowed;}
-  .month-label{font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:500; letter-spacing:-0.02em; line-height:1; text-align:center;}
+  .month-label{font-family:'Instrument Sans', sans-serif; font-size:30px; font-weight:500; letter-spacing:-0.02em; line-height:1; text-align:center;}
   .month-label small{display:block; font-family:'Instrument Sans',sans-serif; font-size:9px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-soft); margin-top:5px;}
 
   .names-card{background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:18px 20px; margin-bottom:20px;}
@@ -74,7 +74,7 @@
   }
   .week.drop-target{border-color:var(--teal); background:var(--teal-light);}
   .week-head{display:flex; align-items:baseline; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:10px;}
-  .week-date{font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:500; letter-spacing:-0.02em;}
+  .week-date{font-family:'Instrument Sans', sans-serif; font-size:24px; font-weight:500; letter-spacing:-0.02em;}
   .week-date small{display:block; font-family:'Instrument Sans',sans-serif; font-size:9px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-soft); margin-top:4px; font-weight:600;}
   .week-tag{font-family:'Instrument Sans',sans-serif; font-size:9px; letter-spacing:0.18em; text-transform:uppercase; font-weight:600; color:var(--gold);}
   .week.locked{background:rgba(0,0,0,0.02);} .week.locked .week-tag{color:var(--past);} .week.locked .empty-slot{display:none;}
@@ -113,7 +113,7 @@
   }
   .prev-weeks summary::-webkit-details-marker{display:none;}
   .prev-weeks-label{
-    font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:500;
+    font-family:'Instrument Sans', sans-serif; font-size:22px; font-weight:500;
     color:var(--ink); letter-spacing:-0.01em;
   }
   .prev-weeks-chev{
@@ -165,7 +165,7 @@
   .modal{position:fixed; inset:0; background:color-mix(in srgb, var(--ink) 55%, transparent); display:none; align-items:center; justify-content:center; padding:24px; z-index:300;}
   .modal.open{display:flex;}
   .modal-card{background:#fff; border-radius:8px; max-width:520px; width:100%; max-height:80vh; overflow-y:auto; padding:22px;}
-  .modal-card h3{font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:500; margin-bottom:6px;}
+  .modal-card h3{font-family:'Instrument Sans', sans-serif; font-size:24px; font-weight:500; margin-bottom:6px;}
   .modal-card p.help{font-size:13px; color:var(--ink-soft); margin-bottom:14px;}
   .members-list{display:flex; flex-direction:column; gap:6px;}
   .member-row{display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-radius:4px; background:var(--cream); font-size:14px; gap:8px;}

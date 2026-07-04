@@ -1141,9 +1141,10 @@
     padding: 8px 0 7px;
   }
   .cal-tile .day {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 72px;
-    font-weight: 500;
+    /* Instrument for numerals — Cormorant's oldstyle figures read as squiggles (Karlon 2026-07-04) */
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 60px;
+    font-weight: 600;
     color: var(--ink);
     line-height: 1;
     letter-spacing: -0.04em;
@@ -1204,7 +1205,7 @@
   }
   .duty-row.hidden { display: none; }
   .duty-date { font-family: 'Instrument Sans', sans-serif; font-size: 10px; letter-spacing: 0.18em; color: var(--teal); text-transform: uppercase; text-align: center; padding-top: 2px; font-weight: 600; }
-  .duty-date .day { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--ink); line-height: 1; display: block; margin-top: 2px; letter-spacing: -0.02em; font-weight: 500; }
+  .duty-date .day { font-family: 'Instrument Sans', sans-serif; font-size: 28px; color: var(--ink); line-height: 1; display: block; margin-top: 2px; letter-spacing: -0.02em; font-weight: 600; }
   .duty-who { font-family: 'Cormorant Garamond', serif; font-size: 21px; color: var(--ink); font-weight: 500; letter-spacing: -0.01em; line-height: 1.2; }
   .duty-what { font-size: 14px; color: var(--ink-soft); margin-top: 6px; line-height: 1.5; }
   @media (max-width: 600px) {

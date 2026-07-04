@@ -89,7 +89,7 @@
     text-align: center;
   }
   .sermon-cover .date-overlay .month { text-transform: uppercase; color: var(--teal); }
-  .sermon-cover .date-overlay .day { display: block; font-size: 20px; font-family: 'Cormorant Garamond', serif; }
+  .sermon-cover .date-overlay .day { display: block; font-size: 18px; font-weight: 600; font-family: 'Instrument Sans', sans-serif; }
 
   .sermon-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 3vw, 28px); font-weight: 500; letter-spacing: -0.015em; line-height: 1.2; color: var(--ink); }
   .sermon-header-text { display: block; margin-bottom: 4px; font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); }
