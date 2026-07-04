@@ -2601,6 +2601,7 @@
                         }
                         continue;
                     }
+                    if ($__det === '' && !$__media) continue;   // titled but empty = debris, don't render
                     $pubAnns[] = $__a;
                 }
               @endphp
