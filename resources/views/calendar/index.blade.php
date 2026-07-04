@@ -61,7 +61,7 @@
 
   /* ── WEEK — agenda bands: a full-width row per day, entries get real room ── */
   .week { display: flex; flex-direction: column; gap: 10px; }
-  .wband { display: flex; gap: 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color .12s; align-items: flex-start; }
+  .wband { display: flex; gap: 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color .12s; align-items: center; }
   .wband:hover { border-color: var(--teal); }
   .wband.wtoday { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 10%, transparent); }
   .wband.wempty { padding: 9px 16px; align-items: center; }
@@ -70,11 +70,14 @@
   .wdom { font-size: 22px; font-weight: 600; line-height: 1; }
   .wtoday .wdom { color: var(--teal); }
   .wcards { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
-  .wev { border-left: 3px solid; border-radius: 6px; padding: 8px 12px; font-size: 12.5px; line-height: 1.4; max-width: 100%; }
-  .wev.service { border-color: var(--teal); background: var(--teal-light, #e6f0f3); color: var(--teal-dark); }
-  .wev.sermon  { border-color: var(--brass); background: #f5ecd6; color: #7a5f22; }
-  .wev.event   { border-color: #2d8659; background: #e3f0e8; color: #1f6843; }
-  .wev .t { font-weight: 600; } .wev .m { font-size: 11.5px; opacity: .85; margin-top: 1px; }
+  /* Entries are TYPE, not boxes: title only, 16px/600, a small color dot carries the
+     category. Time/location live in the tap-open day sheet — the band stays calm. */
+  .wev { display: inline-flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); line-height: 1.3; padding: 3px 0; margin-right: 26px; max-width: 100%; }
+  .wev .wdot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
+  .wev.service .wdot { background: var(--teal); }
+  .wev.sermon  .wdot { background: var(--brass); }
+  .wev.event   .wdot { background: #2d8659; }
+  .wev.sermon { color: var(--ink-soft); font-weight: 500; }
   .wnone { font-size: 12px; color: var(--ink-faint); }
 
   /* ── DAY ── */
@@ -230,9 +233,7 @@
         html += '<span class="wnone">—</span>';
       } else {
         es.forEach(ev => {
-          html += '<div class="wev ' + ev.t + '"><div class="t">' + esc(ev.n) + '</div>'
-                + (ev.time || ev.loc ? '<div class="m">' + esc([ev.time, ev.loc].filter(Boolean).join(' · ')) + '</div>' : '')
-                + '</div>';
+          html += '<div class="wev ' + ev.t + '"><span class="wdot"></span>' + esc(ev.n) + '</div>';
         });
       }
       html += '</div></div>';
