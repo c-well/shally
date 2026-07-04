@@ -286,7 +286,7 @@
       const ds = iso(cur);
       const inM = cur.getMonth() === m;
       const es = entriesOf(ds);
-      html += '<div class="cell ' + (inM ? '' : 'out') + '" data-day="' + ds + '">'
+      html += '<div class="cell ' + (inM ? '' : 'out') + '" role="button" tabindex="0" data-day="' + ds + '">'
             + '<span class="dn ' + (ds === TODAY ? 'today' : '') + '">' + cur.getDate() + '</span>';
       es.slice(0, 3).forEach(e => {
         html += '<div class="ev ' + e.t + '" title="' + esc(e.n) + '"><span class="dot ' + e.t + '"></span>' + esc(e.n) + '</div>';
@@ -530,6 +530,12 @@
   document.getElementById('sheetX').addEventListener('click', () => sheetOv.classList.remove('open'));
   sheetOv.addEventListener('click', e => { if (e.target === sheetOv) sheetOv.classList.remove('open'); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') sheetOv.classList.remove('open'); });
+  // Keyboard: Enter/Space on a focused day opens its sheet (WCAG 2.1.1)
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-day]')) {
+      e.preventDefault(); openSheet(e.target.getAttribute('data-day'));
+    }
+  });
 
   stage.addEventListener('click', e => {
     const cell = e.target.closest('[data-day]');
