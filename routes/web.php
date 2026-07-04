@@ -100,6 +100,8 @@ Route::post('/api/events', [\App\Http\Controllers\EventIngestController::class, 
      ->name('events.ingest');
 
 Route::middleware(['auth', 'role:clerk'])->group(function () {
+    Route::get('/guide', fn () => view('guide'))->name('guide');   // Field Guide for Rosharde & Andre
+
     // Bulletin meta + lines + announcements + publish
     Route::patch('/bulletins/{bulletin}',           [BulletinController::class, 'updateMeta'])->name('bulletins.update');
     Route::delete('/bulletins/{bulletin}',          [BulletinController::class, 'destroy'])->name('bulletins.destroy');
