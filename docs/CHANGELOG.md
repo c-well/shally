@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-04 · Calendar — Phase 1 (aggregation + month view)
+
+The events area is becoming a living calendar (Karlon's v2 vision). Phase 1 shipped: a public month view at /calendar that AGGREGATES three existing sources into one grid — Events (dept-colored), Bulletins (each service_date → "Sabbath Worship"; the Sermon line → "X preached"), and the dated sermon archive (fills history no bulletin covers). Proven live: "Pastor Kevin Brown preached" on the calendar is pulled from the bulletin's sermon line — nobody typed it into the calendar. One source of truth: add a date to a bulletin, the calendar knows. Shalom palette only (teal=services, brass=sermons, green=events), Instrument font, woven into the site (shared header/menu/CSS). Deployed UNLINKED (nav unchanged) so the live team isn't disturbed while it's built out. Decisions locked: public-to-view + managers-edit; "editable in the calendar" will write back to source (no drift). Next: Week/Day views, inline editing w/ write-back + autosave, share/copy-link, then Year view, then per-device responsive passes.
+
+**Files:** app/Http/Controllers/CalendarController.php (new), resources/views/calendar/month.blade.php (new), routes/web.php
+
 ## 2026-07-04 · Announcements reorderable + PDF mission spacing
 
 Two bulletin tweaks (Karlon). (1) Announcements can now be **reordered** in the bulletin editor exactly like the order-of-service lines — ↑/↓ buttons on each announcement, autosaves the new order (new `reorderAnnouncements` controller + `PATCH /bulletins/{b}/announcements/reorder` route, mirroring reorderLines). The announcements relation already ordered by sort_order everywhere (editor, public bulletin, both PDFs), so a reorder shows up immediately in print. Verified end-to-end: reverse then restore round-trips cleanly. (2) The **Mission Statement** was cramped against the announcement below it on the PDF — added margin-bottom to `.mission` in both pdf.blade.php and pdf-2up.blade.php so it breathes like the other blocks.
