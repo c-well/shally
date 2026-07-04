@@ -79,6 +79,14 @@ class CalendarController extends Controller
         }
 
         // ── 2. Bulletins → service + preacher ──
+        // Published Peace messages by date: when a preached-day has a message page,
+        // the calendar's sermon entry links THERE (listen), not just to the bulletin.
+        $peaceByDate = [];
+        foreach (PeaceSermon::whereNotNull('sermon_date')->whereNotNull('published_at')
+                     ->whereBetween('sermon_date', [$start->toDateString(), $end->toDateString()])
+                     ->get() as $ps) {
+            $peaceByDate[Carbon::parse($ps->sermon_date, self::TZ)->toDateString()] = $ps;
+        }
         $covered = [];
         foreach (Bulletin::whereNotNull('service_date')
                      ->whereBetween('service_date', [$start->toDateString(), $end->toDateString()])
@@ -95,7 +103,13 @@ class CalendarController extends Controller
             $sermon = $b->lines->first(fn ($l) =>
                 stripos((string) $l->part, 'sermon') !== false && trim((string) $l->person) !== '');
             if ($sermon) {
-                $push($date, ['t' => 'sermon', 'bid' => $b->id, 'lid' => $sermon->id, 'n' => trim($sermon->person) . ' preached', 'url' => '/bulletin/' . $b->id]);
+                $entry = ['t' => 'sermon', 'bid' => $b->id, 'lid' => $sermon->id, 'n' => trim($sermon->person) . ' preached', 'url' => '/bulletin/' . $b->id];
+                if (isset($peaceByDate[$date])) {
+                    $entry['url']    = '/find-peace/' . $peaceByDate[$date]->slug;
+                    $entry['sub']    = $peaceByDate[$date]->title;
+                    $entry['listen'] = true;
+                }
+                $push($date, $entry);
             }
         }
 
@@ -107,10 +121,11 @@ class CalendarController extends Controller
             if (isset($covered[$date])) continue;
             $who = trim((string) $s->speaker);
             $push($date, [
-                't'   => 'sermon',
-                'n'   => $who !== '' ? $who . ' preached' : $s->title,
-                'sub' => $s->title,
-                'url' => '/find-peace/' . $s->slug,
+                't'      => 'sermon',
+                'n'      => $who !== '' ? $who . ' preached' : $s->title,
+                'sub'    => $s->title,
+                'url'    => '/find-peace/' . $s->slug,
+                'listen' => true,
             ]);
         }
 

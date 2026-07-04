@@ -146,6 +146,8 @@
   .dv-card.service .dv-type { color: var(--teal); } .dv-card.sermon .dv-type { color: var(--brass); } .dv-card.event .dv-type { color: #1f6843; }
   .dv-name { font-size: 17px; font-weight: 600; margin-top: 4px; }
   .dv-meta { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
+  .dv-listen { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brass); margin-top: 7px; }
+  .dv-listen::after { content: ' ↗'; }
   .dv-empty { text-align: center; color: var(--ink-soft); padding: 44px 0; background: #fff; border: 1px dashed var(--line); border-radius: 12px; }
 
   /* ── Day sheet (tap a day in month/week) ── */
@@ -392,6 +394,7 @@
       + '<div class="dv-name">' + esc(e.n) + '</div>'
       + (e.sub ? '<div class="dv-meta">' + esc(e.sub) + '</div>' : '')
       + ((e.time || e.loc) ? '<div class="dv-meta">' + esc([e.time, e.loc].filter(Boolean).join(' · ')) + '</div>' : '')
+      + (e.listen ? '<div class="dv-listen">Listen to this message</div>' : '')
       + '</' + tag + '>';
   }
 
