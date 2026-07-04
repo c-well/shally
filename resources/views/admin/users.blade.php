@@ -96,7 +96,9 @@
   }
   .user-row {
     display: grid;
-    grid-template-columns: minmax(140px, 1.4fr) minmax(180px, 2fr) minmax(110px, 0.9fr) minmax(80px, 0.8fr) auto;
+    /* FIXED tracks — the old last column was `auto`, so each row's grid sized to ITS
+       buttons (Set vs Reset vs Reset+x) and every column drifted per row. */
+    grid-template-columns: minmax(140px, 1.2fr) minmax(200px, 2fr) 130px 110px 236px;
     gap: 14px;
     align-items: center;
     padding: 14px 4px; border-bottom: 1px solid var(--line);
@@ -119,7 +121,7 @@
   .u-pin-status.has  { color: var(--teal); }
   .u-pin-status.none { color: var(--ink-soft); opacity: 0.6; }
 
-  .pin-form { display: flex; gap: 6px; align-items: center; }
+  .pin-form { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
   .pin-form input {
     font: inherit; font-family: 'JetBrains Mono', monospace; font-size: 14px;
     width: 80px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 4px;
