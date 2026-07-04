@@ -158,13 +158,20 @@
   .sheet-x { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); }
 
   @media (max-width: 760px) {
-    .dow div { font-size: 9px; letter-spacing: 0.05em; }
-    .cell { min-height: 74px; padding: 5px 4px; }
-    .dn { font-size: 12px; width: 22px; height: 22px; }
-    .ev { font-size: 0; padding: 0; margin-top: 4px; gap: 3px; background: transparent !important; display: inline-flex; }
-    .ev .dot { width: 7px; height: 7px; display: inline-block; }
+    /* Month deserves the whole phone: near-full-bleed grid, taller cells,
+       readable numerals, dot marks big enough to feel like marks. */
+    main { padding-left: 8px; padding-right: 8px; }
+    .cal-bar, .legend { padding: 0 8px; }
+    .gridwrap { border-radius: 12px; }
+    .dow div { font-size: 9.5px; letter-spacing: 0.08em; padding: 10px 0; }
+    .cell { min-height: 88px; padding: 6px 5px; }
+    .dn { font-size: 14px; width: 26px; height: 26px; }
+    .ev { font-size: 0; padding: 0; margin: 5px 2px 0 3px; gap: 4px; background: transparent !important; display: inline-flex; border: 0; }
+    .ev .dot { width: 8.5px; height: 8.5px; display: inline-block; }
+    .more { font-size: 9px; }
     .wrail { flex-basis: 56px; }
     .cal-title { order: -1; width: 100%; flex-basis: 100%; }
+    .cal-nav { flex-wrap: wrap; }
   }
 </style>
 @include('partials.theme-vars')

@@ -15,7 +15,17 @@
   .top { padding: 18px clamp(18px,5vw,36px); display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: color-mix(in srgb, var(--parchment) 94%, transparent); backdrop-filter: blur(6px); z-index: 10; }
   .top a, .top .lnk { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none; color: var(--ink-soft); cursor: pointer; background: none; border: 0; }
   .top a:hover, .top .lnk:hover { color: var(--teal); }
-  .top .right { display: flex; align-items: center; gap: 16px; }
+  .top .tools { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+  .top .actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  /* Mobile: the editor's main home (Karlon: 90% of edits happen here).
+     Row 1 = ← Admin + Published + Go Live. Row 2 = the document tools. */
+  @media (max-width: 700px) {
+    .top { flex-wrap: wrap; row-gap: 11px; padding: 12px 16px; }
+    .top .backlnk { order: 0; }
+    .top .actions { order: 1; margin-left: auto; }
+    .top .tools { order: 2; margin-left: 0; width: 100%; justify-content: space-between; border-top: 1px dashed var(--line); padding-top: 10px; }
+    .golive { padding: 10px 18px; }
+  }
   .status { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; }
   .status.live { background: color-mix(in srgb, var(--teal) 15%, transparent); color: var(--teal-dark); }
   .status.draft { background: color-mix(in srgb, #b08d57 16%, transparent); color: #8a6d3b; }
@@ -47,6 +57,10 @@
   .item { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 10px 10px 10px 12px; }
   .item.section { background: color-mix(in srgb, var(--teal) 6%, #fff); border-color: color-mix(in srgb, var(--teal) 22%, var(--line)); }
   .item .fields { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 0; }
+  /* Grid items refuse to shrink below content width by default — a long one-line
+     nowrap textarea (2000px+ intrinsic) was inflating the whole page to 500px on
+     phones, squishing the header off-screen (Karlon 2026-07-04). */
+  .item .fields > * { min-width: 0; }
   .item.section .fields { grid-template-columns: 1fr; }
   @media (max-width: 560px) { .item .fields { grid-template-columns: 1fr; } }
   .item input { font: inherit; font-size: 15px; padding: 9px 11px; border: 1px solid transparent; border-radius: 6px; background: var(--parchment); color: var(--ink); width: 100%; }
@@ -128,16 +142,20 @@
 <body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 <div class="top">
-  <a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
-  <div class="right">
+  <a class="backlnk" href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a>
+  <div class="tools">
     <form method="POST" action="{{ route('admin.bulletin.prefer') }}" style="display:inline;">@csrf<input type="hidden" name="version" value="v1"><button class="lnk" type="submit">Classic editor ⇄</button></form>
     @if ($bulletin)
       <a class="lnk" href="{{ route('bulletins.pdf', $bulletin) }}" target="_blank" rel="noopener">PDF ↓</a>
       <a class="lnk" href="{{ route('bulletins.pdf', $bulletin) }}?layout=2up" target="_blank" rel="noopener" title="One landscape sheet, bulletin twice — print 2-sided, cut in half">2-UP ↓</a>
-      <span class="status {{ $bulletin->is_published ? 'live' : 'draft' }}" id="status">{{ $bulletin->is_published ? 'Published' : 'Draft' }}</span>
-      <button class="golive" id="golive" data-url="{{ route('bulletins.publish', $bulletin) }}">Go Live</button>
     @endif
   </div>
+  @if ($bulletin)
+    <div class="actions">
+      <span class="status {{ $bulletin->is_published ? 'live' : 'draft' }}" id="status">{{ $bulletin->is_published ? 'Published' : 'Draft' }}</span>
+      <button class="golive" id="golive" data-url="{{ route('bulletins.publish', $bulletin) }}">Go Live</button>
+    </div>
+  @endif
 </div>
 
 @if (! $bulletin)
