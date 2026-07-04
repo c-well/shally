@@ -59,7 +59,7 @@
   .cell.out:hover { background: color-mix(in srgb, var(--cream) 40%, #fff); }
   .dn { font-size: 14px; font-weight: 600; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; }
   .cell.out .dn { color: var(--ink-faint); font-weight: 500; }
-  .dn.today, .dn.sel { background: var(--teal); color: #fff; }
+  .dn.today, .dn.sel { background: var(--teal); color: #fff !important; -webkit-text-fill-color: #fff; }
   .cell, .wband, .tg-col, .adcell, .seg button, .navbtn { -webkit-tap-highlight-color: transparent; }
   .ev { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; line-height: 1.25; padding: 3px 7px; border-radius: 6px; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ev .dot { width: 6px; height: 6px; }
@@ -148,6 +148,7 @@
   .dv-meta { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
   .dv-listen { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brass); margin-top: 7px; }
   .dv-listen::after { content: ' ↗'; }
+  .dv-listen.alt { color: var(--ink-faint, #9aa0aa); }
   .dv-empty { text-align: center; color: var(--ink-soft); padding: 44px 0; background: #fff; border: 1px dashed var(--line); border-radius: 12px; }
 
   /* ── Day sheet (tap a day in month/week) ── */
@@ -394,7 +395,8 @@
       + '<div class="dv-name">' + esc(e.n) + '</div>'
       + (e.sub ? '<div class="dv-meta">' + esc(e.sub) + '</div>' : '')
       + ((e.time || e.loc) ? '<div class="dv-meta">' + esc([e.time, e.loc].filter(Boolean).join(' · ')) + '</div>' : '')
-      + (e.listen ? '<div class="dv-listen">Listen to this message</div>' : '')
+      + (e.listen ? '<div class="dv-listen">Listen to this message</div>'
+                   : (e.t === 'sermon' && e.url ? '<div class="dv-listen alt">See that week\u2019s bulletin</div>' : ''))
       + '</' + tag + '>';
   }
 
