@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+{{-- Branded link preview: admin links shared in iMessage bounce scrapers here,
+     so this page carries the same OG card as the public site. --}}
+<meta property="og:title" content="The Church of Peace · Shalom SDA Church">
+<meta property="og:description" content="Shalom Seventh-day Adventist Church in the Bronx.">
+<meta property="og:image" content="https://thechurchofpeace.org/og-default.png?v=3">
+<meta property="og:url" content="https://thechurchofpeace.org/">
+<meta name="theme-color" content="#03617A">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Sign in — Shalom SDA</title>

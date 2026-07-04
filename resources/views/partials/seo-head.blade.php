@@ -14,7 +14,7 @@
   $description ??= 'Shalom Seventh-day Adventist Church in the Bronx — Sabbath worship, weekly bulletin, Sabbath School lesson, sermon archive, and prayer meetings.';
   $path        ??= request()->getPathInfo();
   $url          = $base . $path;
-  $image        = $base . ($image ?? '/og-default.png?v=2');  // ?v bumps force scrapers (Apple/FB cache per URL) to refetch after a redesign
+  $image        = $base . ($image ?? '/og-default.png?v=3');  // ?v bumps force scrapers (Apple/FB cache per URL) to refetch after a redesign
 @endphp
 
 <title>{{ $title }}</title>
