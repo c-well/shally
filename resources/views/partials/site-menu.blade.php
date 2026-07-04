@@ -283,6 +283,7 @@
                 </span>
               </a>
               <a class="site-admin-item" href="{{ url('/welcome') }}" role="menuitem">Bulletin</a>
+              <a class="site-admin-item" href="{{ route('guide') }}" role="menuitem">Field Guide</a>
               <a class="site-admin-item" href="{{ route('schedule.index') }}" role="menuitem">Department schedule</a>
               <a class="site-admin-item" href="{{ route('admin.hub') }}" role="menuitem">Admin hub</a>
               <div class="site-admin-divider"></div>
