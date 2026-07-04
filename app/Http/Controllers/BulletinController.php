@@ -654,13 +654,21 @@ class BulletinController extends Controller
                     'sort_order' => $sort++,
                 ]);
             }
-            // Announcements carry over verbatim — admin deletes the ones that no longer apply.
+            // Announcements carry over — admin deletes the ones that no longer apply.
+            // Skip empty stubs (they were breeding week-to-week: Andre 2026-07-04),
+            // and carry the print/digital flag + media (silently dropped before).
             $aSort = 0;
             foreach ($current->announcements()->orderBy('sort_order')->get() as $a) {
+                $isStub = trim((string) $a->detail) === '' && ! $a->image_path && ! $a->video_url
+                    && in_array(trim((string) $a->title), ['', 'New announcement'], true);
+                if ($isStub) continue;
                 $next->announcements()->create([
-                    'title'      => $a->title,
-                    'detail'     => $a->detail,
-                    'sort_order' => $aSort++,
+                    'title'       => $a->title,
+                    'detail'      => $a->detail,
+                    'image_path'  => $a->image_path,
+                    'video_url'   => $a->video_url,
+                    'is_web_only' => $a->is_web_only,
+                    'sort_order'  => $aSort++,
                 ]);
             }
         }
