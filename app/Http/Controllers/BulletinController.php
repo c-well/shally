@@ -348,9 +348,29 @@ class BulletinController extends Controller
             'title'  => 'sometimes|string|max:180',
             'detail' => 'sometimes|nullable|string|max:1000',
             'video_url' => 'sometimes|nullable|string|max:500',
+            'is_web_only' => 'sometimes|boolean',
         ]);
         $announcement->update($data);
         return response()->json(['ok' => true, 'announcement' => $announcement]);
+    }
+
+    /**
+     * GET /announcements — the page the printed bulletin's QR points to.
+     * ALL of this week's announcements (printed + web-only), from the published
+     * snapshot for the public, live draft for clerks. Same data, no silo.
+     */
+    public function announcementsPage(Request $request): \Illuminate\View\View
+    {
+        $bulletin = Bulletin::activeForNow() ?? Bulletin::orderByDesc('service_date')->first();
+        $isClerk  = $request->user() && in_array($request->user()->role, ['clerk', 'super_admin'], true);
+        $snap     = $isClerk
+            ? $bulletin?->snapshotCurrentState()
+            : ($bulletin?->published_snapshot ?: $bulletin?->snapshotCurrentState());
+
+        return view('announcements', [
+            'serviceDate'   => $snap['service_date'] ?? null,
+            'announcements' => Bulletin::foldAnnouncements($snap['announcements'] ?? []),
+        ]);
     }
 
     public function destroyAnnouncement(Bulletin $bulletin, Announcement $announcement): JsonResponse

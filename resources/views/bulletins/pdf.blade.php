@@ -97,6 +97,9 @@
   .mission .heading { font-size: 12pt; font-weight: 700; text-decoration: underline; margin-bottom: 5pt; }
   .mission .text    { max-width: 6in; margin: 0 auto; font-size: 10.5pt; line-height: 1.35; }
 
+  .qr-row { text-align: center; margin-top: 12pt; }
+  .qr-row .qr { width: 62pt; height: 62pt; }
+  .qr-cap { font-size: 8.5pt; line-height: 1.35; color: #333; margin-top: 3pt; }
   .pleasant { text-align: center; margin-top: 14pt; font-size: 10.5pt; font-style: italic; }
 
   .watermark-prev {
@@ -168,7 +171,7 @@
 
     <footer class="front-footer">
       <div>Shalom Seventh-day Adventist Church</div>
-      <div>3323 White Plains Rd, Bronx, NY</div>
+      <div>3323 White Plains Rd, Bronx, NY 10467</div>
       <div class="email">contact@thechurchofpeace.org</div>
     </footer>
 
@@ -176,7 +179,7 @@
 </section>
 
 {{-- ═══ BACK PAGE ═══ --}}
-@php $foldedAnns = \App\Models\Bulletin::foldAnnouncements($snapshot['announcements'] ?? []); @endphp
+@php $foldedAnns = \App\Models\Bulletin::foldAnnouncements(array_values(array_filter($snapshot['announcements'] ?? [], fn ($a) => empty($a['is_web_only'])))); @endphp
 @if (!empty($foldedAnns))
 <section class="sheet back">
   <div class="page">
@@ -224,6 +227,11 @@
         </section>
       @endif
     @endforeach
+
+    <div class="qr-row">
+      <img class="qr" src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('qr-announcements.png'))) }}" alt="QR code to all announcements">
+      <div class="qr-cap">Scan for <b>all</b> announcements &amp; details<br>thechurchofpeace.org/announcements</div>
+    </div>
 
     <div class="pleasant">Have a pleasant Sabbath :)</div>
 

@@ -57,6 +57,9 @@
   .mission { text-align: center; margin-top: 9pt; margin-bottom: 12pt; }
   .mission .heading { font-size: 11pt; font-weight: 700; text-decoration: underline; margin-bottom: 5pt; }
   .mission .text { margin: 0 auto; font-size: 10pt; line-height: 1.3; }
+  .qr-row { text-align: center; margin-top: 10pt; }
+  .qr-row .qr { width: 52pt; height: 52pt; }
+  .qr-cap { font-size: 8pt; line-height: 1.35; color: #333; margin-top: 3pt; }
   .pleasant { text-align: center; margin-top: 12pt; font-size: 10pt; font-style: italic; }
 
   .watermark-prev { position: fixed; top: 0.25in; right: 0.4in; font-size: 8pt; letter-spacing: 1.5pt; text-transform: uppercase; color: #b08d3c; font-weight: 700; }
@@ -115,7 +118,7 @@
 
       <footer class="front-footer">
         <div>Shalom Seventh-day Adventist Church</div>
-        <div>3323 White Plains Rd, Bronx, NY</div>
+        <div>3323 White Plains Rd, Bronx, NY 10467</div>
         <div class="email">contact@thechurchofpeace.org</div>
       </footer>
     </div>
@@ -129,7 +132,7 @@
   <div class="col back {{ $c === 0 ? 'leftcol' : 'rightcol' }}">
     <div class="page">
       <div class="title">Announcements</div>
-      @php $foldedAnns ??= \App\Models\Bulletin::foldAnnouncements($snapshot['announcements'] ?? []); @endphp
+      @php $foldedAnns ??= \App\Models\Bulletin::foldAnnouncements(array_values(array_filter($snapshot['announcements'] ?? [], fn ($a) => empty($a['is_web_only'])))); @endphp
       @foreach ($foldedAnns as $a)
         @php
           $aTitle  = trim((string)($a['title'] ?? ''));
@@ -157,7 +160,12 @@
           </section>
         @endif
       @endforeach
-      <div class="pleasant">Have a pleasant Sabbath :)</div>
+      <div class="qr-row">
+      <img class="qr" src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('qr-announcements.png'))) }}" alt="QR code to all announcements">
+      <div class="qr-cap">Scan for <b>all</b> announcements &amp; details<br>thechurchofpeace.org/announcements</div>
+    </div>
+
+    <div class="pleasant">Have a pleasant Sabbath :)</div>
     </div>
   </div>
   @endfor

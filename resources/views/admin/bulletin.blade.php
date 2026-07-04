@@ -72,6 +72,13 @@
 
   /* Announcement media */
   .ann-wrap { background: #fff; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  /* The print/digital cut line: rows above it print; rows below live on /announcements
+     (reached by the QR on the printed bulletin). Moving a row across it flips the flag. */
+  .print-divider { display: flex; align-items: center; gap: 12px; margin: 4px 0; }
+  .print-divider::before, .print-divider::after { content: ''; flex: 1; border-top: 2px dashed color-mix(in srgb, var(--teal) 45%, var(--line)); }
+  .print-divider span { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); white-space: nowrap; }
+  .ann-wrap.webonly { opacity: .82; background: color-mix(in srgb, var(--teal) 3%, #fff); }
+  .ann-wrap.webonly .item::after { content: 'WEB'; font-size: 8px; font-weight: 800; letter-spacing: .1em; color: var(--teal); border: 1px solid color-mix(in srgb, var(--teal) 40%, transparent); border-radius: 4px; padding: 2px 5px; margin-left: 4px; align-self: center; }
   /* Blank title = child bullets of the announcement above (folds under it on the PDF).
      Visually: indent + arrow, shrink the title box out of the way; focusing it restores
      full width so a title can still be added (which promotes the row to a parent). */
@@ -175,32 +182,13 @@
 
   <div class="sec-label"><span>Announcements</span></div>
   <div class="items" id="anns">
-    @foreach ($bulletin->announcements as $a)
-      <div class="ann-wrap {{ trim((string) $a->title) === '' ? 'child' : '' }}" data-aid="{{ $a->id }}">
-        <div class="item">
-          <div class="fields" style="grid-template-columns:1fr 1.6fr">
-            <input data-af="title" value="{{ $a->title }}" placeholder="Title (blank = bullets for the section above)">
-            <input data-af="detail" value="{{ $a->detail }}" placeholder="Detail">
-          </div>
-          <div class="ctrls">
-            <button class="ic aup" title="Move up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
-            <button class="ic adown" title="Move down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
-            <button class="ic ann-media-toggle {{ ($a->image_path || $a->video_url) ? 'on' : '' }}" title="Image / video">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            </button>
-            <button class="ic adel" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
-          </div>
-        </div>
-        <div class="ann-media">
-          <label class="ann-photo">
-            <span class="ann-photo-state">{{ $a->image_path ? 'Image attached — tap to replace' : 'Add an image' }}</span>
-            <input type="file" class="ann-img" accept="image/*">
-          </label>
-          @if ($a->image_path)<img class="ann-thumb" src="/{{ $a->image_path }}" alt="">@endif
-          <button type="button" class="ann-img-remove" data-url="{{ route('bulletins.announcements.image.remove', [$bulletin, $a]) }}" style="{{ $a->image_path ? '' : 'display:none' }}">Remove image</button>
-          <label class="ann-vid-lbl">Video link <input data-af="video_url" value="{{ $a->video_url }}" placeholder="YouTube or Vimeo URL"></label>
-        </div>
-      </div>
+    @php $printedAnns = $bulletin->announcements->where('is_web_only', false); $webAnns = $bulletin->announcements->where('is_web_only', true); @endphp
+    @foreach ($printedAnns as $a)
+      @include('admin.partials._ann-row', ['a' => $a, 'bulletin' => $bulletin])
+    @endforeach
+    <div class="print-divider" id="printDivider"><span>Printed bulletin ends here · QR leads people to the rest</span></div>
+    @foreach ($webAnns as $a)
+      @include('admin.partials._ann-row', ['a' => $a, 'bulletin' => $bulletin])
     @endforeach
   </div>
   <div class="addrow"><button class="addbtn" id="add-ann">+ Add announcement</button></div>
@@ -260,10 +248,19 @@
     anns.addEventListener('input',    function (e) { var w = e.target.closest('[data-aid]'); if (w && e.target.matches('[data-af="title"]') && e.target.value.trim() !== '') w.classList.remove('child'); });
   }
 
+  // Moving across the print-divider flips physical/web-only. Above = printed; below = /announcements only.
+  function syncWebFlag(wrap) {
+    var divider = document.getElementById('printDivider'); if (!divider) return;
+    var isWeb = !!(wrap.compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_PRECEDING);
+    if (wrap.classList.contains('webonly') !== isWeb) {
+      wrap.classList.toggle('webonly', isWeb);
+      api('PATCH', '/bulletins/' + BID + '/announcements/' + wrap.getAttribute('data-aid'), { is_web_only: isWeb ? 1 : 0 });
+    }
+  }
   if (anns) anns.addEventListener('click', function (e) {
     var wrap = e.target.closest('[data-aid]'); if (!wrap) return;
-    if (e.target.closest('.aup'))   { var p = wrap.previousElementSibling; if (p && p.hasAttribute('data-aid')) { anns.insertBefore(wrap, p); sendAnnOrder(); } return; }
-    if (e.target.closest('.adown')) { var n = wrap.nextElementSibling;     if (n && n.hasAttribute('data-aid')) { anns.insertBefore(n, wrap); sendAnnOrder(); } return; }
+    if (e.target.closest('.aup'))   { var p = wrap.previousElementSibling; if (p) { anns.insertBefore(wrap, p); syncWebFlag(wrap); sendAnnOrder(); } return; }
+    if (e.target.closest('.adown')) { var n = wrap.nextElementSibling;     if (n) { anns.insertBefore(n, wrap); syncWebFlag(wrap); sendAnnOrder(); } return; }
   });
 
   items.addEventListener('click', function (e) {
