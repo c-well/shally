@@ -105,7 +105,7 @@ class CalendarController extends Controller
             if ($sermon) {
                 $entry = ['t' => 'sermon', 'bid' => $b->id, 'lid' => $sermon->id, 'n' => trim($sermon->person) . ' preached', 'url' => '/bulletin/' . $b->id];
                 if (isset($peaceByDate[$date])) {
-                    $entry['url']    = '/find-peace/' . $peaceByDate[$date]->slug;
+                    $entry['url']    = '/sermons/' . $peaceByDate[$date]->slug;   // church turf, not the seekers' space
                     $entry['sub']    = $peaceByDate[$date]->title;
                     $entry['listen'] = true;
                 }
@@ -124,7 +124,7 @@ class CalendarController extends Controller
                 't'      => 'sermon',
                 'n'      => $who !== '' ? $who . ' preached' : $s->title,
                 'sub'    => $s->title,
-                'url'    => '/find-peace/' . $s->slug,
+                'url'    => '/sermons/' . $s->slug,   // church turf, not the seekers' space
                 'listen' => true,
             ]);
         }
