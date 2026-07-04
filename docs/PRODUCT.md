@@ -28,11 +28,11 @@ Small/mid congregations (SDA first — the vocabulary is native: Sabbath, AY, Pa
 4. **Then decide the fork:** (a) managed hosting ("we run it for you," $30–60/mo — Karlon's server economics already support 10+ installs), vs (b) true multi-tenant SaaS rewrite (~3 weeks, per Peace notes). Decision comes AFTER beta church #1 renews enthusiasm — never before validation (Peace plan rule #1).
 5. **Peace pipeline** ships inside the product as the premium differentiator — no competitor auto-turns livestreams into a searchable pastoral archive.
 
-## Decisions only Karlon can make (the v1.5 → product gate)
-1. **Name** the product (Shalom is the church's; the product needs its own).
-2. **Beta church #1** — who do we love enough to serve first? (Victory SDA is fresh from the crusade partnership…)
-3. **Managed-hosting vs SaaS** posture — affects everything downstream; defer until after beta, but hold the question.
-4. **Pricing conviction** — Peace notes suggest $30–80/mo tiers; whole-OS product supports more.
+## Decisions — RULED by Karlon, 2026-07-04 (v1.5 day)
+1. **Name: deferred.** No name now; naming is not the bottleneck. Working title stays internal.
+2. **Beta church: none yet.** Not Victory right now. Extraction audit proceeds anyway — a clean config-driven codebase serves Shalom regardless.
+3. **Posture: managed hosting — pending a TEAM.** Karlon's own read: managed installs scale with people, and he doesn't have the people yet. Product work therefore aims at "operable by a small team," not founder-heroics: runbooks, one-command install, per-church config, monitoring. Team-building is a prerequisite gate, not an afterthought.
+4. **Pricing: SUBSCRIPTION ONLY, floor $65/month.** The product is never sold outright — no perpetual licenses, no one-time builds. They pay for it always; $65/mo is the minimum, period. (Above the Peace-notes floor — the whole-OS product carries it.)
 
 ## Honest constraints
 - One-man hosting operation: managed installs scale linearly with Karlon's attention. SaaS scales code but costs a rewrite + a founder-job change (Peace notes, "the pivot decision").
