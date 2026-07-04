@@ -127,7 +127,7 @@
 
   @if ($page->slug === 'home')
     <!-- SLIDES_CROSSLINK: home page has a separate slides surface -->
-    <div style="margin: 0 0 24px; padding: 14px 18px; background: color-mix(in srgb, var(--brass) 7%, transparent); border-left: 3px solid #b08d3c; border-radius: 0 4px 4px 0; font-size: 13px; color: #334455; line-height: 1.55;">
+    <div style="margin: 0 0 24px; padding: 14px 18px; background: color-mix(in srgb, var(--brass) 7%, transparent); border-left: 3px solid #8a6c26; border-radius: 0 4px 4px 0; font-size: 13px; color: #334455; line-height: 1.55;">
       <strong style="color:#1a2332;">Hero slides for the home page live here @include('partials._ar')</strong>
       <a href="{{ route('admin.slides.index') }}" style="color:#03617A; text-decoration:underline; margin-left:4px;">Manage hero slides</a>.
       (The slider that appears between the schedule and "what's happening" on the home page.)

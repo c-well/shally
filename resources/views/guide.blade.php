@@ -18,7 +18,7 @@
   .slide-inner { width: 100%; max-width: 900px; display: grid; grid-template-columns: minmax(0,5fr) minmax(0,6fr); gap: clamp(24px,5vw,56px); align-items: center; }
   @media (max-width: 820px) { html { scroll-snap-type: y proximity; } .slide-inner { grid-template-columns: 1fr; gap: 22px; } }
 
-  .zone-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--brass, #b08d3c); margin-bottom: 12px; }
+  .zone-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--brass, #8a6c26); margin-bottom: 12px; }
   .slide h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(27px,4vw,38px); font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
   .slide .copy { font-size: 15.5px; line-height: 1.7; color: var(--ink-soft); margin-top: 14px; }
   .slide .copy b { color: var(--ink); }
@@ -33,7 +33,7 @@
   /* mock announcement rows (mirrors the real editor) */
   .m-row { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 9px 10px; margin-top: 8px; }
   .m-row:first-of-type { margin-top: 0; }
-  .m-grip { color: #9aa0aa; font-size: 15px; letter-spacing: -1px; flex-shrink: 0; width: 14px; text-align: center; }
+  .m-grip { color: #6b7280; font-size: 15px; letter-spacing: -1px; flex-shrink: 0; width: 14px; text-align: center; }
   .m-field { flex: 1; background: var(--parchment); border-radius: 6px; padding: 8px 10px; font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .m-field.ghost { color: #b6bcc6; }
   .m-ic { color: var(--ink-soft); font-size: 12px; flex-shrink: 0; }
@@ -79,15 +79,15 @@
   .m-chips { display: flex; gap: 8px; flex-wrap: wrap; }
   .m-lg { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 8px 13px; display: inline-flex; align-items: center; gap: 7px; color: var(--ink-soft); }
   .m-lg i { width: 8px; height: 8px; border-radius: 999px; }
-  .m-lg.off { opacity: .42; border-style: dashed; } .m-lg.off i { background: #9aa0aa !important; }
-  .m-gold { display: inline-flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #fff; background: var(--brass, #b08d3c); border-radius: 9px; padding: 13px 22px; }
+  .m-lg.off { opacity: .42; border-style: dashed; } .m-lg.off i { background: #6b7280 !important; }
+  .m-gold { display: inline-flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #fff; background: var(--brass, #8a6c26); border-radius: 9px; padding: 13px 22px; }
   .m-gold i { width: 8px; height: 8px; border-radius: 999px; background: #fff; animation: blink 2.2s ease-in-out infinite; }
   .m-url { font: 500 12.5px ui-monospace, monospace; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .m-url b { color: var(--teal); font-weight: 700; }
 
   /* edit-sheet card mock */
-  .m-card { border: 1px solid var(--line); border-left: 4px solid var(--brass, #b08d3c); border-radius: 12px; padding: 13px 15px; }
-  .m-card .t { font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--brass, #b08d3c); }
+  .m-card { border: 1px solid var(--line); border-left: 4px solid var(--brass, #8a6c26); border-radius: 12px; padding: 13px 15px; }
+  .m-card .t { font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--brass, #8a6c26); }
   .m-input { background: var(--parchment); border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; font-size: 13px; margin-top: 8px; }
   .m-save { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .1em; color: #fff; background: var(--teal); border-radius: 7px; padding: 8px 15px; margin-top: 9px; }
   .m-note { font-size: 10.5px; color: var(--ink-faint); font-style: italic; margin-top: 7px; }
@@ -217,7 +217,7 @@
   <div class="demo"><div class="demo-cap">What you'll see</div>
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px;">
       <span style="font-size:10px; font-weight:700; letter-spacing:.16em; color:var(--ink-soft);">ORDER OF SERVICE</span>
-      <span style="font-size:9px; font-weight:700; letter-spacing:.1em; color:#9aa0aa; border:1px solid var(--line); border-radius:6px; padding:4px 9px; background:#fff;">SHOW — HIDDEN WHILE YOU WORK</span>
+      <span style="font-size:9px; font-weight:700; letter-spacing:.1em; color:#6b7280; border:1px solid var(--line); border-radius:6px; padding:4px 9px; background:#fff;">SHOW — HIDDEN WHILE YOU WORK</span>
     </div>
     <div style="font-size:10px; font-weight:700; letter-spacing:.16em; color:var(--ink-soft); margin-bottom:8px;">ANNOUNCEMENTS</div>
     <div class="m-row"><span class="m-grip">⋮</span><span class="m-field">Mission Statement:</span></div>
@@ -308,13 +308,13 @@
   <div class="demo"><div class="demo-cap">Sermons only</div>
     <div class="m-chips">
       <span class="m-lg off"><i style="background:var(--teal)"></i>Services</span>
-      <span class="m-lg"><i style="background:var(--brass,#b08d3c)"></i>Sermons</span>
+      <span class="m-lg"><i style="background:var(--brass,#8a6c26)"></i>Sermons</span>
       <span class="m-lg off"><i style="background:#2d8659"></i>Events</span>
     </div>
     <div style="margin-top:14px; font-size:12px; color:var(--ink-soft); line-height:1.8;">
-      <div>Jul 4 &nbsp;<span style="color:var(--brass,#b08d3c)">●</span> Pastor Kevin Brown preached</div>
-      <div>Jun 27 <span style="color:var(--brass,#b08d3c)">●</span> Collis Glasgow preached</div>
-      <div>Jun 20 <span style="color:var(--brass,#b08d3c)">●</span> Dennis Williams preached</div>
+      <div>Jul 4 &nbsp;<span style="color:var(--brass,#8a6c26)">●</span> Pastor Kevin Brown preached</div>
+      <div>Jun 27 <span style="color:var(--brass,#8a6c26)">●</span> Collis Glasgow preached</div>
+      <div>Jun 20 <span style="color:var(--brass,#8a6c26)">●</span> Dennis Williams preached</div>
     </div>
   </div>
 </div></section>

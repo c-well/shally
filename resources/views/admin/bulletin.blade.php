@@ -46,7 +46,7 @@
 
   .sec-toggle { cursor: pointer; user-select: none; }
   .sec-toggle:hover .sec-chevron { color: var(--teal); }
-  .sec-chevron { font-size: 10px; letter-spacing: 0.14em; color: var(--ink-faint, #9aa0aa); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; background: #fff; }
+  .sec-chevron { font-size: 10px; letter-spacing: 0.14em; color: var(--ink-faint, #6b7280); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; background: #fff; }
   /* Collapsed: the whole order-of-service body folds to nothing; label becomes the reopen bar */
   #oosBody { overflow: hidden; transition: max-height .28s ease, opacity .22s ease; }
   #oosBody.folded { max-height: 0 !important; opacity: 0; }
@@ -70,12 +70,12 @@
   }
   .item input { font: inherit; font-size: 15px; padding: 9px 11px; border: 1px solid transparent; border-radius: 6px; background: var(--parchment); color: var(--ink); width: 100%; }
   .item.section input { font-weight: 600; font-size: 15px; letter-spacing: 0.02em; background: transparent; }
-  .item input::placeholder { color: var(--ink-faint, #9aa0aa); }
+  .item input::placeholder { color: var(--ink-faint, #6b7280); }
   .item input:focus { outline: none; border-color: var(--teal); background: #fff; }
   .ctrls { display: flex; gap: 2px; flex-shrink: 0; }
   /* Drag-to-reorder handle (announcements). touch-action:none only here, so the page
      still scrolls from anywhere else on the row — safe on mobile. */
-  .drag { flex-shrink: 0; width: 24px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; align-self: stretch; display: flex; align-items: center; justify-content: center; color: var(--ink-faint, #9aa0aa); cursor: grab; touch-action: none; border-radius: 6px; margin-left: -6px; }
+  .drag { flex-shrink: 0; width: 24px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; align-self: stretch; display: flex; align-items: center; justify-content: center; color: var(--ink-faint, #6b7280); cursor: grab; touch-action: none; border-radius: 6px; margin-left: -6px; }
   .drag svg { width: 17px; height: 17px; }
   .drag:hover { color: var(--teal); background: var(--parchment); }
   .ann-wrap.dragging { opacity: .6; }
@@ -83,7 +83,7 @@
   /* Focus mode: rows stay slim until she taps into Detail — then the row opens into a
      writing space (full-width auto-growing textarea) and folds back on blur. */
   .item textarea { font: inherit; font-size: 15px; line-height: 1.5; padding: 9px 11px; border: 1px solid transparent; border-radius: 6px; background: var(--parchment); color: var(--ink); width: 100%; resize: none; overflow: hidden; display: block; height: 40px; white-space: nowrap; text-overflow: ellipsis; }
-  .item textarea::placeholder { color: var(--ink-faint, #9aa0aa); }
+  .item textarea::placeholder { color: var(--ink-faint, #6b7280); }
   .item textarea:focus { outline: none; border-color: var(--teal); background: #fff; }
   .ann-wrap.editing .item { align-items: flex-start; border-color: var(--teal); box-shadow: 0 6px 20px rgba(3,97,122,.12); }
   .ann-wrap.editing .fields { grid-template-columns: 1fr !important; }
