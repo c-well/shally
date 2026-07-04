@@ -139,6 +139,7 @@ class BulletinController extends Controller
         $data = $request->validate([
             'title'        => 'sometimes|string|max:180',
             'service_date' => 'sometimes|date',
+            'service_time' => 'sometimes|nullable|string|max:40',
             'theme'        => 'sometimes|string|in:default,communion,easter,christmas,mothers,thanksgiving',
             'always_show_during_week' => 'sometimes|boolean',
         ]);

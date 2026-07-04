@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @include('partials.seo-head', [
@@ -19,9 +20,12 @@
   a { color: inherit; text-decoration: none; }
   button { font: inherit; cursor: pointer; }
 
-  main { max-width: 1220px; margin: 0 auto; padding: clamp(22px,4vh,38px) clamp(14px,4vw,40px) 80px; }
+  main { max-width: 1220px; margin: 0 auto; padding: clamp(34px,6vh,58px) clamp(16px,4vw,44px) 110px; }
 
-  .cal-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .cal-bar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 26px; flex-wrap: wrap; }
+  .edit-btn { color: var(--ink-soft); }
+  .edit-btn[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: #fff; }
+  body.editing .cell:hover, body.editing .wband:hover, body.editing .tg-col:hover { border-color: var(--brass); }
   .cal-nav { display: flex; align-items: center; gap: 8px; }
   .rnd { width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); font-size: 17px; display: inline-flex; align-items: center; justify-content: center; }
   .rnd:hover { border-color: var(--teal); color: var(--teal); }
@@ -34,7 +38,7 @@
   .seg button.on { background: var(--teal); color: #fff; }
   .seg button.soon { color: var(--ink-faint); cursor: default; }
 
-  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
   .lg.off { opacity: .42; border-style: dashed; }
   .lg.off .dot { background: var(--ink-faint, #9aa0aa) !important; }
   .lg:hover { border-color: var(--teal); }
@@ -63,6 +67,20 @@
   .ev.sermon  { background: #f5ecd6; color: #7a5f22; }
   .ev.event   { background: #e3f0e8; color: #1f6843; }
   .more { font-size: 11px; color: var(--ink-faint); font-weight: 600; margin-top: 4px; padding-left: 7px; }
+
+  /* ── EDIT MODE (managers): the day sheet becomes touchable — write-back to source ── */
+  .dv-card.editable { cursor: default; }
+  .ef { font: inherit; font-size: 14px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 7px; background: var(--parchment); color: var(--ink); width: 100%; margin-top: 7px; }
+  .ef:focus { outline: none; border-color: var(--teal); background: #fff; }
+  .edit-row { display: flex; gap: 7px; } .edit-row .ef.sm { flex: 0 0 110px; }
+  .ef-lock { font-size: 12px; color: var(--ink-soft); align-self: center; padding: 8px 4px 0; }
+  .esave { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--teal); border: 0; border-radius: 7px; padding: 9px 16px; margin-top: 9px; cursor: pointer; }
+  .esave:hover { filter: brightness(1.08); }
+  .dv-noedit { font-size: 11px; color: var(--ink-faint); margin-top: 6px; font-style: italic; }
+  .dv-add { border: 1px dashed color-mix(in srgb, var(--teal) 45%, var(--line)); border-radius: 12px; padding: 14px 16px; margin-top: 14px; }
+  .dv-add-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); }
+  .cal-pip { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: #fff; background: var(--teal); padding: 8px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 90; }
+  .cal-pip.show { opacity: 1; } .cal-pip.err { background: #a33d3d; }
 
   /* ── WEEK (desktop): clean iCal-style time grid — day columns, trimmed hour axis,
         all-day shelf on top. Mobile keeps the agenda bands below. ── */
@@ -160,6 +178,9 @@
       <button class="rnd" id="prev" aria-label="Previous">‹</button>
       <button class="rnd" id="next" aria-label="Next">›</button>
       <button class="today-btn" id="today">Today</button>
+      @if ($canEdit ?? false)
+        <button class="today-btn edit-btn" id="editBtn" aria-pressed="false">Edit</button>
+      @endif
     </div>
     <div class="cal-title" id="title"></div>
     <div class="seg" role="tablist" aria-label="Calendar view">
@@ -189,6 +210,7 @@
   </div>
 </div>
 
+<div class="cal-pip" id="calPip">Saved</div>
 <script id="cal-data" type="application/json">{!! json_encode($payload, JSON_UNESCAPED_SLASHES) !!}</script>
 <script>
 (function () {
@@ -366,6 +388,110 @@
       + '</' + tag + '>';
   }
 
+  // ── EDIT MODE (managers) — the sheet becomes touchable; saves write back to source ──
+  const editBtn = document.getElementById('editBtn');
+  let editMode = false;
+  const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+  const pip = document.getElementById('calPip');
+  function pipMsg(msg, err) {
+    pip.textContent = msg; pip.classList.toggle('err', !!err); pip.classList.add('show');
+    clearTimeout(pip._t); pip._t = setTimeout(() => pip.classList.remove('show'), err ? 3000 : 1200);
+  }
+  function api(method, url, body) {
+    return fetch(url, { method, headers: { 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(r => r.json().then(d => ({ ok: r.ok && d.ok !== false, d })));
+  }
+  const to24 = t => {   // '7:30 pm' → '19:30'; unparseable → null
+    const m = /^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i.exec((t || '').trim());
+    if (!m) return null;
+    let h = parseInt(m[1], 10) % 12; if (/pm/i.test(m[3])) h += 12;
+    return String(h).padStart(2, '0') + ':' + (m[2] || '00');
+  };
+  if (editBtn) editBtn.addEventListener('click', () => {
+    editMode = !editMode;
+    editBtn.setAttribute('aria-pressed', editMode ? 'true' : 'false');
+    document.body.classList.toggle('editing', editMode);
+    if (sheetOv.classList.contains('open') && sheetOv.dataset.day) openSheet(sheetOv.dataset.day);
+  });
+
+  function editCard(ev, i) {
+    const head = t => '<div class="dv-type">' + t + '</div>';
+    if (ev.t === 'event' && ev.id) {
+      return '<div class="dv-card event editable" data-i="' + i + '">' + head('Event · editing')
+        + '<input class="ef" data-f="n" value="' + esc(ev.n) + '" placeholder="Title">'
+        + '<div class="edit-row">'
+        + (ev.rec ? '<span class="ef-lock" title="Series schedule — edit times on the event card on Welcome">' + esc(ev.time || '') + ' · series</span>'
+                  : '<input class="ef sm" data-f="time" value="' + esc(ev.time || '') + '" placeholder="7:30 pm">')
+        + '<input class="ef" data-f="loc" value="' + esc(ev.loc || '') + '" placeholder="Location"></div>'
+        + '<button class="esave" data-kind="event">Save</button></div>';
+    }
+    if (ev.t === 'service' && ev.bid) {
+      return '<div class="dv-card service editable" data-i="' + i + '">' + head('Service · editing')
+        + '<div class="dv-name">' + esc(ev.n) + '</div>'
+        + '<div class="edit-row"><input class="ef sm" data-f="time" value="' + esc(ev.time || '') + '" placeholder="11:00 am"></div>'
+        + '<button class="esave" data-kind="service">Save</button>'
+        + '<div class="dv-noedit">Writes to this bulletin — one source of truth.</div></div>';
+    }
+    if (ev.t === 'sermon' && ev.lid) {
+      return '<div class="dv-card sermon editable" data-i="' + i + '">' + head('Sermon · editing')
+        + '<input class="ef" data-f="person" value="' + esc((ev.n || '').replace(/ preached$/, '')) + '" placeholder="Who preached">'
+        + '<button class="esave" data-kind="sermon">Save</button>'
+        + '<div class="dv-noedit">Writes to the bulletin&rsquo;s Sermon line.</div></div>';
+    }
+    return dayCard(ev) + (ev.t === 'sermon' ? '<div class="dv-noedit">Archive sermon — edit in Find Peace.</div>' : '');
+  }
+
+  document.getElementById('sheetBody').addEventListener('click', e => {
+    const btn = e.target.closest('.esave'); if (!btn) return;
+    const card = btn.closest('.dv-card'); const ds = sheetOv.dataset.day;
+    const ev = entriesOf(ds)[parseInt(card.dataset.i, 10)]; if (!ev) return;
+    const val = f => { const el = card.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : null; };
+    let call;
+    if (btn.dataset.kind === 'event') {
+      const body = { title: val('n') || ev.n, location: val('loc') || null };
+      const t24 = to24(val('time'));
+      if (!ev.rec && t24) body.start_at = ds + 'T' + t24;
+      call = api('PATCH', '/events/' + ev.id, body).then(res => {
+        if (res.ok) { ev.n = body.title; ev.loc = body.location; if (!ev.rec && val('time')) ev.time = val('time'); }
+        return res;
+      });
+    } else if (btn.dataset.kind === 'service') {
+      const t = val('time');
+      call = api('PATCH', '/bulletins/' + ev.bid, { service_time: t || null }).then(res => {
+        if (res.ok) ev.time = t;
+        return res;
+      });
+    } else {
+      const who = val('person');
+      call = api('PATCH', '/bulletins/' + ev.bid + '/lines/' + ev.lid, { person: who }).then(res => {
+        if (res.ok) ev.n = who + ' preached';
+        return res;
+      });
+    }
+    btn.disabled = true;
+    call.then(res => {
+      btn.disabled = false;
+      if (res.ok) { pipMsg('Saved — everywhere this appears'); render(); openSheet(ds); }
+      else pipMsg('Not saved — try again', true);
+    }).catch(() => { btn.disabled = false; pipMsg('Not saved — try again', true); });
+  });
+
+  document.getElementById('sheetBody').addEventListener('click', e => {
+    const btn = e.target.closest('#naSave'); if (!btn) return;
+    const ds = sheetOv.dataset.day;
+    const title = document.getElementById('naT').value.trim(); if (!title) { pipMsg('Give it a title', true); return; }
+    const t24 = to24(document.getElementById('naTime').value) || '00:00';
+    const loc = document.getElementById('naLoc').value.trim() || null;
+    btn.disabled = true;
+    api('POST', '/events', { title, start_at: ds + 'T' + t24, location: loc }).then(res => {
+      btn.disabled = false;
+      if (res.ok) {
+        (ENTRIES[ds] = ENTRIES[ds] || []).push({ t: 'event', id: res.d.event.id, n: title, time: t24 === '00:00' ? '' : document.getElementById('naTime').value.trim(), loc, pub: true });
+        pipMsg('Added'); render(); openSheet(ds);
+      } else pipMsg('Not saved — try again', true);
+    }).catch(() => { btn.disabled = false; pipMsg('Not saved — try again', true); });
+  });
+
   // ── Day sheet (tap a day in month/week) ──
   const sheetOv = document.getElementById('sheetOv');
   function openSheet(ds) {
@@ -376,9 +502,17 @@
     document.getElementById('sheetTitle').textContent =
       ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate();
     const es = entriesOf(ds);
-    document.getElementById('sheetBody').innerHTML = es.length
-      ? es.map(dayCard).join('')
+    sheetOv.dataset.day = ds;
+    let body = es.length
+      ? es.map((ev, i) => (editMode ? editCard(ev, i) : dayCard(ev))).join('')
       : '<div class="dv-empty">Nothing on the calendar this day.</div>';
+    if (editMode) {
+      body += '<div class="dv-add"><div class="dv-add-label">Add an event to this day</div>'
+        + '<input class="ef" id="naT" placeholder="Title">'
+        + '<div class="edit-row"><input class="ef sm" id="naTime" placeholder="7:30 pm"><input class="ef" id="naLoc" placeholder="Location (optional)"></div>'
+        + '<button class="esave" id="naSave">Add event</button></div>';
+    }
+    document.getElementById('sheetBody').innerHTML = body;
     sheetOv.classList.add('open');
   }
   document.getElementById('sheetX').addEventListener('click', () => sheetOv.classList.remove('open'));

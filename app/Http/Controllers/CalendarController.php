@@ -30,7 +30,10 @@ class CalendarController extends Controller
         $start = $today->copy()->subMonths(18)->startOfMonth();
         $end   = $today->copy()->addMonths(18)->endOfMonth();
 
+        $canEdit = $request->user() && in_array($request->user()->role, ['clerk', 'super_admin'], true);
+
         return view('calendar.index', [
+            'canEdit' => $canEdit,
             'payload' => [
                 'today'   => $today->toDateString(),
                 'entries' => $this->aggregate($start, $end),
@@ -54,6 +57,8 @@ class CalendarController extends Controller
         foreach ($events as $e) {
             $base = [
                 't'    => 'event',
+                'id'   => $e->id,
+                'rec'  => $e->isRecurring(),
                 'n'    => $e->title,
                 'loc'  => $e->location,
                 'dept' => $e->department->name ?? null,
@@ -82,6 +87,7 @@ class CalendarController extends Controller
             $covered[$date] = true;
             $push($date, [
                 't'    => 'service',
+                'bid'  => $b->id,
                 'n'    => ($b->kind === 'event_night' && $b->event_name) ? $b->event_name : 'Sabbath Worship',
                 'time' => $b->service_time ?: '11:00 am',
                 'url'  => '/bulletin/' . $b->id,
@@ -89,7 +95,7 @@ class CalendarController extends Controller
             $sermon = $b->lines->first(fn ($l) =>
                 stripos((string) $l->part, 'sermon') !== false && trim((string) $l->person) !== '');
             if ($sermon) {
-                $push($date, ['t' => 'sermon', 'n' => trim($sermon->person) . ' preached', 'url' => '/bulletin/' . $b->id]);
+                $push($date, ['t' => 'sermon', 'bid' => $b->id, 'lid' => $sermon->id, 'n' => trim($sermon->person) . ' preached', 'url' => '/bulletin/' . $b->id]);
             }
         }
 
