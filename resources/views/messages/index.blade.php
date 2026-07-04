@@ -31,6 +31,12 @@
   .msg .by { margin-top: 7px; font-size: 13px; color: var(--ink-soft); }
   .msg .heart { margin-top: 12px; font-family: 'IBM Plex Serif', serif; font-style: italic; font-size: 17px; line-height: 1.5; color: var(--ink-soft); }
 
+  a.t { display: block; text-decoration: none; }
+  a.t:hover { color: var(--teal); }
+  .mrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  .mopen { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); text-decoration: none; }
+  .mshare { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 8px 15px; cursor: pointer; font-family: inherit; }
+  .mshare:hover { border-color: var(--teal); }
   /* Audio player */
   .player { margin-top: 18px; display: flex; align-items: center; gap: 14px; }
   .pp { flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--teal); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; }
@@ -64,7 +70,7 @@
         @endphp
         <div class="msg {{ $i === 0 ? 'feat' : '' }}">
           @if ($i === 0)<div class="tag">Latest message</div>@endif
-          <div class="t">{{ $m->title }}</div>
+          <a class="t" href="{{ route('messages.show', $m->slug) }}">{{ $m->title }}</a>
           <div class="by">{{ $m->speaker ? $m->speaker . ' · ' : '' }}{{ optional($m->sermon_date)->format('F j, Y') }}</div>
           @if ($m->heart_line)<div class="heart">“{{ $m->heart_line }}”</div>@endif
           <div class="player" data-audio="{{ $m->audio_url }}">
@@ -74,6 +80,10 @@
               <div class="time"><span class="cur">0:00</span><span class="dur">{{ $dur }}</span></div>
             </div>
           </div>
+          <div class="mrow">
+            <a class="mopen" href="{{ route('messages.show', $m->slug) }}">Summary, scriptures &amp; comments @include('partials._ar')</a>
+            <button type="button" class="mshare" data-slug="{{ $m->slug }}" data-title="{{ $m->title }}" data-speaker="{{ $m->speaker }}">Share</button>
+          </div>
         </div>
       @endforeach
     </div>
@@ -82,6 +92,19 @@
 
 @include('partials.footer')
 <script>
+document.querySelectorAll('.mshare').forEach(function (btn) {
+  btn.addEventListener('click', async function () {
+    const url = location.origin + '/messages/' + btn.dataset.slug;
+    const text = 'Check out this message \u2014 \u201C' + btn.dataset.title + '\u201D' + (btn.dataset.speaker ? ' by ' + btn.dataset.speaker : '') + '. It spoke to me:';
+    if (navigator.share) {
+      try { await navigator.share({ title: btn.dataset.title, text: text, url: url }); return; }
+      catch (e) { if (e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(text + ' ' + url); } catch (e) {}
+    const was = btn.textContent; btn.textContent = 'Copied';
+    setTimeout(function () { btn.textContent = was; }, 1800);
+  });
+});
 (function () {
   var current = null; // the currently-playing <audio>
   var PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';

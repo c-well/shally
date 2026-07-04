@@ -33,7 +33,6 @@ Route::view('/bible',   'bible')->name('bible');
 Route::view('/hymnal',  'hymnal')->name('hymnal');
 Route::middleware('seeker:optional')->group(function () {
     Route::get('/find-peace',                   [\App\Http\Controllers\FindPeaceController::class, 'index'])->name('find-peace.index');
-    Route::get('/sermons/{slug}', [\App\Http\Controllers\FindPeaceController::class, 'churchShow'])->name('sermons.show')->where('slug', '[A-Za-z0-9-]+');
     Route::get('/find-peace/search-messages',    [\App\Http\Controllers\FindPeaceController::class, 'searchMessages'])->middleware('throttle:30,1')->name('find-peace.search-messages');
     Route::get('/find-peace/saved',             [\App\Http\Controllers\FindPeaceController::class, 'saved'])->middleware('seeker:required')->name('find-peace.saved');
     Route::get('/find-peace/topic/{slug}',      [\App\Http\Controllers\FindPeaceController::class, 'topic'])->name('find-peace.topic')->where('slug', '[A-Za-z0-9-]+');
@@ -63,6 +62,10 @@ Route::get('/peace/review/{token}/confirm-delete', [\App\Http\Controllers\PeaceR
 Route::get ('/search',  [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
 Route::get ('/contact',  [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
 Route::get ('/messages', [\App\Http\Controllers\MessagesController::class, 'index'])->name('messages');
+Route::get ('/messages/{slug}', [\App\Http\Controllers\MessagesController::class, 'show'])->name('messages.show')->where('slug', '[A-Za-z0-9-]+');
+Route::post('/messages/{slug}/comments', [\App\Http\Controllers\MessagesController::class, 'storeComment'])
+     ->middleware(['auth', 'honeypot', 'throttle:5,1'])->name('messages.comments.store');
+Route::get ('/sermons/{slug}', fn (string $slug) => redirect()->route('messages.show', $slug, 301))->where('slug', '[A-Za-z0-9-]+');
 Route::get ('/kids', [\App\Http\Controllers\KidsController::class, 'index'])->name('kids');
 Route::get ('/kids/play/{level}', [\App\Http\Controllers\KidsController::class, 'play'])->name('kids.play');
 Route::post('/kids/register', [\App\Http\Controllers\KidsController::class, 'register'])->middleware('throttle:20,10')->name('kids.register');
