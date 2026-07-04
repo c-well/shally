@@ -12,7 +12,8 @@ class FindPeaceController extends Controller
         $recent = PeaceSermon::whereNotNull('published_at')
             ->orderByDesc('sermon_date')
             ->limit(20)
-            ->get(['id', 'slug', 'title', 'sermon_date', 'speaker']);
+            ->with(['scriptures' => fn ($q) => $q->orderBy('display_order')->limit(3)])
+            ->get(['id', 'slug', 'title', 'sermon_date', 'speaker', 'heart_line', 'summary_paragraphs']);
 
         // Top 3 Q&As from the most recent sermon — default cards under search
         $latest = $recent->first();
@@ -52,6 +53,57 @@ class FindPeaceController extends Controller
     }
 
     /** GET /find-peace/{slug} — single sermon page */
+    /**
+     * GET /find-peace/search-messages?q= — mini search over the message archive.
+     * Matches title, speaker, the written summaries, AND the sermon transcript
+     * (search fuel only — transcripts are never displayed). "Some random word
+     * they mentioned in the message" finds the message. (Karlon 2026-07-04)
+     */
+    public function searchMessages(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $q = trim((string) $request->query('q', ''));
+        if (mb_strlen($q) < 3) return response()->json(['results' => []]);
+        $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
+
+        $rows = PeaceSermon::whereNotNull('published_at')
+            ->where(fn ($w) => $w->where('title', 'like', $like)
+                ->orWhere('speaker', 'like', $like)
+                ->orWhere('heart_line', 'like', $like)
+                ->orWhere('summary_paragraphs', 'like', $like)
+                ->orWhere('transcript_raw', 'like', $like))
+            ->orderByDesc('sermon_date')
+            ->limit(8)
+            ->get(['id', 'slug', 'title', 'speaker', 'sermon_date', 'heart_line', 'summary_paragraphs', 'transcript_raw']);
+
+        $results = $rows->map(function ($s) use ($q) {
+            $sum = is_array($s->summary_paragraphs) ? implode(' ', $s->summary_paragraphs) : (string) $s->summary_paragraphs;
+            $inMeta = stripos($s->title . ' ' . $s->speaker . ' ' . $s->heart_line . ' ' . $sum, $q) !== false;
+            $snippet = null;
+            if (! $inMeta && $s->transcript_raw) {
+                $pos = stripos($s->transcript_raw, $q);
+                if ($pos !== false) {
+                    $from = max(0, $pos - 45);
+                    $snippet = ($from > 0 ? '…' : '') . trim(mb_substr($s->transcript_raw, $from, 110)) . '…';
+                    // auto-captions often SHOUT — soften mostly-caps snippets to sentence case
+                    $letters = preg_replace('/[^a-zA-Z]/', '', $snippet);
+                    if ($letters !== '' && strlen(preg_replace('/[^A-Z]/', '', $letters)) / strlen($letters) > 0.7) {
+                        $snippet = ucfirst(mb_strtolower($snippet));
+                    }
+                }
+            }
+            return [
+                'slug'    => $s->slug,
+                'title'   => $s->title,
+                'speaker' => $s->speaker,
+                'when'    => optional($s->sermon_date)->format('M j, Y'),
+                'heart'   => $s->heart_line,
+                'snippet' => $snippet,   // present only for transcript-only hits
+            ];
+        });
+
+        return response()->json(['results' => $results]);
+    }
+
     public function show(string $slug): View
     {
         $sermon = PeaceSermon::where('slug', $slug)

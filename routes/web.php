@@ -33,6 +33,7 @@ Route::view('/bible',   'bible')->name('bible');
 Route::view('/hymnal',  'hymnal')->name('hymnal');
 Route::middleware('seeker:optional')->group(function () {
     Route::get('/find-peace',                   [\App\Http\Controllers\FindPeaceController::class, 'index'])->name('find-peace.index');
+    Route::get('/find-peace/search-messages',    [\App\Http\Controllers\FindPeaceController::class, 'searchMessages'])->middleware('throttle:30,1')->name('find-peace.search-messages');
     Route::get('/find-peace/saved',             [\App\Http\Controllers\FindPeaceController::class, 'saved'])->middleware('seeker:required')->name('find-peace.saved');
     Route::get('/find-peace/topic/{slug}',      [\App\Http\Controllers\FindPeaceController::class, 'topic'])->name('find-peace.topic')->where('slug', '[A-Za-z0-9-]+');
     Route::get ('/find-peace/share',            [\App\Http\Controllers\PeaceShareController::class, 'show'])->middleware('seeker:required')->name('peace.share.show');
