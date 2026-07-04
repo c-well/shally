@@ -711,6 +711,14 @@
     <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin @include('partials._ar')</a>
     <a href="{{ route('lesson.show') }}" class="hero-cta-secondary">Sabbath School lesson</a>
   @endif
+
+  @if (($liveEvent ?? null) && ! $isLive)
+    {{-- An event WE point to (not our stream) is on right now — e.g. the Crusade --}}
+    <a href="{{ $liveEvent->stream_url }}" target="_blank" rel="noopener" class="hero-cta live-cta" style="margin-top: 12px;">
+      <span class="live-cta-dot" aria-hidden="true"></span>
+      {{ \Illuminate\Support\Str::limit($liveEvent->title, 42) }} · Happening now — tune in
+    </a>
+  @endif
   <div class="verse-toggle-wrap"><button class="verse-toggle hidden" id="verse-toggle" type="button"><span class="verse-toggle-dot"></span><span id="verse-toggle-text">Show verse of the day</span></button></div>
 </section>
 

@@ -785,6 +785,11 @@
     position: absolute; top: 12px; right: 12px;
     display: flex; gap: 6px; z-index: 5;
   }
+  .event-schedule { font-size: 12.5px; color: var(--ink-soft); margin-top: 5px; line-height: 1.5; }
+  .event-next-pill { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: color-mix(in srgb, var(--teal) 9%, #fff); border: 1px solid color-mix(in srgb, var(--teal) 30%, transparent); border-radius: 6px; padding: 3px 9px; }
+  .event-live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #fff; background: var(--brass, #b08d3c); border-radius: 6px; padding: 4px 10px; text-decoration: none; }
+  .event-live-dot { width: 7px; height: 7px; border-radius: 999px; background: #fff; animation: liveDotPulse 2.2s ease-in-out infinite; }
+  @keyframes liveDotPulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
   .event-edit-btn, .event-delete-btn {
     background: #fff; border: 1px solid var(--line); border-radius: 50%;
     width: 36px; height: 36px;
@@ -798,6 +803,14 @@
   .event.has-flyer .event-card-actions { top: 10px; right: 10px; }
 
   /* ── Calendar event modal — same site DNA as the series modal ── */
+  .ev-recur { border-top: 1px dashed var(--line); margin-top: 14px; padding-top: 12px; }
+  .ev-recur-head { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 10px; }
+  .ev-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+  .ev-day span { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 3px; text-align: center; }
+  .ev-day input { width: 100%; font-size: 11px; padding: 7px 5px; text-align: center; border: 1px solid var(--line); border-radius: 6px; background: var(--parchment); }
+  .ev-day input:focus { outline: none; border-color: var(--teal); background: #fff; }
+  .ev-recur-hint { font-size: 11px; color: var(--ink-soft); margin-top: 8px; }
+  @media (max-width: 560px) { .ev-days { grid-template-columns: repeat(4, 1fr); } }
   .event-modal {
     position: fixed; inset: 0;
     background: rgba(26, 35, 50, 0.62);
@@ -2663,11 +2676,12 @@
     @if ($upcomingEvents->count())
       <div class="events-grid">
         @foreach ($upcomingEvents as $e)
+          @php $nextOcc = $e->isRecurring() ? $e->nextOccurrence() : null; $tileDate = $nextOcc ? $nextOcc[0] : $e->start_at; $evLive = $e->isRecurring() ? $e->liveNow() : null; @endphp
           <div class="event @if($e->flyer_path) has-flyer @endif">
             <div class="cal-tile">
-              <div class="month">{{ strtoupper($e->start_at->format('M')) }}</div>
-              <div class="day">{{ $e->start_at->format('j') }}</div>
-              <div class="dow">{{ strtoupper($e->start_at->format('D')) }}</div>
+              <div class="month">{{ strtoupper($tileDate->format('M')) }}</div>
+              <div class="day">{{ $tileDate->format('j') }}</div>
+              <div class="dow">{{ strtoupper($tileDate->format('D')) }}</div>
             </div>
             <div class="event-body">
               <div class="event-title">
@@ -2677,12 +2691,21 @@
                 <span class="event-title-text">{{ $e->title }}</span>
               </div>
               <div class="event-meta">
-                @if ($e->start_at->format('H:i') !== '00:00')
+                @if ($e->isRecurring())
+                  @if ($evLive && $e->stream_url)
+                    <a class="event-live-pill" href="{{ $e->stream_url }}" target="_blank" rel="noopener"><span class="event-live-dot"></span>LIVE NOW · TUNE IN</a>
+                  @elseif ($nextOcc)
+                    <span class="event-next-pill">{{ $nextOcc[0]->isToday() ? 'Today' : ($nextOcc[0]->isTomorrow() ? 'Tomorrow' : 'Next: ' . $nextOcc[0]->format('D M j')) }} · {{ $nextOcc[1] }}</span>
+                  @endif
+                @elseif ($e->start_at->format('H:i') !== '00:00')
                   <span class="event-time">{{ $e->start_at->format('g:i A') }}</span>
                 @endif
                 @if ($e->location)<span class="event-loc">@if ($e->start_at->format('H:i') !== '00:00') · @endif{{ $e->location }}</span>@endif
                 @if ($e->notes)<br><span class="event-notes">{{ $e->notes }}</span>@endif
               </div>
+              @if ($e->scheduleSummary())
+                <div class="event-schedule">{{ $e->scheduleSummary() }}</div>
+              @endif
             </div>
             @if ($canEdit)
               <div class="event-card-actions">
@@ -2694,6 +2717,9 @@
                         data-location="{{ $e->location ?? '' }}"
                         data-notes="{{ $e->notes ?? '' }}"
                         data-department-id="{{ $e->department_id ?? '' }}"
+                        data-recur-until="{{ optional($e->recur_until)->toDateString() }}"
+                        data-stream-url="{{ $e->stream_url }}"
+                        @foreach (range(0,6) as $di) data-rt{{ $di }}="{{ implode(', ', $e->recur_times[(string) $di] ?? []) }}" @endforeach
                         data-update-url="{{ route('events.update', $e) }}"
                         data-delete-url="{{ route('events.destroy', $e) }}"
                         aria-label="Edit event" title="Edit">
@@ -3394,6 +3420,19 @@
           <span>Notes</span>
           <textarea name="notes" maxlength="1000" rows="3" placeholder="Optional"></textarea>
         </label>
+        <div class="ev-recur">
+          <div class="ev-recur-head">Repeats? For a series (crusade, week of prayer) — fill once, the calendar knows every night.</div>
+          <div class="ev-row-grid">
+            <label class="ev-row"><span>Repeats until</span><input type="date" name="recur_until"></label>
+            <label class="ev-row"><span>Watch link <small style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink-soft);">(their YouTube, for Tune In)</small></span><input type="url" name="stream_url" placeholder="https://youtube.com/…"></label>
+          </div>
+          <div class="ev-days">
+            @foreach (['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $di => $dn)
+              <label class="ev-day"><span>{{ $dn }}</span><input type="text" name="rt{{ $di }}" placeholder="—"></label>
+            @endforeach
+          </div>
+          <div class="ev-recur-hint">Times per day, e.g. <b>7:30 pm</b> or <b>9:30 am, 6:00 pm</b>. Blank = no service that day.</div>
+        </div>
         @if (isset($departments) && $departments->count())
           <label class="ev-row">
             <span>Department</span>
@@ -4361,6 +4400,9 @@
         evForm.elements.location.value = data.location || '';
         evForm.elements.notes.value = data.notes || '';
         if (evForm.elements.department_id) evForm.elements.department_id.value = data.department_id || '';
+        evForm.elements.recur_until.value = data.recurUntil || '';
+        evForm.elements.stream_url.value = data.streamUrl || '';
+        for (let i = 0; i < 7; i++) evForm.elements['rt' + i].value = (data.rt && data.rt[i]) || '';
         evModalTitle.textContent = data.id ? 'Edit event' : 'Add event';
         if (data.id) {
           evDeleteBtn.hidden = false;
@@ -4386,6 +4428,9 @@
           location: btn.dataset.location,
           notes: btn.dataset.notes,
           department_id: btn.dataset.departmentId,
+          recurUntil: btn.dataset.recurUntil,
+          streamUrl: btn.dataset.streamUrl,
+          rt: [0,1,2,3,4,5,6].map(i => btn.dataset['rt' + i] || ''),
           updateUrl: btn.dataset.updateUrl,
           deleteUrl: btn.dataset.deleteUrl,
         }));
@@ -4407,7 +4452,15 @@
           location: fd.get('location') || null,
           notes: fd.get('notes') || null,
           department_id: fd.get('department_id') || null,
+          recur_until: fd.get('recur_until') || null,
+          stream_url: fd.get('stream_url') || null,
         };
+        const rt = {};
+        for (let i = 0; i < 7; i++) {
+          const ts = (fd.get('rt' + i) || '').split(',').map(t => t.trim()).filter(Boolean);
+          if (ts.length) rt[i] = ts;
+        }
+        payload.recur_times = Object.keys(rt).length ? rt : null;
         try {
           if (id) await patch(evForm.dataset.updateUrl, payload);
           else    await post(evCreateUrl, payload);

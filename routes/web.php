@@ -11,6 +11,7 @@ Route::get('/', fn () => view('landing', [
     'heroPage'    => App\Models\Page::bySlug('landing'),
     'sliderIntro' => App\Models\Page::bySlug('slider-intro'),
     'slides'      => App\Models\Slide::active()->get(),
+    'liveEvent'   => App\Models\Event::happeningNow(),   // e.g. Crusade tonight → Tune In CTA
 ]))->name('home');
 Route::get('/welcome', [BulletinController::class, 'home'])->name('welcome');
 Route::get('/bulletin/{bulletin}', [BulletinController::class, 'show'])->name('bulletins.show');
