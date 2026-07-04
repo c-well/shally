@@ -62,7 +62,7 @@ class Bulletin extends Model
         foreach ($folded as &$a) {
             $lines = preg_split("/\r?\n/", (string) ($a['detail'] ?? ''));
             $a['detail'] = implode("\n", array_map(
-                fn ($l) => preg_replace('/^\s*(?:o|O|•|\*|-)\s+/u', '', $l),
+                fn ($l) => preg_replace(['/^\s*[•\-]\s+/u', '/^\s*(?:o|O|\*)\s+/u'], ['• ', ''], $l),
                 $lines
             ));
         }

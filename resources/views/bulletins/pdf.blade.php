@@ -86,6 +86,7 @@
   .section { margin-bottom: 10pt; }
   .section-title { font-size: 12pt; font-weight: 700; margin-bottom: 2pt; }
   .bullet-list { margin: 0; padding-left: 20pt; list-style-type: circle; }
+  .bullet-list li.bf { list-style-type: disc; }
   .bullet-list li { font-size: 10.5pt; line-height: 1.35; margin: 1pt 0; }
   .bullet-list.tight li { margin: 0; }
 
@@ -209,7 +210,7 @@
           <div class="heading">{{ $titleColon }}</div>
           @foreach (preg_split("/\r?\n/", $aDetail) as $line)
             @if (trim($line) !== '')
-              <div class="line">{{ trim($line) }}</div>
+              <div class="line">{{ ltrim(trim($line), '• ') }}</div>
             @endif
           @endforeach
         </section>
@@ -219,8 +220,9 @@
           @if ($aDetail !== '')
             <ul class="bullet-list">
               @foreach (preg_split("/\r?\n/", $aDetail) as $bullet)
-                @if (trim($bullet) !== '')
-                  <li>{{ trim($bullet) }}</li>
+                @php $bullet = trim($bullet); $bf = str_starts_with($bullet, '•'); @endphp
+                @if ($bullet !== '')
+                  <li @if($bf)class="bf"@endif>{{ $bf ? ltrim(substr($bullet, strlen('•'))) : $bullet }}</li>
                 @endif
               @endforeach
             </ul>

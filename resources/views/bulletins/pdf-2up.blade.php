@@ -50,6 +50,7 @@
   .section { margin-bottom: 6pt; }
   .section-title { font-size: 11pt; font-weight: 700; margin-bottom: 2pt; }
   .bullet-list { margin: 0; padding-left: 18pt; list-style-type: circle; }
+  .bullet-list li.bf { list-style-type: disc; }
   .bullet-list li { font-size: 10pt; line-height: 1.24; margin: 0.5pt 0; }
   .offerings { margin: 6pt 0 0; }
   .offerings .heading { font-size: 11pt; font-weight: 700; margin-bottom: 2pt; }
@@ -155,7 +156,7 @@
           <section class="section"><div class="section-title">{{ $titleColon }}</div>
             @if ($aDetail !== '')
               <ul class="bullet-list">
-                @foreach (preg_split("/\r?\n/", $aDetail) as $bullet)@if (trim($bullet) !== '')<li>{{ trim($bullet) }}</li>@endif @endforeach
+                @foreach (preg_split("/\r?\n/", $aDetail) as $bullet)@php $bullet = trim($bullet); $bf = str_starts_with($bullet, '•'); @endphp @if ($bullet !== '')<li @if($bf)class="bf"@endif>{{ $bf ? ltrim(substr($bullet, strlen('•'))) : $bullet }}</li>@endif @endforeach
               </ul>
             @endif
           </section>
