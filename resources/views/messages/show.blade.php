@@ -34,6 +34,19 @@
   .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
   .act { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); text-decoration: none; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 12px 18px; cursor: pointer; font-family: inherit; }
   .act:hover { border-color: var(--teal); }
+  .words { margin-top: clamp(44px,7vh,64px); border-top: 1px solid var(--line); padding-top: 34px; }
+  .words-h { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; text-align: center; margin-bottom: 20px; }
+  .words-ok { text-align: center; font-size: 13px; font-weight: 600; color: var(--teal); background: color-mix(in srgb, var(--teal) 7%, #fff); border: 1px solid color-mix(in srgb, var(--teal) 25%, var(--line)); border-radius: 8px; padding: 10px; margin-bottom: 16px; }
+  .words-form textarea { width: 100%; font: inherit; font-size: 15px; line-height: 1.6; padding: 13px 15px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); resize: vertical; }
+  .words-form textarea:focus { outline: none; border-color: var(--teal); }
+  .words-err { font-size: 12px; color: #a33d3d; margin-top: 6px; }
+  .words-send { margin-top: 10px; }
+  .words-signin { text-align: center; font-size: 14px; color: var(--ink-soft); background: #fff; border: 1px dashed var(--line); border-radius: 10px; padding: 16px; }
+  .words-signin a { color: var(--teal); font-weight: 600; }
+  .word { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 15px 17px; margin-top: 12px; }
+  .word-meta { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+  .word-body { font-size: 15px; line-height: 1.65; color: var(--ink); margin-top: 6px; white-space: pre-line; }
+  .words-none { text-align: center; font-size: 13px; color: var(--ink-faint); margin-top: 18px; font-style: italic; }
   .back { text-align: center; margin-top: 40px; font-size: 13px; }
   .back a { color: var(--ink-soft); text-decoration: none; }
   .back a:hover { color: var(--teal); }
@@ -80,7 +93,38 @@
             data-title="{{ $sermon->title }}" data-speaker="{{ $sermon->speaker }}">Share this message</button>
     <a class="act" href="{{ route('calendar') }}?v=day&d={{ optional($sermon->sermon_date)->toDateString() }}">That Sabbath on the calendar</a>
   </div>
-  <div class="back"><a href="{{ url('/welcome') }}">← Back to the bulletin</a></div>
+  <div class="back"><a href="{{ route('messages') }}">← All messages</a></div>
+
+  {{-- ── Leave a word — members only, honeypot-guarded ── --}}
+  <section class="words">
+    <h2 class="words-h">Words from the family</h2>
+    @if (session('commented'))
+      <div class="words-ok">Thank you — your word is up.</div>
+    @endif
+    @auth
+      <form class="words-form" method="POST" action="{{ route('messages.comments.store', $sermon->slug) }}">
+        @csrf
+        <input type="text" name="website" value="" style="position:absolute;left:-9999px;opacity:0" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <textarea name="body" rows="3" maxlength="1000" required
+                  placeholder="What stayed with you from this message?">{{ old('body') }}</textarea>
+        @error('body')<div class="words-err">{{ $message }}</div>@enderror
+        <button type="submit" class="act words-send">Leave a word</button>
+      </form>
+    @else
+      <div class="words-signin">
+        <a href="{{ route('login') }}">Sign in</a> to leave a word — quick, no password, just your email.
+      </div>
+    @endauth
+
+    @forelse ($comments as $c)
+      <div class="word">
+        <div class="word-meta">{{ $c->user->name ?? 'A member' }} · {{ $c->created_at->diffForHumans() }}</div>
+        <div class="word-body">{{ $c->body }}</div>
+      </div>
+    @empty
+      <div class="words-none">No words yet — be the first.</div>
+    @endforelse
+  </section>
 </main>
 
 <script>
