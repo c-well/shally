@@ -165,6 +165,24 @@
   }
 
   .recent-band { padding: 5rem 2rem; border-top: 1px solid var(--line); }
+  /* Message cards: summary in the heart-line's voice, the scriptures preached
+     from, and a share affordance — the archive honors each message (2026-07-04). */
+  .msg-item { padding: 1.6rem 0.25rem 1.5rem; }
+  .msg-title { display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: var(--ink); text-decoration: none; font-size: 1.1rem; font-weight: 500; transition: color 0.2s; }
+  .msg-title:hover { color: var(--brass-bright); }
+  .msg-title .arrow { color: var(--brass); flex-shrink: 0; }
+  .msg-meta { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-top: 0.4rem; }
+  .msg-heart { font-size: 0.95rem; font-weight: 300; line-height: 1.75; color: var(--ink-soft); margin-top: 0.65rem; max-width: 62ch; }
+  .msg-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; margin-top: 0.85rem; }
+  .msg-ref { font-size: 0.72rem; font-weight: 400; letter-spacing: 0.04em; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 6px; padding: 0.32rem 0.6rem; }
+  .msg-share { margin-left: auto; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brass); background: none; border: 1px solid var(--line); border-radius: 7px; padding: 0.45rem 0.85rem; cursor: pointer; transition: border-color .2s, color .2s; }
+  .msg-share:hover { border-color: var(--brass); color: var(--brass-bright); }
+  .mh-label { font-size: 0.65rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--brass); margin: 1.6rem 0 0.7rem; text-align: center; }
+  .msg-hit { display: block; text-decoration: none; border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 0.55rem; transition: border-color .2s; }
+  .msg-hit:hover { border-color: var(--brass); }
+  .msg-hit .t { color: var(--ink); font-weight: 500; font-size: 0.98rem; }
+  .msg-hit .m { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin-top: 0.25rem; }
+  .msg-hit .sn { font-size: 0.85rem; font-weight: 300; font-style: italic; color: var(--ink-soft); margin-top: 0.45rem; line-height: 1.6; }
   .container { max-width: 720px; margin: 0 auto; }
   .section-label {
     font-size: 0.7rem; letter-spacing: 0.3em;
@@ -280,6 +298,7 @@
         </div>
       @endforeach
     </div>
+    <div id="msg-results" data-url="{{ route('find-peace.search-messages') }}"></div>
   </div>
 
   @if($recent->isNotEmpty())
@@ -293,11 +312,27 @@
     <div class="section-label">Recent Messages</div>
     <ul class="topic-list">
       @foreach($recent as $i => $sermon)
-        <li>
-          <a href="{{ route('find-peace.show', $sermon->slug) }}">
+        <li class="msg-item">
+          <a class="msg-title" href="{{ route('find-peace.show', $sermon->slug) }}">
             <span>{{ $sermon->title }}@if($i === 0) <span class="new-badge">· NEW</span>@endif</span>
             <span class="arrow">@include('partials._ar')</span>
           </a>
+          <div class="msg-meta">{{ $sermon->speaker }}@if($sermon->sermon_date) · {{ $sermon->sermon_date->format('F j, Y') }}@endif</div>
+          @php
+            $sp = $sermon->summary_paragraphs;
+            $firstPara = is_array($sp) ? trim((string) ($sp[0] ?? '')) : \Illuminate\Support\Str::of((string) $sp)->before("\n")->trim();
+            $heartText = trim((string) $sermon->heart_line) ?: $firstPara;
+          @endphp
+          @if((string) $heartText !== '')<p class="msg-heart">{{ $heartText }}</p>@endif
+          <div class="msg-foot">
+            @foreach($sermon->scriptures as $ref)
+              <span class="msg-ref">{{ $ref->reference_display }}</span>
+            @endforeach
+            <button type="button" class="msg-share"
+                    data-slug="{{ $sermon->slug }}"
+                    data-title="{{ $sermon->title }}"
+                    data-speaker="{{ $sermon->speaker }}">Share this message</button>
+          </div>
         </li>
       @endforeach
     </ul>
@@ -333,6 +368,57 @@
 
 <script src="https://cdn.jsdelivr.net/npm/minisearch@7.1.1/dist/umd/index.min.js"></script>
 <script>
+// ── Share a message straight from the archive (native sheet, clipboard fallback) ──
+(function () {
+  document.querySelectorAll('.msg-share').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const url = location.origin + '/find-peace/' + btn.dataset.slug;
+      const text = 'Check out this message \u2014 \u201C' + btn.dataset.title + '\u201D'
+                 + (btn.dataset.speaker ? ' by ' + btn.dataset.speaker : '') + '. It spoke to me:';
+      if (navigator.share) {
+        try { await navigator.share({ title: btn.dataset.title, text, url }); return; }
+        catch (e) { if (e.name === 'AbortError') return; }
+      }
+      try { await navigator.clipboard.writeText(text + ' ' + url); } catch (e) {}
+      const was = btn.textContent;
+      btn.textContent = 'Copied \u2014 paste anywhere';
+      setTimeout(() => { btn.textContent = was; }, 2000);
+    });
+  });
+})();
+
+// ── Deep message search: title, speaker, summary, and what was actually SAID
+//    (server searches the transcript; the transcript itself is never shown) ──
+(function () {
+  const input = document.getElementById('qa-search');
+  const mount = document.getElementById('msg-results');
+  if (!input || !mount) return;
+  const URL_ = mount.dataset.url;
+  let t = null, seq = 0;
+  const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  input.addEventListener('input', () => {
+    clearTimeout(t);
+    const q = input.value.trim();
+    if (q.length < 3) { mount.innerHTML = ''; return; }
+    t = setTimeout(async () => {
+      const my = ++seq;
+      try {
+        const r = await fetch(URL_ + '?q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' } });
+        const d = await r.json();
+        if (my !== seq) return;   // stale response
+        if (!d.results || !d.results.length) { mount.innerHTML = ''; return; }
+        mount.innerHTML = '<div class="mh-label">Messages</div>' + d.results.map(h =>
+          '<a class="msg-hit" href="/find-peace/' + esc(h.slug) + '">'
+          + '<div class="t">' + esc(h.title) + '</div>'
+          + '<div class="m">' + esc(h.speaker || '') + (h.when ? ' \u00B7 ' + esc(h.when) : '') + '</div>'
+          + (h.snippet ? '<div class="sn">\u201C' + esc(h.snippet) + '\u201D</div>'
+                       : (h.heart ? '<div class="sn">' + esc(h.heart) + '</div>' : ''))
+          + '</a>').join('');
+      } catch (e) { /* quiet — Q&A search still works */ }
+    }, 300);
+  });
+})();
+
 (function () {
   const corpus = JSON.parse(document.getElementById('qa-corpus').textContent || '[]');
   const input = document.getElementById('qa-search');
