@@ -282,6 +282,24 @@ class BulletinController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /** PATCH /bulletins/{bulletin}/announcements/reorder — body { ids: [...] }. Mirrors reorderLines. */
+    public function reorderAnnouncements(Request $request, Bulletin $bulletin): JsonResponse
+    {
+        $data = $request->validate([
+            'ids'   => 'required|array',
+            'ids.*' => 'integer',
+        ]);
+        $valid = $bulletin->announcements()->pluck('id')->all();
+        $sortOrder = 0;
+        DB::transaction(function () use ($data, $valid, &$sortOrder) {
+            foreach ($data['ids'] as $id) {
+                if (! in_array($id, $valid, true)) continue;
+                \App\Models\Announcement::where('id', $id)->update(['sort_order' => $sortOrder++]);
+            }
+        });
+        return response()->json(['ok' => true]);
+    }
+
     /** POST /bulletins/{bulletin}/lines/restore — body { lines: [{section,part,person,kind}, ...] }. Replaces all lines. Used by client undo after a destructive op (reset, mass delete). */
     public function restoreLines(Request $request, Bulletin $bulletin): JsonResponse
     {

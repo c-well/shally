@@ -93,7 +93,7 @@
   .offerings .heading { font-size: 12pt; font-weight: 700; margin-bottom: 2pt; }
   .offerings .line    { font-size: 11pt; font-weight: 700; line-height: 1.35; }
 
-  .mission { text-align: center; margin-top: 10pt; }
+  .mission { text-align: center; margin-top: 10pt; margin-bottom: 14pt; }  /* breathing room before the next announcement (Karlon) */
   .mission .heading { font-size: 12pt; font-weight: 700; text-decoration: underline; margin-bottom: 5pt; }
   .mission .text    { max-width: 6in; margin: 0 auto; font-size: 10.5pt; line-height: 1.35; }
 

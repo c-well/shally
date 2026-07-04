@@ -54,7 +54,7 @@
   .offerings { margin: 9pt 0 11pt; }
   .offerings .heading { font-size: 11pt; font-weight: 700; margin-bottom: 2pt; }
   .offerings .line { font-size: 10.5pt; font-weight: 700; line-height: 1.3; }
-  .mission { text-align: center; margin-top: 9pt; }
+  .mission { text-align: center; margin-top: 9pt; margin-bottom: 12pt; }
   .mission .heading { font-size: 11pt; font-weight: 700; text-decoration: underline; margin-bottom: 5pt; }
   .mission .text { margin: 0 auto; font-size: 10pt; line-height: 1.3; }
   .pleasant { text-align: center; margin-top: 12pt; font-size: 10pt; font-style: italic; }

@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-04 · Announcements reorderable + PDF mission spacing
+
+Two bulletin tweaks (Karlon). (1) Announcements can now be **reordered** in the bulletin editor exactly like the order-of-service lines — ↑/↓ buttons on each announcement, autosaves the new order (new `reorderAnnouncements` controller + `PATCH /bulletins/{b}/announcements/reorder` route, mirroring reorderLines). The announcements relation already ordered by sort_order everywhere (editor, public bulletin, both PDFs), so a reorder shows up immediately in print. Verified end-to-end: reverse then restore round-trips cleanly. (2) The **Mission Statement** was cramped against the announcement below it on the PDF — added margin-bottom to `.mission` in both pdf.blade.php and pdf-2up.blade.php so it breathes like the other blocks.
+
+**Files:** app/Http/Controllers/BulletinController.php, routes/web.php, resources/views/admin/bulletin.blade.php, resources/views/bulletins/pdf.blade.php, resources/views/bulletins/pdf-2up.blade.php
+
 ## 2026-07-04 · Bulletin 2-up print layout
 
 New "Download 2-up" option in the bulletin tools (alongside Download PDF): one LANDSCAPE letter sheet with the bulletin printed twice side by side — front sheet = order of service ×2, back sheet = announcements ×2, aligned. Print double-sided and cut down the dashed center line → TWO identical 5.5×8.5 bulletins per sheet (participants front, announcements back). Both halves identical, so the duplex flip direction doesn't matter. Delivered via ?layout=2up on the existing PDF route (setPaper landscape + a self-contained bulletins/pdf-2up view — the portrait pdf.blade.php is untouched). dompdf gotcha solved: side-by-side full-height columns must be position:absolute inside a fixed-size relative .sheet, else dompdf inserts phantom blank pages (tables and floats both did; absolute gives a clean 2 pages).
