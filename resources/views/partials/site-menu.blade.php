@@ -367,6 +367,8 @@
     @php $bullHref = (auth()->check() && in_array(auth()->user()->role,['super_admin','clerk']) && \App\Models\AppSetting::get('bulletin_editor','v1')==='v2') ? route('admin.bulletin') : url('/welcome'); @endphp
     <a class="site-menu-link" href="{{ $bullHref }}">Bulletin <span class="arrow">@include('partials._ar')</span></a>
 
+    <a class="site-menu-link" href="{{ route('announcements') }}">Announcements <span class="arrow">@include('partials._ar')</span></a>
+
     <a class="site-menu-link" href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener">Donate <span class="arrow">@include('partials._ar')</span></a>
 
     @auth
