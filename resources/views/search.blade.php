@@ -235,5 +235,6 @@
   else { input.focus(); }
 })();
 </script>
+@include('partials._event-tracker')
 </body>
 </html>

@@ -81,5 +81,6 @@
   <div class="close">Have a pleasant Sabbath :)</div>
   <div class="backrow"><a href="{{ route('welcome') }}">View the full bulletin @include('partials._ar')</a></div>
 </main>
+@include('partials._event-tracker')
 </body>
 </html>

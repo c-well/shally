@@ -377,5 +377,6 @@
   <p style="font-family:'Cormorant Garamond',serif; font-size:22px; margin-top:26px;">Now go make Sabbath easy <b>:)</b></p>
 </div></section>
 
+@include('partials._event-tracker')
 </body>
 </html>
