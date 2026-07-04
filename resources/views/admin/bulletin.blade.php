@@ -26,7 +26,7 @@
     .top .tools { order: 2; margin-left: 0; width: 100%; justify-content: space-between; border-top: 1px dashed var(--line); padding-top: 10px; }
     .golive { padding: 10px 18px; }
   }
-  .status { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; }
+  .status { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 12px; border-radius: 7px; }
   .status.live { background: color-mix(in srgb, var(--teal) 15%, transparent); color: var(--teal-dark); }
   .status.draft { background: color-mix(in srgb, #b08d57 16%, transparent); color: #8a6d3b; }
   .golive { font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; padding: 11px 22px; border-radius: 7px; border: 0; background: var(--teal); color: #fff; cursor: pointer; }
