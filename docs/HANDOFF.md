@@ -93,3 +93,10 @@ The `Co-Authored-By: Claude ...` line on commits is a standard git **trailer** (
 ## Deploy + design rules (2026-07-03, Karlon)
 - **ZERO DOWNTIME:** every deploy goes through `/home/shalom/bin/safe-deploy.sh staged:target [...]` — lints first, backs up, raises the branded "Be right back" 503 for seconds only, probes /, /lesson, /find-peace, /kids for 200, AUTO-ROLLS-BACK on failure. Never edit live PHP in place; never leave the site serving errors. Render-test auth-gated views via tinker (auth()->loginUsingId + view()->render()) since probes can't reach them.
 - **NO PILL BUTTONS:** buttons/inputs use border-radius 3-8px. 999px is for badge/count bubbles only. Check design specs + sibling views before styling anything new.
+
+## Session 2026-07-03→04 (read CHANGELOG for detail)
+- ALL deploys via /home/shalom/bin/safe-deploy.sh (lint→backup→brief branded 503→probe→auto-rollback). Never inline-edit live PHP.
+- Calendar project LIVE (unlinked) at /calendar — month + iCal-clean week + day, deep links. Next: Rosharde inline edit + autosave (write-back to bulletin, no drift). See memory/project notes; aggregation in CalendarController.
+- Announcements: blank title = child bullets (folds on PDF); is_web_only + teal print-divider in v2 editor; QR on PDFs → /announcements page. 2-UP PDF link in v2 editor top bar.
+- Arrows: edit partials/_ar|_arup|_arl to restyle site-wide; Str::arrowize() covers DB content. Cormorant banned in admin + all numerals (Instrument). Shape tokens in shalom.css (--r-btn etc), no pill buttons.
+- After bulk blade sweeps: php -l every storage/framework/views/*.php (Blade compiles broken PHP silently; auth-gated pages hide it from probes).
