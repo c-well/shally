@@ -49,3 +49,9 @@ homestead.json
 Homestead.yaml
 Homestead.json
 /error_log
+
+# macOS sidecar junk — 161 of these rode the repo until 2026-07-04
+._*
+**/._*
+.DS_Store
+**/.DS_Store
