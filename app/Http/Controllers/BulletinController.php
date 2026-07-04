@@ -331,12 +331,14 @@ class BulletinController extends Controller
         $data = $request->validate([
             'title'  => 'nullable|string|max:180',
             'detail' => 'nullable|string|max:1000',
+            'is_web_only' => 'sometimes|boolean',
         ]);
         $maxOrder = $bulletin->announcements()->max('sort_order') ?? -1;
         $a = $bulletin->announcements()->create([
             'title'      => $data['title'] ?? '',
             'detail'     => $data['detail'] ?? null,
             'sort_order' => $maxOrder + 1,
+            'is_web_only' => (bool) ($data['is_web_only'] ?? false),
         ]);
         return response()->json(['ok' => true, 'announcement' => $a]);
     }

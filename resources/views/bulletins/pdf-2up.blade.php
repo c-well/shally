@@ -46,21 +46,22 @@
   .front-footer .email { text-decoration: underline; }
 
   /* ── BACK (announcements) ── */
-  .back .title { text-align: center; font-size: 19pt; font-weight: 800; letter-spacing: 1pt; text-decoration: underline; margin-bottom: 12pt; }
-  .section { margin-bottom: 9pt; }
+  .back .title { text-align: center; font-size: 17pt; font-weight: 800; letter-spacing: 1pt; text-decoration: underline; margin-bottom: 8pt; }
+  .section { margin-bottom: 6pt; }
   .section-title { font-size: 11pt; font-weight: 700; margin-bottom: 2pt; }
   .bullet-list { margin: 0; padding-left: 18pt; list-style-type: circle; }
-  .bullet-list li { font-size: 10pt; line-height: 1.3; margin: 1pt 0; }
-  .offerings { margin: 9pt 0 11pt; }
+  .bullet-list li { font-size: 10pt; line-height: 1.24; margin: 0.5pt 0; }
+  .offerings { margin: 6pt 0 0; }
   .offerings .heading { font-size: 11pt; font-weight: 700; margin-bottom: 2pt; }
   .offerings .line { font-size: 10.5pt; font-weight: 700; line-height: 1.3; }
-  .mission { text-align: center; margin-top: 9pt; margin-bottom: 12pt; }
+  .mission { text-align: center; margin-top: 5pt; margin-bottom: 9pt; }
   .mission .heading { font-size: 11pt; font-weight: 700; text-decoration: underline; margin-bottom: 5pt; }
-  .mission .text { margin: 0 auto; font-size: 10pt; line-height: 1.3; }
-  .qr-row { text-align: center; margin-top: 10pt; }
-  .qr-row .qr { width: 52pt; height: 52pt; }
-  .qr-cap { font-size: 8pt; line-height: 1.35; color: #333; margin-top: 3pt; }
-  .pleasant { text-align: center; margin-top: 12pt; font-size: 10pt; font-style: italic; }
+  .mission .text { margin: 0 auto; font-size: 10pt; line-height: 1.24; }
+  .qr-row { margin: 8pt auto 0; border-collapse: collapse; }
+  .qr-cell { vertical-align: middle; padding-right: 7pt; }
+  .qr-row .qr { width: 42pt; height: 42pt; display: block; }
+  .qr-cap { vertical-align: middle; text-align: left; font-size: 8pt; line-height: 1.4; color: #333; }
+  .pleasant { text-align: center; margin-top: 7pt; font-size: 10pt; font-style: italic; }
 
   .watermark-prev { position: fixed; top: 0.25in; right: 0.4in; font-size: 8pt; letter-spacing: 1.5pt; text-transform: uppercase; color: #b08d3c; font-weight: 700; }
 </style>
@@ -160,10 +161,10 @@
           </section>
         @endif
       @endforeach
-      <div class="qr-row">
-      <img class="qr" src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('qr-announcements.png'))) }}" alt="QR code to all announcements">
-      <div class="qr-cap">Scan for <b>all</b> announcements &amp; details<br>thechurchofpeace.org/announcements</div>
-    </div>
+      <table class="qr-row"><tr>
+      <td class="qr-cell"><img class="qr" src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('qr-announcements.png'))) }}" alt="QR code to all announcements"></td>
+      <td class="qr-cap">Scan for <b>all</b> announcements &amp; details<br>thechurchofpeace.org/announcements</td>
+    </tr></table>
 
     <div class="pleasant">Have a pleasant Sabbath :)</div>
     </div>
