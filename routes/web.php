@@ -15,6 +15,7 @@ Route::get('/', fn () => view('landing', [
 Route::get('/welcome', [BulletinController::class, 'home'])->name('welcome');
 Route::get('/bulletin/{bulletin}', [BulletinController::class, 'show'])->name('bulletins.show');
 Route::get('/bulletin/{bulletin}/pdf', [BulletinController::class, 'downloadPdf'])->name('bulletins.pdf');
+Route::get('/announcements', [BulletinController::class, 'announcementsPage'])->name('announcements');
 Route::get('/calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar');
 Route::get('/lesson',          [\App\Http\Controllers\LessonController::class, 'show'])->name('lesson.show');
 Route::get('/lesson/{lesson}', [\App\Http\Controllers\LessonController::class, 'show'])->whereNumber('lesson')->name('lesson.week');

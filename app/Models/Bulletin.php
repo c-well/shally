@@ -134,7 +134,7 @@ class Bulletin extends Model
                 'person' => $l->person, 'kind' => $l->kind,
             ])->all(),
             'announcements' => $this->announcements()->get()->map(fn($a) => [
-                'title' => $a->title, 'detail' => $a->detail, 'image_path' => $a->image_path, 'video_url' => $a->video_url,
+                'title' => $a->title, 'detail' => $a->detail, 'image_path' => $a->image_path, 'video_url' => $a->video_url, 'is_web_only' => (bool) $a->is_web_only,
             ])->all(),
         ];
     }
