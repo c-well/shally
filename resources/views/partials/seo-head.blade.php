@@ -10,7 +10,7 @@
 --}}
 @php
   $base = rtrim(config('app.url', 'https://app.thechurchofpeace.org'), '/');
-  $title       ??= 'Shalom SDA Church · The Church of Peace · Bronx, NY';
+  $title       ??= 'The Church of Peace · Shalom SDA Church · Bronx, NY';  // leads with the brand — Google was routing "church of peace" searches to /contact because ITS title matched tighter
   $description ??= 'Shalom Seventh-day Adventist Church in the Bronx — Sabbath worship, weekly bulletin, Sabbath School lesson, sermon archive, and prayer meetings.';
   $path        ??= request()->getPathInfo();
   $url          = $base . $path;
