@@ -43,7 +43,9 @@ class CheckLiveCommand extends Command
                 $html = $resp->body();
                 // YouTube's player config blob has "isLive":true when actually live.
                 // Also requires the page to NOT be the channel landing (which has no isLive at all).
-                if (preg_match('/"isLive":\s*true/', $html)) {
+                // "isLive":true also appears on SCHEDULED waiting rooms (caught 2026-07-04:
+                // 1 AM false positive). A real broadcast has isLiveNow:true and no isUpcoming.
+                if (preg_match('/"isLiveNow":\s*true/', $html) && ! preg_match('/"isUpcoming":\s*true/', $html)) {
                     $isLive = true;
                     if (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/', $html, $m)) {
                         $videoId = $m[1];

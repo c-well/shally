@@ -62,7 +62,8 @@ class BulletinController extends Controller
         }
 
         $upcomingEventsQ = Event::where('is_public', true)
-            ->where('start_at', '>=', now()->startOfDay())
+            ->where(fn ($q) => $q->where('start_at', '>=', now()->startOfDay())
+                                 ->orWhere('recur_until', '>=', now()->toDateString()))
             ->with('department');
         if (! $user) {
             // Guests only see general events (no department_id). Dept-specific stuff

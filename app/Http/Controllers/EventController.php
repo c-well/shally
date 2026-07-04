@@ -17,13 +17,22 @@ class EventController extends Controller
             'location'      => 'nullable|string|max:180',
             'notes'         => 'nullable|string|max:1000',
             'department_id' => 'nullable|exists:departments,id',
+            'recur_until' => 'sometimes|nullable|date',
+            'recur_times' => 'sometimes|nullable|array',
+            'stream_url'  => 'sometimes|nullable|url|max:500',
         ]);
+        if (array_key_exists('recur_times', $data)) {
+            $data['recur_times'] = $this->cleanRecurTimes($data['recur_times']);
+        }
         $event = Event::create([
             'title'         => $data['title'] ?? 'New event',
             'start_at'      => $data['start_at'] ?? now()->next('Saturday')->setTime(10, 30),
             'location'      => $data['location'] ?? null,
             'notes'         => $data['notes'] ?? null,
             'department_id' => $data['department_id'] ?? null,
+            'recur_until'   => $data['recur_until'] ?? null,
+            'recur_times'   => $data['recur_times'] ?? null,
+            'stream_url'    => $data['stream_url'] ?? null,
             'is_public'     => true,
             'created_by'    => $request->user()->id,
         ]);
@@ -40,9 +49,28 @@ class EventController extends Controller
             'notes'      => 'sometimes|nullable|string|max:1000',
             'department_id' => 'sometimes|nullable|exists:departments,id',
             'is_public'  => 'sometimes|boolean',
+            'recur_until' => 'sometimes|nullable|date',
+            'recur_times' => 'sometimes|nullable|array',
+            'stream_url'  => 'sometimes|nullable|url|max:500',
         ]);
+        if (array_key_exists('recur_times', $data)) {
+            $data['recur_times'] = $this->cleanRecurTimes($data['recur_times']);
+        }
         $event->update($data);
         return response()->json(['ok' => true, 'event' => $event->fresh('department')]);
+    }
+
+    /** Keep only weekdays 0-6 with non-empty string time lists (max 4 each). */
+    private function cleanRecurTimes(?array $raw): ?array
+    {
+        if (! $raw) return null;
+        $out = [];
+        foreach ($raw as $k => $times) {
+            if (! is_numeric($k) || (int) $k < 0 || (int) $k > 6 || ! is_array($times)) continue;
+            $ts = array_values(array_filter(array_map(fn ($t) => trim((string) $t), $times), fn ($t) => $t !== ''));
+            if ($ts) $out[(string) (int) $k] = array_slice($ts, 0, 4);
+        }
+        return $out ?: null;
     }
 
     public function destroy(Event $event): JsonResponse

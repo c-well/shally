@@ -44,17 +44,33 @@ class CalendarController extends Controller
         $out = [];
         $push = function (string $date, array $entry) use (&$out) { $out[$date][] = $entry; };
 
-        // ── 1. Explicit events ──
-        foreach (Event::whereBetween('start_at', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
-                     ->with('department')->orderBy('start_at')->get() as $e) {
-            $push(Carbon::parse($e->start_at, self::TZ)->toDateString(), [
+        // ── 1. Explicit events (series unroll into every occurrence) ──
+        $events = Event::where(fn ($q) => $q
+                ->whereBetween('start_at', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
+                ->orWhere(fn ($q2) => $q2->whereNotNull('recur_until')
+                    ->where('recur_until', '>=', $start->toDateString())
+                    ->where('start_at', '<=', $end->copy()->endOfDay())))
+            ->with('department')->orderBy('start_at')->get();
+        foreach ($events as $e) {
+            $base = [
                 't'    => 'event',
                 'n'    => $e->title,
-                'time' => Carbon::parse($e->start_at, self::TZ)->format('g:i a'),
                 'loc'  => $e->location,
                 'dept' => $e->department->name ?? null,
                 'pub'  => (bool) $e->is_public,
-            ]);
+            ];
+            if ($e->stream_url) $base['url'] = $e->stream_url;
+            if ($e->isRecurring()) {
+                $d = Carbon::parse($e->start_at, self::TZ)->startOfDay()->max($start);
+                $last = $e->recur_until->copy()->min($end);
+                for (; $d->lte($last); $d->addDay()) {
+                    $times = $e->timesOn($d);
+                    if ($times) $push($d->toDateString(), $base + ['time' => implode(' & ', $times)]);
+                }
+            } else {
+                $push(Carbon::parse($e->start_at, self::TZ)->toDateString(),
+                    $base + ['time' => Carbon::parse($e->start_at, self::TZ)->format('g:i a')]);
+            }
         }
 
         // ── 2. Bulletins → service + preacher ──
