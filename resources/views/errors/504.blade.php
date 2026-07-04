@@ -34,6 +34,17 @@
   }
 
   footer { padding: 22px clamp(20px, 5vw, 40px) 28px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink-soft); opacity: 0.55; }
+
+  /* ── Mobile viewport lock (Karlon 2026-07-04: page panned & clipped on phones) ──
+     The shared footer's letter-spaced caps lines can exceed a phone's width;
+     clip the axis, wrap long tokens, and give the content honest gutters. */
+  html, body { overflow-x: clip; max-width: 100vw; }
+  main { padding-left: clamp(24px, 7vw, 60px); padding-right: clamp(24px, 7vw, 60px); }
+  .wordmark, h1, .lede { max-width: min(540px, 100%); overflow-wrap: break-word; }
+  footer, footer * { max-width: 100%; overflow-wrap: anywhere; }
+  @media (max-width: 480px) {
+    footer, footer * { letter-spacing: 0.12em !important; }
+  }
 </style>
 </head>
 <body>
