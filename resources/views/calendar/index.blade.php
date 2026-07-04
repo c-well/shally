@@ -35,6 +35,10 @@
   .seg button.soon { color: var(--ink-faint); cursor: default; }
 
   .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .lg.off { opacity: .42; border-style: dashed; }
+  .lg.off .dot { background: var(--ink-faint, #9aa0aa) !important; }
+  .lg:hover { border-color: var(--teal); }
+  button.lg { cursor: pointer; font-family: inherit; }
   .lg { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 8px 13px; display: inline-flex; align-items: center; gap: 7px; }
   .dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
   .dot.service { background: var(--teal); } .dot.sermon { background: var(--brass); } .dot.event { background: #2d8659; }
@@ -166,10 +170,10 @@
     </div>
   </div>
 
-  <div class="legend">
-    <span class="lg"><span class="dot service"></span> Services</span>
-    <span class="lg"><span class="dot sermon"></span> Sermons</span>
-    <span class="lg"><span class="dot event"></span> Events</span>
+  <div class="legend" id="legend">
+    <button class="lg" data-t="service" aria-pressed="true"><span class="dot service"></span> Services</button>
+    <button class="lg" data-t="sermon" aria-pressed="true"><span class="dot sermon"></span> Sermons</button>
+    <button class="lg" data-t="event" aria-pressed="true"><span class="dot event"></span> Events</button>
   </div>
 
   <div id="stage"></div>
@@ -209,10 +213,29 @@
   const iso = d => d.getFullYear() + '-' + d2(d.getMonth() + 1) + '-' + d2(d.getDate());
   const parse = s => new Date(s + 'T12:00:00');
   const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
-  const entriesOf = s => ENTRIES[s] || [];
+  const ALL_TYPES = ['service', 'sermon', 'event'];
+  const fParam = (q.get('f') || '').split(',').filter(t => ALL_TYPES.includes(t));
+  const show = new Set(fParam.length ? fParam : ALL_TYPES);
+  const entriesOf = s => (ENTRIES[s] || []).filter(e => show.has(e.t));
+
+  const legend = document.getElementById('legend');
+  function paintLegend() {
+    legend.querySelectorAll('[data-t]').forEach(b => {
+      const on = show.has(b.dataset.t);
+      b.classList.toggle('off', !on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  legend.addEventListener('click', e => {
+    const b = e.target.closest('[data-t]'); if (!b) return;
+    const t = b.dataset.t;
+    if (show.has(t)) { if (show.size > 1) show.delete(t); }  // never filter down to nothing
+    else show.add(t);
+    paintLegend(); render();
+  });
+  paintLegend();
 
   function render() {
-    history.replaceState(null, '', '?v=' + view + '&d=' + anchor);
+    history.replaceState(null, '', '?v=' + view + '&d=' + anchor + (show.size === ALL_TYPES.length ? '' : '&f=' + ALL_TYPES.filter(t => show.has(t)).join(',')));
     document.querySelectorAll('.seg [data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === view));
     if (view === 'month') renderMonth();
     else if (view === 'week') renderWeek();
