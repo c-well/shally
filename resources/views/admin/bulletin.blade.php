@@ -175,6 +175,8 @@
             <input data-af="detail" value="{{ $a->detail }}" placeholder="Detail">
           </div>
           <div class="ctrls">
+            <button class="ic aup" title="Move up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
+            <button class="ic adown" title="Move down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
             <button class="ic ann-media-toggle {{ ($a->image_path || $a->video_url) ? 'on' : '' }}" title="Image / video">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
             </button>
@@ -232,6 +234,18 @@
     var ids = [].slice.call(items.querySelectorAll('[data-id]')).map(function (r) { return parseInt(r.getAttribute('data-id'), 10); });
     return api('PATCH', '/bulletins/' + BID + '/lines/reorder', { ids: ids }).then(savedPip);
   }
+
+  // ── announcement reorder (mirror of line reorder) ──
+  var anns = document.getElementById('anns');
+  function sendAnnOrder() {
+    var ids = [].slice.call(anns.querySelectorAll('[data-aid]')).map(function (r) { return parseInt(r.getAttribute('data-aid'), 10); });
+    return api('PATCH', '/bulletins/' + BID + '/announcements/reorder', { ids: ids }).then(savedPip);
+  }
+  if (anns) anns.addEventListener('click', function (e) {
+    var wrap = e.target.closest('[data-aid]'); if (!wrap) return;
+    if (e.target.closest('.aup'))   { var p = wrap.previousElementSibling; if (p && p.hasAttribute('data-aid')) { anns.insertBefore(wrap, p); sendAnnOrder(); } return; }
+    if (e.target.closest('.adown')) { var n = wrap.nextElementSibling;     if (n && n.hasAttribute('data-aid')) { anns.insertBefore(n, wrap); sendAnnOrder(); } return; }
+  });
 
   items.addEventListener('click', function (e) {
     var row = e.target.closest('[data-id]'); if (!row) return;

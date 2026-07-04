@@ -109,6 +109,7 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
 
     Route::post  ('/bulletins/{bulletin}/lines',      [BulletinController::class, 'storeLine'])->name('bulletins.lines.store');
     Route::patch ('/bulletins/{bulletin}/lines/reorder', [BulletinController::class, 'reorderLines'])->name('bulletins.lines.reorder');
+    Route::patch ('/bulletins/{bulletin}/announcements/reorder', [BulletinController::class, 'reorderAnnouncements'])->name('bulletins.announcements.reorder');
     Route::post  ('/bulletins/{bulletin}/lines/restore', [BulletinController::class, 'restoreLines'])->name('bulletins.lines.restore');
     Route::patch ('/bulletins/{bulletin}/lines/{line}',  [BulletinController::class, 'updateLine'])->name('bulletins.lines.update');
     Route::delete('/bulletins/{bulletin}/lines/{line}',  [BulletinController::class, 'destroyLine'])->name('bulletins.lines.destroy');
