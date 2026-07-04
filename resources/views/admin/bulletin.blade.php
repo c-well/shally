@@ -72,6 +72,13 @@
 
   /* Announcement media */
   .ann-wrap { background: #fff; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  /* Blank title = child bullets of the announcement above (folds under it on the PDF).
+     Visually: indent + arrow, shrink the title box out of the way; focusing it restores
+     full width so a title can still be added (which promotes the row to a parent). */
+  .ann-wrap.child { margin-left: 30px; position: relative; border-style: dashed; }
+  .ann-wrap.child::before { content: '↳'; position: absolute; left: -22px; top: 12px; color: var(--teal); font-size: 15px; font-weight: 700; }
+  .ann-wrap.child .fields { grid-template-columns: 72px 1fr !important; }
+  .ann-wrap.child [data-af="title"]:not(:focus) { opacity: .5; }
   .ann-wrap .item { border: 0; border-radius: 0; }
   .ic.on { color: var(--teal); background: color-mix(in srgb, var(--teal) 12%, transparent); }
   .ann-media { display: none; flex-direction: column; gap: 9px; padding: 12px 14px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--teal) 3%, #fff); }
@@ -169,10 +176,10 @@
   <div class="sec-label"><span>Announcements</span></div>
   <div class="items" id="anns">
     @foreach ($bulletin->announcements as $a)
-      <div class="ann-wrap" data-aid="{{ $a->id }}">
+      <div class="ann-wrap {{ trim((string) $a->title) === '' ? 'child' : '' }}" data-aid="{{ $a->id }}">
         <div class="item">
           <div class="fields" style="grid-template-columns:1fr 1.6fr">
-            <input data-af="title" value="{{ $a->title }}" placeholder="Title">
+            <input data-af="title" value="{{ $a->title }}" placeholder="Title (blank = bullets for the section above)">
             <input data-af="detail" value="{{ $a->detail }}" placeholder="Detail">
           </div>
           <div class="ctrls">
@@ -242,6 +249,17 @@
     var ids = [].slice.call(anns.querySelectorAll('[data-aid]')).map(function (r) { return parseInt(r.getAttribute('data-aid'), 10); });
     return api('PATCH', '/bulletins/' + BID + '/announcements/reorder', { ids: ids }).then(savedPip);
   }
+  // parent/child affordance: blank title = child row (indented, folds under parent on PDF)
+  function refreshChild(wrap) {
+    var t = wrap.querySelector('[data-af="title"]'); if (!t) return;
+    wrap.classList.toggle('child', t.value.trim() === '' && document.activeElement !== t);
+  }
+  if (anns) {
+    anns.addEventListener('focusin',  function (e) { var w = e.target.closest('[data-aid]'); if (w && e.target.matches('[data-af="title"]')) w.classList.remove('child'); });
+    anns.addEventListener('focusout', function (e) { var w = e.target.closest('[data-aid]'); if (w) refreshChild(w); });
+    anns.addEventListener('input',    function (e) { var w = e.target.closest('[data-aid]'); if (w && e.target.matches('[data-af="title"]') && e.target.value.trim() !== '') w.classList.remove('child'); });
+  }
+
   if (anns) anns.addEventListener('click', function (e) {
     var wrap = e.target.closest('[data-aid]'); if (!wrap) return;
     if (e.target.closest('.aup'))   { var p = wrap.previousElementSibling; if (p && p.hasAttribute('data-aid')) { anns.insertBefore(wrap, p); sendAnnOrder(); } return; }
