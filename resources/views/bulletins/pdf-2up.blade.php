@@ -163,7 +163,7 @@
       @endforeach
       <table class="qr-row"><tr>
       <td class="qr-cell"><img class="qr" src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('qr-announcements.png'))) }}" alt="QR code to all announcements"></td>
-      <td class="qr-cap">Scan for <b>all</b> announcements &amp; details<br>thechurchofpeace.org/announcements</td>
+      <td class="qr-cap">Scan for <b>more</b><br>thechurchofpeace.org/announcements</td>
     </tr></table>
 
     <div class="pleasant">Have a pleasant Sabbath :)</div>
