@@ -66,6 +66,11 @@ class Bulletin extends Model
                 $lines
             ));
         }
+        // Debris guard (2026-07-04): a titled row with no detail and no media renders
+        // as an empty heading on paper and web — drop it.
+        $folded = array_values(array_filter($folded, fn ($a) =>
+            trim((string) ($a['detail'] ?? '')) !== '' || ! empty($a['image_path']) || ! empty($a['video_url'])));
+
         return $folded;
     }
 
