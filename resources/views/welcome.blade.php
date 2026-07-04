@@ -3624,8 +3624,18 @@
               txt.style.outline = '0';
               txt.style.width = '100%';
               txt.style.padding = '0';
-              el.replaceChild(txt, input);
-              input = txt;
+              // Do NOT remove the focused <select> — on some browsers (Safari
+              // family especially) yanking a focused node fires blur mid-swap,
+              // and commit() then wiped this text input the instant it was born.
+              // That was Andre's "won't keep the text, flips back to the
+              // dropdown" bug (2026-06-05, root-caused 2026-07-04). Hiding the
+              // select instead means no node removal while focused — immune on
+              // every browser.
+              input.removeEventListener('blur', commit);
+              input.removeEventListener('keydown', onEditKeydown);
+              input.style.display = 'none';
+              input = txt;                    // any stray event now reads the text box
+              el.appendChild(txt);
               setTimeout(() => txt.focus(), 0);
               // Re-attach the REAL blur/keydown handlers (defined below) to the new
               // input. These used to point at commitWrap/keydownWrap, which never
@@ -3678,6 +3688,7 @@
               if (lineOwner && field && ['section', 'part', 'person', 'kind'].includes(field)) {
                 lineOwner.dataset[field] = value || '';
               }
+              if (field === 'section') el.dataset.raw = value || '';
               showSaved();
               el.classList.remove('editing');
               if (el.classList.contains('cal-tile') && field === 'start_at' && value && value !== current) {
