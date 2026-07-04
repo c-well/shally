@@ -46,6 +46,12 @@
   .chart-axis { display: flex; justify-content: space-between; margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-soft); }
 
   .empty { padding: 20px 0; text-align: center; color: var(--ink-soft); font-size: 13px; font-style: italic; }
+
+  /* Bookends readable + tappable on every device (Karlon 2026-07-04) */
+  .top { padding: 24px 28px; }
+  .top a { font-size: 13.5px !important; padding: 10px 12px; margin: -10px -12px; }
+  .top .meta { font-size: 12.5px !important; }
+  @media (max-width: 700px) { .top { padding: 16px 16px; } }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')

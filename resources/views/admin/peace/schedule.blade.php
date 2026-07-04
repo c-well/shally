@@ -57,6 +57,12 @@
   .log-tail.empty { background: color-mix(in srgb, var(--ink) 4%, transparent); color: var(--ink-soft); font-style: italic; }
 
   .empty-msg { padding: 30px 0; text-align: center; color: var(--ink-soft); font-size: 13px; }
+
+  /* Bookends readable + tappable on every device (Karlon 2026-07-04) */
+  .top { padding: 24px 28px; }
+  .top a { font-size: 13.5px !important; padding: 10px 12px; margin: -10px -12px; }
+  .top .meta { font-size: 12.5px !important; }
+  @media (max-width: 700px) { .top { padding: 16px 16px; } }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')
