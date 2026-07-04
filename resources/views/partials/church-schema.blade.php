@@ -105,3 +105,17 @@
 }
 </script>
 @endverbatim
+{{-- WebSite schema — the block Google's SITE NAME feature reads (the bold name
+     above the URL in results). Without it Google mashes the domain into
+     "Thechurchofpeace". Keep name concise; alternates carry the rest. --}}
+@verbatim
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "https://thechurchofpeace.org/",
+  "name": "The Church of Peace",
+  "alternateName": ["Shalom SDA Church", "Shalom Seventh-day Adventist Church"]
+}
+</script>
+@endverbatim
