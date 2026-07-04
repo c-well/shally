@@ -122,6 +122,25 @@ class SpamFilter
             }
         }
 
+        // ── 4b. Bot-generator name signature (added 2026-07-04 after the
+        //       "LandStormNederlandtef" AI-story spam — 2nd of its family).
+        //       Real people put spaces in a name field; spam generators mash
+        //       CamelCase words: LandStormNederlandtef, SteerworsKapiton, etc.
+        //       ≥3 capital humps + no space + long ⇒ machine-made.
+        if (preg_match('/^(?:[A-Z][a-z]+){3,}$/', $name) && strlen($name) >= 12) {
+            return 'bot-name-camelcase';
+        }
+        //       The XRumer family's favorite suffix. Nobody at church is named ...tef.
+        if (preg_match('/tef$/i', trim($name))) {
+            return 'bot-name-tef-suffix';
+        }
+
+        // ── 4c. Placeholder email locals — a person reaching a church does
+        //       not write from test@ / example@ (2026-07-04, same incident).
+        if (preg_match('/^(test\d*|tester|testing|example|sample|noreply|no-reply|asdf+)@/i', $email)) {
+            return 'placeholder-email';
+        }
+
         // ── 5. Email pattern: pure-digit-suffix random handle ("jpmg130390@")
         //      is a common spam-generator pattern. We accept it on its own
         //      but flag if combined with one of the other warning signs.
