@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-04 · VERSION 1.5 — declared by Karlon
+
+The line crossed: from "a church website with an editor" to ONE SOURCE OF TRUTH wearing many faces. The bulletin is typed once and becomes: web bulletin, portrait PDF, 2-up print sheet, QR-linked /announcements page, and the living /calendar (month/week/day, filters, edit-mode with write-back). Recurring events described once (or Smart-filled by AI from Andre's own words). Find Peace messages carry summaries, scriptures, share, and transcript-deep search. The system teaches its own users (/guide). Zero broken links, first-party analytics with heatmaps on every page, spam-hardened, mobile-first everywhere, all shipped zero-downtime.
+
+v1.6 arc (named): calendar share buttons · Year view · calendar into nav + homepage strip. v2.0 headliner: the Peace pipeline goes automatic.
+
 ## 2026-07-04 · Announcements: print/digital split + QR + /announcements page
 
 The paper and the web are now one loop (Karlon/Rosharde). (1) NEW public page /announcements — every announcement for the week (printed + digital), mobile-first cards with the Mission Statement featured, fed from the same bulletin snapshot (published for the public, live draft for clerks). A shadowing empty public/announcements dir was removed to free the URL. (2) The PRINTED bulletin now carries only what Rosharde puts above a new teal dashed divider in the editor — "PRINTED BULLETIN ENDS HERE · QR LEADS PEOPLE TO THE REST." Moving a row across the divider with ↑/↓ automatically flags it web-only (new is_web_only column, snapshot-carried, PDF-filtered before folding); web rows show a WEB chip. She can add 10+ digital-only announcements without touching the paper. (3) Both PDFs print a QR CODE (self-hosted, generated once, base64-inlined — dompdf chokes on transparent PNGs by path) after the last printed announcement, above "Have a pleasant Sabbath", captioned with the URL. (4) Footer address now carries the zip: 3323 White Plains Rd, Bronx, NY 10467 on both PDFs. Verified end-to-end: web-only test row absent from print, QR renders, /announcements 200, editor divider live.
