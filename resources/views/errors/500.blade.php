@@ -20,7 +20,7 @@
 
   main { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: clamp(24px, 6vh, 60px) 22px; }
 
-  .wordmark { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 8vw, 88px); font-weight: 500; line-height: 1.05; letter-spacing: -2px; color: var(--teal); margin-bottom: 36px; }
+  .wordmark { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 8vw, 88px); font-style: normal; font-weight: 500; line-height: 1.05; letter-spacing: -0.035em; color: var(--teal); margin-bottom: 36px; }
 
   h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 36px); font-weight: 400;  letter-spacing: -0.4px; line-height: 1.3; color: var(--ink); max-width: 540px; margin-bottom: 22px; }
 
@@ -40,7 +40,7 @@
 <div class="stage">
   @include('partials.site-menu')
   <main>
-    <div class="wordmark"><em>The Church of Peace</em></div>
+    <div class="wordmark">The Church of Peace</div>
     <h1>We&rsquo;ll be right back &mdash; just a moment.</h1>
     <p class="lede">The page is refreshing itself every few seconds. If it&rsquo;s still not loading after a minute, try again later.</p>
     <div class="pulse"><span class="pulse-dot"></span> reconnecting</div>
