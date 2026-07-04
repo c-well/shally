@@ -8,7 +8,7 @@
     @include('partials.dark-mode')
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 @include('partials.seo-head', [
-  'title'       => 'Shalom SDA Church · The Church of Peace · Bronx, NY',
+  'title'       => 'The Church of Peace · Shalom SDA Church · Bronx, NY',
   'description' => 'Shalom Seventh-day Adventist Church in the Bronx — Sabbath worship at 11 AM, weekly bulletin, Sabbath School lesson, sermon archive, and prayer meetings on Zoom.',
   'path'        => '/',
 ])
