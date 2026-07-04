@@ -62,7 +62,12 @@
      phones, squishing the header off-screen (Karlon 2026-07-04). */
   .item .fields > * { min-width: 0; }
   .item.section .fields { grid-template-columns: 1fr; }
-  @media (max-width: 560px) { .item .fields { grid-template-columns: 1fr; } }
+  .item .fields.af { grid-template-columns: 1fr 1.6fr; }
+  @media (max-width: 560px) {
+    .item .fields, .item .fields.af { grid-template-columns: 1fr; }   /* phone: title above, detail below — form-style */
+    .ann-wrap.child .fields.af { grid-template-columns: 1fr !important; }
+    .ann-wrap.child [data-af="title"]:not(:focus) { display: none; }  /* child rows: hide the ghost title, keep the bullet field */
+  }
   .item input { font: inherit; font-size: 15px; padding: 9px 11px; border: 1px solid transparent; border-radius: 6px; background: var(--parchment); color: var(--ink); width: 100%; }
   .item.section input { font-weight: 600; font-size: 15px; letter-spacing: 0.02em; background: transparent; }
   .item input::placeholder { color: var(--ink-faint, #9aa0aa); }
@@ -473,7 +478,7 @@
         var a = res.d.announcement, div = document.createElement('div'); div.className = 'ann-wrap webonly'; div.setAttribute('data-aid', a.id);
         div.innerHTML =
           '<div class="item"><span class="drag" title="Drag to reorder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>' +
-          '<div class="fields" style="grid-template-columns:1fr 1.6fr"><input data-af="title" value="" placeholder="Title"><textarea data-af="detail" rows="1" placeholder="Detail (Enter = new line \u2192 its own bullet)"></textarea></div>' +
+          '<div class="fields af"><input data-af="title" value="" placeholder="Title"><textarea data-af="detail" rows="1" placeholder="Detail (Enter = new line \u2192 its own bullet)"></textarea></div>' +
           '<div class="ctrls"><button class="ic aup" title="Move up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>' +
           '<button class="ic adown" title="Move down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>' +
           '<button class="ic ann-media-toggle" title="Image / video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>' +
