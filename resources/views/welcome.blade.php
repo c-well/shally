@@ -1014,6 +1014,12 @@
   .announcement:last-child { border-bottom: 0; }
   .announcement .a-title { font-weight: 500; color: var(--ink); }
   .announcement .a-detail { font-size: 14px; color: var(--ink-soft); margin-top: 4px; line-height: 1.55; white-space: pre-line; }
+  .a-lines { list-style: none; margin: 2px 0 0; padding: 0; }
+  .a-lines li { position: relative; padding-left: 19px; margin: 5px 0; white-space: normal; }
+  .a-lines li::before { content: ''; position: absolute; left: 2px; top: 0.52em; width: 6px; height: 6px; border-radius: 999px; background: color-mix(in srgb, var(--teal) 40%, #fff); border: 1.5px solid var(--teal); }
+  .a-lines li.bf::before { background: var(--teal); }
+  .ann-all { display: inline-flex; align-items: center; gap: 7px; margin-top: 18px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); text-decoration: none; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 10px 16px; }
+  .ann-all:hover { border-color: var(--teal); }
   .ann-nested .a-body { display: none; }
   .ann-nested.open .a-body { display: block; }
   .ann-more { margin-left: 8px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: none; border: 0; cursor: pointer; }
@@ -2559,8 +2565,24 @@
                 @endif
               @endforeach
             @else
-              {{-- PUBLIC — first one expanded, the rest nested behind "More"; media lazy-loaded --}}
-              @foreach ($anns as $i => $a)
+              {{-- PUBLIC — first one expanded, the rest nested behind "More"; media lazy-loaded.
+                   Children (blank titles, no media) fold under their parent — same language as the PDFs and /announcements. --}}
+              @php
+                $pubAnns = [];
+                foreach ($anns as $__a) {
+                    $__blank = trim((string) ($__a['title'] ?? '')) === '';
+                    $__media = !empty($__a['image_path']) || !empty($__a['video_url']);
+                    $__det   = trim((string) ($__a['detail'] ?? ''));
+                    if ($__blank && !$__media) {
+                        if ($__det !== '' && $pubAnns) {
+                            $pubAnns[count($pubAnns) - 1]['detail'] = trim(($pubAnns[count($pubAnns) - 1]['detail'] ?? '') . "\n" . $__det);
+                        }
+                        continue;
+                    }
+                    $pubAnns[] = $__a;
+                }
+              @endphp
+              @foreach ($pubAnns as $i => $a)
                 @php
                   $hasTitle = !empty($a['title']); $hasDetail = !empty($a['detail']);
                   $img = $a['image_path'] ?? null; $vid = $a['video_url'] ?? null;
@@ -2576,7 +2598,19 @@
                   <div class="announcement {{ $open ? 'ann-open' : 'ann-nested' }}">
                     <div class="a-title">{{ $a['title'] ?? '' }}@if(!$open)<button type="button" class="ann-more">More <span class="chev">&#9662;</span></button>@endif</div>
                     <div class="a-body">
-                      @if ($hasDetail)<div class="a-detail">{{ $a['detail'] }}</div>@endif
+                      @if ($hasDetail)
+                        @php $dLines = array_values(array_filter(array_map('trim', preg_split('/\r?\n/', (string) $a['detail'])), fn ($l) => $l !== '')); @endphp
+                        @if (count($dLines) > 1)
+                          <div class="a-detail"><ul class="a-lines">
+                            @foreach ($dLines as $dl)
+                              @php $bf = (bool) preg_match('/^[•\-]\s+/u', $dl); $dl = preg_replace(['/^[•\-]\s+/u', '/^(?:o|O|\*)\s+/u'], '', $dl); @endphp
+                              <li @if($bf)class="bf"@endif>{{ $dl }}</li>
+                            @endforeach
+                          </ul></div>
+                        @else
+                          <div class="a-detail">{{ preg_replace(['/^[•\-]\s+/u', '/^(?:o|O|\*)\s+/u'], '', $dLines[0] ?? '') }}</div>
+                        @endif
+                      @endif
                       @if ($hasMedia)
                         <div class="a-media">
                           @if ($img)<img class="a-img" @if($open) src="/{{ $img }}" @else data-src="/{{ $img }}" @endif alt="{{ $a['title'] ?? 'Announcement' }}" loading="lazy">@endif
@@ -2588,6 +2622,7 @@
                   </div>
                 @endif
               @endforeach
+              <a class="ann-all" href="{{ route('announcements') }}">All announcements, easy to read &amp; share <span class="arrow">@include('partials._ar')</span></a>
             @endif
             @if ($canEdit)
               <button class="add-btn" data-add-ann-url="{{ route('bulletins.announcements.store', $bulletin) }}">+ Add announcement</button>
