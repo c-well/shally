@@ -5,7 +5,7 @@
   <tr><td align="center">
     <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border:1px solid rgba(26,35,50,0.1);border-radius:8px;overflow:hidden;">
       <tr><td style="padding:28px 28px 6px;">
-        <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#b08d3c;font-weight:600;">Finding Peace · Pulled offline</div>
+        <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#8a6c26;font-weight:600;">Finding Peace · Pulled offline</div>
         <h1 style="font-family:Georgia,serif;font-size:26px;font-weight:500;margin:8px 0 4px;line-height:1.2;">{{ $sermon->title }}</h1>
         <div style="font-size:13px;color:#334455;">{{ $sermon->speaker }} · {{ $sermon->sermon_date?->format('F j, Y') }}</div>
       </td></tr>

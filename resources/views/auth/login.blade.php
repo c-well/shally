@@ -18,7 +18,7 @@
 <style>
   :root {
     --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455;
-    --teal:#03617A; --teal-dark:#024357; --brass:#b08d3c;
+    --teal:#03617A; --teal-dark:#024357; --brass:#8a6c26;
     --line:color-mix(in srgb, var(--ink) 12%, transparent);
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

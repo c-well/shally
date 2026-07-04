@@ -27,7 +27,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/minisearch@7.1.0/dist/umd/index.min.js" defer></script>
 <style>  :root { /* darkened from #3d4a5f for AA contrast on parchment */
-    --brass: #b08d3c; --container: 1080px; --reading: 760px; }
+    --brass: #8a6c26; --container: 1080px; --reading: 760px; }
   /* SPECIAL DAY THEMES — pastel palettes that tint the whole homepage. Toggle via clerk-only theme picker. */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); }
@@ -791,7 +791,7 @@
   }
   .event-schedule { font-size: 12.5px; color: var(--ink-soft); margin-top: 5px; line-height: 1.5; }
   .event-next-pill { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: color-mix(in srgb, var(--teal) 9%, #fff); border: 1px solid color-mix(in srgb, var(--teal) 30%, transparent); border-radius: 6px; padding: 3px 9px; }
-  .event-live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #fff; background: var(--brass, #b08d3c); border-radius: 6px; padding: 4px 10px; text-decoration: none; }
+  .event-live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #fff; background: var(--brass, #8a6c26); border-radius: 6px; padding: 4px 10px; text-decoration: none; }
   .event-live-dot { width: 7px; height: 7px; border-radius: 999px; background: #fff; animation: liveDotPulse 2.2s ease-in-out infinite; }
   @keyframes liveDotPulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
   .event-edit-btn, .event-delete-btn {
@@ -2438,7 +2438,7 @@
           <div class="next-sabbath-banner" style="
             background: linear-gradient(135deg, color-mix(in srgb, var(--brass) 12%, transparent) 0%, color-mix(in srgb, var(--brass) 3%, transparent) 100%);
             border: 1px solid color-mix(in srgb, var(--brass) 30%, transparent);
-            border-left: 4px solid #b08d3c;
+            border-left: 4px solid #8a6c26;
             border-radius: 6px;
             padding: 14px 20px;
             margin: 1.5rem auto;
@@ -2447,7 +2447,7 @@
             font-family: 'Poppins', sans-serif;
           ">
             <div style="flex:1; min-width: 0;">
-              <div style="font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #b08d3c; margin-bottom: 3px;">
+              <div style="font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #8a6c26; margin-bottom: 3px;">
                 Ready for next Sabbath?
               </div>
               <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: #1a2332; line-height: 1.25;">
@@ -2455,13 +2455,13 @@
               </div>
             </div>
             <button type="button" data-next-week-url="{{ route('bulletins.next-week') }}" style="
-              background: #b08d3c; color: #fff; border: none;
+              background: #8a6c26; color: #fff; border: none;
               padding: 10px 18px; border-radius: 5px;
               font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 600;
               letter-spacing: 0.14em; text-transform: uppercase;
               cursor: pointer; flex-shrink: 0;
               transition: background 0.15s;
-            " onmouseover="this.style.background='#9a7a32'" onmouseout="this.style.background='#b08d3c'">
+            " onmouseover="this.style.background='#9a7a32'" onmouseout="this.style.background='#8a6c26'">
               Start @include('partials._ar')
             </button>
           </div>

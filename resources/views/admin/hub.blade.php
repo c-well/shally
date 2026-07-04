@@ -79,7 +79,7 @@
   .latch .grid { margin-top: 0; gap: 14px; }
   .latch .card { background: var(--parchment); padding: 20px 20px 18px; }
   .latch.smart { border-color: color-mix(in srgb, var(--teal) 45%, var(--line)); }
-  .latch.smart .latch-title::after { content: '★'; font-size: 14px; color: var(--brass, #b08d3c); margin-left: 8px; vertical-align: 6px; }
+  .latch.smart .latch-title::after { content: '★'; font-size: 14px; color: var(--brass, #8a6c26); margin-left: 8px; vertical-align: 6px; }
 
   /* ── View switching: body[data-hubview] shows exactly one mode ── */
   .hub-mode { display: none; }

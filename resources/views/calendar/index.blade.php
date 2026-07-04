@@ -40,7 +40,7 @@
 
   .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
   .lg.off { opacity: .42; border-style: dashed; }
-  .lg.off .dot { background: var(--ink-faint, #9aa0aa) !important; }
+  .lg.off .dot { background: var(--ink-faint, #6b7280) !important; }
   .lg:hover { border-color: var(--teal); }
   button.lg { cursor: pointer; font-family: inherit; }
   .lg { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 8px 13px; display: inline-flex; align-items: center; gap: 7px; }
@@ -148,7 +148,7 @@
   .dv-meta { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
   .dv-listen { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brass); margin-top: 7px; }
   .dv-listen::after { content: ' ↗'; }
-  .dv-listen.alt { color: var(--ink-faint, #9aa0aa); }
+  .dv-listen.alt { color: var(--ink-faint, #6b7280); }
   .dv-empty { text-align: center; color: var(--ink-soft); padding: 44px 0; background: #fff; border: 1px dashed var(--line); border-radius: 12px; }
 
   /* ── Day sheet (tap a day in month/week) ── */
