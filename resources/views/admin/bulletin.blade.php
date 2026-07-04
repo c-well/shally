@@ -48,6 +48,13 @@
   .item input::placeholder { color: var(--ink-faint, #9aa0aa); }
   .item input:focus { outline: none; border-color: var(--teal); background: #fff; }
   .ctrls { display: flex; gap: 2px; flex-shrink: 0; }
+  /* Drag-to-reorder handle (announcements). touch-action:none only here, so the page
+     still scrolls from anywhere else on the row — safe on mobile. */
+  .drag { flex-shrink: 0; width: 24px; align-self: stretch; display: flex; align-items: center; justify-content: center; color: var(--ink-faint, #9aa0aa); cursor: grab; touch-action: none; border-radius: 6px; margin-left: -6px; }
+  .drag svg { width: 17px; height: 17px; }
+  .drag:hover { color: var(--teal); background: var(--parchment); }
+  .ann-wrap.dragging { opacity: .6; }
+  .ann-wrap.dragging .item { border-color: var(--teal); box-shadow: 0 8px 22px rgba(3,97,122,.2); }
   .ic { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: var(--ink-soft); border-radius: 6px; cursor: pointer; }
   .ic:hover { background: var(--parchment); color: var(--teal); }
   .ic.del:hover { color: #b23b2e; }
@@ -257,6 +264,35 @@
       api('PATCH', '/bulletins/' + BID + '/announcements/' + wrap.getAttribute('data-aid'), { is_web_only: isWeb ? 1 : 0 });
     }
   }
+  // ── drag to reorder (pointer events → works with mouse AND touch) ──
+  var dragEl = null;
+  if (anns) {
+    anns.addEventListener('pointerdown', function (e) {
+      var h = e.target.closest('.drag'); if (!h) return;
+      var wrap = h.closest('[data-aid]'); if (!wrap) return;
+      e.preventDefault();
+      dragEl = wrap; wrap.classList.add('dragging');
+      try { h.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    anns.addEventListener('pointermove', function (e) {
+      if (!dragEl) return;
+      e.preventDefault();
+      if (e.clientY < 90) window.scrollBy(0, -9); else if (e.clientY > window.innerHeight - 90) window.scrollBy(0, 9);
+      var el = document.elementFromPoint(e.clientX, e.clientY);
+      var over = el && el.closest ? el.closest('#anns > *') : null;
+      if (!over || over === dragEl) return;
+      var r = over.getBoundingClientRect();
+      anns.insertBefore(dragEl, (e.clientY < r.top + r.height / 2) ? over : over.nextSibling);
+    });
+    var endDrag = function () {
+      if (!dragEl) return;
+      dragEl.classList.remove('dragging');
+      syncWebFlag(dragEl); sendAnnOrder();
+      dragEl = null;
+    };
+    anns.addEventListener('pointerup', endDrag);
+    anns.addEventListener('pointercancel', endDrag);
+  }
   if (anns) anns.addEventListener('click', function (e) {
     var wrap = e.target.closest('[data-aid]'); if (!wrap) return;
     if (e.target.closest('.aup'))   { var p = wrap.previousElementSibling; if (p) { anns.insertBefore(wrap, p); syncWebFlag(wrap); sendAnnOrder(); } return; }
@@ -356,7 +392,8 @@
       if (res.ok && res.d.ok) {
         var a = res.d.announcement, div = document.createElement('div'); div.className = 'ann-wrap webonly'; div.setAttribute('data-aid', a.id);
         div.innerHTML =
-          '<div class="item"><div class="fields" style="grid-template-columns:1fr 1.6fr"><input data-af="title" value="" placeholder="Title"><input data-af="detail" value="" placeholder="Detail"></div>' +
+          '<div class="item"><span class="drag" title="Drag to reorder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>' +
+          '<div class="fields" style="grid-template-columns:1fr 1.6fr"><input data-af="title" value="" placeholder="Title"><input data-af="detail" value="" placeholder="Detail"></div>' +
           '<div class="ctrls"><button class="ic aup" title="Move up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>' +
           '<button class="ic adown" title="Move down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>' +
           '<button class="ic ann-media-toggle" title="Image / video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>' +
