@@ -55,6 +55,15 @@
   .drag:hover { color: var(--teal); background: var(--parchment); }
   .ann-wrap.dragging { opacity: .6; }
   .ann-wrap.dragging .item { border-color: var(--teal); box-shadow: 0 8px 22px rgba(3,97,122,.2); }
+  /* Focus mode: rows stay slim until she taps into Detail — then the row opens into a
+     writing space (full-width auto-growing textarea) and folds back on blur. */
+  .item textarea { font: inherit; font-size: 15px; line-height: 1.5; padding: 9px 11px; border: 1px solid transparent; border-radius: 6px; background: var(--parchment); color: var(--ink); width: 100%; resize: none; overflow: hidden; display: block; height: 40px; white-space: nowrap; text-overflow: ellipsis; }
+  .item textarea::placeholder { color: var(--ink-faint, #9aa0aa); }
+  .item textarea:focus { outline: none; border-color: var(--teal); background: #fff; }
+  .ann-wrap.editing .item { align-items: flex-start; border-color: var(--teal); box-shadow: 0 6px 20px rgba(3,97,122,.12); }
+  .ann-wrap.editing .fields { grid-template-columns: 1fr !important; }
+  .ann-wrap.editing textarea[data-af="detail"] { min-height: 120px; white-space: pre-wrap; }
+  .ann-wrap.editing .drag, .ann-wrap.editing .ctrls { padding-top: 6px; }
   .ic { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: var(--ink-soft); border-radius: 6px; cursor: pointer; }
   .ic:hover { background: var(--parchment); color: var(--teal); }
   .ic.del:hover { color: #b23b2e; }
@@ -264,6 +273,20 @@
       api('PATCH', '/bulletins/' + BID + '/announcements/' + wrap.getAttribute('data-aid'), { is_web_only: isWeb ? 1 : 0 });
     }
   }
+  // ── focus-mode + autogrow for announcement detail ──
+  function growTa(ta) { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; }
+  if (anns) {
+    anns.addEventListener('input', function (e) { if (e.target.matches('textarea[data-af="detail"]')) growTa(e.target); });
+    anns.addEventListener('focusin', function (e) {
+      if (!e.target.matches('textarea[data-af="detail"]')) return;
+      var w = e.target.closest('[data-aid]'); if (w) { w.classList.add('editing'); growTa(e.target); }
+    });
+    anns.addEventListener('focusout', function (e) {
+      if (!e.target.matches('textarea[data-af="detail"]')) return;
+      var w = e.target.closest('[data-aid]'); if (w) { w.classList.remove('editing'); e.target.style.height = ''; }
+    });
+  }
+
   // ── drag to reorder (pointer events → works with mouse AND touch) ──
   var dragEl = null;
   if (anns) {
@@ -345,7 +368,7 @@
   // ── announcements (title/detail/video autosave; image upload; media panel) ──
   var anns = document.getElementById('anns');
   anns.addEventListener('input', function (e) {
-    var inp = e.target.closest('input[data-af]'); if (!inp) return;
+    var inp = e.target.closest('input[data-af], textarea[data-af]'); if (!inp) return;
     var row = inp.closest('[data-aid]'); var id = row.getAttribute('data-aid'); var field = inp.getAttribute('data-af');
     debounce('ann' + id + field, function () { api('PATCH', '/bulletins/' + BID + '/announcements/' + id, (function(o){o[field]=inp.value;return o;})({})).then(savedPip); });
   });
@@ -393,7 +416,7 @@
         var a = res.d.announcement, div = document.createElement('div'); div.className = 'ann-wrap webonly'; div.setAttribute('data-aid', a.id);
         div.innerHTML =
           '<div class="item"><span class="drag" title="Drag to reorder"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></span>' +
-          '<div class="fields" style="grid-template-columns:1fr 1.6fr"><input data-af="title" value="" placeholder="Title"><input data-af="detail" value="" placeholder="Detail"></div>' +
+          '<div class="fields" style="grid-template-columns:1fr 1.6fr"><input data-af="title" value="" placeholder="Title"><textarea data-af="detail" rows="1" placeholder="Detail (Enter = new line \u2192 its own bullet)"></textarea></div>' +
           '<div class="ctrls"><button class="ic aup" title="Move up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>' +
           '<button class="ic adown" title="Move down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>' +
           '<button class="ic ann-media-toggle" title="Image / video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>' +
