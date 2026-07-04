@@ -59,20 +59,23 @@
   .ev.event   { background: #e3f0e8; color: #1f6843; }
   .more { font-size: 11px; color: var(--ink-faint); font-weight: 600; margin-top: 4px; padding-left: 7px; }
 
-  /* ── WEEK ── */
-  .week { display: grid; grid-template-columns: repeat(7,1fr); gap: 10px; }
-  .wday { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 11px; aspect-ratio: 1 / 1; min-height: 0; overflow-y: auto; cursor: pointer; transition: border-color .12s; }
-  .wday:hover { border-color: var(--teal); }
-  .wday.wtoday { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 10%, transparent); }
-  .whead { display: flex; align-items: baseline; gap: 8px; padding-bottom: 9px; border-bottom: 1px solid var(--line); margin-bottom: 9px; }
+  /* ── WEEK — agenda bands: a full-width row per day, entries get real room ── */
+  .week { display: flex; flex-direction: column; gap: 10px; }
+  .wband { display: flex; gap: 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color .12s; align-items: flex-start; }
+  .wband:hover { border-color: var(--teal); }
+  .wband.wtoday { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 10%, transparent); }
+  .wband.wempty { padding: 9px 16px; align-items: center; }
+  .wrail { flex: 0 0 74px; display: flex; align-items: baseline; gap: 7px; }
   .wdow { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: var(--ink-soft); }
-  .wdom { font-size: 21px; font-weight: 600; }
+  .wdom { font-size: 22px; font-weight: 600; line-height: 1; }
   .wtoday .wdom { color: var(--teal); }
-  .wev { border-left: 3px solid; border-radius: 4px; padding: 6px 8px; margin-bottom: 7px; font-size: 12px; line-height: 1.35; }
+  .wcards { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+  .wev { border-left: 3px solid; border-radius: 6px; padding: 8px 12px; font-size: 12.5px; line-height: 1.4; max-width: 100%; }
   .wev.service { border-color: var(--teal); background: var(--teal-light, #e6f0f3); color: var(--teal-dark); }
   .wev.sermon  { border-color: var(--brass); background: #f5ecd6; color: #7a5f22; }
   .wev.event   { border-color: #2d8659; background: #e3f0e8; color: #1f6843; }
-  .wev .t { font-weight: 600; } .wev .m { font-size: 11px; opacity: .8; margin-top: 1px; }
+  .wev .t { font-weight: 600; } .wev .m { font-size: 11.5px; opacity: .85; margin-top: 1px; }
+  .wnone { font-size: 12px; color: var(--ink-faint); }
 
   /* ── DAY ── */
   .dayview { max-width: 640px; margin: 0 auto; }
@@ -104,8 +107,7 @@
     .dn { font-size: 12px; width: 22px; height: 22px; }
     .ev { font-size: 0; padding: 0; margin-top: 4px; gap: 3px; background: transparent !important; display: inline-flex; }
     .ev .dot { width: 7px; height: 7px; display: inline-block; }
-    .week { grid-template-columns: 1fr; }
-    .wday { aspect-ratio: auto; }   /* stacked on mobile — squares would be huge */
+    .wrail { flex-basis: 56px; }
     .cal-title { order: -1; width: 100%; flex-basis: 100%; }
   }
 </style>
@@ -221,14 +223,19 @@
       const ds = addDays(start, i);
       const d = parse(ds);
       const es = entriesOf(ds);
-      html += '<div class="wday ' + (ds === TODAY ? 'wtoday' : '') + '" data-day="' + ds + '">'
-            + '<div class="whead"><span class="wdow">' + DOWS[i] + '</span><span class="wdom">' + d.getDate() + '</span></div>';
-      es.forEach(ev => {
-        html += '<div class="wev ' + ev.t + '"><div class="t">' + esc(ev.n) + '</div>'
-              + (ev.time || ev.loc ? '<div class="m">' + esc([ev.time, ev.loc].filter(Boolean).join(' · ')) + '</div>' : '')
-              + '</div>';
-      });
-      html += '</div>';
+      html += '<div class="wband ' + (ds === TODAY ? 'wtoday' : '') + (es.length ? '' : ' wempty') + '" data-day="' + ds + '">'
+            + '<div class="wrail"><span class="wdow">' + DOWS[i] + '</span><span class="wdom">' + d.getDate() + '</span></div>'
+            + '<div class="wcards">';
+      if (!es.length) {
+        html += '<span class="wnone">—</span>';
+      } else {
+        es.forEach(ev => {
+          html += '<div class="wev ' + ev.t + '"><div class="t">' + esc(ev.n) + '</div>'
+                + (ev.time || ev.loc ? '<div class="m">' + esc([ev.time, ev.loc].filter(Boolean).join(' · ')) + '</div>' : '')
+                + '</div>';
+        });
+      }
+      html += '</div></div>';
     }
     stage.innerHTML = html + '</div>';
   }
