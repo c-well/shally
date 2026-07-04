@@ -34,6 +34,12 @@
   .metarow input, .metarow select { font: inherit; font-size: 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
   .switcher { margin-left: auto; }
 
+  .sec-toggle { cursor: pointer; user-select: none; }
+  .sec-toggle:hover .sec-chevron { color: var(--teal); }
+  .sec-chevron { font-size: 10px; letter-spacing: 0.14em; color: var(--ink-faint, #9aa0aa); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; background: #fff; }
+  /* Collapsed: the whole order-of-service body folds to nothing; label becomes the reopen bar */
+  #oosBody { overflow: hidden; transition: max-height .28s ease, opacity .22s ease; }
+  #oosBody.folded { max-height: 0 !important; opacity: 0; }
   .sec-label { margin: 34px 0 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); display: flex; align-items: center; justify-content: space-between; }
 
   /* items */
@@ -163,7 +169,8 @@
     </div>
   </div>
 
-  <div class="sec-label"><span>Order of service</span></div>
+  <div class="sec-label sec-toggle" id="oosToggle" role="button" tabindex="0" aria-expanded="true"><span>Order of service</span><span class="sec-chevron">Collapse</span></div>
+  <div id="oosBody">
   <div class="items" id="items">
     @forelse ($bulletin->lines as $line)
       <div class="item {{ $line->kind === 'section_header' ? 'section' : '' }}" data-id="{{ $line->id }}" data-kind="{{ $line->kind }}">
@@ -195,6 +202,7 @@
     @if ($bulletin->lines->isEmpty())
       <button class="addbtn ghost" id="load-standard" data-url="{{ route('bulletins.load-standard', $bulletin) }}">Load standard order</button>
     @endif
+  </div>
   </div>
 
   <div class="sec-label"><span>Announcements</span></div>
@@ -275,6 +283,35 @@
       api('PATCH', '/bulletins/' + BID + '/announcements/' + wrap.getAttribute('data-aid'), { is_web_only: isWeb ? 1 : 0 });
     }
   }
+  // ── collapse the bulletin while working in announcements (Karlon: hush the busy) ──
+  var oosT = document.getElementById('oosToggle'), oosB = document.getElementById('oosBody');
+  function setOos(open, compensateFrom) {
+    if (!oosT || !oosB) return;
+    var before = compensateFrom ? compensateFrom.getBoundingClientRect().top : null;
+    oosB.style.maxHeight = oosB.scrollHeight + 'px';   // measured start/end point for the fold
+    requestAnimationFrame(function () {
+      oosB.classList.toggle('folded', !open);
+      if (open) setTimeout(function () { oosB.style.maxHeight = ''; }, 300);
+      oosT.setAttribute('aria-expanded', open ? 'true' : 'false');
+      oosT.querySelector('.sec-chevron').textContent = open ? 'Collapse' : 'Show \u2014 hidden while you work on announcements';
+      if (before !== null) {
+        setTimeout(function () {
+          var after = compensateFrom.getBoundingClientRect().top;
+          window.scrollBy(0, after - before);   // keep her row pinned in place under the cursor
+        }, 300);
+      }
+    });
+  }
+  if (oosT) {
+    oosT.addEventListener('click', function () { setOos(oosB.classList.contains('folded')); });
+    oosT.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); oosT.click(); } });
+  }
+  var oosAutoFolded = false;
+  if (anns) anns.addEventListener('focusin', function (e) {
+    if (oosAutoFolded || !e.target.matches('input[data-af], textarea[data-af]')) return;
+    if (oosB && !oosB.classList.contains('folded')) { oosAutoFolded = true; setOos(false, e.target.closest('[data-aid]') || e.target); }
+  });
+
   // ── focus-mode + autogrow for announcement detail ──
   function growTa(ta) { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; }
   if (anns) {
