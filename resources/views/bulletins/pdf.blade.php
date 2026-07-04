@@ -97,9 +97,10 @@
   .mission .heading { font-size: 12pt; font-weight: 700; text-decoration: underline; margin-bottom: 5pt; }
   .mission .text    { max-width: 6in; margin: 0 auto; font-size: 10.5pt; line-height: 1.35; }
 
-  .qr-row { text-align: center; margin-top: 12pt; }
-  .qr-row .qr { width: 62pt; height: 62pt; }
-  .qr-cap { font-size: 8.5pt; line-height: 1.35; color: #333; margin-top: 3pt; }
+  .qr-row { margin: 9pt auto 0; border-collapse: collapse; }
+  .qr-cell { vertical-align: middle; padding-right: 8pt; }
+  .qr-row .qr { width: 48pt; height: 48pt; display: block; }
+  .qr-cap { vertical-align: middle; text-align: left; font-size: 8.5pt; line-height: 1.4; color: #333; }
   .pleasant { text-align: center; margin-top: 14pt; font-size: 10.5pt; font-style: italic; }
 
   .watermark-prev {
@@ -228,10 +229,10 @@
       @endif
     @endforeach
 
-    <div class="qr-row">
-      <img class="qr" src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('qr-announcements.png'))) }}" alt="QR code to all announcements">
-      <div class="qr-cap">Scan for <b>all</b> announcements &amp; details<br>thechurchofpeace.org/announcements</div>
-    </div>
+    <table class="qr-row"><tr>
+      <td class="qr-cell"><img class="qr" src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('qr-announcements.png'))) }}" alt="QR code to all announcements"></td>
+      <td class="qr-cap">Scan for <b>all</b> announcements &amp; details<br>thechurchofpeace.org/announcements</td>
+    </tr></table>
 
     <div class="pleasant">Have a pleasant Sabbath :)</div>
 

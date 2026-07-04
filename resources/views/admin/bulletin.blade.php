@@ -352,12 +352,14 @@
     }
   });
   document.getElementById('add-ann').addEventListener('click', function () {
-    api('POST', '/bulletins/' + BID + '/announcements', { title: '' }).then(function (res) {
+    api('POST', '/bulletins/' + BID + '/announcements', { title: '', is_web_only: 1 }).then(function (res) {
       if (res.ok && res.d.ok) {
-        var a = res.d.announcement, div = document.createElement('div'); div.className = 'ann-wrap'; div.setAttribute('data-aid', a.id);
+        var a = res.d.announcement, div = document.createElement('div'); div.className = 'ann-wrap webonly'; div.setAttribute('data-aid', a.id);
         div.innerHTML =
           '<div class="item"><div class="fields" style="grid-template-columns:1fr 1.6fr"><input data-af="title" value="" placeholder="Title"><input data-af="detail" value="" placeholder="Detail"></div>' +
-          '<div class="ctrls"><button class="ic ann-media-toggle" title="Image / video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>' +
+          '<div class="ctrls"><button class="ic aup" title="Move up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>' +
+          '<button class="ic adown" title="Move down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>' +
+          '<button class="ic ann-media-toggle" title="Image / video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>' +
           '<button class="ic adel" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button></div></div>' +
           '<div class="ann-media"><label class="ann-photo"><span class="ann-photo-state">Add an image</span><input type="file" class="ann-img" accept="image/*"></label>' +
           '<button type="button" class="ann-img-remove" data-url="/bulletins/' + BID + '/announcements/' + a.id + '/image" style="display:none">Remove image</button>' +
