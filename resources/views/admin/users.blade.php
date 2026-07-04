@@ -239,7 +239,7 @@
     @endforeach
   </section>
 </main>
-('partials._confirm')
+@include('partials._confirm')
 
 </body>
 </html>
