@@ -1,5 +1,11 @@
 # Shalom — Changelog
 
+## 2026-07-04 · Bulletin 2-up print layout
+
+New "Download 2-up" option in the bulletin tools (alongside Download PDF): one LANDSCAPE letter sheet with the bulletin printed twice side by side — front sheet = order of service ×2, back sheet = announcements ×2, aligned. Print double-sided and cut down the dashed center line → TWO identical 5.5×8.5 bulletins per sheet (participants front, announcements back). Both halves identical, so the duplex flip direction doesn't matter. Delivered via ?layout=2up on the existing PDF route (setPaper landscape + a self-contained bulletins/pdf-2up view — the portrait pdf.blade.php is untouched). dompdf gotcha solved: side-by-side full-height columns must be position:absolute inside a fixed-size relative .sheet, else dompdf inserts phantom blank pages (tables and floats both did; absolute gives a clean 2 pages).
+
+**Files:** resources/views/bulletins/pdf-2up.blade.php (new), app/Http/Controllers/BulletinController.php, resources/views/partials/site-menu.blade.php
+
 ## 2026-07-04 · Cormorant banned from admin + all numerals (Karlon)
 
 Cormorant Garamond's oldstyle figures render numbers as squiggles ("July 2026" on the schedule, the "9"/"3" on event tiles). Per Karlon: removed Cormorant from the ENTIRE admin area — all 29 admin views (+ /schedule) now use Instrument Sans for display text (JetBrains Mono headers stay); the unused Cormorant font load was stripped from those pages too. On the public side, the three numeral-bearing spots (event tile day, duty-roster date, peace-notes cover date) switched to Instrument Sans — Cormorant remains for public prose and headers, where it belongs.

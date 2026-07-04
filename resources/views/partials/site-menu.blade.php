@@ -383,6 +383,7 @@
               <button class="site-menu-sub-link site-menu-sub-link-form" data-next-week-url="{{ route('bulletins.next-week') }}" type="button">Next Sabbath</button>
               <button class="site-menu-sub-link site-menu-sub-link-form" id="new-event-series-btn" type="button">Event series</button>
               <a class="site-menu-sub-link" href="{{ route('bulletins.pdf', $bulletin) }}" target="_blank" rel="noopener">Download PDF</a>
+              <a class="site-menu-sub-link" href="{{ route('bulletins.pdf', $bulletin) }}?layout=2up" target="_blank" rel="noopener">Download 2-up (print 2-sided, cut in half)</a>
               @if ($bulletin->hasAvailablePreviousVersion())
                 <a class="site-menu-sub-link" href="{{ route('bulletins.pdf', $bulletin) }}?version=previous" target="_blank" rel="noopener">Previous PDF</a>
               @endif
