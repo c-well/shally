@@ -125,6 +125,7 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
 
     // Event editing (inline on home page)
     Route::post  ('/events',              [EventController::class, 'store'])->name('events.store');
+    Route::post  ('/events/smart-parse',   [EventController::class, 'smartParse'])->name('events.smart-parse');
     Route::patch ('/events/{event}',      [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}',      [EventController::class, 'destroy'])->name('events.destroy');
     Route::post  ('/events/{eventId}/restore', [EventController::class, 'restoreEvent'])->whereNumber('eventId')->name('events.restore');
