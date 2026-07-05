@@ -173,6 +173,7 @@ Route::middleware('auth')->group(function () {
     // Admin hub + tools (super_admin only)
     Route::middleware('role:super_admin')->group(function () {
         Route::view  ('/admin',                        'admin.hub')->name('admin.hub');
+        Route::get   ('/admin/system/updates',         [\App\Http\Controllers\AdminSystemController::class, 'updates'])->name('admin.system.updates');
         // Hush-latch usage learning: one row per (user, card); '__visits' counts hub loads.
         Route::post('/admin/hub/track', function (\Illuminate\Http\Request $r) {
             $key = substr((string) $r->input('key'), 0, 64);
