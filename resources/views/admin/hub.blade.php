@@ -483,6 +483,7 @@
     @endforeach
   </div>
   <button type="button" class="sys-check" id="sysCheck" data-url="{{ route('admin.system.updates') }}">Check for new releases</button>
+  <a class="sys-check" style="display:inline-block;text-decoration:none;margin-left:8px;" href="{{ route('admin.stack') }}" target="_blank" rel="noopener">Stack &amp; restore sheet</a>
   <div class="sys-result" id="sysResult" hidden></div>
 </footer>
 <style>
