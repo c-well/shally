@@ -466,5 +466,63 @@
   });
 })();
 </script>
+{{-- ── System strip: what we run on + release check (Karlon 2026-07-04) ── --}}
+@php
+  $sysVers = [
+    'Laravel'   => app()->version(),
+    'PHP'       => PHP_VERSION,
+    'MySQL'     => \Illuminate\Support\Str::before(\DB::selectOne('select version() as v')->v, '-'),
+    'dompdf'    => \Composer\InstalledVersions::getPrettyVersion('barryvdh/laravel-dompdf'),
+    'Anthropic' => \Composer\InstalledVersions::getPrettyVersion('anthropic-ai/sdk'),
+  ];
+@endphp
+<footer class="sysstrip">
+  <div class="sys-rows">
+    @foreach ($sysVers as $n => $v)
+      <span class="sys-item"><b>{{ $n }}</b> {{ ltrim((string) $v, 'v') }}</span>
+    @endforeach
+  </div>
+  <button type="button" class="sys-check" id="sysCheck" data-url="{{ route('admin.system.updates') }}">Check for new releases</button>
+  <div class="sys-result" id="sysResult" hidden></div>
+</footer>
+<style>
+  .sysstrip { max-width: 1180px; margin: 60px auto 30px; padding: 22px 28px 26px; border-top: 1px solid var(--line); text-align: center; }
+  .sys-rows { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-soft); }
+  .sys-item b { color: var(--ink); font-weight: 600; }
+  .sys-check { margin-top: 16px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px; cursor: pointer; }
+  .sys-check:hover { border-color: var(--teal); }
+  .sys-check:disabled { opacity: .55; cursor: wait; }
+  .sys-result { max-width: 560px; margin: 16px auto 0; text-align: left; font-size: 13px; line-height: 1.6; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; }
+  .sys-result .ok { color: #2d8659; font-weight: 600; }
+  .sys-result .adv { color: #a33d3d; font-weight: 700; }
+  .sys-result .row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .sys-result .maj { color: #8a6c26; font-weight: 700; }
+  .sys-result .note { margin-top: 8px; font-size: 11.5px; color: var(--ink-soft); }
+</style>
+<script>
+document.getElementById('sysCheck').addEventListener('click', async function () {
+  const btn = this, out = document.getElementById('sysResult');
+  btn.disabled = true; btn.textContent = 'Asking packagist…';
+  try {
+    const r = await fetch(btn.dataset.url, { headers: { 'Accept': 'application/json' } });
+    const d = await r.json();
+    let h = d.advisories > 0
+      ? '<div class="adv">⚠ ' + d.advisories + ' security advisor' + (d.advisories === 1 ? 'y' : 'ies') + ' — update soon</div>'
+      : '<div class="ok">✓ No security advisories</div>';
+    if (d.outdated.length) {
+      h += d.outdated.map(p => '<div class="row"><span>' + p.name + '</span><span>' + p.current + ' → <b class="' + (p.major ? 'maj' : '') + '">' + p.latest + '</b>' + (p.major ? ' (major)' : '') + '</span></div>').join('');
+      h += '<div class="note">Majors are planned upgrades — see docs/UPGRADE-13.md. Checked ' + d.checked_at + ' (cached 1h).</div>';
+    } else {
+      h += '<div class="note">Everything current. Checked ' + d.checked_at + '.</div>';
+    }
+    out.innerHTML = h; out.hidden = false;
+    btn.textContent = 'Check again';
+  } catch (e) {
+    out.innerHTML = 'Could not reach the checker — try again.'; out.hidden = false;
+    btn.textContent = 'Check for new releases';
+  }
+  btn.disabled = false;
+});
+</script>
 </body>
 </html>
