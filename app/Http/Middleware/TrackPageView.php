@@ -16,7 +16,11 @@ class TrackPageView
 {
     private const SKIP_PREFIXES = ["/admin", "/api", "/auth", "/login", "/logout", "/profile", "/feedback"];
     private const SKIP_EXACT    = ["/sitemap.xml", "/robots.txt", "/favicon.ico"];
-    private const BOT_AGENTS    = ["bot", "spider", "crawl", "slurp", "preview", "lighthouse", "headlesschrome", "feedfetcher", "facebookexternalhit"];
+    private const BOT_AGENTS    = ["bot", "spider", "crawl", "slurp", "preview", "lighthouse", "headlesschrome", "feedfetcher", "facebookexternalhit",
+        // 2026-07-05: 525 of Sabbath's 632 "uniques" were our own tooling — every curl
+        // got a fresh session. HTTP clients are not congregants.
+        "curl", "wget", "go-http", "python-urllib", "python-requests", "httpie", "libwww",
+        "okhttp", "java/", "shalomaudit", "shalomsabbathaudit", "mozilla/5.0 audit", "mozilla/5.0 shalomaudit"];
 
     public function handle(Request $request, Closure $next): Response
     {

@@ -175,6 +175,12 @@
 </header>
 
 <main id="hub-main">
+  @php $sysUpd = json_decode(\App\Models\AppSetting::get('system_updates_json') ?? 'null', true); @endphp
+  @if (($sysUpd['advisories'] ?? 0) > 0)
+    <div style="max-width:1180px;margin:0 auto 22px;padding:14px 18px;background:#a33d3d;color:#fff;border-radius:10px;font-family:'Instrument Sans',sans-serif;font-size:13px;font-weight:600;">
+      ⚠ {{ $sysUpd['advisories'] }} security advisor{{ $sysUpd['advisories'] === 1 ? 'y' : 'ies' }} in the stack — see the system strip below, then docs/UPGRADE-13.md.
+    </div>
+  @endif
   <h1>Admin.</h1>
 
   {{-- CRON_WATCHDOG_BANNER — scheduler heartbeat stale = backups & jobs stopped --}}
@@ -510,9 +516,10 @@ document.getElementById('sysCheck').addEventListener('click', async function () 
     let h = d.advisories > 0
       ? '<div class="adv">⚠ ' + d.advisories + ' security advisor' + (d.advisories === 1 ? 'y' : 'ies') + ' — update soon</div>'
       : '<div class="ok">✓ No security advisories</div>';
+    if (d.pending) { out.innerHTML = d.message; out.hidden = false; btn.textContent = 'Check for new releases'; btn.disabled = false; return; }
     if (d.outdated.length) {
       h += d.outdated.map(p => '<div class="row"><span>' + p.name + '</span><span>' + p.current + ' → <b class="' + (p.major ? 'maj' : '') + '">' + p.latest + '</b>' + (p.major ? ' (major)' : '') + '</span></div>').join('');
-      h += '<div class="note">Majors are planned upgrades — see docs/UPGRADE-13.md. Checked ' + d.checked_at + ' (cached 1h).</div>';
+      h += '<div class="note">Majors are planned upgrades — see docs/UPGRADE-13.md. Checked ' + d.checked_at_human + ' (auto-checks nightly 5:30 AM).</div>';
     } else {
       h += '<div class="note">Everything current. Checked ' + d.checked_at + '.</div>';
     }
