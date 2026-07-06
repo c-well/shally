@@ -157,6 +157,23 @@
   }
   .site-menu-sub-link:hover { color: var(--teal, #03617A); transform: translateX(2px); }
   .site-menu-sub-link-form { all: unset; cursor: pointer; display: block; }
+  /* ── menu engine styles (four templates share the base) ── */
+  .mn-badge { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: .12em; color: #fff; background: var(--teal, #03617A); border-radius: 5px; padding: 3px 8px; vertical-align: middle; }
+  .mn-grouplab { font: 700 10.5px 'Instrument Sans', sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--brass, #8a6c26); margin: 26px 0 4px; }
+  .mn-butter { font-size: clamp(24px, 5.4vw, 30px) !important; padding: 15px 4px !important; }
+  .mn-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 10px; }
+  .mn-tile { position: relative; background: #fff; border: 1px solid var(--line, rgba(26,35,50,.12)); border-radius: 12px; padding: 18px 16px 14px; text-decoration: none; color: var(--ink, #1a2332); min-height: 104px; display: flex; flex-direction: column; }
+  .mn-tile .t { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; line-height: 1.12; }
+  .mn-tile .arr { margin-top: auto; color: var(--teal, #03617A); }
+  .mn-tile.hero { background: var(--teal, #03617A); border-color: var(--teal, #03617A); color: #fff; }
+  .mn-tile.hero .arr { color: #fff; }
+  .mn-tile .mn-badge { position: absolute; top: 10px; right: 10px; background: var(--brass, #8a6c26); }
+  .mn-row { display: block; padding: 13px 4px; font-size: 17px; }
+  .mn-today { background: var(--teal, #03617A); color: #fff; border-radius: 14px; padding: 18px; margin: 8px 0 6px; }
+  .mn-today .lab { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: .2em; text-transform: uppercase; opacity: .8; }
+  .mn-today .big { font-family: 'Cormorant Garamond', serif; font-size: 23px; margin-top: 6px; line-height: 1.25; }
+  .mn-live { display: inline-block; margin-top: 12px; color: #fff; border: 1px solid rgba(255,255,255,.45); border-radius: 7px; padding: 8px 12px; font: 700 11px 'Instrument Sans', sans-serif; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
+
 
   /* Inline admin quick-access dropdown (paired with MENU when signed in) */
   .site-menu-actions { display: inline-flex; align-items: center; gap: 18px; }
@@ -329,54 +346,11 @@
   </div>
 
   <nav class="site-menu-nav">
-    <a class="site-menu-link" href="{{ url('/') }}">Home <span class="arrow">@include('partials._ar')</span></a>
-
-    <div class="site-menu-section">
-      <button class="site-menu-section-toggle" type="button" aria-expanded="false">
-        About Us
-        <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="site-menu-section-body">
-        <div class="site-menu-sub-list">
-          <a class="site-menu-sub-link" href="{{ route('about') }}">Our story</a>
-          <a class="site-menu-sub-link" href="{{ route('beliefs') }}">Beliefs</a>
-          <a class="site-menu-sub-link" href="{{ route('contact.show') }}">Contact</a>
-        </div>
-      </div>
-    </div>
-
-    <a class="site-menu-link" href="{{ route('visit') }}">Visit Us <span class="arrow">@include('partials._ar')</span></a>
-
-    <a class="site-menu-link" href="{{ route('prayer.show') }}">Prayer Request <span class="arrow">@include('partials._ar')</span></a>
+@include('partials.menu-nav')
 
     @foreach (\Illuminate\Support\Facades\Cache::remember('intake_menu_forms', 300, fn() => \App\Models\IntakeForm::menuForms()) as $mf)
       <a class="site-menu-link" href="{{ url('/intake/' . $mf->slug) }}">{{ $mf->menuLabel() }} <span class="arrow">@include('partials._ar')</span></a>
     @endforeach
-
-    <div class="site-menu-section">
-      <button class="site-menu-section-toggle" type="button" aria-expanded="false">
-        Spiritual Life
-        <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="site-menu-section-body">
-        <div class="site-menu-sub-list">
-          <a class="site-menu-sub-link" href="{{ route('bible') }}">Bible (KJV &amp; ESV)</a>
-          <a class="site-menu-sub-link" href="{{ route('hymnal') }}">Hymnal</a>
-          <a class="site-menu-sub-link" href="{{ route('peace-notes') }}">Peace Notes</a>
-          <a class="site-menu-sub-link" href="{{ route('messages') }}">Messages</a>
-          <a class="site-menu-sub-link" href="{{ route('kids') }}">Scripture Games</a>
-          <a class="site-menu-sub-link" href="{{ route('youth') }}">Undercover (Youth)</a>
-          <a class="site-menu-sub-link" href="{{ route('lesson.show') }}">Sabbath School Lesson</a>
-        </div>
-      </div>
-    </div>
-
-    @php $bullHref = (auth()->check() && in_array(auth()->user()->role,['super_admin','clerk']) && \App\Models\AppSetting::get('bulletin_editor','v1')==='v2') ? route('admin.bulletin') : url('/welcome'); @endphp
-    <a class="site-menu-link" href="{{ $bullHref }}">Bulletin <span class="arrow">@include('partials._ar')</span></a>
-
-    <a class="site-menu-link" href="{{ route('announcements') }}">Announcements <span class="arrow">@include('partials._ar')</span></a>
-
-    <a class="site-menu-link" href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener">Donate <span class="arrow">@include('partials._ar')</span></a>
 
     @auth
       @if ((auth()->user()->role === 'super_admin' || auth()->user()->role === 'clerk') && ($bulletin ?? null))
