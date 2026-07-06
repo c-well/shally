@@ -321,3 +321,5 @@ Schedule::command("system:self-update --security-only")
     ->timezone("America/New_York")
     ->name("system-self-update")
     ->onOneServer();
+
+Schedule::command("system:check-updates")->dailyAt("05:30");
