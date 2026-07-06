@@ -138,8 +138,8 @@
 
       {{-- Honeypot — bots fill this in, humans never see it. --}}
       <div class="honey" aria-hidden="true">
-        <label for="website">Website (leave blank)</label>
-        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+        <label for="form_meta_field">Leave this empty</label>
+        <input type="text" id="form_meta_field" name="form_meta_field" tabindex="-1" autocomplete="one-time-code">
       </div>
 
       {{-- Encrypted render timestamp — server checks elapsed time on submit.

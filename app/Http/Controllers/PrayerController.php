@@ -38,7 +38,7 @@ class PrayerController extends Controller
             ])
         );
 
-        if (filled($request->input('website'))) return $silent('honeypot');
+        if (filled($request->input('form_meta_field')) || filled($request->input('website'))) return $silent('honeypot');
 
         try {
             $renderedAt = (int) Crypt::decryptString($request->input('rendered_at', ''));
