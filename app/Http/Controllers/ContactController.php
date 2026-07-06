@@ -45,7 +45,7 @@ class ContactController extends Controller
         );
 
         // ── 1. Honeypot ────────────────────────────────────────────────
-        if (filled($request->input('website'))) {
+        if (filled($request->input('form_meta_field')) || filled($request->input('website'))) {
             return $silent('honeypot');
         }
 
