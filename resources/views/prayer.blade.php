@@ -94,8 +94,8 @@
   <form class="prayer" method="POST" action="{{ route('prayer.send') }}">
     @csrf
     <div class="honey" aria-hidden="true">
-      <label for="website">Website</label>
-      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+      <label for="form_meta_field">Leave this empty</label>
+      <input type="text" id="form_meta_field" name="form_meta_field" autocomplete="one-time-code" tabindex="-1" autocomplete="off">
     </div>
     <input type="hidden" name="rendered_at" value="{{ $renderToken ?? '' }}">
 
