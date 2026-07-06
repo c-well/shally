@@ -604,7 +604,23 @@
   .verse-toggle.hidden { opacity: 0; pointer-events: none; }
   .verse-toggle-dot { width: 6px; height: 6px; border-radius: 50%; background: #2d8659; }
 
-  /* LIVE_HERO — appears only when YouTube channel is broadcasting */
+  /* ── prayer band + zoom cards (the site's most-used feature, elevated) ── */
+  .prayer-band { background: color-mix(in srgb, var(--teal, #03617A) 7%, var(--parchment, #fefcef)); border-top: 1px solid color-mix(in srgb, var(--teal, #03617A) 20%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--teal, #03617A) 20%, transparent); }
+  .pb-inner { max-width: 980px; margin: 0 auto; padding: 22px clamp(20px, 5vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+  .pb-lab { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal, #03617A); }
+  .pb-line { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 4vw, 28px); color: var(--ink, #1a2332); margin-top: 4px; }
+  .pb-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .pb-join { font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--teal, #03617A); border-radius: 8px; padding: 14px 22px; text-decoration: none; }
+  .pb-join:hover { filter: brightness(1.08); }
+  .pb-req { font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal, #03617A); border: 1px solid color-mix(in srgb, var(--teal, #03617A) 35%, transparent); background: #fff; border-radius: 8px; padding: 13px 20px; text-decoration: none; }
+  .pb-req:hover { border-color: var(--teal, #03617A); }
+  .svc-join { margin-top: 10px; font: 700 11px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal, #03617A); }
+  .svc-card.svc-live { border-color: var(--teal, #03617A); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal, #03617A) 15%, transparent); }
+  .svc-card.svc-live .svc-join { animation: pbPulse 2s ease-in-out infinite; }
+  @keyframes pbPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+  @media (prefers-reduced-motion: reduce) { .svc-card.svc-live .svc-join { animation: none; } }
+
+    /* LIVE_HERO — appears only when YouTube channel is broadcasting */
   .hero-cta.live-cta {
     background: var(--brass, #7a3e9a);
     color: #fff;
@@ -722,6 +738,21 @@
   <div class="verse-toggle-wrap"><button class="verse-toggle hidden" id="verse-toggle" type="button"><span class="verse-toggle-dot"></span><span id="verse-toggle-text">Show verse of the day</span></button></div>
 </section>
 
+{{-- ── Prayer band — the most-used thing on this site, honored accordingly
+       (48 humans clicked the old buried Zoom card; evidence 2026-07-06) ── --}}
+<section class="prayer-band">
+  <div class="pb-inner">
+    <div class="pb-text">
+      <div class="pb-lab">Every weekday</div>
+      <div class="pb-line">Hour of Prayer · 5:00 AM</div>
+    </div>
+    <div class="pb-actions">
+      <a class="pb-join" href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener">Join on Zoom @include('partials._ar')</a>
+      <a class="pb-req" href="{{ route('prayer.show') }}">Send a prayer request</a>
+    </div>
+  </div>
+</section>
+
 {{-- ── Schedule ── --}}
 <section class="block" id="schedule">
   <div class="section-eyebrow">Each week</div>
@@ -739,15 +770,20 @@
       <div class="svc-when">SAT · 11:00 AM</div>
       <div class="svc-where">In person</div>
     </div>
-    <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="svc-card" title="Open in Zoom">
+    @php
+      $nyNow = now('America/New_York');
+      $hopLive = $nyNow->isWeekday() && $nyNow->between($nyNow->copy()->setTime(4,45), $nyNow->copy()->setTime(6,15));
+      $pmLive  = $nyNow->isWednesday() && $nyNow->between($nyNow->copy()->setTime(18,45), $nyNow->copy()->setTime(20,15));
+    @endphp
+    <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="svc-card svc-zoom {{ $hopLive ? 'svc-live' : '' }}" title="Join on Zoom">
       <div class="svc-name">Hour of Prayer</div>
       <div class="svc-when">MON–FRI · 5:00 AM</div>
-      <div class="svc-where zoom">Zoom</div>
+      <div class="svc-join">{{ $hopLive ? '● Praying now — join' : 'Join on Zoom' }} @include('partials._ar')</div>
     </a>
-    <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="svc-card" title="Open in Zoom">
+    <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="svc-card svc-zoom {{ $pmLive ? 'svc-live' : '' }}" title="Join on Zoom">
       <div class="svc-name">Prayer Meeting</div>
       <div class="svc-when">WED · 7:00 PM</div>
-      <div class="svc-where zoom">Zoom</div>
+      <div class="svc-join">{{ $pmLive ? '● Praying now — join' : 'Join on Zoom' }} @include('partials._ar')</div>
     </a>
   </div>
 </section>
