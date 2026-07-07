@@ -108,6 +108,7 @@
   $_unreadTotal   = $_unreadPrayer + $_unreadContact;
 
   $HUB = [
+    'notes'     => ['Private', 'Notes & keys.', 'The team drawer — passwords, account details, private notes. Encrypted at rest.', 'Open', route('admin.notes')],
     'messages'  => ['Inbox', 'Messages.', 'Prayer requests & contact-form messages from visitors.', 'Open', route('admin.messages')],
     'users'     => ['People', 'Users.', 'Add Andre, the elders, members. Set their PIN.', 'Manage', route('admin.users')],
     'logs'      => ['Activity', 'Audit log.', 'Every sign-in, magic link, and error from the last 40 days.', 'View', route('admin.logs')],
