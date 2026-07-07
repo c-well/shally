@@ -173,6 +173,10 @@ Route::middleware('auth')->group(function () {
     // Admin hub + tools (super_admin only)
     Route::middleware('role:super_admin')->group(function () {
         Route::view  ('/admin',                        'admin.hub')->name('admin.hub');
+        Route::get   ('/admin/notes', [\App\Http\Controllers\AdminNotesController::class, 'index'])->name('admin.notes');
+        Route::post  ('/admin/notes', [\App\Http\Controllers\AdminNotesController::class, 'store'])->name('admin.notes.store');
+        Route::patch ('/admin/notes/{note}', [\App\Http\Controllers\AdminNotesController::class, 'update'])->name('admin.notes.update');
+        Route::delete('/admin/notes/{note}', [\App\Http\Controllers\AdminNotesController::class, 'destroy'])->name('admin.notes.destroy');
         Route::get   ('/admin/menu',  [\App\Http\Controllers\AdminMenuController::class, 'show'])->name('admin.menu');
         Route::patch ('/admin/menu',  [\App\Http\Controllers\AdminMenuController::class, 'save'])->name('admin.menu.save');
         Route::get   ('/admin/stack', fn () => response(file_get_contents(base_path('docs/STACK.md')), 200, ['Content-Type' => 'text/plain; charset=utf-8']))->name('admin.stack');
