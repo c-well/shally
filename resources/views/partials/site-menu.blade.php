@@ -634,7 +634,7 @@ if ('setAppBadge' in navigator) {
   }
   function close() { ov.classList.remove('open'); }
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('.site-menu-search-icon, #search-btn-mobile, [data-action="search"]');
+    const t = e.target.closest('.site-menu-search-icon, #search-btn-mobile, [data-action="search"], .search-float, #search-float-link, a[href$="/search"]');
     if (t) open(e);
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ov) close(); });
