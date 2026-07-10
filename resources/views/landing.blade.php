@@ -605,17 +605,7 @@
   .verse-toggle.hidden { opacity: 0; pointer-events: none; }
   .verse-toggle-dot { width: 6px; height: 6px; border-radius: 50%; background: #2d8659; }
 
-  /* ── prayer band + zoom cards (the site's most-used feature, elevated) ── */
-  .prayer-band { background: color-mix(in srgb, var(--teal, #03617A) 7%, var(--parchment, #fefcef)); border-top: 1px solid color-mix(in srgb, var(--teal, #03617A) 20%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--teal, #03617A) 20%, transparent); }
-  .pb-inner { max-width: 980px; margin: 0 auto; padding: clamp(24px, 4vh, 34px) clamp(20px, 5vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 22px 40px; flex-wrap: wrap; }
-  .pb-lab { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal, #03617A); }
-  .pb-line { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 4vw, 28px); color: var(--ink, #1a2332); margin-top: 4px; }
-  .pb-time { font-family: 'Instrument Sans', sans-serif; font-size: clamp(15px, 2.6vw, 18px); font-weight: 600; letter-spacing: 0.04em; color: var(--ink-soft, #4a5568); font-variant-numeric: tabular-nums; vertical-align: 2px; }
-  .pb-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-  .pb-join { font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--teal, #03617A); border-radius: 8px; padding: 14px 22px; text-decoration: none; }
-  .pb-join:hover { filter: brightness(1.08); }
-  .pb-req { font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal, #03617A); border: 1px solid color-mix(in srgb, var(--teal, #03617A) 35%, transparent); background: #fff; border-radius: 8px; padding: 13px 20px; text-decoration: none; }
-  .pb-req:hover { border-color: var(--teal, #03617A); }
+  /* ── zoom schedule cards (join affordance + live pulse) ── */
   .svc-join { margin-top: 10px; font: 700 11px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal, #03617A); }
   .svc-card.svc-live { border-color: var(--teal, #03617A); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal, #03617A) 15%, transparent); }
   .svc-card.svc-live .svc-join { animation: pbPulse 2s ease-in-out infinite; }
@@ -709,6 +699,8 @@
     // Weekday-dawn prayer window (shared with the schedule cards below)
     $heroNy = now('America/New_York');
     $heroHopLive = $heroNy->isWeekday() && $heroNy->between($heroNy->copy()->setTime(4,45), $heroNy->copy()->setTime(6,15));
+    $heroPmLive  = $heroNy->isWednesday() && $heroNy->between($heroNy->copy()->setTime(18,45), $heroNy->copy()->setTime(20,15));
+    $heroZoom    = $heroHopLive ? 'Hour of Prayer' : ($heroPmLive ? 'Prayer Meeting' : null);
   @endphp
   @php
     // LIVE_STATE — read from cache only (peace:check-live cron writes every 5 min).
@@ -729,12 +721,12 @@
       <span aria-hidden="true">·</span>
       <a href="{{ route('lesson.show') }}">Sabbath School lesson</a>
     </div>
-  @elseif ($heroHopLive)
+  @elseif ($heroZoom)
     {{-- Hour of Prayer is LIVE right now (weekday dawn) — the moment leads.
          Steve rule: a button changes only when reality changes, and says so. --}}
     <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="hero-cta live-cta">
       <span class="live-cta-dot" aria-hidden="true"></span>
-      Hour of Prayer · happening now — join
+      {{ $heroZoom }} · happening now — join
     </a>
     <div class="hero-live-links">
       <a href="{{ url('/welcome') }}">This Sabbath's bulletin</a>
@@ -755,21 +747,6 @@
     </a>
   @endif
   <div class="verse-toggle-wrap"><button class="verse-toggle hidden" id="verse-toggle" type="button"><span class="verse-toggle-dot"></span><span id="verse-toggle-text">Show verse of the day</span></button></div>
-</section>
-
-{{-- ── Prayer band — the most-used thing on this site, honored accordingly
-       (48 humans clicked the old buried Zoom card; evidence 2026-07-06) ── --}}
-<section class="prayer-band">
-  <div class="pb-inner">
-    <div class="pb-text">
-      <div class="pb-lab">Every weekday</div>
-      <div class="pb-line">Hour of Prayer <span class="pb-time">· 5:00 AM</span></div>
-    </div>
-    <div class="pb-actions">
-      <a class="pb-join" href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener">Join on Zoom @include('partials._ar')</a>
-      <a class="pb-req" href="{{ route('prayer.show') }}">Send a prayer request</a>
-    </div>
-  </div>
 </section>
 
 {{-- ── Schedule ── --}}
