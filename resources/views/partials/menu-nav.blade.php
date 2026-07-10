@@ -14,7 +14,26 @@
   $mExt = fn ($i) => ! empty($i['external']) ? 'target="_blank" rel="noopener"' : '';
 @endphp
 
-@if ($mStyle === 'tiles')
+@if ($mStyle === 'clean')
+  {{-- Apple flyout pattern: primary group = big bold list; each tucked group = quiet gray label + smaller links --}}
+  <nav class="mn-clean" aria-label="Site">
+    @foreach ($mGroups as $gk => $g)
+      @if ($gk === 0)
+        @foreach ($g['items'] as $i)
+          <a class="mn-clean-link primary" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif</a>
+        @endforeach
+      @else
+        <div class="mn-clean-group">
+          @if ($g['label'])<div class="mn-clean-lab">{{ $g['label'] }}</div>@endif
+          @foreach ($g['items'] as $i)
+            <a class="mn-clean-link" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif</a>
+          @endforeach
+        </div>
+      @endif
+    @endforeach
+  </nav>
+
+@elseif ($mStyle === 'tiles')
   @php $tileItems = $mGroups->flatMap(fn ($g) => $g['items'])->take(4); $restGroups = $mGroups; @endphp
   <div class="mn-tiles">
     @foreach ($tileItems as $k => $i)
