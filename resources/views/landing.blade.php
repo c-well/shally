@@ -606,10 +606,10 @@
 
   /* ── prayer band + zoom cards (the site's most-used feature, elevated) ── */
   .prayer-band { background: color-mix(in srgb, var(--teal, #03617A) 7%, var(--parchment, #fefcef)); border-top: 1px solid color-mix(in srgb, var(--teal, #03617A) 20%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--teal, #03617A) 20%, transparent); }
-  .pb-inner { max-width: 980px; margin: 0 auto; padding: 22px clamp(20px, 5vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+  .pb-inner { max-width: 980px; margin: 0 auto; padding: clamp(24px, 4vh, 34px) clamp(20px, 5vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 22px 40px; flex-wrap: wrap; }
   .pb-lab { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal, #03617A); }
   .pb-line { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 4vw, 28px); color: var(--ink, #1a2332); margin-top: 4px; }
-  .pb-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .pb-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
   .pb-join { font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--teal, #03617A); border-radius: 8px; padding: 14px 22px; text-decoration: none; }
   .pb-join:hover { filter: brightness(1.08); }
   .pb-req { font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal, #03617A); border: 1px solid color-mix(in srgb, var(--teal, #03617A) 35%, transparent); background: #fff; border-radius: 8px; padding: 13px 20px; text-decoration: none; }
