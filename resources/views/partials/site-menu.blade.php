@@ -168,16 +168,21 @@
   .a2hs-glyph { display: inline-block; vertical-align: -3px; }
   .a2hs-close { margin-top: 22px; width: 100%; font: 700 12px 'Instrument Sans'; letter-spacing: .12em; text-transform: uppercase; color: var(--teal, #03617A); background: #fff; border: 1px solid var(--line, rgba(26,35,50,.14)); border-radius: 9px; padding: 13px; cursor: pointer; }
   .mn-badge { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: .12em; color: #fff; background: var(--teal, #03617A); border-radius: 5px; padding: 3px 8px; vertical-align: middle; }
-  /* 'clean' template — Apple-flyout discipline: type only. Big bold primaries,
-     then quiet gray group labels with smaller links (their Store submenu pattern). */
-  .mn-clean { padding: 6px 0 4px; }
-  .mn-clean-link { display: block; font: 600 18px/1.3 'Instrument Sans', sans-serif; letter-spacing: -.008em; color: var(--ink, #1a2332); text-decoration: none; padding: 8px 2px; }
-  .mn-clean-link.primary { font-size: 29px; font-weight: 700; letter-spacing: -.022em; padding: 9px 2px; }
+  /* 'clean' template — Apple flyout: pure type + drill-in panels (no scroll, no boxes) */
+  .mn-clean { position: relative; padding: 6px 0 4px; overflow: hidden; }
+  .mn-clean-root { transition: transform .26s ease, opacity .26s ease; }
+  .mn-clean-root.away { transform: translateX(-26%); opacity: 0; pointer-events: none; position: absolute; inset: 6px 0 auto; }
+  .mn-clean-link { display: block; width: 100%; text-align: left; background: none; border: 0; cursor: pointer; font: 600 18px/1.3 'Instrument Sans', sans-serif; letter-spacing: -.008em; color: var(--ink, #1a2332); text-decoration: none; padding: 8px 2px; }
+  .mn-clean-link.primary { font-size: 28px; font-weight: 700; letter-spacing: -.022em; padding: 9px 2px; }
   .mn-clean-link:hover { color: var(--teal, #03617A); }
   .mn-clean-link .mn-badge { vertical-align: 4px; margin-left: 8px; }
-  .mn-clean-group { margin-top: 34px; }
-  .mn-clean-lab { font: 400 15px 'Instrument Sans', sans-serif; color: var(--ink-soft, #6b7280); margin-bottom: 6px; }
-  @media (max-width: 560px) { .mn-clean-link { font-size: 17px; } .mn-clean-link.primary { font-size: 26px; } }
+  .mn-drill .chev { width: 20px; height: 20px; margin-left: 10px; vertical-align: -1px; color: var(--ink-soft, #6b7280); }
+  .mn-panel { transform: translateX(30%); opacity: 0; transition: transform .26s ease, opacity .26s ease; }
+  .mn-panel.in { transform: none; opacity: 1; }
+  .mn-back { background: none; border: 0; cursor: pointer; padding: 6px 2px 14px; color: var(--ink, #1a2332); }
+  .mn-back svg { width: 26px; height: 26px; }
+  .mn-clean-lab { font: 400 15px 'Instrument Sans', sans-serif; color: var(--ink-soft, #6b7280); margin-bottom: 8px; }
+  @media (max-width: 560px) { .mn-clean-link.primary { font-size: 25px; } }
   .mn-grouplab { font: 700 10.5px 'Instrument Sans', sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--brass, #8a6c26); margin: 26px 0 4px; }
   .mn-butter { font-size: clamp(24px, 5.4vw, 30px) !important; padding: 15px 4px !important; }
   .mn-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 10px; }

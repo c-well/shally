@@ -15,23 +15,50 @@
 @endphp
 
 @if ($mStyle === 'clean')
-  {{-- Apple flyout pattern: primary group = big bold list; each tucked group = quiet gray label + smaller links --}}
+  {{-- Apple flyout pattern, incl. drill-in: one screen shows 4 primaries + group names;
+       tapping a group slides to its short list with a back chevron. No scroll. --}}
   <nav class="mn-clean" aria-label="Site">
-    @foreach ($mGroups as $gk => $g)
-      @if ($gk === 0)
-        @foreach ($g['items'] as $i)
-          <a class="mn-clean-link primary" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif</a>
-        @endforeach
-      @else
-        <div class="mn-clean-group">
-          @if ($g['label'])<div class="mn-clean-lab">{{ $g['label'] }}</div>@endif
+    <div class="mn-clean-root">
+      @foreach ($mGroups as $gk => $g)
+        @if ($gk === 0)
           @foreach ($g['items'] as $i)
-            <a class="mn-clean-link" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif</a>
+            <a class="mn-clean-link primary" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif</a>
+          @endforeach
+        @else
+          <button type="button" class="mn-clean-link primary mn-drill" data-panel="mnp-{{ $gk }}" aria-expanded="false">{{ $g['label'] ?: 'More' }}<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        @endif
+      @endforeach
+    </div>
+    @foreach ($mGroups as $gk => $g)
+      @if ($gk > 0)
+        <div class="mn-panel" id="mnp-{{ $gk }}" hidden>
+          <button type="button" class="mn-back" aria-label="Back to menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <div class="mn-clean-lab">{{ $g['label'] }}</div>
+          @foreach ($g['items'] as $i)
+            <a class="mn-clean-link primary" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif</a>
           @endforeach
         </div>
       @endif
     @endforeach
   </nav>
+  <script>
+  (function () {
+    const nav = document.currentScript.previousElementSibling;
+    const root = nav.querySelector('.mn-clean-root');
+    nav.querySelectorAll('.mn-drill').forEach(b => b.addEventListener('click', () => {
+      const p = nav.querySelector('#' + b.dataset.panel);
+      root.classList.add('away'); p.hidden = false;
+      requestAnimationFrame(() => p.classList.add('in'));
+      b.setAttribute('aria-expanded', 'true');
+    }));
+    nav.querySelectorAll('.mn-back').forEach(b => b.addEventListener('click', () => {
+      const p = b.closest('.mn-panel');
+      p.classList.remove('in'); root.classList.remove('away');
+      setTimeout(() => { p.hidden = true; }, 260);
+      nav.querySelectorAll('.mn-drill[aria-expanded="true"]').forEach(d => d.setAttribute('aria-expanded', 'false'));
+    }));
+  })();
+  </script>
 
 @elseif ($mStyle === 'tiles')
   @php $tileItems = $mGroups->flatMap(fn ($g) => $g['items'])->take(4); $restGroups = $mGroups; @endphp
