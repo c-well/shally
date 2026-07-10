@@ -17,6 +17,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2">
     <link rel="shortcut icon" href="/favicon.ico?v=2">
     @include('partials.dark-mode')
+<link rel="manifest" href="/manifest.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Shalom SDA</title>
