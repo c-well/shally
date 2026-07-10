@@ -88,6 +88,9 @@ Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'
 
 Route::get ('/intake/{form}', [\App\Http\Controllers\IntakeController::class, 'show'])->name('intake.show');
 Route::post('/intake/{form}', [\App\Http\Controllers\IntakeController::class, 'submit'])->middleware(['throttle:10,60', 'honeypot'])->name('intake.submit');
+Route::get ('/connect',  [\App\Http\Controllers\GuestController::class, 'show'])->name('connect');
+Route::post('/connect',  [\App\Http\Controllers\GuestController::class, 'store'])
+     ->middleware(['throttle:5,60', 'honeypot'])->name('connect.store');
 Route::get ('/prayer',   [\App\Http\Controllers\PrayerController::class, 'show'])->name('prayer.show');
 Route::post('/prayer',   [\App\Http\Controllers\PrayerController::class, 'send'])
      ->middleware(['throttle:3,60', 'honeypot'])->name('prayer.send');
@@ -173,6 +176,9 @@ Route::middleware('auth')->group(function () {
     // Admin hub + tools (super_admin only)
     Route::middleware('role:super_admin')->group(function () {
         Route::view  ('/admin',                        'admin.hub')->name('admin.hub');
+        Route::get   ('/admin/guests', [\App\Http\Controllers\AdminGuestsController::class, 'index'])->name('admin.guests');
+        Route::patch ('/admin/guests/followups/{followup}', [\App\Http\Controllers\AdminGuestsController::class, 'updateFollowup'])->name('admin.guests.followups.update');
+        Route::post  ('/admin/guests/followups/{followup}/send', [\App\Http\Controllers\AdminGuestsController::class, 'sendFollowup'])->name('admin.guests.followups.send');
         Route::get   ('/admin/notes', [\App\Http\Controllers\AdminNotesController::class, 'index'])->name('admin.notes');
         Route::post  ('/admin/notes', [\App\Http\Controllers\AdminNotesController::class, 'store'])->name('admin.notes.store');
         Route::patch ('/admin/notes/{note}', [\App\Http\Controllers\AdminNotesController::class, 'update'])->name('admin.notes.update');
