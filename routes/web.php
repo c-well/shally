@@ -180,6 +180,11 @@ Route::middleware('auth')->group(function () {
         Route::get   ('/admin/menu',  [\App\Http\Controllers\AdminMenuController::class, 'show'])->name('admin.menu');
         Route::patch ('/admin/menu',  [\App\Http\Controllers\AdminMenuController::class, 'save'])->name('admin.menu.save');
         Route::get   ('/admin/stack', fn () => response(file_get_contents(base_path('docs/STACK.md')), 200, ['Content-Type' => 'text/plain; charset=utf-8']))->name('admin.stack');
+        Route::post  ('/admin/system/living-schedule', function () {
+            $now = \App\Models\AppSetting::get('living_schedule', '1') === '1' ? '0' : '1';
+            \App\Models\AppSetting::set('living_schedule', $now);
+            return response()->json(['ok' => true, 'on' => $now === '1']);
+        })->name('admin.system.living-schedule');
         Route::get   ('/admin/system/updates',         [\App\Http\Controllers\AdminSystemController::class, 'updates'])->name('admin.system.updates');
         // Hush-latch usage learning: one row per (user, card); '__visits' counts hub loads.
         Route::post('/admin/hub/track', function (\Illuminate\Http\Request $r) {

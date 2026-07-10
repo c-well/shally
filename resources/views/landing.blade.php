@@ -779,7 +779,7 @@
       ['name' => 'Prayer Meeting',  'when' => 'WED · 7:00 PM',      'where' => 'Zoom', 'zoom' => 'https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09',
        'on' => $svcNy->isWednesday() && $svcNy->between($svcNy->copy()->setTime(18,45), $svcNy->copy()->setTime(20,15))],
     ];
-    $svcActive = collect($svcs)->firstWhere('on', true);
+    $svcActive = \App\Models\AppSetting::get('living_schedule', '1') === '1' ? collect($svcs)->firstWhere('on', true) : null;
     $svcRest   = collect($svcs)->where('name', '!=', $svcActive['name'] ?? '')->values();
   @endphp
 
