@@ -158,6 +158,15 @@
   .site-menu-sub-link:hover { color: var(--teal, #03617A); transform: translateX(2px); }
   .site-menu-sub-link-form { all: unset; cursor: pointer; display: block; }
   /* ── menu engine styles (four templates share the base) ── */
+  .a2hs { width: 100%; text-align: left; background: none; border: 0; cursor: pointer; font: inherit; }
+  .a2hs-card { position: fixed; inset: 0; z-index: 200; display: none; align-items: flex-end; justify-content: center; background: rgba(26,35,50,.45); }
+  .a2hs-card.open { display: flex; }
+  .a2hs-inner { background: var(--parchment, #fefcef); border-radius: 18px 18px 0 0; padding: 26px 24px 40px; max-width: 430px; width: 100%; font-family: 'Instrument Sans', sans-serif; }
+  .a2hs-inner h3 { font-size: 17px; font-weight: 700; color: var(--ink, #1a2332); }
+  .a2hs-step { display: flex; align-items: center; gap: 13px; margin-top: 16px; font-size: 14.5px; color: var(--ink-soft, #4a5568); line-height: 1.5; }
+  .a2hs-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: color-mix(in srgb, var(--teal, #03617A) 10%, #fff); border: 1px solid color-mix(in srgb, var(--teal, #03617A) 35%, transparent); color: var(--teal, #03617A); font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; }
+  .a2hs-glyph { display: inline-block; vertical-align: -3px; }
+  .a2hs-close { margin-top: 22px; width: 100%; font: 700 12px 'Instrument Sans'; letter-spacing: .12em; text-transform: uppercase; color: var(--teal, #03617A); background: #fff; border: 1px solid var(--line, rgba(26,35,50,.14)); border-radius: 9px; padding: 13px; cursor: pointer; }
   .mn-badge { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: .12em; color: #fff; background: var(--teal, #03617A); border-radius: 5px; padding: 3px 8px; vertical-align: middle; }
   .mn-grouplab { font: 700 10.5px 'Instrument Sans', sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--brass, #8a6c26); margin: 26px 0 4px; }
   .mn-butter { font-size: clamp(24px, 5.4vw, 30px) !important; padding: 15px 4px !important; }
@@ -348,6 +357,8 @@
   <nav class="site-menu-nav">
 @include('partials.menu-nav')
 
+    <button type="button" class="site-menu-link a2hs" id="a2hsBtn" hidden>📲 Get the app <span class="arrow">@include('partials._ar')</span></button>
+
     @foreach (\Illuminate\Support\Facades\Cache::remember('intake_menu_forms', 300, fn() => \App\Models\IntakeForm::menuForms()) as $mf)
       <a class="site-menu-link" href="{{ url('/intake/' . $mf->slug) }}">{{ $mf->menuLabel() }} <span class="arrow">@include('partials._ar')</span></a>
     @endforeach
@@ -521,4 +532,35 @@ if ('setAppBadge' in navigator) {
 })();
 @endif
 @endauth
+
+// ── "Get the app": real install prompt on Android, guided card on iOS ──
+(function () {
+  const btn = document.getElementById('a2hsBtn');
+  if (!btn) return;
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (standalone) return;                       // already installed
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); deferred = e; btn.hidden = false;
+  });
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIOS) btn.hidden = false;
+  btn.addEventListener('click', async () => {
+    if (deferred) { deferred.prompt(); deferred = null; return; }   // Android: 2 taps total
+    // iOS: show the two-tap map
+    let card = document.getElementById('a2hsCard');
+    if (!card) {
+      card = document.createElement('div');
+      card.id = 'a2hsCard'; card.className = 'a2hs-card';
+      card.innerHTML = '<div class="a2hs-inner">'
+        + '<h3>📲 Put Shalom on your home screen</h3>'
+        + '<div class="a2hs-step"><span class="a2hs-num">1</span><span>Tap the <b>Share</b> button <svg class="a2hs-glyph" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#03617A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> at the bottom of Safari</span></div>'
+        + '<div class="a2hs-step"><span class="a2hs-num">2</span><span>Scroll a little and tap <b>Add to Home Screen</b></span></div>'
+        + '<button type="button" class="a2hs-close">Got it</button></div>';
+      document.body.appendChild(card);
+      card.addEventListener('click', (e) => { if (e.target === card || e.target.classList.contains('a2hs-close')) card.classList.remove('open'); });
+    }
+    card.classList.add('open');
+  });
+})();
 </script>
