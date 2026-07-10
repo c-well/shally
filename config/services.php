@@ -43,6 +43,11 @@ return [
         'key' => env('ANTHROPIC_API_KEY'),
     ],
 
+    'vapid' => [
+        'public' => env('VAPID_PUBLIC'),
+        'private' => env('VAPID_PRIVATE'),
+        'subject' => env('VAPID_SUBJECT', 'mailto:contact@thechurchofpeace.org'),
+    ],
     'twilio' => [
         'sid' => env('TWILIO_SID'),
         'token' => env('TWILIO_TOKEN'),
