@@ -176,6 +176,19 @@ Route::middleware('auth')->group(function () {
     // Admin hub + tools (super_admin only)
     Route::middleware('role:super_admin')->group(function () {
         Route::view  ('/admin',                        'admin.hub')->name('admin.hub');
+        Route::post  ('/admin/push/subscribe', function (\Illuminate\Http\Request $r) {
+            $d = $r->validate(['endpoint' => 'required|string|max:1000', 'keys.p256dh' => 'required|string|max:255', 'keys.auth' => 'required|string|max:255']);
+            \DB::table('push_subscriptions')->updateOrInsert(
+                ['endpoint_hash' => hash('sha256', $d['endpoint'])],
+                ['user_id' => $r->user()->id, 'endpoint' => $d['endpoint'],
+                 'p256dh' => $d['keys']['p256dh'], 'auth' => $d['keys']['auth'],
+                 'updated_at' => now(), 'created_at' => now()]);
+            return response()->json(['ok' => true]);
+        })->name('admin.push.subscribe');
+        Route::post  ('/admin/push/test', function () {
+            $n = app(\App\Services\PushService::class)->toClerks('🔔 Test from Shalom', 'Push is alive — this arrived with the app closed.', '/admin');
+            return response()->json(['ok' => true, 'sent' => $n]);
+        })->name('admin.push.test');
         Route::get   ('/admin/badge-count', function () {
             return response()->json(['n' =>
                 \App\Models\ContactMessage::whereNull('read_at')->count()

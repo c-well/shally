@@ -493,6 +493,7 @@
   <button type="button" class="sys-check" id="sysCheck" data-url="{{ route('admin.system.updates') }}">Check for new releases</button>
   <a class="sys-check" style="display:inline-block;text-decoration:none;margin-left:8px;" href="{{ route('admin.stack') }}" target="_blank" rel="noopener">Stack &amp; restore sheet</a>
   @php $lsOn = \App\Models\AppSetting::get('living_schedule', '1') === '1'; @endphp
+  <button type="button" class="sys-check" id="pushBtn" style="margin-left:8px;" data-vapid="{{ config('services.vapid.public') }}" data-sub="{{ route('admin.push.subscribe') }}" data-test="{{ route('admin.push.test') }}">🔔 Enable notifications</button>
   <button type="button" class="sys-check" id="lsToggle" style="margin-left:8px;{{ $lsOn ? 'background:var(--teal);border-color:var(--teal);color:#fff;' : '' }}"
           data-url="{{ route('admin.system.living-schedule') }}">Living schedule: <b id="lsState">{{ $lsOn ? 'ON' : 'OFF' }}</b></button>
   <div class="sys-result" id="sysResult" hidden></div>
@@ -512,6 +513,41 @@
   .sys-result .note { margin-top: 8px; font-size: 11.5px; color: var(--ink-soft); }
 </style>
 <script>
+(function () {
+  const btn = document.getElementById('pushBtn');
+  const b64ToU8 = (b64) => {
+    const pad = '='.repeat((4 - b64.length % 4) % 4);
+    const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+  };
+  async function state() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) { btn.textContent = '🔔 Not supported here'; btn.disabled = true; return null; }
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) { btn.textContent = '🔔 Send test notification'; btn.dataset.ready = '1'; }
+    return reg;
+  }
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const reg = await state(); if (!reg) return;
+      if (btn.dataset.ready === '1') {
+        const r = await fetch(btn.dataset.test, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } });
+        const d = await r.json();
+        btn.textContent = '🔔 Sent to ' + d.sent + ' device' + (d.sent === 1 ? '' : 's') + ' — check your phone';
+        setTimeout(() => { btn.textContent = '🔔 Send test notification'; }, 4000);
+      } else {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') { btn.textContent = '🔔 Permission denied'; return; }
+        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(btn.dataset.vapid) });
+        await fetch(btn.dataset.sub, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(sub.toJSON()) });
+        btn.dataset.ready = '1'; btn.textContent = '🔔 Enabled — tap to send a test';
+      }
+    } catch (e) { btn.textContent = '🔔 Failed — try in the installed app'; }
+    btn.disabled = false;
+  });
+  state();
+})();
 document.getElementById('lsToggle').addEventListener('click', async function () {
   const b = this;
   b.disabled = true;

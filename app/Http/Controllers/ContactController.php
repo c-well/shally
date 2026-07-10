@@ -88,6 +88,8 @@ class ContactController extends Controller
             'user_agent' => substr($request->userAgent() ?? '', 0, 250),
         ]);
 
+        try { app(\App\Services\PushService::class)->toClerks('✉️ New message', $data['name'] . ' wrote through the contact page.', '/admin/messages'); } catch (\Throwable $e) {}
+
         $body  = "From: {$data['name']} <{$data['email']}>\n";
         $body .= "Sent via the public contact form on thechurchofpeace.org\n";
         $body .= 'IP: ' . $request->ip() . ' · UA: ' . substr($request->userAgent() ?? '', 0, 200) . "\n";

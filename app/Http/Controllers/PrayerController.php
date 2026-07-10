@@ -73,6 +73,8 @@ class PrayerController extends Controller
             'user_agent'    => substr($request->userAgent() ?? '', 0, 250),
         ]);
 
+        try { app(\App\Services\PushService::class)->toClerks('🙏 New prayer request', ($pr->name ?: 'Someone') . ' just asked for prayer.', '/admin/messages'); } catch (\Throwable $e) {}
+
         $lines  = "New prayer request from thechurchofpeace.org\n";
         $lines .= str_repeat('-', 60) . "\n";
         $lines .= 'From:           ' . ($pr->name  ?: '— anonymous —') . "\n";
