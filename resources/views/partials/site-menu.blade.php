@@ -171,7 +171,7 @@
   .mn-row { display: block; padding: 13px 4px; font-size: 17px; }
   .mn-today { background: var(--teal, #03617A); color: #fff; border-radius: 14px; padding: 18px; margin: 8px 0 6px; }
   .mn-today .lab { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: .2em; text-transform: uppercase; opacity: .8; }
-  .mn-today .big { font-family: 'Cormorant Garamond', serif; font-size: 23px; margin-top: 6px; line-height: 1.25; }
+  .mn-today .big { font-family: 'Instrument Sans', sans-serif; font-size: 17px; font-weight: 600; margin-top: 6px; line-height: 1.4; font-variant-numeric: tabular-nums; }
   .mn-live { display: inline-block; margin-top: 12px; color: #fff; border: 1px solid rgba(255,255,255,.45); border-radius: 7px; padding: 8px 12px; font: 700 11px 'Instrument Sans', sans-serif; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
 
 

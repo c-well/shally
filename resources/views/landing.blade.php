@@ -610,6 +610,7 @@
   .pb-inner { max-width: 980px; margin: 0 auto; padding: clamp(24px, 4vh, 34px) clamp(20px, 5vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 22px 40px; flex-wrap: wrap; }
   .pb-lab { font: 700 10px 'Instrument Sans', sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal, #03617A); }
   .pb-line { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 4vw, 28px); color: var(--ink, #1a2332); margin-top: 4px; }
+  .pb-time { font-family: 'Instrument Sans', sans-serif; font-size: clamp(15px, 2.6vw, 18px); font-weight: 600; letter-spacing: 0.04em; color: var(--ink-soft, #4a5568); font-variant-numeric: tabular-nums; vertical-align: 2px; }
   .pb-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
   .pb-join { font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: #fff; background: var(--teal, #03617A); border-radius: 8px; padding: 14px 22px; text-decoration: none; }
   .pb-join:hover { filter: brightness(1.08); }
@@ -705,6 +706,11 @@
     </div>
   </div>
   @php
+    // Weekday-dawn prayer window (shared with the schedule cards below)
+    $heroNy = now('America/New_York');
+    $heroHopLive = $heroNy->isWeekday() && $heroNy->between($heroNy->copy()->setTime(4,45), $heroNy->copy()->setTime(6,15));
+  @endphp
+  @php
     // LIVE_STATE — read from cache only (peace:check-live cron writes every 5 min).
     // Fail-safe: stale (>15 min) or missing @include('partials._ar') treat as not live.
     $liveCheckedAt = \App\Models\AppSetting::get('is_live_checked_at');
@@ -717,6 +723,18 @@
     <a href="#" class="hero-cta live-cta" data-live-cta>
       <span class="live-cta-dot" aria-hidden="true"></span>
       Watch the service · Live now
+    </a>
+    <div class="hero-live-links">
+      <a href="{{ url('/welcome') }}">This Sabbath's bulletin</a>
+      <span aria-hidden="true">·</span>
+      <a href="{{ route('lesson.show') }}">Sabbath School lesson</a>
+    </div>
+  @elseif ($heroHopLive)
+    {{-- Hour of Prayer is LIVE right now (weekday dawn) — the moment leads.
+         Steve rule: a button changes only when reality changes, and says so. --}}
+    <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="hero-cta live-cta">
+      <span class="live-cta-dot" aria-hidden="true"></span>
+      Hour of Prayer · happening now — join
     </a>
     <div class="hero-live-links">
       <a href="{{ url('/welcome') }}">This Sabbath's bulletin</a>
@@ -745,7 +763,7 @@
   <div class="pb-inner">
     <div class="pb-text">
       <div class="pb-lab">Every weekday</div>
-      <div class="pb-line">Hour of Prayer · 5:00 AM</div>
+      <div class="pb-line">Hour of Prayer <span class="pb-time">· 5:00 AM</span></div>
     </div>
     <div class="pb-actions">
       <a class="pb-join" href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener">Join on Zoom @include('partials._ar')</a>
