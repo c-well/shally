@@ -88,6 +88,11 @@
       <span class="ds">A living card with today's service &amp; live events, then rows.</span>
       <div class="thumb"><div class="th-card"></div><div class="th-lab"></div><div class="th-row"></div><div class="th-row short"></div></div>
     </button>
+    <button type="button" class="style-card" data-style="clean">
+      <span class="nm">Clean</span>
+      <span class="ds">Apple-style — pure type. Big bold links, hairline dividers, nothing else.</span>
+      <div class="thumb"><div class="th-row" style="width:70%;height:8px"></div><div class="th-row" style="width:60%;height:8px"></div><div class="th-row short" style="height:1px;background:rgba(26,35,50,.2)"></div><div class="th-row" style="width:45%"></div><div class="th-row" style="width:52%"></div></div>
+    </button>
   </div>
 
   <div class="seclab">Items — drag ⋮ to reorder (across groups too) · tap Hide to bench one</div>

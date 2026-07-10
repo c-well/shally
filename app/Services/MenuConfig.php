@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route as RouteFacade;
  */
 class MenuConfig
 {
-    public const STYLES = ['classic', 'grouped', 'tiles', 'today'];
+    public const STYLES = ['classic', 'grouped', 'tiles', 'today', 'clean'];
 
     public static function get(): array
     {
