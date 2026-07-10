@@ -108,6 +108,7 @@
   $_unreadTotal   = $_unreadPrayer + $_unreadContact;
 
   $HUB = [
+    'guests'    => ['Welcome', 'Guests.', 'The connect card + automatic follow-ups — day-1 thanks, day-3 questions, birthdays.', 'Open', route('admin.guests')],
     'notes'     => ['Private', 'Notes & keys.', 'The team drawer — passwords, account details, private notes. Encrypted at rest.', 'Open', route('admin.notes')],
     'messages'  => ['Inbox', 'Messages.', 'Prayer requests & contact-form messages from visitors.', 'Open', route('admin.messages')],
     'users'     => ['People', 'Users.', 'Add Andre, the elders, members. Set their PIN.', 'Manage', route('admin.users')],
