@@ -613,7 +613,9 @@
   .svc-hero-now { font: 700 11px 'Instrument Sans', sans-serif; letter-spacing: 0.2em; text-transform: uppercase; opacity: .85; animation: pbPulse 2.2s ease-in-out infinite; }
   .svc-hero-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(30px, 5vw, 40px); font-weight: 500; margin-top: 10px; line-height: 1.1; }
   .svc-hero-cta { display: inline-block; margin-top: 18px; font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid rgba(255,255,255,.5); border-radius: 8px; padding: 12px 20px; }
-  .svc-hero-sub { margin-top: 16px; font: 500 12.5px 'Instrument Sans', sans-serif; letter-spacing: 0.06em; opacity: .85; }
+  .svc-hero-stack { display: inline-flex; flex-direction: column; align-items: stretch; max-width: 100%; }
+  .svc-hero-stack .svc-hero-cta { margin-top: 18px; }
+  .svc-hero-sub { margin-top: 12px; font: 500 11.5px 'Instrument Sans', sans-serif; letter-spacing: 0.04em; opacity: .85; line-height: 1.5; width: 0; min-width: 100%; }
   .svc-others { margin-top: 22px; text-align: center; font: 500 13px 'Instrument Sans', sans-serif; color: var(--ink-soft); display: flex; gap: 10px 14px; justify-content: center; flex-wrap: wrap; }
   .svc-others a { color: var(--teal); text-decoration: none; }
   .svc-others a:hover { text-decoration: underline; }
@@ -796,8 +798,10 @@
       <a class="svc-hero" href="https://www.youtube.com/@gotoshalom/live" target="_blank" rel="noopener">
         <div class="svc-hero-now">● Happening now</div>
         <div class="svc-hero-name">{{ $svcActive['name'] }}</div>
-        <div class="svc-hero-cta">Watch Live Now @include('partials._ar')</div>
-        <div class="svc-hero-sub">We're gathered — 3323 White Plains Rd, Bronx</div>
+        <span class="svc-hero-stack">
+          <span class="svc-hero-cta">Watch Live Now @include('partials._ar')</span>
+          <span class="svc-hero-sub">We're gathered — 3323 White Plains Rd, Bronx</span>
+        </span>
       </a>
     @endif
     <div class="svc-others">
