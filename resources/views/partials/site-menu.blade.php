@@ -172,8 +172,8 @@
   .mn-clean { position: relative; padding: 6px 0 4px; overflow: hidden; }
   .mn-clean-root { transition: transform .26s ease, opacity .26s ease; }
   .mn-clean-root.away { transform: translateX(-26%); opacity: 0; pointer-events: none; position: absolute; inset: 6px 0 auto; }
-  .mn-clean-link { display: block; width: 100%; text-align: left; background: none; border: 0; cursor: pointer; font: 600 18px/1.3 'Instrument Sans', sans-serif; letter-spacing: -.008em; color: var(--ink, #1a2332); text-decoration: none; padding: 8px 2px; }
-  .mn-clean-link.primary { font-size: 28px; font-weight: 700; letter-spacing: -.022em; padding: 9px 2px; }
+  .mn-clean-link { display: block; width: 100%; text-align: left; background: none; border: 0; cursor: pointer; font: 500 18px/1.3 'Instrument Sans', sans-serif; letter-spacing: -.008em; color: var(--ink, #1a2332); text-decoration: none; padding: 8px 2px; }
+  .mn-clean-link.primary { font-size: 28px; font-weight: 600; letter-spacing: -.018em; padding: 9px 2px; }
   .mn-clean-link:hover { color: var(--teal, #03617A); }
   .mn-clean-link .mn-badge { vertical-align: 4px; margin-left: 8px; }
   .mn-drill .chev { width: 20px; height: 20px; margin-left: 10px; vertical-align: -1px; color: var(--ink-soft, #6b7280); }

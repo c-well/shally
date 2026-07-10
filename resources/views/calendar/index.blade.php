@@ -26,6 +26,10 @@
   .edit-btn { color: var(--ink-soft); }
   .edit-btn[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: #fff; }
   body.editing .cell:hover, body.editing .wband:hover, body.editing .tg-col:hover { border-color: var(--brass); }
+  .cal-return { display: flex; align-items: center; gap: 10px; margin: -6px 0 14px; font: 500 13px 'Instrument Sans', sans-serif; }
+  .cal-return a { color: var(--ink-soft, #4a5568); text-decoration: none; }
+  .cal-return a:hover { color: var(--teal); }
+  .cal-return .sep { color: var(--ink-soft, #6b7280); opacity: .5; }
   .cal-nav { display: flex; align-items: center; gap: 8px; }
   .rnd { width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); font-size: 17px; display: inline-flex; align-items: center; justify-content: center; }
   .rnd:hover { border-color: var(--teal); color: var(--teal); }
@@ -183,6 +187,11 @@
 @include('partials.site-menu')
 
 <main>
+  <div class="cal-return">
+    <a href="{{ \App\Services\MenuConfig::href(['route' => 'bulletin.smart']) }}">‹ This Sabbath's Bulletin</a>
+    <span class="sep">·</span>
+    <a href="{{ url('/announcements') }}">Announcements</a>
+  </div>
   <div class="cal-bar">
     <div class="cal-nav">
       <button class="rnd" id="prev" aria-label="Previous">‹</button>
