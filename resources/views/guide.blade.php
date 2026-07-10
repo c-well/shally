@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-snap-type: y mandatory; }
@@ -19,7 +19,7 @@
   @media (max-width: 820px) { html { scroll-snap-type: y proximity; } .slide-inner { grid-template-columns: 1fr; gap: 22px; } }
 
   .zone-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--brass, #8a6c26); margin-bottom: 12px; }
-  .slide h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(27px,4vw,38px); font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
+  .slide h2 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(24px,3.6vw,34px); font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
   .slide .copy { font-size: 15.5px; line-height: 1.7; color: var(--ink-soft); margin-top: 14px; }
   .slide .copy b { color: var(--ink); }
   .try { margin-top: 14px; font-size: 12.5px; font-weight: 600; color: var(--teal); background: color-mix(in srgb, var(--teal) 6%, #fff); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 10px 14px; line-height: 1.55; }
@@ -106,15 +106,22 @@
   /* hero + nav */
   .hero { text-align: center; }
   .hero .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--teal); }
-  .hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(44px,9vw,64px); font-weight: 500; letter-spacing: -0.02em; margin-top: 12px; }
+  .hero h1 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(38px,8vw,56px); font-weight: 700; letter-spacing: -0.02em; margin-top: 12px; }
   .hero p { font-size: 15px; color: var(--ink-soft); max-width: 460px; margin: 16px auto 0; line-height: 1.65; }
   .hero .scroll-hint { margin-top: 38px; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
   .hero .scroll-hint .v { display: block; font-size: 20px; color: var(--teal); animation: nudge 1.8s ease-in-out infinite; }
   @keyframes nudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
 
+  .rail { position: fixed; right: clamp(8px, 2vw, 22px); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 9px; z-index: 20; }
+  .rail button { width: 10px; height: 10px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); background: transparent; cursor: pointer; padding: 0; }
+  .rail button.on { background: var(--teal); border-color: var(--teal); transform: scale(1.25); }
+  .navbtns { position: fixed; bottom: 18px; right: clamp(14px, 3vw, 30px); display: flex; gap: 8px; z-index: 20; }
+  .navbtns button { width: 46px; height: 46px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--teal); font-size: 18px; cursor: pointer; box-shadow: 0 4px 14px rgba(26,35,50,.08); }
+  .navbtns button:hover { border-color: var(--teal); }
+  @media (max-width: 700px) { .rail { display: none; } }
   .stepnum { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: var(--ink-faint); }
   .fin { text-align: center; }
-  .fin h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(34px,6vw,48px); font-weight: 500; }
+  .fin h2 { font-family: 'Instrument Sans', sans-serif; font-size: clamp(30px,5vw,42px); font-weight: 700; }
   .fin p { color: var(--ink-soft); margin-top: 12px; }
   .fin b { color: var(--teal); font-weight: 500; }
 </style>
@@ -132,7 +139,7 @@
 </div></section>
 
 {{-- ════════ 1 · DRAG ════════ --}}
-<section class="slide"><div class="stepnum">1 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Bulletin editor</div>
     <h2>Drag the dots to reorder.</h2>
@@ -146,7 +153,7 @@
 </div></section>
 
 {{-- ════════ 2 · BLANK TITLE ════════ --}}
-<section class="slide"><div class="stepnum">2 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Bulletin editor</div>
     <h2>A blank title tucks under the row above.</h2>
@@ -160,7 +167,7 @@
 </div></section>
 
 {{-- ════════ 3 · WRITING SPACE ════════ --}}
-<section class="slide"><div class="stepnum">3 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Bulletin editor</div>
     <h2>Tap a detail — it opens into a writing space.</h2>
@@ -175,7 +182,7 @@
 </div></section>
 
 {{-- ════════ 4 · BULLETS ════════ --}}
-<section class="slide"><div class="stepnum">4 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Bulletin editor</div>
     <h2>Dash means black bullet.</h2>
@@ -193,7 +200,7 @@
 </div></section>
 
 {{-- ════════ 5 · DIVIDER ════════ --}}
-<section class="slide"><div class="stepnum">5 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Bulletin editor</div>
     <h2>The dashed line is where the paper ends.</h2>
@@ -208,7 +215,7 @@
 </div></section>
 
 {{-- ════════ 6 · FOCUS FOLD ════════ --}}
-<section class="slide"><div class="stepnum">6 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Bulletin editor</div>
     <h2>The bulletin steps aside while you work.</h2>
@@ -226,7 +233,7 @@
 </div></section>
 
 {{-- ════════ 7 · 2-UP ════════ --}}
-<section class="slide"><div class="stepnum">7 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Bulletin editor</div>
     <h2>2-UP: one sheet, two bulletins.</h2>
@@ -242,7 +249,7 @@
 </div></section>
 
 {{-- ════════ 8 · SERIES ════════ --}}
-<section class="slide"><div class="stepnum">8 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Events · bulletin page</div>
     <h2>Describe a series once — the calendar unrolls it.</h2>
@@ -263,7 +270,7 @@
 </div></section>
 
 {{-- ════════ 9 · SMART FILL ════════ --}}
-<section class="slide"><div class="stepnum">9 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Events · bulletin page</div>
     <h2>✨ Smart fill reads your Notes.</h2>
@@ -285,7 +292,7 @@
 </div></section>
 
 {{-- ════════ 10 · TUNE IN ════════ --}}
-<section class="slide"><div class="stepnum">10 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Events · bulletin page</div>
     <h2>The Watch link lights a "tune in" button.</h2>
@@ -299,7 +306,7 @@
 </div></section>
 
 {{-- ════════ 11 · FILTERS ════════ --}}
-<section class="slide"><div class="stepnum">11 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Calendar</div>
     <h2>The legend chips are filters.</h2>
@@ -320,7 +327,7 @@
 </div></section>
 
 {{-- ════════ 12 · SHARE URL ════════ --}}
-<section class="slide"><div class="stepnum">12 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Calendar</div>
     <h2>Every view is a link you can text.</h2>
@@ -333,7 +340,7 @@
 </div></section>
 
 {{-- ════════ 13 · EDIT MODE ════════ --}}
-<section class="slide"><div class="stepnum">13 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">Calendar</div>
     <h2>Edit mode: tap Edit, then tap a day.</h2>
@@ -350,7 +357,7 @@
 </div></section>
 
 {{-- ════════ 14 · THE LOOP ════════ --}}
-<section class="slide"><div class="stepnum">14 · 14</div><div class="slide-inner">
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
   <div>
     <div class="zone-tag">The big picture</div>
     <h2>Typed once. True everywhere.</h2>
@@ -370,13 +377,161 @@
   </div>
 </div></section>
 
+{{-- ════════ ADMIN ZONE ════════ --}}
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
+  <div>
+    <div class="zone-tag">Admin · /admin/analytics</div>
+    <h2>You can see where people actually go.</h2>
+    <p class="copy">First-party analytics — no Google, nothing creepy. Page views, <b>click heatmaps per page</b>, scroll depth, and each visitor's path. Bots are filtered hard, so every number is a <b>real person</b>.</p>
+  </div>
+  <div class="demo"><div class="demo-cap">The gist</div>
+    <div style="display:flex;gap:6px;align-items:flex-end;height:70px;">
+      <div style="flex:1;background:color-mix(in srgb, var(--teal) 25%, #fff);height:100%;border-radius:4px 4px 0 0"></div>
+      <div style="flex:1;background:color-mix(in srgb, var(--teal) 25%, #fff);height:55%;border-radius:4px 4px 0 0"></div>
+      <div style="flex:1;background:color-mix(in srgb, var(--teal) 25%, #fff);height:40%;border-radius:4px 4px 0 0"></div>
+      <div style="flex:1;background:color-mix(in srgb, var(--teal) 25%, #fff);height:28%;border-radius:4px 4px 0 0"></div>
+      <div style="flex:1;background:color-mix(in srgb, var(--teal) 25%, #fff);height:18%;border-radius:4px 4px 0 0"></div>
+    </div>
+    <div style="font-size:11px;color:#6b7280;margin-top:8px;">Home · Bulletin · Announcements · Messages · Calendar</div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
+  <div>
+    <div class="zone-tag">Admin · Messages card</div>
+    <h2>Prayer requests &amp; contact messages land in the Inbox.</h2>
+    <p class="copy">The <b>PRAYER</b> and <b>CONTACT</b> tabs hold what visitors send. Spam never reaches you — the traps eat it silently (and they've been tuned so <b>real</b> people never get eaten).</p>
+  </div>
+  <div class="demo"><div class="demo-cap">What you'll see</div>
+    <div style="display:flex;gap:14px;font:700 11px 'Instrument Sans';letter-spacing:.12em;color:#6b7280;">
+      <span style="color:var(--teal);border-bottom:2px solid var(--teal);padding-bottom:6px;">PRAYER <span class="mn-badge" style="background:var(--brass, #8a6c26)">2</span></span>
+      <span>CONTACT</span><span>TRASH</span>
+    </div>
+    <div class="m-row" style="margin-top:12px"><span class="m-field">"Please pray for my family…"</span></div>
+    <div class="m-row"><span class="m-field">"Grateful for Sabbath's message…"</span></div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
+  <div>
+    <div class="zone-tag">Admin · Notes &amp; keys</div>
+    <h2>The private drawer.</h2>
+    <p class="copy">Passwords, account details, anything the team needs but the public never sees. <b>Encrypted in the database</b> — even a stolen copy of the data can't open this drawer. Autosaves as you type.</p>
+  </div>
+  <div class="demo"><div class="demo-cap">What you'll see</div>
+    <div class="m-row"><span class="m-field" style="font-weight:700">media@thechurchofpeace.org — mailbox</span></div>
+    <div class="m-ta" style="min-height:56px;border-color:var(--line);font-family:'JetBrains Mono',monospace;font-size:11px;">Email: media@…<br>Password: ••••••••••<br>Forwards to: andre…</div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
+  <div>
+    <div class="zone-tag">Admin · /admin/menu</div>
+    <h2>The menu is yours to shape.</h2>
+    <p class="copy">The Menu Studio: pick one of <b>four templates</b>, drag items anywhere (even between groups), rename, hide. Changes go live on the next page-load, and the menu <b>can never break</b> — a dead link simply doesn't render.</p>
+  </div>
+  <div class="demo"><div class="demo-cap">Template cards</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="border:2px solid var(--teal);border-radius:8px;padding:10px;font:700 11px 'Instrument Sans';">Classic</div>
+      <div style="border:1px solid var(--line);border-radius:8px;padding:10px;font:700 11px 'Instrument Sans';color:#6b7280;">Grouped</div>
+      <div style="border:1px solid var(--line);border-radius:8px;padding:10px;font:700 11px 'Instrument Sans';color:#6b7280;">Tiles</div>
+      <div style="border:1px solid var(--line);border-radius:8px;padding:10px;font:700 11px 'Instrument Sans';color:#6b7280;">Today card</div>
+    </div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
+  <div>
+    <div class="zone-tag">Admin · Peace ministry</div>
+    <h2>Trim sermon audio by ear, not by guesswork.</h2>
+    <p class="copy">Each sermon's edit page has an <b>audition deck</b>: play, scrub, skip ±5/±30 seconds — then tap <b>Playhead → Start</b> / <b>Playhead → End</b> and the trim times fill themselves.</p>
+  </div>
+  <div class="demo"><div class="demo-cap">The deck</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="width:38px;height:38px;border-radius:50%;background:var(--teal);color:#fff;display:inline-flex;align-items:center;justify-content:center;">▶</span>
+      <div style="flex:1;height:7px;background:rgba(26,35,50,.12);border-radius:999px;position:relative;"><span style="position:absolute;inset:0 62% 0 0;background:var(--teal);border-radius:999px;"></span></div>
+      <span style="font:500 11px 'JetBrains Mono',monospace;color:#6b7280;">12:34</span>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:10px;">
+      <span style="flex:1;text-align:center;border:1px solid var(--teal);color:var(--teal);border-radius:7px;padding:8px;font:700 10px 'Instrument Sans';letter-spacing:.1em;">PLAYHEAD → START</span>
+      <span style="flex:1;text-align:center;border:1px solid var(--teal);color:var(--teal);border-radius:7px;padding:8px;font:700 10px 'Instrument Sans';letter-spacing:.1em;">PLAYHEAD → END</span>
+    </div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
+  <div>
+    <div class="zone-tag">Admin · homepage behavior</div>
+    <h2>The homepage knows when church is happening.</h2>
+    <p class="copy">During any service's window, its schedule card takes the stage in deep green — Zoom ones say <b>Join</b>, in-person ones give the address. The <b>Living schedule: ON/OFF</b> chip at the bottom of the admin home is the master switch.</p>
+  </div>
+  <div class="demo"><div class="demo-cap">The switch + the takeover</div>
+    <div style="display:inline-block;font:700 11px 'Instrument Sans';letter-spacing:.12em;background:var(--teal);color:#fff;border-radius:8px;padding:10px 16px;">LIVING SCHEDULE: <b>ON</b></div>
+    <div style="margin-top:12px;background:#1f6843;color:#fff;border-radius:10px;padding:16px;text-align:center;">
+      <div style="font:700 9px 'Instrument Sans';letter-spacing:.18em;opacity:.85;">● HAPPENING NOW</div>
+      <div style="font:600 18px 'Instrument Sans';margin-top:6px;">Prayer Meeting</div>
+    </div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
+  <div>
+    <div class="zone-tag">Admin · the bottom strip</div>
+    <h2>The stack watches itself.</h2>
+    <p class="copy">The foot of the admin home shows what the site runs on, checks for new releases <b>nightly</b>, and if a security advisory ever appears, a <b>red banner surfaces at the top on its own</b> — you never have to remember to look.</p>
+  </div>
+  <div class="demo"><div class="demo-cap">Quiet when fine, loud when not</div>
+    <div style="font:500 11px 'JetBrains Mono',monospace;color:#4a5568;">Laravel 12.62 · PHP 8.3 · MySQL 10.11</div>
+    <div style="margin-top:10px;background:#a33d3d;color:#fff;border-radius:8px;padding:10px 12px;font:600 11px 'Instrument Sans';">⚠ 1 security advisory — see the strip below</div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="stepnum"></div><div class="slide-inner">
+  <div>
+    <div class="zone-tag">Admin · if the worst happens</div>
+    <h2>The whole church site fits in one zip.</h2>
+    <p class="copy">Every Sunday 3 AM the site packages itself — code, database, restore instructions. And the <b>Stack &amp; restore sheet</b> (bottom of admin home) is one page a fresh engineer — or a fresh Claude — can read to rebuild everything.</p>
+  </div>
+  <div class="demo"><div class="demo-cap">The safety net</div>
+    <div class="m-row"><span class="m-field" style="font-family:'JetBrains Mono',monospace;font-size:11px;">shalom-offline-20260705.zip · 801 MB</span></div>
+    <div style="font-size:11px;color:#6b7280;margin-top:8px;">app + database + STACK.md + RESTORE.md — six commands to resurrection.</div>
+  </div>
+</div></section>
+
 {{-- ════════ FIN ════════ --}}
 <section class="slide"><div class="fin">
   <h2>That's every secret.</h2>
   <p>Forget one? This page lives in the Admin menu — <b>Field Guide</b>.</p>
-  <p style="font-family:'Cormorant Garamond',serif; font-size:22px; margin-top:26px;">Now go make Sabbath easy <b>:)</b></p>
+  <p style="font-size:18px; font-weight:600; margin-top:26px;">Now go make Sabbath easy <b>:)</b></p>
 </div></section>
 
 @include('partials._event-tracker')
+<div class="rail" id="rail" aria-label="Sections"></div>
+<div class="navbtns">
+  <button type="button" id="prevS" aria-label="Previous section">↑</button>
+  <button type="button" id="nextS" aria-label="Next section">↓</button>
+</div>
+<script>
+(function () {
+  const slides = [...document.querySelectorAll('.slide')];
+  const rail = document.getElementById('rail');
+  const steps = [...document.querySelectorAll('.stepnum')];
+  steps.forEach((el, i) => el.textContent = (i + 1) + ' · ' + steps.length);
+  slides.forEach((sl, i) => {
+    const b = document.createElement('button');
+    b.setAttribute('aria-label', 'Section ' + (i + 1));
+    b.addEventListener('click', () => sl.scrollIntoView({ behavior: 'smooth' }));
+    rail.appendChild(b);
+  });
+  const dots = [...rail.children];
+  let cur = 0;
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) { cur = slides.indexOf(e.target); dots.forEach((d, i) => d.classList.toggle('on', i === cur)); } });
+  }, { threshold: 0.55 });
+  slides.forEach(sl => io.observe(sl));
+  document.getElementById('prevS').addEventListener('click', () => slides[Math.max(0, cur - 1)].scrollIntoView({ behavior: 'smooth' }));
+  document.getElementById('nextS').addEventListener('click', () => slides[Math.min(slides.length - 1, cur + 1)].scrollIntoView({ behavior: 'smooth' }));
+})();
+</script>
 </body>
 </html>
