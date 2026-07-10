@@ -467,4 +467,17 @@
       });
     });
   })();
+
+// ── PWA icon badge (clerks): unread inbox count → home-screen icon.
+//    Sets on every open; persists after close. Live-while-closed needs push (future).
+@auth
+@if (in_array(auth()->user()->role, ['super_admin','clerk']))
+if ('setAppBadge' in navigator) {
+  fetch('{{ route('admin.badge-count') }}', { headers: { 'Accept': 'application/json' } })
+    .then(r => r.json())
+    .then(d => d.n > 0 ? navigator.setAppBadge(d.n) : navigator.clearAppBadge())
+    .catch(() => {});
+}
+@endif
+@endauth
 </script>
