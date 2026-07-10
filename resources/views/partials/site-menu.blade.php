@@ -480,4 +480,45 @@ if ('setAppBadge' in navigator) {
 }
 @endif
 @endauth
+
+// ── First-open notification offer (installed app, clerks, once) ──
+@auth
+@if (in_array(auth()->user()->role, ['super_admin','clerk']))
+(function () {
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (!standalone || !('PushManager' in window) || !('serviceWorker' in navigator)) return;
+  if (localStorage.getItem('pushPromptDone')) return;
+  if (Notification.permission === 'denied') return;
+  navigator.serviceWorker.register('/sw.js').then(reg => reg.pushManager.getSubscription()).then(sub => {
+    if (sub) { localStorage.setItem('pushPromptDone', '1'); return; }
+    const card = document.createElement('div');
+    card.id = 'pushPrompt';
+    card.innerHTML = '<style>#pushPrompt{position:fixed;left:14px;right:14px;bottom:16px;z-index:120;background:#fff;border:1px solid rgba(26,35,50,.14);border-radius:14px;padding:18px;box-shadow:0 18px 44px rgba(26,35,50,.18);font-family:\'Instrument Sans\',sans-serif;max-width:430px;margin:0 auto;animation:ppUp .3s ease}@keyframes ppUp{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}#pushPrompt .t{font-weight:700;font-size:15px;color:#1a2332}#pushPrompt .d{font-size:13px;color:#4a5568;margin-top:5px;line-height:1.55}#pushPrompt .row{display:flex;gap:8px;margin-top:14px}#pushPrompt button{flex:1;font:700 11px \'Instrument Sans\';letter-spacing:.1em;text-transform:uppercase;border-radius:8px;padding:12px;cursor:pointer}#pushPrompt .yes{background:#03617A;border:0;color:#fff}#pushPrompt .no{background:#fff;border:1px solid rgba(26,35,50,.14);color:#4a5568}</style>'
+      + '<div class="t">🔔 Know the moment someone reaches out</div>'
+      + '<div class="d">Get a buzz when a prayer request or message arrives — even with the app closed.</div>'
+      + '<div class="row"><button class="yes" type="button">Turn on</button><button class="no" type="button">Not now</button></div>';
+    document.body.appendChild(card);
+    const done = () => { localStorage.setItem('pushPromptDone', '1'); card.remove(); };
+    card.querySelector('.no').addEventListener('click', done);
+    card.querySelector('.yes').addEventListener('click', async () => {
+      try {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') { done(); return; }
+        const b64 = @json(config('services.vapid.public'));
+        const pad = '='.repeat((4 - b64.length % 4) % 4);
+        const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+        const key = Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+        const sub = await reg_.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+        await fetch(@json(route('admin.push.subscribe')), { method: 'POST', headers: { 'X-CSRF-TOKEN': @json(csrf_token()), 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(sub.toJSON()) });
+        card.querySelector('.t').textContent = '🔔 You\'re on the list';
+        card.querySelector('.d').textContent = 'Prayer requests and messages will find you now.';
+        card.querySelector('.row').remove();
+        setTimeout(done, 2600);
+      } catch (e) { done(); }
+    });
+    let reg_; navigator.serviceWorker.ready.then(r => reg_ = r);
+  }).catch(() => {});
+})();
+@endif
+@endauth
 </script>
