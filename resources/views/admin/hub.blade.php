@@ -490,18 +490,22 @@
       <span class="sys-item"><b>{{ $n }}</b> {{ ltrim((string) $v, 'v') }}</span>
     @endforeach
   </div>
-  <button type="button" class="sys-check" id="sysCheck" data-url="{{ route('admin.system.updates') }}">Check for new releases</button>
-  <a class="sys-check" style="display:inline-block;text-decoration:none;margin-left:8px;" href="{{ route('admin.stack') }}" target="_blank" rel="noopener">Stack &amp; restore sheet</a>
   @php $lsOn = \App\Models\AppSetting::get('living_schedule', '1') === '1'; @endphp
-  <button type="button" class="sys-check" id="pushBtn" style="margin-left:8px;" data-vapid="{{ config('services.vapid.public') }}" data-sub="{{ route('admin.push.subscribe') }}" data-test="{{ route('admin.push.test') }}">🔔 Enable notifications</button>
-  <button type="button" class="sys-check" id="lsToggle" style="margin-left:8px;{{ $lsOn ? 'background:var(--teal);border-color:var(--teal);color:#fff;' : '' }}"
-          data-url="{{ route('admin.system.living-schedule') }}">Living schedule: <b id="lsState">{{ $lsOn ? 'ON' : 'OFF' }}</b></button>
+  <div class="sys-actions">
+    <button type="button" class="sys-check" id="sysCheck" data-url="{{ route('admin.system.updates') }}">Check for new releases</button>
+    <a class="sys-check" href="{{ route('admin.stack') }}" target="_blank" rel="noopener">Stack &amp; restore sheet</a>
+    <button type="button" class="sys-check" id="pushBtn" data-vapid="{{ config('services.vapid.public') }}" data-sub="{{ route('admin.push.subscribe') }}" data-test="{{ route('admin.push.test') }}">🔔 Notifications</button>
+    <button type="button" class="sys-check {{ $lsOn ? 'on' : '' }}" id="lsToggle" data-url="{{ route('admin.system.living-schedule') }}">Living schedule: <b id="lsState">{{ $lsOn ? 'ON' : 'OFF' }}</b></button>
+  </div>
   <div class="sys-result" id="sysResult" hidden></div>
 </footer>
 <style>
   .sysstrip { max-width: 1180px; margin: 60px auto 30px; padding: 22px 28px 26px; border-top: 1px solid var(--line); text-align: center; }
   .sys-rows { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-soft); }
   .sys-item b { color: var(--ink); font-weight: 600; }
+  .sys-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 9px; max-width: 640px; margin: 18px auto 0; }
+  .sys-actions .sys-check { margin: 0; width: 100%; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+  .sys-check.on { background: var(--teal); border-color: var(--teal); color: #fff; }
   .sys-check { margin-top: 16px; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px; cursor: pointer; }
   .sys-check:hover { border-color: var(--teal); }
   .sys-check:disabled { opacity: .55; cursor: wait; }
@@ -555,9 +559,7 @@ document.getElementById('lsToggle').addEventListener('click', async function () 
     const r = await fetch(b.dataset.url, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}', 'Accept': 'application/json' } });
     const d = await r.json();
     document.getElementById('lsState').textContent = d.on ? 'ON' : 'OFF';
-    b.style.background = d.on ? 'var(--teal)' : '';
-    b.style.borderColor = d.on ? 'var(--teal)' : '';
-    b.style.color = d.on ? '#fff' : '';
+    b.classList.toggle('on', d.on);
   } catch (e) {}
   b.disabled = false;
 });
