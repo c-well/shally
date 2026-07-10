@@ -183,10 +183,12 @@ Route::middleware('auth')->group(function () {
                 ['user_id' => $r->user()->id, 'endpoint' => $d['endpoint'],
                  'p256dh' => $d['keys']['p256dh'], 'auth' => $d['keys']['auth'],
                  'updated_at' => now(), 'created_at' => now()]);
+            \App\Models\AuditLog::record(event: 'push_subscribed', description: $r->user()->name . ' enabled push notifications on a device');
             return response()->json(['ok' => true]);
         })->name('admin.push.subscribe');
         Route::post  ('/admin/push/test', function () {
             $n = app(\App\Services\PushService::class)->toClerks('🔔 Test from Shalom', 'Push is alive — this arrived with the app closed.', '/admin');
+            \App\Models\AuditLog::record(event: 'push_test', description: auth()->user()->name . " sent a test push ({$n} devices)");
             return response()->json(['ok' => true, 'sent' => $n]);
         })->name('admin.push.test');
         Route::get   ('/admin/badge-count', function () {
@@ -207,6 +209,7 @@ Route::middleware('auth')->group(function () {
         Route::post  ('/admin/system/living-schedule', function () {
             $now = \App\Models\AppSetting::get('living_schedule', '1') === '1' ? '0' : '1';
             \App\Models\AppSetting::set('living_schedule', $now);
+            \App\Models\AuditLog::record(event: 'living_schedule_toggled', description: auth()->user()->name . ' turned the living schedule ' . ($now === '1' ? 'ON' : 'OFF'));
             return response()->json(['ok' => true, 'on' => $now === '1']);
         })->name('admin.system.living-schedule');
         Route::get   ('/admin/system/updates',         [\App\Http\Controllers\AdminSystemController::class, 'updates'])->name('admin.system.updates');
