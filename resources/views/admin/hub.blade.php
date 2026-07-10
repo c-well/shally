@@ -491,6 +491,9 @@
   </div>
   <button type="button" class="sys-check" id="sysCheck" data-url="{{ route('admin.system.updates') }}">Check for new releases</button>
   <a class="sys-check" style="display:inline-block;text-decoration:none;margin-left:8px;" href="{{ route('admin.stack') }}" target="_blank" rel="noopener">Stack &amp; restore sheet</a>
+  @php $lsOn = \App\Models\AppSetting::get('living_schedule', '1') === '1'; @endphp
+  <button type="button" class="sys-check" id="lsToggle" style="margin-left:8px;{{ $lsOn ? 'background:var(--teal);border-color:var(--teal);color:#fff;' : '' }}"
+          data-url="{{ route('admin.system.living-schedule') }}">Living schedule: <b id="lsState">{{ $lsOn ? 'ON' : 'OFF' }}</b></button>
   <div class="sys-result" id="sysResult" hidden></div>
 </footer>
 <style>
@@ -508,6 +511,19 @@
   .sys-result .note { margin-top: 8px; font-size: 11.5px; color: var(--ink-soft); }
 </style>
 <script>
+document.getElementById('lsToggle').addEventListener('click', async function () {
+  const b = this;
+  b.disabled = true;
+  try {
+    const r = await fetch(b.dataset.url, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}', 'Accept': 'application/json' } });
+    const d = await r.json();
+    document.getElementById('lsState').textContent = d.on ? 'ON' : 'OFF';
+    b.style.background = d.on ? 'var(--teal)' : '';
+    b.style.borderColor = d.on ? 'var(--teal)' : '';
+    b.style.color = d.on ? '#fff' : '';
+  } catch (e) {}
+  b.disabled = false;
+});
 document.getElementById('sysCheck').addEventListener('click', async function () {
   const btn = this, out = document.getElementById('sysResult');
   btn.disabled = true; btn.textContent = 'Asking packagist…';
