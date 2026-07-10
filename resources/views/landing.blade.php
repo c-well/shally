@@ -773,7 +773,7 @@
       ['name' => 'Sabbath School',  'when' => 'SAT · 9:30 AM',      'where' => 'In person', 'zoom' => null,
        'on' => $svcNy->isSaturday() && $svcNy->between($svcNy->copy()->setTime(9,15),  $svcNy->copy()->setTime(10,50))],
       ['name' => 'Worship Service', 'when' => 'SAT · 11:00 AM',     'where' => 'In person', 'zoom' => null,
-       'on' => $svcNy->isSaturday() && $svcNy->between($svcNy->copy()->setTime(10,50), $svcNy->copy()->setTime(13,30))],
+       'on' => $svcNy->isSaturday() && $svcNy->between($svcNy->copy()->setTime(10,50), $svcNy->copy()->setTime(14,30))],
       ['name' => 'Hour of Prayer',  'when' => 'MON–FRI · 5:00 AM',  'where' => 'Zoom', 'zoom' => 'https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09',
        'on' => $svcNy->isWeekday() && $svcNy->between($svcNy->copy()->setTime(4,45),   $svcNy->copy()->setTime(6,15))],
       ['name' => 'Prayer Meeting',  'when' => 'WED · 7:00 PM',      'where' => 'Zoom', 'zoom' => 'https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09',
