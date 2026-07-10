@@ -272,6 +272,20 @@
     border-radius: 999px; padding: 2px 7px; min-width: 18px; text-align: center;
   }
 
+  /* ── instant search modal (opens from the search icon/pill, no page hop) ── */
+  .sm-ov { position: fixed; inset: 0; z-index: 300; background: rgba(26,35,50,.5); display: none; align-items: flex-start; justify-content: center; padding: clamp(20px,8vh,90px) 16px 20px; backdrop-filter: blur(3px); }
+  .sm-ov.open { display: flex; }
+  .sm-box { background: var(--parchment, #fefcef); width: 100%; max-width: 560px; border-radius: 16px; box-shadow: 0 30px 70px rgba(26,35,50,.35); overflow: hidden; font-family: 'Instrument Sans', sans-serif; }
+  .sm-box input { width: 100%; font: 500 17px 'Instrument Sans', sans-serif; padding: 18px 20px; border: 0; border-bottom: 1px solid rgba(26,35,50,.12); background: #fff; color: var(--ink, #1a2332); outline: none; }
+  .sm-res { max-height: min(52vh, 430px); overflow-y: auto; padding: 8px; }
+  .sm-hit { display: block; padding: 12px 14px; border-radius: 10px; text-decoration: none; }
+  .sm-hit:hover, .sm-hit.sel { background: color-mix(in srgb, var(--teal, #03617A) 8%, #fff); }
+  .sm-hit .k { font: 700 9px 'Instrument Sans'; letter-spacing: .14em; text-transform: uppercase; color: var(--brass, #8a6c26); }
+  .sm-hit .t { font-size: 15px; font-weight: 600; color: var(--ink, #1a2332); margin-top: 2px; }
+  .sm-hit .d { font-size: 12.5px; color: var(--ink-soft, #4a5568); margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .sm-empty { text-align: center; color: var(--ink-soft, #4a5568); font-size: 13.5px; padding: 26px 10px; }
+  .sm-foot { border-top: 1px solid rgba(26,35,50,.1); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--ink-soft, #6b7280); }
+  .sm-foot a { color: var(--teal, #03617A); text-decoration: none; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
   .site-menu-search-icon {
     display: inline-flex; align-items: center; justify-content: center;
     width: 32px; height: 32px;
@@ -562,5 +576,67 @@ if ('setAppBadge' in navigator) {
     }
     card.classList.add('open');
   });
+})();
+
+// ── Instant search modal: the icon/pill opens it; /search stays as fallback ──
+(function () {
+  let ov, input, res, ms = null, corpus = null, sel = -1, hits = [];
+  const KINDS = { page: 'Page', 'peace-note': 'Peace note', bulletin: 'Bulletin', hymn: 'Hymn', event: 'Event', message: 'Message' };
+  function build() {
+    if (ov) return;
+    ov = document.createElement('div');
+    ov.className = 'sm-ov';
+    ov.innerHTML = '<div class="sm-box" role="dialog" aria-label="Search Shalom">'
+      + '<input type="search" placeholder="Search Shalom — pages, hymns, bulletins…" autocomplete="off">'
+      + '<div class="sm-res"><div class="sm-empty">Type to search the whole site.</div></div>'
+      + '<div class="sm-foot"><span>↑↓ choose · Enter opens · Esc closes</span><a href="{{ route('search') }}">Full page</a></div></div>';
+    document.body.appendChild(ov);
+    input = ov.querySelector('input'); res = ov.querySelector('.sm-res');
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    input.addEventListener('input', run);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { close(); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+      if (e.key === 'Enter' && hits[Math.max(sel, 0)]) location.href = hits[Math.max(sel, 0)].url;
+    });
+  }
+  function move(d) {
+    sel = Math.min(hits.length - 1, Math.max(0, sel + d));
+    [...res.querySelectorAll('.sm-hit')].forEach((el, i) => el.classList.toggle('sel', i === sel));
+  }
+  async function ensureEngine() {
+    if (ms) return;
+    if (!window.MiniSearch) await new Promise((ok, no) => {
+      const sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/minisearch@7.1.1/dist/umd/index.min.js';
+      sc.onload = ok; sc.onerror = no; document.head.appendChild(sc);
+    });
+    corpus = await (await fetch('/api/search-corpus', { headers: { 'Accept': 'application/json' } })).json();
+    ms = new MiniSearch({ fields: ['title', 'desc'], storeFields: ['kind', 'title', 'desc', 'url'],
+      searchOptions: { boost: { title: 3 }, prefix: true, fuzzy: 0.2 } });
+    ms.addAll(corpus);
+  }
+  function run() {
+    const q = input.value.trim(); sel = -1;
+    if (q.length < 2) { res.innerHTML = '<div class="sm-empty">Type to search the whole site.</div>'; hits = []; return; }
+    if (!ms) { res.innerHTML = '<div class="sm-empty">Loading the index…</div>'; return; }
+    hits = ms.search(q).slice(0, 10);
+    res.innerHTML = hits.length ? hits.map(h =>
+      '<a class="sm-hit" href="' + h.url + '"><div class="k">' + (KINDS[h.kind] || h.kind) + '</div><div class="t">' + h.title.replace(/</g, '&lt;') + '</div><div class="d">' + (h.desc || '').replace(/</g, '&lt;') + '</div></a>'
+    ).join('') : '<div class="sm-empty">Nothing found — try simpler words.</div>';
+  }
+  function open(e) {
+    if (e) e.preventDefault();
+    build(); ov.classList.add('open');
+    setTimeout(() => input.focus(), 50);
+    ensureEngine().then(run).catch(() => { res.innerHTML = '<div class="sm-empty">Search is napping — <a href="{{ route('search') }}">use the full page</a>.</div>'; });
+  }
+  function close() { ov.classList.remove('open'); }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('.site-menu-search-icon, #search-btn-mobile, [data-action="search"]');
+    if (t) open(e);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ov) close(); });
 })();
 </script>

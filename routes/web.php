@@ -60,6 +60,7 @@ Route::get('/peace/review/{token}/discard',        [\App\Http\Controllers\PeaceR
 Route::get('/peace/review/{token}/restore',        [\App\Http\Controllers\PeaceReviewController::class, 'restore'])->where('token','[a-f0-9]{64}')->name('peace.review.restore');
 Route::get('/peace/review/{token}/confirm-delete', [\App\Http\Controllers\PeaceReviewController::class, 'confirmDelete'])->where('token','[a-f0-9]{64}')->name('peace.review.confirm-delete');
 Route::get ('/search',  [\App\Http\Controllers\SearchController::class, 'index'])->name('search');
+Route::get('/api/search-corpus', [\App\Http\Controllers\SearchController::class, 'corpus'])->name('search.corpus');
 Route::get ('/contact',  [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
 Route::get ('/messages', [\App\Http\Controllers\MessagesController::class, 'index'])->name('messages');
 Route::get ('/messages/{slug}', [\App\Http\Controllers\MessagesController::class, 'show'])->name('messages.show')->where('slug', '[A-Za-z0-9-]+');

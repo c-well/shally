@@ -21,6 +21,14 @@ use Illuminate\View\View;
  */
 class SearchController extends Controller
 {
+    /** JSON corpus for the instant-search modal (site-wide). Cached 5 min. */
+    public function corpus(): \Illuminate\Http\JsonResponse
+    {
+        $corpus = \Illuminate\Support\Facades\Cache::remember('search_corpus_json', 300,
+            fn () => $this->index()->getData()['corpus']);
+        return response()->json($corpus);
+    }
+
     public function index(): View
     {
         $items = collect();
