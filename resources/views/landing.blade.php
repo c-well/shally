@@ -607,6 +607,17 @@
 
   /* ── zoom schedule cards (join affordance + live pulse) ── */
   .svc-join { margin-top: 10px; font: 700 11px 'Instrument Sans', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal, #03617A); }
+  /* Service takeover: the on-now card owns the stage in deep green */
+  .svc-hero { display: block; max-width: 560px; margin: 56px auto 0; background: #1f6843; color: #fff; border-radius: 14px; padding: 34px 36px; text-align: center; text-decoration: none; box-shadow: 0 18px 44px -18px rgba(31,104,67,.55); }
+  a.svc-hero:hover { filter: brightness(1.06); }
+  .svc-hero-now { font: 700 11px 'Instrument Sans', sans-serif; letter-spacing: 0.2em; text-transform: uppercase; opacity: .85; animation: pbPulse 2.2s ease-in-out infinite; }
+  .svc-hero-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(30px, 5vw, 40px); font-weight: 500; margin-top: 10px; line-height: 1.1; }
+  .svc-hero-cta { display: inline-block; margin-top: 18px; font: 700 12px 'Instrument Sans', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid rgba(255,255,255,.5); border-radius: 8px; padding: 12px 20px; }
+  .svc-others { margin-top: 22px; text-align: center; font: 500 13px 'Instrument Sans', sans-serif; color: var(--ink-soft); display: flex; gap: 10px 14px; justify-content: center; flex-wrap: wrap; }
+  .svc-others a { color: var(--teal); text-decoration: none; }
+  .svc-others a:hover { text-decoration: underline; }
+  .svc-others .dotsep { color: var(--ink-faint, #6b7280); }
+  @media (prefers-reduced-motion: reduce) { .svc-hero-now { animation: none; } }
   .svc-card.svc-live { border-color: var(--teal, #03617A); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal, #03617A) 15%, transparent); }
   .svc-card.svc-live .svc-join { animation: pbPulse 2s ease-in-out infinite; }
   @keyframes pbPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
@@ -755,33 +766,63 @@
   <h2>Our service schedule.</h2>
   <p class="section-sub">In person at 3323 White Plains Rd · all weekday gatherings on Zoom.</p>
 
-  <div class="schedule">
-    <div class="svc-card">
-      <div class="svc-name">Sabbath School</div>
-      <div class="svc-when">SAT · 9:30 AM</div>
-      <div class="svc-where">In person</div>
+  @php
+    // One list rules the section. Each service: window closure decides "on now".
+    $svcNy = now('America/New_York');
+    $svcs = [
+      ['name' => 'Sabbath School',  'when' => 'SAT · 9:30 AM',      'where' => 'In person', 'zoom' => null,
+       'on' => $svcNy->isSaturday() && $svcNy->between($svcNy->copy()->setTime(9,15),  $svcNy->copy()->setTime(10,50))],
+      ['name' => 'Worship Service', 'when' => 'SAT · 11:00 AM',     'where' => 'In person', 'zoom' => null,
+       'on' => $svcNy->isSaturday() && $svcNy->between($svcNy->copy()->setTime(10,50), $svcNy->copy()->setTime(13,30))],
+      ['name' => 'Hour of Prayer',  'when' => 'MON–FRI · 5:00 AM',  'where' => 'Zoom', 'zoom' => 'https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09',
+       'on' => $svcNy->isWeekday() && $svcNy->between($svcNy->copy()->setTime(4,45),   $svcNy->copy()->setTime(6,15))],
+      ['name' => 'Prayer Meeting',  'when' => 'WED · 7:00 PM',      'where' => 'Zoom', 'zoom' => 'https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09',
+       'on' => $svcNy->isWednesday() && $svcNy->between($svcNy->copy()->setTime(18,45), $svcNy->copy()->setTime(20,15))],
+    ];
+    $svcActive = collect($svcs)->firstWhere('on', true);
+    $svcRest   = collect($svcs)->where('name', '!=', $svcActive['name'] ?? '')->values();
+  @endphp
+
+  @if ($svcActive)
+    {{-- A service is ON — its card owns the stage; the rest wait as a quiet line. --}}
+    @if ($svcActive['zoom'])
+      <a class="svc-hero" href="{{ $svcActive['zoom'] }}" target="_blank" rel="noopener">
+        <div class="svc-hero-now">● Happening now</div>
+        <div class="svc-hero-name">{{ $svcActive['name'] }}</div>
+        <div class="svc-hero-cta">Join on Zoom @include('partials._ar')</div>
+      </a>
+    @else
+      <div class="svc-hero">
+        <div class="svc-hero-now">● Happening now</div>
+        <div class="svc-hero-name">{{ $svcActive['name'] }}</div>
+        <div class="svc-hero-cta">We're gathered — 3323 White Plains Rd, Bronx</div>
+      </div>
+    @endif
+    <div class="svc-others">
+      @foreach ($svcRest as $r)
+        @if ($r['zoom'])<a href="{{ $r['zoom'] }}" target="_blank" rel="noopener">{{ $r['name'] }} · {{ $r['when'] }}</a>@else<span>{{ $r['name'] }} · {{ $r['when'] }}</span>@endif
+        @if (! $loop->last)<span class="dotsep" aria-hidden="true">·</span>@endif
+      @endforeach
     </div>
-    <div class="svc-card">
-      <div class="svc-name">Worship Service</div>
-      <div class="svc-when">SAT · 11:00 AM</div>
-      <div class="svc-where">In person</div>
+  @else
+    <div class="schedule">
+      @foreach ($svcs as $c)
+        @if ($c['zoom'])
+          <a href="{{ $c['zoom'] }}" target="_blank" rel="noopener" class="svc-card" title="Join on Zoom">
+            <div class="svc-name">{{ $c['name'] }}</div>
+            <div class="svc-when">{{ $c['when'] }}</div>
+            <div class="svc-join">Join on Zoom @include('partials._ar')</div>
+          </a>
+        @else
+          <div class="svc-card">
+            <div class="svc-name">{{ $c['name'] }}</div>
+            <div class="svc-when">{{ $c['when'] }}</div>
+            <div class="svc-where">{{ $c['where'] }}</div>
+          </div>
+        @endif
+      @endforeach
     </div>
-    @php
-      $nyNow = now('America/New_York');
-      $hopLive = $nyNow->isWeekday() && $nyNow->between($nyNow->copy()->setTime(4,45), $nyNow->copy()->setTime(6,15));
-      $pmLive  = $nyNow->isWednesday() && $nyNow->between($nyNow->copy()->setTime(18,45), $nyNow->copy()->setTime(20,15));
-    @endphp
-    <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="svc-card svc-zoom {{ $hopLive ? 'svc-live' : '' }}" title="Join on Zoom">
-      <div class="svc-name">Hour of Prayer</div>
-      <div class="svc-when">MON–FRI · 5:00 AM</div>
-      <div class="svc-join">{{ $hopLive ? '● Praying now — join' : 'Join on Zoom' }} @include('partials._ar')</div>
-    </a>
-    <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="svc-card svc-zoom {{ $pmLive ? 'svc-live' : '' }}" title="Join on Zoom">
-      <div class="svc-name">Prayer Meeting</div>
-      <div class="svc-when">WED · 7:00 PM</div>
-      <div class="svc-join">{{ $pmLive ? '● Praying now — join' : 'Join on Zoom' }} @include('partials._ar')</div>
-    </a>
-  </div>
+  @endif
 </section>
 
 {{-- ── Hero photo slider (admin-managed via /admin/slides) ── --}}
