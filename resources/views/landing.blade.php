@@ -295,9 +295,10 @@
   /* ── Schedule cards ───────────────────────────────────── */
   .schedule {
     margin-top: 56px;
-    display: grid; gap: 14px;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex; flex-wrap: wrap; gap: 14px;
+    justify-content: center;   /* an orphan card on a wrapped row centers instead of hugging left */
   }
+  .schedule .svc-card { flex: 0 1 240px; min-width: 200px; }
   .svc-card {
     background: #fff; border: 1px solid var(--line); border-radius: 8px;
     padding: 24px 22px;
