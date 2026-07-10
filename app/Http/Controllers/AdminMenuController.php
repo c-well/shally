@@ -34,6 +34,7 @@ class AdminMenuController extends Controller
             'groups.*.items.*.external'=> 'boolean',
         ]);
         MenuConfig::save($data);
+        \App\Models\AuditLog::record(event: 'menu_updated', description: $request->user()->name . " saved the menu (style: {$data['style']})");
         return response()->json(['ok' => true]);
     }
 }
