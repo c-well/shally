@@ -43,8 +43,9 @@
   .msg-flags .flag { display: inline-block; padding: 2px 7px; border-radius: 3px; background: color-mix(in srgb, var(--teal) 8%, transparent); margin-right: 4px; }
   .msg-flags .flag.danger { color: var(--warn); background: rgba(168,42,31,0.06); }
   .msg-body { font-family: 'Instrument Sans', sans-serif; font-size: 17px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; margin-top: 6px; max-width: 720px; }
-  .msg-actions { margin-top: 10px; display: inline-flex; gap: 12px; align-items: center; }
-  .msg-actions a, .msg-actions button { font-family: 'Instrument Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); background: transparent; border: 0; cursor: pointer; text-decoration: none; padding: 0; }
+  .msg-actions { margin-top: 10px; display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  .msg-actions form { display: contents; }   /* buttons join the flex row directly — one baseline for all three */
+  .msg-actions a, .msg-actions button { font: 700 11px/1 'Instrument Sans', sans-serif !important; letter-spacing: 0.16em !important; text-transform: uppercase; color: var(--teal); background: transparent; border: 0; cursor: pointer; text-decoration: none; padding: 0; }
   .msg-actions a:hover, .msg-actions button:hover { color: var(--teal-dark); text-decoration: underline; }
 
   /* padding-left is 9px (not 12) to offset the 3px border under box-sizing:border-box,
@@ -114,7 +115,7 @@
         <div class="msg-body">{{ $p->body }}</div>
         <div class="msg-actions">
           @if (!$p->read_at)
-            <form method="POST" action="{{ route('admin.messages.prayer.read', $p->id) }}" style="display:inline;">@csrf
+            <form method="POST" action="{{ route('admin.messages.prayer.read', $p->id) }}">@csrf
               <button type="submit">Mark read</button>
             </form>
           @else
@@ -123,7 +124,7 @@
           @if ($p->email)
             <a href="mailto:{{ $p->email }}?subject=Your%20prayer%20request">Reply via email</a>
           @endif
-          <form method="POST" action="{{ route('admin.messages.prayer.delete', $p->id) }}" style="display:inline;"
+          <form method="POST" action="{{ route('admin.messages.prayer.delete', $p->id) }}"
                 data-confirm-ajax="Move this prayer request to trash? You can restore it for 30 days.">@csrf
             <button type="submit" class="delete">Delete</button>
           </form>
@@ -146,14 +147,14 @@
         <div class="msg-body">{{ $c->message }}</div>
         <div class="msg-actions">
           @if (!$c->read_at)
-            <form method="POST" action="{{ route('admin.messages.contact.read', $c->id) }}" style="display:inline;">@csrf
+            <form method="POST" action="{{ route('admin.messages.contact.read', $c->id) }}">@csrf
               <button type="submit">Mark read</button>
             </form>
           @else
             <span class="msg-meta">read {{ $c->read_at->diffForHumans() }}</span>
           @endif
           <a href="mailto:{{ $c->email }}?subject=Re%3A%20your%20message">Reply via email</a>
-          <form method="POST" action="{{ route('admin.messages.contact.delete', $c->id) }}" style="display:inline;"
+          <form method="POST" action="{{ route('admin.messages.contact.delete', $c->id) }}"
                 data-confirm-ajax="Move this message to trash? You can restore it for 30 days.">@csrf
             <button type="submit" class="delete">Delete</button>
           </form>
@@ -181,7 +182,7 @@
           <div class="msg-flags"><span class="flag">✉ {{ $c->email }}</span></div>
           <div class="msg-body">{{ \Illuminate\Support\Str::limit($c->message, 200) }}</div>
           <div class="msg-actions">
-            <form method="POST" action="{{ route('admin.messages.contact.restore', $c->id) }}" style="display:inline;"
+            <form method="POST" action="{{ route('admin.messages.contact.restore', $c->id) }}"
                   data-confirm-ajax="Restore this message to the inbox?" data-confirm-ok="Restore" data-restore>@csrf
               <button type="submit" style="color:var(--teal);">↩ Restore</button>
             </form>
@@ -197,7 +198,7 @@
           </div>
           <div class="msg-body">{{ \Illuminate\Support\Str::limit($p->body, 200) }}</div>
           <div class="msg-actions">
-            <form method="POST" action="{{ route('admin.messages.prayer.restore', $p->id) }}" style="display:inline;"
+            <form method="POST" action="{{ route('admin.messages.prayer.restore', $p->id) }}"
                   data-confirm-ajax="Restore this prayer request to the inbox?" data-confirm-ok="Restore" data-restore>@csrf
               <button type="submit" style="color:var(--teal);">↩ Restore</button>
             </form>

@@ -48,6 +48,16 @@ class SpamFilter
         'increase your sales', 'boost your traffic', 'work from home',
         'make money online', '$100 per day', 'passive income',
         'click here to claim', 'claim your prize',
+        // marketing-solicitation family (added 2026-07-11 — "Karry Mackay"
+        // free-traffic-booster slipped through: 1 URL + 34 words was legal)
+        'traffic booster', 'boost traffic', 'traffic to your',
+        'promote your site', 'promote your website', 'promote your business',
+        'classified sites', 'exposure tools', 'free exposure',
+        'noticed your business', 'noticed your website', 'noticed your site',
+        'came across your site', 'came across your website',
+        'seo services', 'seo package', 'digital marketing', 'marketing proposal',
+        'more clients', 'more leads', 'grow your business',
+        'web design services', 'redesign your website',
         // pharma
         'viagra', 'cialis', 'pharmacy online',
         // casino
@@ -75,6 +85,17 @@ class SpamFilter
     ];
 
     /**
+     * Free-hosting platforms. Real correspondents link to real domains;
+     * throwaway spam landers live on these (boost-traffic.netlify.app, ...).
+     * Any URL on one of them = reject.
+     */
+    private const FREE_HOSTS = [
+        'netlify.app', 'vercel.app', 'pages.dev', 'web.app', 'firebaseapp.com',
+        'herokuapp.com', 'github.io', 'glitch.me', 'repl.co', 'surge.sh',
+        'weebly.com', 'wixsite.com', 'blogspot.', 'neocities.org', '000webhost',
+    ];
+
+    /**
      * Detect spam in the submitted content. Returns reason string for
      * the controller to log, or null when the content is acceptable.
      */
@@ -98,6 +119,28 @@ class SpamFilter
             }
         }
 
+        // ── 1c. Any URL on a throwaway free-host platform ⇒ spam lander.
+        if (preg_match('~https?://[^\s)>]*~i', $combined, $mm)) {
+            foreach (self::FREE_HOSTS as $host) {
+                if (stripos($combined, $host) !== false) {
+                    return 'free-host-url:' . $host;
+                }
+            }
+        }
+
+        // ── 1d. Our own domain inside a FOREIGN url's path — the calling card
+        //       of "personalized" mass spam (boost-x.example/thechurchofpeace.org).
+        if (preg_match('~https?://(?![^/\s]*thechurchofpeace\.org)[^\s)>]+thechurchofpeace\.org~i', $combined)) {
+            return 'own-domain-in-foreign-url';
+        }
+
+        // ── 1e. Marketing opener + any link = solicitation, not a parishioner.
+        if (preg_match('~https?://~i', $combined)
+            && (preg_match('/\b(noticed|came across|found|stumbled upon) your (business|website|site|page|church online)\b/i', $body)
+                || preg_match('/^\s*quick (note|question)\b/i', $body))) {
+            return 'marketing-opener-with-url';
+        }
+
         // ── 2. URL count in body — legitimate church-contact traffic
         //      almost never contains MORE than one link.
         $urlCount = preg_match_all('~https?://[^\s)>]+~i', $body, $m);
@@ -110,7 +153,7 @@ class SpamFilter
         //      "Hi here is my link" pattern)
         if ($urlCount === 1) {
             $wordCount = str_word_count($body);
-            if ($wordCount < 30) {
+            if ($wordCount < 50) {   // raised 30→50 (2026-07-11) — spam grew wordier
                 return "url-with-too-few-words.$wordCount";
             }
         }
