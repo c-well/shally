@@ -42,7 +42,7 @@ class SelfUpdateCommand extends Command
     private const BASE_URL = 'https://thechurchofpeace.org';
     private const PROBES   = ['/', '/find-peace', '/bible', '/hymnal', '/welcome'];
     private const ADMIN_PROBE = '/admin'; // expect 302
-    private const DIRECT_DEPS = ['laravel/framework', 'guzzlehttp/guzzle', 'guzzlehttp/psr7', 'setasign/fpdi', 'symfony/yaml'];
+    private const DIRECT_DEPS = ['laravel/framework', 'guzzlehttp/guzzle', 'guzzlehttp/psr7', 'symfony/yaml'];
 
     public function handle(): int
     {
