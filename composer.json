@@ -9,8 +9,8 @@
         "php": "^8.2",
         "anthropic-ai/sdk": "^0.16.0",
         "barryvdh/laravel-dompdf": "^3.1",
-        "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1",
+        "laravel/framework": "^13.0",
+        "laravel/tinker": "^3.0",
         "league/commonmark": "^2.8",
         "minishlink/web-push": "^10.1"
     },
@@ -22,7 +22,7 @@
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5.50"
+        "phpunit/phpunit": "^12.0"
     },
     "autoload": {
         "psr-4": {

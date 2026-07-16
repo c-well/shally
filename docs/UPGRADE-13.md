@@ -22,3 +22,11 @@
 
 ## Explicitly NOT today
 Zero advisories + highest-traffic day of the week = freeze. This file is the trigger-pull for the next quiet evening.
+
+## EXECUTED 2026-07-16 (Thu ~11:15 AM ET)
+- First attempt failed: L13.20 requires PHP >= 8.4.1, box was on ea-php83. Rolled back clean from /home/shalom/upgrade-backups/20260716-110435 (~90s of 500s).
+- Root cause of the "8.4 handler 503": LiteSpeed needs ~15s to spin up a newly-selected PHP handler. First flip was reverted too fast; second flip (behind artisan down) settled at t=15s.
+- Final state: PHP 8.4.23 (web+CLI) / Laravel 13.20.0 / Tinker 3.0.2 / PHPUnit 12.5.31. fileinfo NOW PRESENT on web SAPI (8.4 package includes it — the April workaround era is over).
+- Crontab (2 lines) + safe-deploy.sh PHP= repointed at ea-php84.
+- Probes all green: 12 public routes, both PDFs, search corpus, peace:check-live, admin.hub tinker render, schedule:run, zero errors/deprecations logged.
+- Remaining outdated=1: anthropic-ai/sdk 0.16→0.36 (same-window candidate, needs Smart-fill + feedback-reply retests).
