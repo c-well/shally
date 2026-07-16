@@ -213,13 +213,33 @@ Schedule::command('anthropic:weekly-report')
     ->name('anthropic-weekly-report')
     ->onOneServer();
 
-// LIVE_DETECTOR — polls YouTube every 5 min, caches is_live to AppSetting.
-// Hero CTA on the landing page reads ONLY from cache, never from YouTube directly.
+// LIVE_DETECTOR — polls YouTube, caches is_live to AppSetting; hero CTA reads only cache.
+// Karlon 2026-07-16: "live only needs to run on Sabbath" — the 24/7 every-5-min poll
+// (my default from May 27, never a decision) is gone. Windows match when the church
+// actually streams on YouTube:
+//   1. Sabbath, 8:00–21:55 ET (Sabbath School through evening programs)
+//   2. TEMPORARY Crusade window through Jul 25: Sun/Tue/Wed/Fri evenings (no Mon/Thu meetings)
+//   3. One 22:15 sweep daily so a stale LIVE flag can never stick past a window
 Schedule::command('peace:check-live')
-    ->everyFiveMinutes()
+    ->saturdays()->everyFiveMinutes()->between('8:00', '21:55')
+    ->timezone('America/New_York')
     ->onOneServer()
     ->withoutOverlapping(8)
-    ->name('peace-check-live');
+    ->name('peace-check-live-sabbath');
+
+Schedule::command('peace:check-live')
+    ->days([0, 2, 3, 5])->everyFiveMinutes()->between('18:00', '21:55')
+    ->timezone('America/New_York')
+    ->when(fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York')))
+    ->onOneServer()
+    ->withoutOverlapping(8)
+    ->name('peace-check-live-crusade');
+
+Schedule::command('peace:check-live')
+    ->dailyAt('22:15')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->name('peace-check-live-sweep');
 
 
 // CRON_HEARTBEAT (2026-05-27) — every minute, write a sentinel timestamp to
