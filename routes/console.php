@@ -216,6 +216,12 @@ Schedule::command('peace:check-live')
     ->onOneServer()
     ->name('peace-check-live-sabbath-3pm-ending');
 
+Schedule::command('peace:check-live')
+    ->cron('0 19 * * 6')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->name('peace-check-live-sabbath-7pm');
+
 $crusade = fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York'));
 
 Schedule::command('peace:check-live')
