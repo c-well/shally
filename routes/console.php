@@ -216,11 +216,18 @@ Schedule::command('peace:check-live')
     ->onOneServer()
     ->name('peace-check-live-sabbath-1110-1115');
 
+// End-of-service glances (Karlon): one at 2:30 when worship ends, one at 3:00.
 Schedule::command('peace:check-live')
-    ->cron('35 14 * * 6')
+    ->cron('30 14 * * 6')
     ->timezone('America/New_York')
     ->onOneServer()
-    ->name('peace-check-live-sabbath-clear');
+    ->name('peace-check-live-sabbath-230');
+
+Schedule::command('peace:check-live')
+    ->cron('0 15 * * 6')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->name('peace-check-live-sabbath-3pm');
 
 Schedule::command('peace:check-live')
     ->days([0, 2, 3, 5])->everyFiveMinutes()->between('18:00', '21:55')
