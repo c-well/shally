@@ -194,70 +194,54 @@ Schedule::command('anthropic:weekly-report')
     ->onOneServer();
 
 // LIVE_DETECTOR — polls YouTube, caches is_live to AppSetting; hero CTA reads only cache.
-// Karlon 2026-07-16: "live only needs to run on Sabbath" — the 24/7 every-5-min poll
-// (my default from May 27, never a decision) is gone. Windows match when the church
-// actually streams on YouTube:
-//   1. Sabbath, 8:00–21:55 ET (Sabbath School through evening programs)
-//   2. TEMPORARY Crusade window through Jul 25: Sun/Tue/Wed/Fri evenings (no Mon/Thu meetings)
-//   3. One 22:15 sweep daily so a stale LIVE flag can never stick past a window
-// Karlon 2026-07-16 v2: "we only needed it Sabbath 10:45 / 10:55 / 11:10 / 11:15" —
-// four glances around go-live, plus one 14:35 clearing glance so the button can't
-// stay lit after the stream ends. Trade-off accepted: if the stream starts after
-// 11:15, the button stays dark that week (the card still links to the channel).
+// Cadence RULED by Karlon (2026-07-17 final): Sabbath 10:55 + 11:15 go-live, 3:00 ending.
+// Crusade (self-expires Jul 25): Sat 10am morning session; evenings 6:50 + 7:15 on
+// Sun/Tue/Wed/Fri + Sat; 8pm ending; 10:15pm sweep ON CRUSADE NIGHTS ONLY —
+// "don't check nightly outside of a crusade night." No other polling exists.
 Schedule::command('peace:check-live')
-    ->cron('45,55 10 * * 6')
+    ->cron('55 10 * * 6')
     ->timezone('America/New_York')
     ->onOneServer()
-    ->name('peace-check-live-sabbath-1045-1055');
+    ->name('peace-check-live-sabbath-1055');
 
 Schedule::command('peace:check-live')
-    ->cron('10,15 11 * * 6')
+    ->cron('15 11 * * 6')
     ->timezone('America/New_York')
     ->onOneServer()
-    ->name('peace-check-live-sabbath-1110-1115');
-
-// End-of-service glances (Karlon): one at 2:30 when worship ends, one at 3:00.
-Schedule::command('peace:check-live')
-    ->cron('30 14 * * 6')
-    ->timezone('America/New_York')
-    ->onOneServer()
-    ->name('peace-check-live-sabbath-230');
+    ->name('peace-check-live-sabbath-1115');
 
 Schedule::command('peace:check-live')
     ->cron('0 15 * * 6')
     ->timezone('America/New_York')
     ->onOneServer()
-    ->name('peace-check-live-sabbath-3pm');
+    ->name('peace-check-live-sabbath-3pm-ending');
 
-// Crusade glances (Karlon 2026-07-17: "check 2 mins after the time, if nothing another
-// at 10 mins after — not all those times"). Set times from the event record:
-// Sun/Tue/Wed/Fri 7:30pm; Sat 9:30am + 6:00pm. All self-expire Jul 25.
-Schedule::command('peace:check-live')
-    ->cron('32,40 19 * * 0,2,3,5')
-    ->timezone('America/New_York')
-    ->when(fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York')))
-    ->onOneServer()
-    ->name('peace-check-live-crusade-weeknight');
+$crusade = fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York'));
 
 Schedule::command('peace:check-live')
-    ->cron('32,40 9 * * 6')
-    ->timezone('America/New_York')
-    ->when(fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York')))
-    ->onOneServer()
-    ->name('peace-check-live-crusade-sat-am');
+    ->cron('0 10 * * 6')
+    ->timezone('America/New_York')->when($crusade)->onOneServer()
+    ->name('peace-check-live-crusade-sat-10am');
 
 Schedule::command('peace:check-live')
-    ->cron('2,10 18 * * 6')
-    ->timezone('America/New_York')
-    ->when(fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York')))
-    ->onOneServer()
-    ->name('peace-check-live-crusade-sat-pm');
+    ->cron('50 18 * * 0,2,3,5,6')
+    ->timezone('America/New_York')->when($crusade)->onOneServer()
+    ->name('peace-check-live-crusade-650pm');
 
 Schedule::command('peace:check-live')
-    ->dailyAt('22:15')
-    ->timezone('America/New_York')
-    ->onOneServer()
-    ->name('peace-check-live-sweep');
+    ->cron('15 19 * * 0,2,3,5,6')
+    ->timezone('America/New_York')->when($crusade)->onOneServer()
+    ->name('peace-check-live-crusade-715pm');
+
+Schedule::command('peace:check-live')
+    ->cron('0 20 * * 0,2,3,5,6')
+    ->timezone('America/New_York')->when($crusade)->onOneServer()
+    ->name('peace-check-live-crusade-8pm-ending');
+
+Schedule::command('peace:check-live')
+    ->cron('15 22 * * 0,2,3,5,6')
+    ->timezone('America/New_York')->when($crusade)->onOneServer()
+    ->name('peace-check-live-crusade-night-sweep');
 
 
 // CRON_HEARTBEAT (2026-05-27) — every minute, write a sentinel timestamp to
