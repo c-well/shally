@@ -229,13 +229,29 @@ Schedule::command('peace:check-live')
     ->onOneServer()
     ->name('peace-check-live-sabbath-3pm');
 
+// Crusade glances (Karlon 2026-07-17: "check 2 mins after the time, if nothing another
+// at 10 mins after — not all those times"). Set times from the event record:
+// Sun/Tue/Wed/Fri 7:30pm; Sat 9:30am + 6:00pm. All self-expire Jul 25.
 Schedule::command('peace:check-live')
-    ->days([0, 2, 3, 5])->everyFiveMinutes()->between('18:00', '21:55')
+    ->cron('32,40 19 * * 0,2,3,5')
     ->timezone('America/New_York')
     ->when(fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York')))
     ->onOneServer()
-    ->withoutOverlapping(8)
-    ->name('peace-check-live-crusade');
+    ->name('peace-check-live-crusade-weeknight');
+
+Schedule::command('peace:check-live')
+    ->cron('32,40 9 * * 6')
+    ->timezone('America/New_York')
+    ->when(fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York')))
+    ->onOneServer()
+    ->name('peace-check-live-crusade-sat-am');
+
+Schedule::command('peace:check-live')
+    ->cron('2,10 18 * * 6')
+    ->timezone('America/New_York')
+    ->when(fn () => now('America/New_York')->lte(\Carbon\Carbon::parse('2026-07-25 23:59', 'America/New_York')))
+    ->onOneServer()
+    ->name('peace-check-live-crusade-sat-pm');
 
 Schedule::command('peace:check-live')
     ->dailyAt('22:15')
