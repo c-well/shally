@@ -118,27 +118,6 @@ Schedule::call(function () {
     \DB::table("page_views")->where("viewed_at", "<", now()->subDays(90))->delete();
 })->dailyAt("04:00")->name("page-views-prune");
 
-// Peace pipeline — automated Sabbath sermon processing.
-// Saturday 3 PM ET (DST-aware) → scan @gotoshalom, run pipeline, email clerk.
-Schedule::command('peace:scan-channel')
-    ->saturdays()
-    ->at('15:00')
-    ->timezone('America/New_York')
-    ->onOneServer()
-    ->emailOutputOnFailure('contact@c-wellpics.com')
-    ->name('peace-scan-channel');
-
-// Fallback retry at 4:30pm ET — if YouTube auto-captions weren't ready at 3pm,
-// the 3pm scan finds no caption track and exits. By 4:30 they'll have rendered.
-// Scan is idempotent (filters out already-processed videos), so safe to double-fire.
-Schedule::command('peace:scan-channel')
-    ->saturdays()
-    ->at('16:30')
-    ->timezone('America/New_York')
-    ->onOneServer()
-    ->emailOutputOnFailure('contact@c-wellpics.com')
-    ->name('peace-scan-channel-retry');
-
 // Hourly state-machine tick — flips pending_review → draft after 72h,
 // and sends the 48h confirm-delete reminder.
 Schedule::command('peace:review-tick')
@@ -147,16 +126,17 @@ Schedule::command('peace:review-tick')
     ->name('peace-review-tick');
 
 
-// Late-evening retry attempts for slow caption generation (Karlon directive 2026-05-23):
-// YouTube can take 2-6 hours to caption a 3-hour livestream. These retries catch it
-// whenever captions land. Scan is idempotent (filters processed videos + watermark
-// blocks archives) so safe to repeat.
+// SERMON SCANNER — 4 knocks/week (Karlon 2026-07-16: "realistically how many do we
+// need... 3x should be enough"). Captions for a 3h stream land 2-6h after it ends, so
+// the old 3pm/4:30 knocks were always early. Sat 5pm (early catch) + Sat 9pm (typical)
+// + Sun 7am (overnight) + Wed 7am (last chance before the 6pm Whisper fallback).
+// Each scan is a free no-op unless a new captioned stream exists.
 Schedule::command('peace:scan-channel')
-    ->saturdays()->at('19:00')
+    ->saturdays()->at('17:00')
     ->timezone('America/New_York')
     ->onOneServer()
     ->emailOutputOnFailure('contact@c-wellpics.com')
-    ->name('peace-scan-channel-retry-7pm');
+    ->name('peace-scan-channel-sat-5pm');
 
 Schedule::command('peace:scan-channel')
     ->saturdays()->at('21:00')
@@ -294,22 +274,6 @@ Schedule::command('peace:scan-channel')
     ->onOneServer()
     ->emailOutputOnFailure('contact@c-wellpics.com')
     ->name('peace-scan-channel-wed-7am');
-
-Schedule::command('peace:scan-channel')
-    ->wednesdays()->at('19:00')
-    ->timezone('America/New_York')
-    ->onOneServer()
-    ->emailOutputOnFailure('contact@c-wellpics.com')
-    ->name('peace-scan-channel-wed-7pm');
-
-// Tuesday midday retry (added 2026-06-14) — extra mid-cycle attempt to
-// catch captions that landed Sunday-Monday and missed the Wednesday window.
-Schedule::command('peace:scan-channel')
-    ->tuesdays()->at('12:00')
-    ->timezone('America/New_York')
-    ->onOneServer()
-    ->emailOutputOnFailure('contact@c-wellpics.com')
-    ->name('peace-scan-channel-tue-noon');
 
 // WHISPER_FALLBACK (added 2026-06-14) — Wednesday 6 PM ET, fires only if no
 // sermon has been processed for the current week. Last-ditch fallback when
