@@ -200,12 +200,27 @@ Schedule::command('anthropic:weekly-report')
 //   1. Sabbath, 8:00–21:55 ET (Sabbath School through evening programs)
 //   2. TEMPORARY Crusade window through Jul 25: Sun/Tue/Wed/Fri evenings (no Mon/Thu meetings)
 //   3. One 22:15 sweep daily so a stale LIVE flag can never stick past a window
+// Karlon 2026-07-16 v2: "we only needed it Sabbath 10:45 / 10:55 / 11:10 / 11:15" —
+// four glances around go-live, plus one 14:35 clearing glance so the button can't
+// stay lit after the stream ends. Trade-off accepted: if the stream starts after
+// 11:15, the button stays dark that week (the card still links to the channel).
 Schedule::command('peace:check-live')
-    ->saturdays()->everyFiveMinutes()->between('8:00', '21:55')
+    ->cron('45,55 10 * * 6')
     ->timezone('America/New_York')
     ->onOneServer()
-    ->withoutOverlapping(8)
-    ->name('peace-check-live-sabbath');
+    ->name('peace-check-live-sabbath-1045-1055');
+
+Schedule::command('peace:check-live')
+    ->cron('10,15 11 * * 6')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->name('peace-check-live-sabbath-1110-1115');
+
+Schedule::command('peace:check-live')
+    ->cron('35 14 * * 6')
+    ->timezone('America/New_York')
+    ->onOneServer()
+    ->name('peace-check-live-sabbath-clear');
 
 Schedule::command('peace:check-live')
     ->days([0, 2, 3, 5])->everyFiveMinutes()->between('18:00', '21:55')
