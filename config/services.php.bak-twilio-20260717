@@ -52,10 +52,6 @@ return [
         'sid' => env('TWILIO_SID'),
         'token' => env('TWILIO_TOKEN'),
         'from' => env('TWILIO_FROM'),
-        // API Key auth (preferred): revocable on its own without taking down
-        // every other project sharing this Twilio account.
-        'key_sid' => env('TWILIO_KEY_SID'),
-        'key_secret' => env('TWILIO_KEY_SECRET'),
     ],
 
 ];

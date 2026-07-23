@@ -21,8 +21,12 @@
     <div class="mn-clean-root">
       @foreach ($mGroups as $gk => $g)
         @if ($gk === 0)
-          @foreach ($g['items'] as $i)
-            <a class="mn-clean-link primary" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif</a>
+          @foreach ($g['items'] as $ik => $i)
+            @if (!empty($i['children']))
+              <button type="button" class="mn-clean-link primary mn-drill" data-panel="mnp-i-{{ $gk }}-{{ $ik }}" aria-expanded="false">{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            @else
+              <a class="mn-clean-link primary" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}@if (!empty($i['badge'])) <span class="mn-badge">{{ $i['badge'] }}</span>@endif</a>
+            @endif
           @endforeach
         @else
           <button type="button" class="mn-clean-link primary mn-drill" data-panel="mnp-{{ $gk }}" aria-expanded="false">{{ $g['label'] ?: 'More' }}<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
@@ -30,7 +34,25 @@
       @endforeach
     </div>
     @foreach ($mGroups as $gk => $g)
-      @if ($gk > 0)
+      @if ($gk === 0)
+        @foreach ($g['items'] as $ik => $i)
+          @if (!empty($i['children']))
+            <div class="mn-panel" id="mnp-i-{{ $gk }}-{{ $ik }}" hidden>
+              <button type="button" class="mn-back" aria-label="Back to menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+              <div class="mn-clean-lab">{{ $i['label'] }}</div>
+              @if (!empty($i['href']))
+                <a class="mn-clean-link primary" href="{{ $i['href'] }}" {!! $mExt($i) !!}>{{ $i['label'] }}</a>
+              @endif
+              @foreach ($i['children'] as $c)
+                @php $c['href'] = \App\Services\MenuConfig::href($c); @endphp
+                @if ($c['href'])
+                  <a class="mn-clean-link primary" href="{{ $c['href'] }}" {!! $mExt($c) !!}>{{ $c['label'] }}@if (!empty($c['badge'])) <span class="mn-badge">{{ $c['badge'] }}</span>@endif</a>
+                @endif
+              @endforeach
+            </div>
+          @endif
+        @endforeach
+      @else
         <div class="mn-panel" id="mnp-{{ $gk }}" hidden>
           <button type="button" class="mn-back" aria-label="Back to menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
           <div class="mn-clean-lab">{{ $g['label'] }}</div>

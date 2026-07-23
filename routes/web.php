@@ -381,4 +381,17 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+// ── INTERCESSORS (prayer team) ──
+Route::prefix('intercessors')->group(function () {
+    Route::get   ('/',              [\App\Http\Controllers\IntercessorController::class, 'signIn'])->name('intercessors.signIn');
+    Route::post  ('/sign-in',       [\App\Http\Controllers\IntercessorController::class, 'attemptSignIn'])->middleware('throttle:20,10')->name('intercessors.attemptSignIn');
+    Route::post  ('/forgot-pin',    [\App\Http\Controllers\IntercessorController::class, 'forgotPin'])->middleware('throttle:5,15')->name('intercessors.forgotPin');
+    Route::post  ('/sign-out',      [\App\Http\Controllers\IntercessorController::class, 'signOut'])->name('intercessors.signOut');
+
+    Route::middleware('intercessor')->group(function () {
+        Route::get ('/dashboard',                   [\App\Http\Controllers\IntercessorController::class, 'dashboard'])->name('intercessors.dashboard');
+        Route::post('/pray/{prayer}',               [\App\Http\Controllers\IntercessorController::class, 'togglePrayed'])->name('intercessors.togglePrayed');
+    });
+});
+
 require __DIR__.'/auth.php';
