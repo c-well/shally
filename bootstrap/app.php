@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'     => \App\Http\Middleware\EnsureRole::class,
             'honeypot' => \App\Http\Middleware\Honeypot::class,
             'seeker'   => \App\Http\Middleware\SeekerAuthMiddleware::class,
+            'intercessor' => \App\Http\Middleware\EnsureIntercessor::class,
         ]);
         // Append global security headers to every response
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);

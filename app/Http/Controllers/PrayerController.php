@@ -75,6 +75,18 @@ class PrayerController extends Controller
 
         try { app(\App\Services\PushService::class)->toClerks('🙏 New prayer request', ($pr->name ?: 'Someone') . ' just asked for prayer.', '/admin/messages'); } catch (\Throwable $e) {}
 
+        // ── Prayer team SMS: text every active intercessor. Silent on any failure ──
+        try {
+            $twilio = app(\App\Services\Intake\TwilioNotifier::class);
+            if ($twilio->configured()) {
+                $who = $pr->name ?: 'Someone';
+                $msg = "🙏 New prayer request from $who at Shalom. Sign in to pray: https://thechurchofpeace.org/intercessors";
+                foreach (\App\Models\Intercessor::where('active', true)->get() as $ic) {
+                    $twilio->send($ic->phone, $msg);
+                }
+            }
+        } catch (\Throwable $e) { \Log::warning('intercessor notify failed', ['err' => $e->getMessage()]); }
+
         $lines  = "New prayer request from thechurchofpeace.org\n";
         $lines .= str_repeat('-', 60) . "\n";
         $lines .= 'From:           ' . ($pr->name  ?: '— anonymous —') . "\n";

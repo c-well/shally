@@ -14,13 +14,8 @@ class TwilioNotifier
 {
     public function configured(): bool
     {
-        // Account SID + From are always required. Auth can be either an API Key
-        // pair (preferred) or the legacy account auth token.
-        $hasAuth = (config('services.twilio.key_sid') && config('services.twilio.key_secret'))
-            || config('services.twilio.token');
-
         return config('services.twilio.sid')
-            && $hasAuth
+            && config('services.twilio.token')
             && config('services.twilio.from');
     }
 
@@ -28,16 +23,11 @@ class TwilioNotifier
     {
         if (! $this->configured()) return false;
 
-        $sid = config('services.twilio.sid');   // AC… — the URL always needs this
-        $keySid = config('services.twilio.key_sid');
-        $keySecret = config('services.twilio.key_secret');
-        // Basic-auth with the API key when present, else the legacy auth token.
-        $authUser = $keySid ?: $sid;
-        $authPass = $keySid ? $keySecret : config('services.twilio.token');
+        $sid = config('services.twilio.sid');
         try {
             $resp = Http::asForm()
                 ->timeout(15)
-                ->withBasicAuth($authUser, $authPass)
+                ->withBasicAuth($sid, config('services.twilio.token'))
                 ->post("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages.json", [
                     'To'   => $to,
                     'From' => config('services.twilio.from'),
