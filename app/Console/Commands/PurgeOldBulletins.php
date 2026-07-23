@@ -32,6 +32,15 @@ class PurgeOldBulletins extends Command
             });
         });
 
+        // SAFETY: never delete the NEWEST sabbath bulletin, even if aged past cutoff.
+        // The /announcements page has nothing to show otherwise (Karlon 2026-07-23:
+        // "why is the announcements page empty on the site" — root cause was this
+        // command purging the last standing bulletin when no fresh one had been posted).
+        $newestSabbath = Bulletin::where('kind', 'sabbath')->orderByDesc('service_date')->first();
+        if ($newestSabbath) {
+            $query->where('id', '!=', $newestSabbath->id);
+        }
+
         $count = $query->count();
         if ($count === 0) {
             $this->info('Nothing to purge — all bulletins within the ' . $days . '-day window.');
