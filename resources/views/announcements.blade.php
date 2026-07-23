@@ -78,7 +78,15 @@
     <div class="empty">Nothing posted yet — check back soon.</div>
   @endforelse
 
-  <div class="close">Have a pleasant Sabbath :)</div>
+  @php
+    // Day-aware closer (Karlon 2026-07-23: "why on a Thursday does it say pleasant sabbath??")
+    // Same pattern as welcome.blade.php greeting rotator.
+    $dow = now()->dayOfWeek;
+    $closer = $dow === \Carbon\Carbon::SATURDAY  ? 'Have a pleasant Sabbath :)'
+            : ($dow === \Carbon\Carbon::FRIDAY   ? 'Have a blessed Sabbath :)'
+            : 'Peace be with you.');
+  @endphp
+  <div class="close">{{ $closer }}</div>
   <div class="backrow"><a href="{{ route('welcome') }}">View the full bulletin @include('partials._ar')</a></div>
 </main>
 @include('partials._event-tracker')
