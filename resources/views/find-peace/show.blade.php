@@ -1284,6 +1284,7 @@ document.querySelectorAll('.reaction').forEach(btn => {
 
 // ─── Seeker signup modal + Save Q&A flow ──────────────────────────────
 (function () {
+  function initSeekerModal() {
   const SEEKER_ID = document.querySelector('meta[name="peace-seeker-id"]')?.content || null;  // server tells us if already signed in
 
   const modal = document.getElementById('seeker-modal');
@@ -1295,24 +1296,36 @@ document.querySelectorAll('.reaction').forEach(btn => {
   const openedAtInput = document.getElementById('seeker-opened-at');
   const qaIdInput = document.getElementById('seeker-qa-id');
   const toast = document.getElementById('seeker-toast');
+  let previouslyFocused = null;
 
   function openModal(qaId) {
     if (!modal) return;
+    previouslyFocused = document.activeElement;
     qaIdInput.value = qaId || '';
     openedAtInput.value = Date.now();
     modal.classList.add('open');
     setTimeout(() => emailInput.focus(), 80);
   }
+  window.openSeekerModal = openModal;
+
   function closeModal() {
     if (!modal) return;
     modal.classList.remove('open');
     // reset card content (in case it showed success state)
-    card.querySelector('h2').textContent = 'Save this for later.';
-    card.querySelector('p.lede').style.display = '';
+    const heading = card.querySelector('h2');
+    heading.textContent = 'Save this for later.';
+    heading.style.color = '';
+    card.querySelector('p.lede:not(.seeker-success-note)').style.display = '';
+    card.querySelector('.seeker-success-note')?.remove();
     form.style.display = '';
     cancelBtn.style.display = '';
+    cancelBtn.textContent = 'Maybe later';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send link →';
     form.reset();
+    previouslyFocused?.focus?.();
   }
+
   function showSuccess(email) {
     form.style.display = 'none';
     cancelBtn.textContent = 'Got it';
@@ -1320,8 +1333,9 @@ document.querySelectorAll('.reaction').forEach(btn => {
     lede.style.display = 'none';
     card.querySelector('h2').innerHTML = '✓<br>Check your inbox.';
     card.querySelector('h2').style.color = 'var(--brass)';
+    card.querySelector('.seeker-success-note')?.remove();
     const note = document.createElement('p');
-    note.className = 'lede';
+    note.className = 'lede seeker-success-note';
     note.style.cssText = 'display:block;color:var(--ink-soft);font-size:0.92rem;margin-top:0.6rem;';
     note.innerHTML = `A one-tap sign-in link is on its way to <strong>${escapeHtml(email)}</strong>. It expires in 30 minutes.`;
     card.insertBefore(note, form);
@@ -1421,10 +1435,18 @@ document.querySelectorAll('.reaction').forEach(btn => {
   // Flash message from server-side redirect — show as toast
   const flash = document.querySelector('meta[name="peace-flash"]')?.content;
   if (flash) showToast(flash);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSeekerModal, { once: true });
+  } else {
+    initSeekerModal();
+  }
 })();
 
 // ─── Q&A action row: helped / save / share ────────────────────────────────
 (function () {
+  function initQaActions() {
   const SEEKER_ID = document.querySelector('meta[name="peace-seeker-id"]')?.content || null;
   const csrfToken = document.querySelector('meta[name=csrf-token]')?.content || '';
 
@@ -1555,6 +1577,13 @@ document.querySelectorAll('.reaction').forEach(btn => {
   shareCancel?.addEventListener('click', () => shareModal.classList.remove('open'));
   shareModal?.addEventListener('click', e => { if (e.target === shareModal) shareModal.classList.remove('open'); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && shareModal?.classList.contains('open')) shareModal.classList.remove('open'); });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initQaActions, { once: true });
+  } else {
+    initQaActions();
+  }
 })();
 </script>
 
