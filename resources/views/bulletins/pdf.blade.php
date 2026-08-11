@@ -11,7 +11,7 @@
 <style>
   * { box-sizing: border-box; }
   html, body {
-    margin: 0; padding: 0; background: #fff; color: #111;
+    margin: 0; padding: 0; background: #fff; color: {{ $fontColor ?? '#111111' }};
     font-family: Arial, Helvetica, sans-serif;
   }
   @page { size: letter; margin: 0; }

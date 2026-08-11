@@ -182,6 +182,9 @@
           @endforeach
         </select>
       </span>
+      <span><label for="b-fontcolor">PDF font color</label>
+        <input type="color" id="b-fontcolor" value="{{ $bulletin->pdf_font_color ?? '#111111' }}">
+      </span>
       <span class="switcher"><label>Bulletin</label>
         <select id="b-switch">
           @foreach ($bulletins as $bb)
@@ -264,6 +267,7 @@
   document.getElementById('b-title').addEventListener('input', function (e) { debounce('title', function () { api('PATCH', '/bulletins/' + BID, { title: e.target.value }).then(savedPip); }); });
   document.getElementById('b-date').addEventListener('change', function (e) { api('PATCH', '/bulletins/' + BID, { service_date: e.target.value }).then(savedPip); });
   document.getElementById('b-theme').addEventListener('change', function (e) { api('PATCH', '/bulletins/' + BID, { theme: e.target.value }).then(savedPip); });
+  document.getElementById('b-fontcolor').addEventListener('change', function (e) { api('PATCH', '/bulletins/' + BID, { pdf_font_color: e.target.value }).then(savedPip); });
   document.getElementById('b-switch').addEventListener('change', function (e) { window.location = '?b=' + e.target.value; });
 
   // ── line field autosave ──

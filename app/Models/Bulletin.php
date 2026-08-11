@@ -19,7 +19,7 @@ class Bulletin extends Model
         'title', 'service_date', 'body', 'pdf_path', 'is_published', 'always_show_during_week',
         'published_at', 'published_snapshot',
         'previous_published_snapshot', 'previous_published_at',
-        'theme', 'author_id',
+        'theme', 'pdf_font_color', 'author_id',
         'kind', 'service_time', 'event_name',
         'event_night_number', 'event_total_nights', 'event_ends_at',
     ];
@@ -130,6 +130,7 @@ class Bulletin extends Model
             'title' => $this->title,
             'service_date' => $this->service_date->toDateString(),
             'kind' => $this->kind,
+            'pdf_font_color' => $this->pdf_font_color,
             'service_time' => $this->service_time,
             'event_name' => $this->event_name,
             'event_night_number' => $this->event_night_number,

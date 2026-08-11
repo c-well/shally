@@ -12,7 +12,7 @@
 <title>Bulletin (2-up) · {{ \Carbon\Carbon::parse($snapshot['service_date'] ?? now())->format('M j, Y') }}</title>
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: #fff; color: #111; font-family: Arial, Helvetica, sans-serif; }
+  html, body { margin: 0; padding: 0; background: #fff; color: {{ $fontColor ?? '#111111' }}; font-family: Arial, Helvetica, sans-serif; }
   @page { margin: 0; }
 
   /* Two-up scaffold: a fixed 11in table, two 5.5in columns, dashed cut guide. */

@@ -141,10 +141,11 @@ class BulletinController extends Controller
             'service_date' => 'sometimes|date',
             'service_time' => 'sometimes|nullable|string|max:40',
             'theme'        => 'sometimes|string|in:default,communion,easter,christmas,mothers,thanksgiving',
+            'pdf_font_color' => 'sometimes|nullable|regex:/^#[0-9A-Fa-f]{6}$/',
             'always_show_during_week' => 'sometimes|boolean',
         ]);
         $bulletin->update($data);
-        return response()->json(['ok' => true, 'bulletin' => $bulletin->only(['id', 'title', 'service_date', 'theme'])]);
+        return response()->json(['ok' => true, 'bulletin' => $bulletin->only(['id', 'title', 'service_date', 'theme', 'pdf_font_color'])]);
     }
 
     /** POST /bulletins/{bulletin}/publish — snapshot + flip is_published.
@@ -208,10 +209,18 @@ class BulletinController extends Controller
         // ?layout=2up → one landscape sheet, bulletin printed twice for a cut-in-half
         // double-sided print (2 identical bulletins per sheet). Default stays portrait.
         $twoUp = $request->query('layout') === '2up';
+        // Defense in depth: pdf_font_color is validated to #rrggbb on write (updateMeta),
+        // but re-validate here too since this value gets interpolated straight into a <style>
+        // block — a strict regex match is the only thing standing between it and CSS injection.
+        $fontColor = $snapshot['pdf_font_color'] ?? null;
+        if (! is_string($fontColor) || ! preg_match('/^#[0-9A-Fa-f]{6}$/', $fontColor)) {
+            $fontColor = '#111111';
+        }
         $response = Pdf::loadView($twoUp ? 'bulletins.pdf-2up' : 'bulletins.pdf', [
                 'snapshot'            => $snapshot,
                 'isPrevious'          => $isPrevious,
                 'previousPublishedAt' => $previousPublishedAt,
+                'fontColor'           => $fontColor,
             ])
             ->setPaper('letter', $twoUp ? 'landscape' : 'portrait')
             ->download(($twoUp ? '2up-' : '') . $filename);
