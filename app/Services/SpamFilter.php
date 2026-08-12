@@ -20,6 +20,25 @@ namespace App\Services;
  * Plus a fourth optional layer enforced at the controller level: a JS-set
  * nonce that pure-bot submissions fail because they don't run JavaScript.
  *
+ * Added 2026-08-12 after two more slipped through — both exploited the
+ * SAME structural gaps rather than needing new incident-specific phrases:
+ *
+ *   #4  "Medico Postura..." product blast, 1 URL + ~90 words of genuine
+ *       marketing prose — cleared the 50-word minimum by simply being
+ *       wordy. The word-count floor assumed spam is terse; it isn't always.
+ *   #5  "...could be bringing in more visitors and converting more of them
+ *       into customers. Reply YES..." — zero URLs (so every URL-based check
+ *       is moot) and reworded around the exact "noticed your website"
+ *       phrase list rather than matching it.
+ *
+ * Rather than only adding these two phrases (which the next reworded spam
+ * would dodge the same way), this pass adds STRUCTURAL signals that don't
+ * depend on exact wording: a discount/urgency-phrase family, a ™/® symbol
+ * next to a URL (real correspondents don't trademark-stamp brand names), and
+ * a generalized "your site → more visitors/leads/customers" regex that
+ * catches paraphrases of the noticed-your-website family instead of only
+ * its known exact phrasing.
+ *
  * Returns a string rejection reason (for logging) or null when content
  * passes. All checks are conservative — false-positive rate should be very
  * low on legitimate church traffic, which doesn't generally include URLs.
@@ -71,6 +90,13 @@ class SpamFilter
         'within 24 hours', 'within 48 hours', 'verify your account',
         'suspended', 'unusual activity', 'confirm your identity',
         'you have won', 'you have been selected', 'gift card',
+        // product-blast / dropship spam (added 2026-08-12 — "Medico Postura"
+        // posture-corrector ad, ~90 words, cleared the word-count floor by
+        // being genuinely wordy rather than terse)
+        'grab it today', 'grab yours', 'shop now', 'order now', 'buy now',
+        'act now', "don't miss out", 'dont miss out', 'today only',
+        'for a limited time', 'limited time offer', 'while supplies last',
+        'free shipping', 'lightweight and breathable', 'easy to use device',
     ];
 
     /**
@@ -139,6 +165,36 @@ class SpamFilter
             && (preg_match('/\b(noticed|came across|found|stumbled upon) your (business|website|site|page|church online)\b/i', $body)
                 || preg_match('/^\s*quick (note|question)\b/i', $body))) {
             return 'marketing-opener-with-url';
+        }
+
+        // ── 1f. Generalized "your site → more visitors/leads/customers" pitch
+        //       (added 2026-08-12). The exact-phrase list only catches known
+        //       wordings ("noticed your website"); this catches the SHAPE of
+        //       the pitch regardless of phrasing, and — unlike 1e — doesn't
+        //       require a URL, since #5 pitched with zero links at all.
+        if (preg_match('/\b(your\s+(website|site|business|church\'?s?\s+website)|thechurchofpeace\.org)\b[^.!?]{0,80}\b(more\s+(visitors|traffic|leads|customers|clients|sales)|convert(?:ing)?\s+(?:more\s+of\s+)?(?:them|visitors|leads)\s+into\s+(?:customers|clients|sales))\b/i', $body)) {
+            return 'visitors-pitch-paraphrase';
+        }
+
+        // ── 1g. "Simply reply YES" call-to-action on a short, contentless
+        //       pitch — the lead-gen family's standard close (2026-08-12, #5).
+        if (str_word_count($body) < 60 && preg_match('/\breply\s+["\']?(yes|interested)["\']?\b/i', $body)) {
+            return 'reply-yes-cta';
+        }
+
+        // ── 1h. Discount/urgency combo — "60% off", "50% discount" plus any
+        //       urgency word. Real parishioners don't discount-code a prayer
+        //       request; this fires independent of word count so a wordier
+        //       version of #4 can't just out-talk the filter again.
+        if (preg_match('/\b\d{1,3}\s?%\s?(off|discount)\b/i', $body)
+            && preg_match('/\b(today only|limited time|act now|don\'?t miss out|hurry|while supplies last)\b/i', $body)) {
+            return 'discount-urgency-combo';
+        }
+
+        // ── 1i. ™/® next to a link — brand-name trademark stamping is a
+        //       product-ad tell real correspondents essentially never use.
+        if (preg_match('~https?://~i', $combined) && preg_match('/[™®]/u', $body)) {
+            return 'trademark-symbol-with-url';
         }
 
         // ── 2. URL count in body — legitimate church-contact traffic
