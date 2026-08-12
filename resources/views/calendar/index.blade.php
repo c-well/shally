@@ -20,7 +20,12 @@
   a { color: inherit; text-decoration: none; }
   button { font: inherit; cursor: pointer; }
 
-  main { max-width: 1220px; margin: 0 auto; padding: clamp(34px,6vh,58px) clamp(16px,4vw,44px) 110px; }
+  main { max-width: 1220px; margin: 0 auto; padding: clamp(34px,6vh,58px) clamp(16px,4vw,44px) 110px; transition: max-width .15s; }
+  /* Year is the one view that actually benefits from a wide monitor — twelve
+     independent grids tile naturally. Be water: let it fill the room it's
+     given instead of sitting cramped in the same column every other view
+     uses, but stay capped so it doesn't stretch absurdly thin on ultrawides. */
+  body[data-view="year"] main { max-width: min(1900px, 94vw); }
 
   .cal-bar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 26px; flex-wrap: wrap; }
   .edit-btn { color: var(--ink-soft); }
@@ -40,7 +45,6 @@
   .seg { display: inline-flex; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 2px; }
   .seg button { font-size: 12px; font-weight: 600; border: 0; background: transparent; border-radius: 6px; padding: 8px 14px; color: var(--ink-soft); }
   .seg button.on { background: var(--teal); color: #fff; }
-  .seg button.soon { color: var(--ink-faint); cursor: default; }
 
   .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
   .lg.off { opacity: .42; border-style: dashed; }
@@ -71,6 +75,31 @@
   .ev.sermon  { background: #f5ecd6; color: #7a5f22; }
   .ev.event   { background: #e3f0e8; color: #1f6843; }
   .more { font-size: 11px; color: var(--ink-faint); font-weight: 600; margin-top: 4px; padding-left: 7px; }
+
+  /* ── YEAR — twelve quiet mini-months, no text, just dots. The calmest view.
+     Water, not ice: minmax's floor keeps months from ever getting cramped,
+     but every unit below (card padding, headings, day numbers, dots) is
+     clamp()'d to a viewport-relative range, so a 27" monitor actually gets
+     a bigger, calmer grid instead of the same tiny cards repeated more times.
+     "Elongated" means the PAGE (fewer, wider columns → more rows → a longer
+     page) — each individual month card should still read square, not be
+     stretched into a tall column. Width comes from the column cap below;
+     height comes along for free from 7 naturally-sized day cells — no
+     extra row padding is added to inflate it taller than that. ── */
+  .ygrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,420px)); justify-content: center; gap: clamp(18px,1.8vw,34px); }
+  .ymonth { min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: clamp(14px,1.1vw,22px) clamp(12px,1vw,20px) clamp(12px,0.9vw,18px); }
+  .ymonth-head { font-size: clamp(14px,1.2vw,19px); font-weight: 700; letter-spacing: -0.01em; text-align: center; padding: 3px 0 clamp(8px,0.8vw,14px); border-radius: 7px; cursor: pointer; }
+  .ymonth-head:hover, .ymonth-head:focus-visible { color: var(--teal); }
+  .ydow { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 4px; }
+  .ydow span { font-size: clamp(9px,0.75vw,12px); font-weight: 700; letter-spacing: 0.04em; text-align: center; color: var(--ink-faint); }
+  .ygrid-days { display: grid; grid-template-columns: repeat(7,1fr); }
+  .yday { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: clamp(3px,0.35vw,7px) 0; border-radius: 6px; cursor: pointer; }
+  .yday:hover { background: color-mix(in srgb, var(--teal) 6%, transparent); }
+  .yday.out { visibility: hidden; }
+  .ydn { font-size: clamp(10.5px,0.9vw,14px); color: var(--ink); line-height: 1; width: clamp(18px,1.6vw,26px); height: clamp(18px,1.6vw,26px); border-radius: 999px; display: flex; align-items: center; justify-content: center; }
+  .yday.today .ydn { background: var(--teal); color: #fff; font-weight: 600; }
+  .ydots { display: flex; gap: 2px; height: 5px; }
+  .ydots .dot { width: clamp(3.5px,0.35vw,5px); height: clamp(3.5px,0.35vw,5px); }
 
   /* ── EDIT MODE (managers): the day sheet becomes touchable — write-back to source ── */
   .dv-card.editable { cursor: default; }
@@ -179,6 +208,8 @@
     .wrail { flex-basis: 56px; }
     .cal-title { order: -1; width: 100%; flex-basis: 100%; }
     .cal-nav { flex-wrap: wrap; }
+    .ygrid { grid-template-columns: 1fr; gap: 14px; }
+    .ydn { width: 22px; height: 22px; font-size: 12px; }
   }
 </style>
 @include('partials.theme-vars')
@@ -206,7 +237,7 @@
       <button data-view="day">Day</button>
       <button data-view="week">Week</button>
       <button data-view="month" class="on">Month</button>
-      <button class="soon" title="Coming soon">Year</button>
+      <button data-view="year">Year</button>
     </div>
   </div>
 
@@ -244,7 +275,7 @@
   // state — like genesis: everything local, views are pure renders.
   // Deep-linkable: /calendar?v=week&d=2026-07-04 opens that exact view (share/copy-link ready).
   const q = new URLSearchParams(location.search);
-  let view = ['day','week','month'].includes(q.get('v')) ? q.get('v') : 'month';
+  let view = ['day','week','month','year'].includes(q.get('v')) ? q.get('v') : 'month';
   let anchor = /^\d{4}-\d{2}-\d{2}$/.test(q.get('d') || '') ? q.get('d') : TODAY;
 
   const stage = document.getElementById('stage');
@@ -277,9 +308,11 @@
 
   function render() {
     history.replaceState(null, '', '?v=' + view + '&d=' + anchor + (show.size === ALL_TYPES.length ? '' : '&f=' + ALL_TYPES.filter(t => show.has(t)).join(',')));
+    document.body.dataset.view = view;
     document.querySelectorAll('.seg [data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === view));
     if (view === 'month') renderMonth();
     else if (view === 'week') renderWeek();
+    else if (view === 'year') renderYear();
     else renderDay();
   }
 
@@ -305,6 +338,38 @@
       cur.setDate(cur.getDate() + 1);
     }
     stage.innerHTML = html + '</div></div>';
+  }
+
+  // ── YEAR — twelve mini-months; a day carries at most 3 tiny dots, nothing else.
+  // Deliberately quieter than Month/Week: at this zoom, text would just be noise. ──
+  function renderYear() {
+    const y = parse(anchor).getFullYear();
+    title.textContent = y;
+    let html = '<div class="ygrid">';
+    for (let m = 0; m < 12; m++) {
+      const first = new Date(y, m, 1);
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const cells = Math.ceil((first.getDay() + daysInMonth) / 7) * 7;
+      let cur = new Date(first); cur.setDate(1 - first.getDay());
+      html += '<div class="ymonth"><div class="ymonth-head" role="button" tabindex="0" data-jump-month="' + y + '-' + d2(m + 1) + '-01">' + MONTHS[m] + '</div>'
+            + '<div class="ydow">' + DOWS.map(d => '<span>' + d[0] + '</span>').join('') + '</div>'
+            + '<div class="ygrid-days">';
+      for (let i = 0; i < cells; i++) {
+        if (cur.getMonth() === m) {
+          const ds = iso(cur);
+          const types = [...new Set(entriesOf(ds).map(e => e.t))].slice(0, 3);
+          html += '<div class="yday' + (ds === TODAY ? ' today' : '') + '" role="button" tabindex="0" data-day="' + ds + '">'
+                + '<span class="ydn">' + cur.getDate() + '</span>'
+                + '<span class="ydots">' + types.map(t => '<span class="dot ' + t + '"></span>').join('') + '</span>'
+                + '</div>';
+        } else {
+          html += '<div class="yday out"></div>';
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      html += '</div></div>';
+    }
+    stage.innerHTML = html + '</div>';
   }
 
   // ── WEEK ──
@@ -544,9 +609,16 @@
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-day]')) {
       e.preventDefault(); openSheet(e.target.getAttribute('data-day'));
     }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-jump-month]')) {
+      e.preventDefault(); jumpToMonth(e.target.getAttribute('data-jump-month'));
+    }
   });
 
+  function jumpToMonth(ds) { view = 'month'; anchor = ds; render(); }
+
   stage.addEventListener('click', e => {
+    const jump = e.target.closest('[data-jump-month]');
+    if (jump) { jumpToMonth(jump.dataset.jumpMonth); return; }
     const cell = e.target.closest('[data-day]');
     if (cell) openSheet(cell.dataset.day);
   });
@@ -555,6 +627,8 @@
   function shift(dir) {
     if (view === 'month') {
       const a = parse(anchor); a.setDate(1); a.setMonth(a.getMonth() + dir); anchor = iso(a);
+    } else if (view === 'year') {
+      const a = parse(anchor); a.setDate(1); a.setFullYear(a.getFullYear() + dir); anchor = iso(a);
     } else if (view === 'week') anchor = addDays(anchor, dir * 7);
     else anchor = addDays(anchor, dir);
     render();
