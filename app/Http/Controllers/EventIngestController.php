@@ -87,7 +87,14 @@ class EventIngestController extends Controller
                 'element_text'     => isset($ev['txt']) ? substr((string) $ev['txt'], 0, 160) : null,
                 'meta'             => isset($ev['meta']) ? json_encode($ev['meta']) : null,
                 'is_bot'           => $isBot,
-                'created_at'       => isset($ev['ts']) ? \Carbon\Carbon::createFromTimestampMs((int) $ev['ts']) : $now,
+                // createFromTimestampMs() returns UTC no matter what app.timezone says,
+                // so a client-sent ts landed 4-5 hours ahead while the $now fallback
+                // wrote correct Eastern - the same table held both, and every
+                // "last 30 minutes" figure counted rows from the future. The church
+                // runs on Eastern; so does this column.
+                'created_at'       => isset($ev['ts'])
+                    ? \Carbon\Carbon::createFromTimestampMs((int) $ev['ts'])->setTimezone(config('app.timezone'))
+                    : $now,
             ];
         }
 
