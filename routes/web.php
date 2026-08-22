@@ -99,6 +99,10 @@ Route::post('/prayer',   [\App\Http\Controllers\PrayerController::class, 'send']
 // Handouts — private, expiring one-off pages handed out by link/QR.
 // Deliberately NOT registered in sitemap.xml and disallowed in robots.txt:
 // see App\Http\Controllers\HandoutController for why all three layers exist.
+Route::get('/h/{token}/og.png', [\App\Http\Controllers\HandoutController::class, 'og'])
+     ->where('token', '[a-z0-9]{6,16}')
+     ->middleware('throttle:120,1')
+     ->name('handout.og');
 Route::get('/h/{token}', [\App\Http\Controllers\HandoutController::class, 'show'])
      ->where('token', '[a-z0-9]{6,16}')
      ->middleware('throttle:120,1')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Handout;
 use App\Models\HandoutVisit;
+use App\Services\HandoutOgImage;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -51,6 +52,27 @@ class HandoutController extends Controller
             'X-Robots-Tag'  => 'noindex, nofollow, noarchive, nosnippet',
             'Referrer-Policy' => 'no-referrer',
             'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    /**
+     * The share preview image. Public and uncounted — a scraper fetching this
+     * is not a person reading the card, so it must not inflate the view stats.
+     */
+    public function og(string $token, HandoutOgImage $images): Response
+    {
+        $handout = Handout::where('token', $token)->first();
+
+        if (! $handout || ! $handout->isLive()) {
+            throw new NotFoundHttpException();
+        }
+
+        return response($images->render($handout), 200, [
+            'Content-Type'  => 'image/png',
+            'X-Robots-Tag'  => 'noindex, noimageindex',
+            // Long max-age is safe: the filename is keyed on updated_at, so an
+            // edit produces a different cache entry rather than a stale hit.
+            'Cache-Control' => 'public, max-age=86400',
         ]);
     }
 
