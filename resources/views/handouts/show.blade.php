@@ -133,17 +133,6 @@
   .cta a:active { transform: translateY(0); }
   .cta a svg { flex: none; }
 
-  /* The honesty line. A handout says out loud that it is going away — that is
-     the whole promise of the thing, and hiding it would be the lie. */
-  .sunset {
-    margin-top: 30px; padding-top: 22px;
-    border-top: 1px solid var(--line);
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--ink-faint);
-    line-height: 1.7;
-  }
-
   .signoff {
     margin-top: 26px; text-align: center; position: relative; z-index: 1;
     font-family: 'Instrument Sans', system-ui, sans-serif;
@@ -219,11 +208,11 @@
         </p>
       @endif
 
-      @if ($h->mode === 'expires' && $h->expires_at)
-        <p class="sunset">
-          This page comes down {{ $h->expires_at->timezone(\App\Models\Handout::TZ)->format('F j') }}
-        </p>
-      @endif
+      {{-- No expiry notice on the card, deliberately. "This page comes down
+           December 20" reads as a cold administrative stamp on what is a
+           family's announcement, and the visitor gains nothing from it — they
+           either use the link now or they do not. The lifespan is still shown
+           plainly to the clerk in /admin/handouts, which is where it matters. --}}
     </div>
   </article>
 
