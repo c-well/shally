@@ -101,6 +101,10 @@ Schedule::command('bulletins:purge-old')->dailyAt('03:45');  // hard-delete 14+ 
 Schedule::command('feedback:purge-old')->dailyAt('03:50');   // hard-delete closed tickets > 14 days (PurgeOldTickets)
 Schedule::command('audit:purge-old')->dailyAt('03:55');      // hard-delete audit log entries > 40 days (PurgeOldAuditLogs)
 Schedule::command('bulletins:clear-stale-previous-snapshots')->hourly();  // reclaim previous_published_* cols 8+h after supersession
+// The handout heartbeat. Morning slot on purpose: a "still needed?" push at
+// 9am gets answered; one at 4am is gone by the time anybody looks.
+Schedule::command('handouts:nudge')->dailyAt('09:10')->timezone('America/New_York');
+
 Schedule::command('lesson:ensure-current')->dailyAt('04:20')->timezone('America/New_York'); // auto-roll the Sabbath School quarter (Q3 2026 was missed manually — never again)
 
 // Rotate the markdown feedback log when it grows past 5MB so the tail-read in ClaudeAssistant

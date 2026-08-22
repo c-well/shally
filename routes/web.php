@@ -96,6 +96,14 @@ Route::get ('/prayer',   [\App\Http\Controllers\PrayerController::class, 'show']
 Route::post('/prayer',   [\App\Http\Controllers\PrayerController::class, 'send'])
      ->middleware(['throttle:3,60', 'honeypot'])->name('prayer.send');
 
+// Handouts — private, expiring one-off pages handed out by link/QR.
+// Deliberately NOT registered in sitemap.xml and disallowed in robots.txt:
+// see App\Http\Controllers\HandoutController for why all three layers exist.
+Route::get('/h/{token}', [\App\Http\Controllers\HandoutController::class, 'show'])
+     ->where('token', '[a-z0-9]{6,16}')
+     ->middleware('throttle:120,1')
+     ->name('handout.show');
+
 // SEO infrastructure — full site indexing
 Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt',  [\App\Http\Controllers\SitemapController::class, 'robots'])->name('robots');
@@ -144,6 +152,15 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
     Route::delete('/events/{event}/flyer',[EventController::class, 'removeFlyer'])->name('events.flyer.remove');
 
     Route::get('/admin/events', [\App\Http\Controllers\AdminEventsController::class, 'index'])->name('admin.events');
+
+    // Handouts — the clerk mints/kills them; the public side is the /h/ route above.
+    Route::get   ('/admin/handouts',                [\App\Http\Controllers\AdminHandoutsController::class, 'index'])->name('admin.handouts');
+    Route::post  ('/admin/handouts',                [\App\Http\Controllers\AdminHandoutsController::class, 'store'])->name('admin.handouts.store');
+    Route::patch ('/admin/handouts/{handout}',      [\App\Http\Controllers\AdminHandoutsController::class, 'update'])->name('admin.handouts.update');
+    Route::delete('/admin/handouts/{handout}',      [\App\Http\Controllers\AdminHandoutsController::class, 'destroy'])->name('admin.handouts.destroy');
+    Route::post  ('/admin/handouts/{handoutId}/restore', [\App\Http\Controllers\AdminHandoutsController::class, 'restore'])->whereNumber('handoutId')->name('admin.handouts.restore');
+    Route::post  ('/admin/handouts/{handout}/keep', [\App\Http\Controllers\AdminHandoutsController::class, 'keep'])->name('admin.handouts.keep');
+    Route::get   ('/admin/handouts/{handout}/qr',   [\App\Http\Controllers\AdminHandoutsController::class, 'qr'])->name('admin.handouts.qr');
 
     Route::get ('/admin/bulletin',        [\App\Http\Controllers\AdminBulletinController::class, 'index'])->name('admin.bulletin');
     Route::post('/admin/bulletin/prefer', [\App\Http\Controllers\AdminBulletinController::class, 'prefer'])->name('admin.bulletin.prefer');
