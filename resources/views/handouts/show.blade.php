@@ -127,10 +127,9 @@
     text-decoration: none;
     padding: 16px 30px; border-radius: 999px;
     max-width: 100%;
-    box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--teal) 75%, transparent);
-    transition: transform .22s cubic-bezier(.2,.75,.25,1), background .22s ease, box-shadow .22s ease;
+    transition: transform .22s cubic-bezier(.2,.75,.25,1), background .22s ease;
   }
-  .cta a:hover { background: var(--teal-dark); transform: translateY(-2px); box-shadow: 0 16px 30px -12px color-mix(in srgb, var(--teal) 70%, transparent); }
+  .cta a:hover { background: var(--teal-dark); transform: translateY(-2px); }
   .cta a:active { transform: translateY(0); }
   .cta a svg { flex: none; }
 
