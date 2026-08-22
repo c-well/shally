@@ -22,15 +22,16 @@
   .sec-h { margin: 40px 0 14px; font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--ink-faint, rgba(26,35,50,.45)); }
 
   /* ── Buttons ── */
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; border-radius: 999px; padding: 13px 22px; border: 1px solid transparent; cursor: pointer; text-decoration: none; transition: background .2s, border-color .2s, color .2s; }
+  /* --r-btn (8px) governs anything clickable; the 999px pill is reserved for
+     non-interactive badges. See the token block in public/css/shalom.css. */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; border-radius: var(--r-btn, 8px); padding: 12px 20px; border: 1px solid transparent; cursor: pointer; text-decoration: none; transition: background .2s, border-color .2s, color .2s; }
   .btn-primary { background: var(--teal, #03617A); color: #fff; }
   .btn-primary:hover { background: var(--teal-dark, #024357); }
   .btn-ghost { background: #fff; color: var(--ink-soft); border-color: var(--line, rgba(26,35,50,.16)); }
   .btn-ghost:hover { border-color: var(--teal, #03617A); color: var(--teal, #03617A); }
   .btn-danger { background: #fff; color: #a33d3d; border-color: rgba(163,61,61,.3); }
   .btn-danger:hover { background: #a33d3d; color: #fff; }
-  .btn-block { width: 100%; }
-  .btn-lg { padding: 16px 26px; font-size: 15px; }
+  .btn-lg { padding: 14px 24px; font-size: 15px; }
 
   /* ── The nudge banner: the whole reason this feature stays honest ── */
   .nudge { margin-top: 26px; background: #fff; border: 1px solid rgba(176,141,60,.4); border-left: 4px solid var(--brass, #b08d3c); border-radius: 12px; padding: 20px 22px; }
@@ -41,9 +42,10 @@
   .nudge li strong { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
   .nudge li .spacer { flex: 1 1 auto; min-width: 0; }
   .nudge form { display: inline; }
-  .mini { font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); cursor: pointer; }
+  .mini { font-size: 12px; font-weight: 600; padding: 8px 13px; border-radius: var(--r-btn, 8px); border: 1px solid var(--line); background: #fff; color: var(--ink-soft); cursor: pointer; text-decoration: none; }
   .mini:hover { border-color: var(--teal); color: var(--teal); }
   .mini.kill { color: #a33d3d; border-color: rgba(163,61,61,.28); }
+  .acts .mini { line-height: 1.2; }
   .mini.kill:hover { background: #a33d3d; color: #fff; }
 
   /* ── Wizard ── */
@@ -184,7 +186,7 @@
 
   {{-- ── The wizard ── --}}
   <div class="starter">
-    <button class="btn btn-primary btn-lg btn-block" type="button" id="startbtn">+ New handout</button>
+    <button class="btn btn-primary btn-lg" type="button" id="startbtn">+ New handout</button>
   </div>
 
   <form id="wiz" method="POST" action="{{ route('admin.handouts.store') }}" enctype="multipart/form-data">
