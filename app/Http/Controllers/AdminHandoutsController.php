@@ -168,15 +168,19 @@ class AdminHandoutsController extends Controller
     /** A QR big enough to print on a bulletin insert without going fuzzy. */
     public function qr(Handout $handout): Response
     {
-        $png = Builder::create()
-            ->writer(new PngWriter())
-            ->data($handout->url())
-            ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
-            ->size(900)
-            ->margin(24)
-            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
-            ->build();
+        // endroid/qr-code 6 removed the fluent Builder::create() of 5.x — the
+        // constructor takes everything by name and Builder is readonly.
+        $png = (new Builder(
+            writer: new PngWriter(),
+            data: $handout->url(),
+            encoding: new Encoding('UTF-8'),
+            // High correction so the code still scans with a fold, a thumb, or
+            // a bad photocopy across it — these get printed on paper inserts.
+            errorCorrectionLevel: ErrorCorrectionLevel::High,
+            size: 900,
+            margin: 24,
+            roundBlockSizeMode: RoundBlockSizeMode::Margin,
+        ))->build();
 
         return response($png->getString(), 200, [
             'Content-Type'        => 'image/png',
