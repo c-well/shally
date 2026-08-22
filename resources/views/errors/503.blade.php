@@ -57,6 +57,12 @@
     font-family: 'Xtreem', 'Cormorant Garamond', serif;
     font-size: clamp(64px, 12vw, 116px);
     font-weight: 500; font-style: normal;
+    /* text-transform:lowercase is NOT cosmetic here and must not be dropped.
+       Xtreem's capital S is a large swooping display glyph; the mark uses the
+       compact lowercase s. The source text stays "Shalom" for screen readers
+       and copy-paste while the face renders the real logo. This mirrors
+       .site-menu-brand em exactly - if the header ever changes, change both. */
+    text-transform: lowercase;
     line-height: .95; letter-spacing: -1px;
     color: var(--teal);
   }
