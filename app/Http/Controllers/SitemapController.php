@@ -54,6 +54,10 @@ class SitemapController extends Controller
         Disallow: /api/
         Disallow: /feedback
 
+        # Handouts are private one-off pages reached only by the link someone
+        # was handed. Never index them; the route also sends X-Robots-Tag.
+        Disallow: /h/
+
         Sitemap: {$base}/sitemap.xml
         TXT;
 

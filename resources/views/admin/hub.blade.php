@@ -116,6 +116,7 @@
     'changes'   => ['Undo', 'Edit history.', 'Every content edit — bulletins, pages, lessons — with a one-click undo for each.', 'Open', route('admin.changes')],
     'bulletin'  => ['New', 'Bulletin editor.', 'The drill-through editor — every item inline, autosaves, works on phone and tablet.', 'Open', route('admin.bulletin')],
     'events'    => ['Calendar', 'Events.', 'Add an event in seconds — name, date, flyer. Live as you fill it in.', 'Open', route('admin.events')],
+    'handouts'  => ['Hand out', 'Handouts.', 'A private link + QR for one thing — a registry, a welcome, a one-off event. It expires on its own.', 'Open', route('admin.handouts')],
     'games'     => ['Kids', 'Scripture games.', 'Build the verse games — pick a book, a game, an age. They appear at /kids.', 'Open', route('admin.games')],
     'mystery'   => ['Teens', 'Undercover.', 'The question bank for the youth-night mystery game.', 'Open', route('admin.mystery')],
     'intake'    => ['Forms', 'Intake.', 'Graduation slides, sign-ups — shareable links, every submission in its gallery.', 'Open', route('admin.intake.index')],
@@ -138,11 +139,11 @@
     'pg_contact'=> ['Get in touch', 'Contact form.', 'Public form · sends to contact@ with CC to c-wellpics.', 'Preview', route('admin.pages.edit', 'contact')],
   ];
 
-  $TOOL_KEYS = ['messages','users','logs','changes','bulletin','events','games','mystery','intake','changelog','spend','names','schedule','lessons','sermons','peace','slides','media','analytics','buginbox'];
+  $TOOL_KEYS = ['messages','users','logs','changes','bulletin','events','handouts','games','mystery','intake','changelog','spend','names','schedule','lessons','sermons','peace','slides','media','analytics','buginbox'];
   $PAGE_KEYS = ['pg_landing','pg_about','pg_visit','pg_beliefs','pg_notes','pg_contact'];
 
   $GROUPS = [
-    'week'    => ['This week', ['bulletin', 'events', 'schedule', 'slides', 'lessons', 'names']],
+    'week'    => ['This week', ['bulletin', 'events', 'handouts', 'schedule', 'slides', 'lessons', 'names']],
     'people'  => ['People & inbox', ['messages', 'users', 'intake', 'buginbox']],
     'ministry'=> ['Ministries, games & site', ['peace', 'sermons', 'games', 'mystery', 'media', 'pg_landing', 'pg_about', 'pg_visit', 'pg_beliefs', 'pg_notes', 'pg_contact']],
     'system'  => ['System & insights', ['analytics', 'logs', 'changes', 'changelog', 'spend']],
