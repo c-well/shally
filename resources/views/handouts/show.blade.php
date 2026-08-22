@@ -12,12 +12,28 @@
 
 <title>{{ $h->title }}</title>
 
-{{-- Social preview is deliberately bare. Somebody will paste this link into a
-     family WhatsApp group, and the card that unfurls there should say the
-     title and nothing else — no church branding wrapped around a private
-     matter, no description leaking the contents to a group chat. --}}
+{{-- DOCTRINE: the preview looks like the page. These links get pasted into
+     family group chats, and a generic card — favicon on a coloured square —
+     tells the recipient nothing and reads as spam. The image is a real render
+     of this card: same parchment, same theme colour, same mark and title. See
+     App\Services\HandoutOgImage.
+
+     The description stays deliberately short. The picture carries the identity;
+     the body copy is the family's own words and does not need repeating into
+     every chat preview that touches the link. --}}
 <meta property="og:title" content="{{ $h->title }}">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="The Church of Peace">
+<meta property="og:url" content="{{ $h->url() }}">
+<meta property="og:image" content="{{ route('handout.og', $h->token) }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+@if ($h->eyebrow)
+  <meta property="og:description" content="{{ $h->eyebrow }}">
+@endif
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $h->title }}">
+<meta name="twitter:image" content="{{ route('handout.og', $h->token) }}">
 
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2">
