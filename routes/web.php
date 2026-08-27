@@ -157,6 +157,16 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
 
     Route::get('/admin/events', [\App\Http\Controllers\AdminEventsController::class, 'index'])->name('admin.events');
 
+    // Service schedule — the home page's "Each week" cards, previously a
+    // hardcoded array inside landing.blade.php.
+    Route::get   ('/admin/services',                 [\App\Http\Controllers\AdminServicesController::class, 'index'])->name('admin.services');
+    Route::post  ('/admin/services',                 [\App\Http\Controllers\AdminServicesController::class, 'store'])->name('admin.services.store');
+    Route::patch ('/admin/services/intro',           [\App\Http\Controllers\AdminServicesController::class, 'updateIntro'])->name('admin.services.intro');
+    Route::post  ('/admin/services/reorder',         [\App\Http\Controllers\AdminServicesController::class, 'reorder'])->name('admin.services.reorder');
+    Route::patch ('/admin/services/{service}',       [\App\Http\Controllers\AdminServicesController::class, 'update'])->name('admin.services.update');
+    Route::delete('/admin/services/{service}',       [\App\Http\Controllers\AdminServicesController::class, 'destroy'])->name('admin.services.destroy');
+    Route::post  ('/admin/services/{serviceId}/restore', [\App\Http\Controllers\AdminServicesController::class, 'restore'])->whereNumber('serviceId')->name('admin.services.restore');
+
     // Handouts — the clerk mints/kills them; the public side is the /h/ route above.
     Route::get   ('/admin/handouts',                [\App\Http\Controllers\AdminHandoutsController::class, 'index'])->name('admin.handouts');
     Route::post  ('/admin/handouts',                [\App\Http\Controllers\AdminHandoutsController::class, 'store'])->name('admin.handouts.store');

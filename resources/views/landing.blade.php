@@ -765,26 +765,35 @@
 
 {{-- ── Schedule ── --}}
 <section class="block" id="schedule">
-  <div class="section-eyebrow">Each week</div>
-  <h2>Our service schedule.</h2>
-  <p class="section-sub">In person at 3323 White Plains Rd · all weekday gatherings on Zoom.</p>
-
   @php
-    // One list rules the section. Each service: window closure decides "on now".
-    $svcNy = now('America/New_York');
-    $svcs = [
-      ['name' => 'Sabbath School',  'when' => 'SAT · 9:30 AM',      'where' => 'In person', 'zoom' => null,
-       'on' => $svcNy->isSaturday() && $svcNy->between($svcNy->copy()->setTime(9,15),  $svcNy->copy()->setTime(10,50))],
-      ['name' => 'Worship Service', 'when' => 'SAT · 11:00 AM',     'where' => 'In person', 'zoom' => null,
-       'on' => $svcNy->isSaturday() && $svcNy->between($svcNy->copy()->setTime(10,50), $svcNy->copy()->setTime(14,30))],
-      ['name' => 'Hour of Prayer',  'when' => 'MON–FRI · 5:00 AM',  'where' => 'Zoom', 'zoom' => 'https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09',
-       'on' => $svcNy->isWeekday() && $svcNy->between($svcNy->copy()->setTime(4,45),   $svcNy->copy()->setTime(6,15))],
-      ['name' => 'Prayer Meeting',  'when' => 'WED · 7:00 PM',      'where' => 'Zoom', 'zoom' => 'https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09',
-       'on' => $svcNy->isWednesday() && $svcNy->between($svcNy->copy()->setTime(18,45), $svcNy->copy()->setTime(20,15))],
-    ];
-    $svcActive = \App\Models\AppSetting::get('living_schedule', '1') === '1' ? collect($svcs)->firstWhere('on', true) : null;
+    // The section's words and its cards are both editable at /admin/services.
+    // The words are a Page row (slug schedule-intro), the same pattern
+    // slider-intro uses for a landing block that has no route of its own.
+    $svcIntro = \App\Models\Page::where('slug', 'schedule-intro')->first();
+
+    // These four used to be a hardcoded array right here, complete with a
+    // closure per service deciding "is it on now" — which meant a time change
+    // or a new Zoom link needed a developer. They are rows now; the shape below
+    // is kept identical so the markup underneath did not have to change.
+    $svcs = \App\Models\ServiceTime::published()->map(fn ($s) => [
+        'name'  => $s->name,
+        'when'  => $s->when_label,
+        'where' => $s->where_label,
+        'zoom'  => $s->zoom_url,
+        'on'    => $s->isLiveNow(),
+    ])->all();
+
+    $svcActive = \App\Models\AppSetting::get('living_schedule', '1') === '1'
+        ? collect($svcs)->firstWhere('on', true)
+        : null;
     $svcRest   = collect($svcs)->where('name', '!=', $svcActive['name'] ?? '')->values();
   @endphp
+
+  <div class="section-eyebrow">{{ $svcIntro?->eyebrow ?: 'Each week' }}</div>
+  <h2>{{ $svcIntro?->title ?: 'Our service schedule.' }}</h2>
+  @if (trim((string) ($svcIntro?->body_md ?? '')) !== '')
+    <p class="section-sub">{{ $svcIntro->body_md }}</p>
+  @endif
 
   @if ($svcActive)
     {{-- A service is ON — its card owns the stage; the rest wait as a quiet line. --}}
