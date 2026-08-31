@@ -74,7 +74,7 @@
 
         <div class="filters" x-show="!query.trim()">
           <template x-for="f in ['all','person','update','receipt']" :key="f">
-            <button class="filter" :class="{ on: filter === f, empty: !tally[f] && f !== 'all' }"
+            <button class="filter" :class="{ on: filter === f, none: !tally[f] && f !== 'all' }"
                     x-on:click="filter = f; load()">
               <span x-text="filterLabel(f)"></span>
               <span class="n">
@@ -90,10 +90,15 @@
         <template x-for="m in items" :key="m.id">
           <button class="msg" :class="{ seen: m.seen, on: sel && sel.id === m.id }"
                   x-on:pointerdown="open(m)">
+            <span class="face" :class="{ bot: m.kind !== 'person' }"
+                  :style="faceStyle(m)" x-html="faceInner(m)" aria-hidden="true"></span>
             <span class="row1">
               <span class="who" x-html="hi(m.who)"></span>
               <span class="kind" :class="m.kind" x-show="!query.trim()" x-text="kindLabel(m.kind)"></span>
               <span class="rbox" x-show="query.trim()" x-text="m.box"></span>
+              <span class="clip" x-show="m.attach" title="Has attachments">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.05 12.25 20.2a5.5 5.5 0 0 1-7.78-7.78l9.2-9.2a3.67 3.67 0 0 1 5.18 5.19l-9.2 9.19a1.83 1.83 0 0 1-2.6-2.59l8.5-8.49"/></svg>
+              </span>
               <span class="when" x-text="m.when"></span>
             </span>
             <span class="subj" x-html="hi(m.subj)"></span>
@@ -140,20 +145,30 @@
           <div class="readbody">
             <h2 x-text="sel.subj"></h2>
             <div class="fromline">
+              <span class="face" :class="{ bot: sel.kind !== 'person' }"
+                    :style="faceStyle(sel)" x-html="faceInner(sel)" aria-hidden="true"></span>
               <span x-text="sel.who"></span>
               <span class="addr" x-text="sel.addr"></span>
               <span class="stamp" x-text="sel.when"></span>
             </div>
 
             {{-- Plain text: our own markup, our own type. --}}
-            <div class="prose" x-show="!sel.html">
+            <div class="prose" x-show="!sel.html && paragraphs.length">
               <template x-for="(p, i) in paragraphs" :key="i"><p x-text="p"></p></template>
             </div>
+
+            {{-- Some mail is nothing but its attachment. Say so, rather than
+                 showing an empty white pane and letting it read as broken. --}}
+            <p class="prose" x-show="!hasBody && !paragraphs.length" style="color:var(--ink-faint)">
+              <span x-text="(sel.files && sel.files.length)
+                ? 'No message — just the ' + (sel.files.length === 1 ? 'attachment' : 'attachments') + ' below.'
+                : 'This message has no text.'"></span>
+            </p>
 
             {{-- HTML mail: somebody else's markup, kept in a sandbox, with
                  remote images held back until asked for — which is also what
                  holds back the tracking pixel. --}}
-            <div class="htmlwrap" x-show="sel.html">
+            <div class="htmlwrap" x-show="sel.html && hasBody">
               <span class="imgnote" x-show="!showImages">Images held back</span>
               <button class="imgchip" :class="{ on: showImages }" x-on:click="showImages = true"
                       :title="showImages ? 'Images are showing' : 'Show images'"
@@ -170,6 +185,23 @@
                    allow-scripts nothing in here can run. --}}
               <iframe sandbox="allow-same-origin" :srcdoc="frameDoc" style="height:460px"
                       x-init="fitFrame($el)" title="Message content"></iframe>
+            </div>
+
+            {{-- What came with it. These are copies: the originals stay in
+                 the mailbox, so whatever mail app anyone else uses is
+                 untouched. --}}
+            <div class="files" x-show="sel.files && sel.files.length">
+              <template x-for="f in (sel.files || [])" :key="f.id">
+                <a class="filecard" :class="{ locked: f.kind === 'locked', away: !f.ready }"
+                   :href="f.url" :target="f.kind === 'locked' ? '_self' : '_blank'" rel="noopener"
+                   :title="f.ready ? f.name : f.name + ' — not held locally, opening will fetch it'">
+                  <span class="fico" x-html="fileIcon(f.kind)" aria-hidden="true"></span>
+                  <span class="fmeta">
+                    <span class="fname" x-text="f.name"></span>
+                    <span class="fsize" x-text="f.ready ? f.size : f.size + ' · fetching'"></span>
+                  </span>
+                </a>
+              </template>
             </div>
 
             {{-- Reply. The recipient field is the whole point: a chip opens

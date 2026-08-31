@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MailAction;
+use App\Models\MailAttachment;
 use App\Models\MailMessage;
 use App\Services\Mail\MailSearch;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class AdminMailController extends Controller
 
         return collect(config('mailroom.boxes'))->map(fn ($cfg, $id) => [
             'id' => $id,
-            'addr' => $id.'@'.config('mailroom.domain'),
+            'addr' => $cfg['addr'],
             'note' => $cfg['note'],
             'total' => (int) ($counts[$id]->total ?? 0),
             'unread' => (int) ($counts[$id]->unread ?? 0),
@@ -73,7 +74,77 @@ class AdminMailController extends Controller
             'body' => $message->body_text,
             'html' => $message->body_html ? $this->safeHtml($message->body_html) : null,
             'reason' => $message->kind_reason,
+            'files' => $message->attachments->map(fn ($a) => [
+                'id' => $a->id,
+                'name' => $a->name,
+                'size' => $a->size_label,
+                'kind' => $this->fileKind($a->mime, $a->name),
+                'ready' => $a->cached,
+                'url' => route('admin.mail.file', $a),
+            ])->values(),
         ]);
+    }
+
+    /**
+     * Hands back one attachment.
+     *
+     * Only what we are confident about opens in the browser. Everything else —
+     * archives, anything executable, anything unidentified — downloads,
+     * because the browser is the wrong place to find out what is inside a
+     * file. The filename in the header is the sanitised one, and the path
+     * comes from our generated name, never the sender's.
+     *
+     * A file we are not currently holding is not a missing file. The original
+     * is still in the mailbox, so we ask for it and it is here within the
+     * minute — the web process cannot read the mail store itself.
+     */
+    public function file(MailAttachment $attachment)
+    {
+        if (! $attachment->cached) {
+            $m = $attachment->message;
+
+            MailAction::firstOrCreate([
+                'mailbox' => $m->mailbox,
+                'folder' => $m->folder,
+                'uid' => $m->uid,
+                'action' => 'fetch',
+                'applied_at' => null,
+            ], ['requested_by' => auth()->id()]);
+
+            return response()->json([
+                'fetching' => true,
+                'message' => 'Getting that file off the server — try again in a minute.',
+            ], 202);
+        }
+
+        return response()->file($attachment->path, [
+            'Content-Type' => $attachment->previewable ? $attachment->mime : 'application/octet-stream',
+            'Content-Disposition' => ($attachment->previewable ? 'inline' : 'attachment')
+                .'; filename="'.str_replace('"', '', $attachment->name).'"',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    /** Which glyph the room draws beside the file. */
+    private function fileKind(?string $mime, string $name): string
+    {
+        $mime = strtolower((string) $mime);
+        $ext = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
+
+        if (str_starts_with($mime, 'image/')) {
+            return 'image';
+        }
+        if ($mime === 'application/pdf' || $ext === 'pdf') {
+            return 'pdf';
+        }
+        if (in_array($ext, ['zip', 'rar', '7z', 'gz', 'tar', 'dmg', 'exe', 'app', 'msi', 'pkg'], true)) {
+            return 'locked';
+        }
+        if (in_array($ext, ['doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'pages', 'numbers'], true)) {
+            return 'doc';
+        }
+
+        return 'file';
     }
 
     /**

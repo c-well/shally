@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MailMessage extends Model
 {
@@ -15,6 +16,11 @@ class MailMessage extends Model
         'has_attachments' => 'boolean',
         'kind_confidence' => 'float',
     ];
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MailAttachment::class);
+    }
 
     public function scopeBox($q, string $box)
     {

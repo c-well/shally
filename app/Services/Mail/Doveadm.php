@@ -15,16 +15,27 @@ use Symfony\Component\Process\Process;
  */
 class Doveadm
 {
-    public function __construct(private readonly string $bin, private readonly string $domain) {}
+    public function __construct(private readonly string $bin) {}
 
     public static function make(): self
     {
-        return new self(config('mailroom.doveadm'), config('mailroom.domain'));
+        return new self(config('mailroom.doveadm'));
     }
 
+    /**
+     * The room's short name for a box is not its address — the church has
+     * mail on two domains, so the mapping lives in config and nothing here
+     * guesses at it.
+     */
     public function address(string $box): string
     {
-        return $box.'@'.$this->domain;
+        $addr = config("mailroom.boxes.{$box}.addr");
+
+        if (! $addr) {
+            throw new RuntimeException("no address configured for mailbox “{$box}”");
+        }
+
+        return $addr;
     }
 
     /** UID => flags string, for one folder. One call, however many messages. */
