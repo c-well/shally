@@ -104,6 +104,8 @@
 
     sel: null,
     showImages: false,
+    zoom: 'fit',        // 'fit' scales the mail to the room, 'full' is actual size
+    frameWide: false,   // true when the mail is wider than the room and had to be scaled
     reading: false,
     listonly: false,
     picker: false,
@@ -153,16 +155,76 @@
         'html{-webkit-text-size-adjust:100%}body{margin:0}</style>' + body;
     },
 
-    /** Size the frame to the mail rather than guessing at a height. */
+    /**
+     * Fit the mail to the screen.
+     *
+     * Marketing mail is built for a desktop — a 560 or 600 pixel table that
+     * will not reflow, because it was never written to. On a phone that is
+     * wider than the room, and Safari will not let you pinch below the initial
+     * scale, so there is no way out of it by hand. So we do what a mail app
+     * does: measure the mail's real width and scale the whole thing down until
+     * it fits, which is why the frame is same-origin.
+     *
+     * Tapping switches to actual size, where it scrolls sideways inside its
+     * own box and never widens the page.
+     */
     fitFrame(el) {
-      const set = () => {
+      const measure = () => {
         try {
-          const h = el.contentDocument?.body?.scrollHeight;
-          if (h) el.style.height = Math.min(Math.max(h + 24, 220), 4000) + 'px';
-        } catch (e) { /* opaque frame — the fixed height stands */ }
+          const doc = el.contentDocument;
+          const body = doc?.body;
+          if (!body) return;
+
+          // Undo any previous scaling before measuring, or each pass would
+          // measure the last pass's result.
+          el.style.transform = '';
+          el.style.width = '100%';
+
+          const natural = Math.max(
+            body.scrollWidth,
+            doc.documentElement.scrollWidth,
+            ...[...body.querySelectorAll('table, img')].map((n) => n.offsetWidth || 0)
+          );
+
+          const wrap = el.parentElement;
+          const pad = parseFloat(getComputedStyle(wrap).paddingTop)
+            + parseFloat(getComputedStyle(wrap).paddingBottom);
+          const room = wrap.clientWidth;
+          const fits = !natural || natural <= room + 2;
+
+          this.frameWide = !fits;
+
+          if (fits || this.zoom === 'full') {
+            el.style.width = fits ? '100%' : natural + 'px';
+            el.style.height = Math.min(Math.max(body.scrollHeight + 24, 200), 6000) + 'px';
+            wrap.style.height = '';
+
+            return;
+          }
+
+          // Scale the frame itself, anchored top-left, and give the box the
+          // scaled height so nothing below it is pushed down by empty space.
+          const k = room / natural;
+          const h = Math.min(Math.max(body.scrollHeight + 16, 200), 6000);
+
+          el.style.width = natural + 'px';
+          el.style.height = h + 'px';
+          el.style.transformOrigin = 'top left';
+          el.style.transform = 'scale(' + k + ')';
+          // The mat is not part of the mail, so it is added on top of the
+          // scaled height rather than eating into it.
+          wrap.style.height = Math.ceil(h * k + pad) + 'px';
+        } catch (e) {
+          /* opaque frame — the fixed height stands */
+        }
       };
-      el.addEventListener('load', set);
-      set();
+
+      el.addEventListener('load', () => setTimeout(measure, 0));
+      // Images arriving late change the height, and so does turning the phone.
+      this.$watch('zoom', () => setTimeout(measure, 0));
+      this.$watch('showImages', () => setTimeout(measure, 60));
+      window.addEventListener('resize', measure);
+      setTimeout(measure, 0);
     },
 
     kindLabel(k) { return LABEL[k] || LABEL.unknown; },
@@ -240,6 +302,8 @@
 
     async open(m) {
       this.showImages = false;
+      this.zoom = 'fit';
+      this.frameWide = false;
       this.reading = true;
       this.listonly = false;
       this.box = m.box;
