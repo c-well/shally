@@ -148,7 +148,9 @@
               <span class="face" :class="{ bot: sel.kind !== 'person' }"
                     :style="faceStyle(sel)" x-html="faceInner(sel)" aria-hidden="true"></span>
               <span x-text="sel.who"></span>
-              <span class="addr" x-text="sel.addr"></span>
+              {{-- Plenty of senders have no display name, and printing the
+                   address twice makes the line look broken. --}}
+              <span class="addr" x-show="sel.addr && sel.addr !== sel.who" x-text="sel.addr"></span>
               <span class="stamp" x-text="sel.when"></span>
             </div>
 
@@ -168,7 +170,7 @@
             {{-- HTML mail: somebody else's markup, kept in a sandbox, with
                  remote images held back until asked for — which is also what
                  holds back the tracking pixel. --}}
-            <div class="htmlwrap" x-show="sel.html && hasBody">
+            <div class="htmlwrap" :class="{ full: zoom === 'full' }" x-show="sel.html && hasBody">
               <span class="imgnote" x-show="!showImages">Images held back</span>
               <button class="imgchip" :class="{ on: showImages }" x-on:click="showImages = true"
                       :title="showImages ? 'Images are showing' : 'Show images'"
@@ -185,6 +187,17 @@
                    allow-scripts nothing in here can run. --}}
               <iframe sandbox="allow-same-origin" :srcdoc="frameDoc" style="height:460px"
                       x-init="fitFrame($el)" title="Message content"></iframe>
+
+              {{-- Only offered when the mail really is wider than the room. --}}
+              <button class="fitchip" x-show="frameWide"
+                      x-on:click="zoom = (zoom === 'fit' ? 'full' : 'fit')"
+                      :title="zoom === 'fit' ? 'Show at actual size' : 'Fit to the screen'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <template x-if="zoom === 'fit'"><g><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></g></template>
+                  <template x-if="zoom !== 'fit'"><g><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></g></template>
+                </svg>
+                <span x-text="zoom === 'fit' ? 'Actual size' : 'Fit to screen'"></span>
+              </button>
             </div>
 
             {{-- What came with it. These are copies: the originals stay in

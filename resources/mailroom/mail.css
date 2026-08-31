@@ -453,13 +453,19 @@
   .htmlwrap {
     position: relative;
     border: 1px solid var(--hair); border-radius: var(--r-card);
-    overflow-x: auto; overscroll-behavior-x: contain;
+    /* A bounded viewport: the frame inside may be far wider than the room,
+       and the transform that shrinks it must be clipped here rather than
+       allowed to widen the page. */
+    overflow: hidden; overscroll-behavior-x: contain;
     max-width: 100%; background: #fff;
+    contain: paint;
   }
+  /* Actual size: it scrolls sideways inside its own box, never the document. */
+  .htmlwrap.full { overflow-x: auto; }
   /* State drawn into the glyph rather than applied to it — a slash means off,
      the way Halide marks RAW. Beats a banner across every HTML message. */
   .imgchip {
-    position: absolute; top: 0.55rem; right: 0.55rem; z-index: 2;
+    position: absolute; top: 0.55rem; right: 0.55rem; z-index: 3;
     width: 2.1rem; height: 2.1rem; border-radius: var(--r-badge);
     border: none; cursor: pointer;
     background: rgba(20, 24, 30, 0.6); color: #fff;
@@ -483,6 +489,28 @@
     pointer-events: none; white-space: nowrap;
   }
   .htmlwrap iframe { display: block; width: 100%; border: 0; background: #fff; }
+
+  /* Both floating controls sit over somebody else's layout, so the mail gets
+     a mat to sit on rather than having chips land on its own header. */
+  .htmlwrap { padding: 2.9rem 0 2.6rem; }
+  .imgnote { top: 1rem; }
+
+  /* ── Fit or actual size ───────────────────────────────────────────────────
+     Mail built for a desktop does not reflow, and a phone cannot pinch below
+     the initial scale — so the room shrinks it to fit and says so, with a way
+     back to full size for anyone who wants to read the small print. */
+  .fitchip {
+    position: absolute; left: 0.55rem; bottom: 0.55rem; z-index: 2;
+    display: inline-flex; align-items: center; gap: 0.34rem;
+    padding: 0.3rem 0.6rem; border: 0; border-radius: var(--r-btn);
+    font: inherit; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.01em;
+    background: rgba(20, 24, 30, 0.62); color: #fff; cursor: pointer;
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    transition: background 150ms, transform 110ms;
+  }
+  .fitchip:hover { background: rgba(20, 24, 30, 0.78); }
+  .fitchip:active { transform: scale(0.96); }
+  .fitchip svg { width: 0.82rem; height: 0.82rem; }
 
 
   /* ── Recipients ───────────────────────────────────────────────────────────
