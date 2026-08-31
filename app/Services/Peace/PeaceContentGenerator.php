@@ -18,6 +18,11 @@ class PeaceContentGenerator
 {
     private const MODEL = 'claude-sonnet-4-5';
 
+    /** Retry budget for transient API failures. Waits are seconds, per attempt. */
+    private const MAX_ATTEMPTS     = 3;
+    private const BACKOFF_SECONDS  = [5, 20];
+    private const RETRY_STATUSES   = [429, 500, 502, 503, 529];
+
     /**
      * @return array{
      *   title: string, heart_line: string, summary_paragraphs: array<string>,
@@ -26,7 +31,7 @@ class PeaceContentGenerator
      *   topics:     array<string>
      * }|null
      */
-    public function generate(string $sermonTranscript, array $videoMeta): ?array
+    public function generate(string $sermonTranscript, array $videoMeta, int $attempt = 1): ?array
     {
         $apiKey = config('services.anthropic.key');
         if (empty($apiKey)) {
@@ -78,9 +83,53 @@ class PeaceContentGenerator
             }
             return null;
         } catch (Throwable $e) {
-            Log::warning('PeaceContentGenerator::generate failed', ['error' => $e->getMessage()]);
+            // TRANSIENT_RETRY (2026-08-31): 429 (rate limited) and 529 (servers
+            // overloaded) mean "busy, ask again" -- not "this request is bad".
+            // Giving up on them meant a ten-second blip at Anthropic could cost
+            // a whole week's sermon, since scan-channel only runs weekly.
+            if ($this->isTransient($e) && $attempt < self::MAX_ATTEMPTS) {
+                $wait = self::BACKOFF_SECONDS[$attempt - 1] ?? 30;
+                Log::info('PeaceContentGenerator: transient API error — backing off and retrying', [
+                    'attempt' => $attempt,
+                    'of'      => self::MAX_ATTEMPTS,
+                    'wait_s'  => $wait,
+                    'error'   => substr($e->getMessage(), 0, 160),
+                ]);
+                sleep($wait);
+                return $this->generate($sermonTranscript, $videoMeta, $attempt + 1);
+            }
+
+            Log::warning('PeaceContentGenerator::generate failed', [
+                'error'    => $e->getMessage(),
+                'attempts' => $attempt,
+            ]);
             return null;
         }
+    }
+
+    /**
+     * Is this worth trying again? Rate limits, overload and gateway errors are
+     * the API telling us it is busy. A 400 or a 401 is telling us we are wrong,
+     * and retrying those just wastes the clock.
+     */
+    private function isTransient(Throwable $e): bool
+    {
+        $status = null;
+        if (method_exists($e, 'getStatusCode')) {
+            $status = $e->getStatusCode();
+        } elseif (property_exists($e, 'status')) {
+            $status = $e->status;
+        }
+        if (in_array((int) $status, self::RETRY_STATUSES, true)) return true;
+
+        // The SDK does not always surface a status cleanly, so fall back to the
+        // text. Kept to unambiguous phrases -- nothing that could match a real
+        // content error.
+        $msg = strtolower($e->getMessage());
+        foreach (['rate limit', 'rate_limit', 'overloaded', 'too many requests', '429', '529', '503', '502', 'timed out', 'timeout', 'connection reset'] as $needle) {
+            if (str_contains($msg, $needle)) return true;
+        }
+        return false;
     }
 
     private function systemPrompt(): string
