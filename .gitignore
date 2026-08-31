@@ -56,3 +56,7 @@ Homestead.json
 .DS_Store
 **/.DS_Store
 .env.bak-twilio-20260717
+
+# ESV corpus — copyright Crossway. Lives on the server outside the web root
+# and is deliberately not in the repo (see BibleSearchController).
+/storage/app/bible/

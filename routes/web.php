@@ -30,6 +30,12 @@ Route::get ('/beliefs',     fn () => view('beliefs',     ['page' => \App\Models\
 Route::get ('/visit',       fn () => view('visit',       ['page' => \App\Models\Page::bySlug('visit')]))->name('visit');
 Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/bible',   'bible')->name('bible');
+// ESV lives outside the web root (Crossway copyright) -- the page searches it
+// through here and gets a capped page of verses back, never the corpus.
+// KJV is public domain and still loads client-side from /lib/kjv.json.
+Route::get('/api/bible/esv', [\App\Http\Controllers\BibleSearchController::class, 'esv'])
+    ->middleware('throttle:40,1')
+    ->name('bible.esv');
 Route::view('/hymnal',  'hymnal')->name('hymnal');
 Route::middleware('seeker:optional')->group(function () {
     Route::get('/find-peace',                   [\App\Http\Controllers\FindPeaceController::class, 'index'])->name('find-peace.index');

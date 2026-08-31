@@ -71,6 +71,13 @@
   .search-clear:hover { opacity: 1; color: var(--ink); }
   .search-wrap.has-text .search-clear { display: inline-flex; }
 
+  .esv-credit {
+    margin-top: 26px; padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px; line-height: 1.6; color: var(--ink-soft);
+  }
+
   /* Translation tabs (KJV / ESV) */
   .translation-tabs { margin-top: 14px; display: flex; gap: 4px; justify-content: center; }
   .translation-tab {
@@ -186,7 +193,7 @@
 @include('partials.site-menu')
 
 <main>
-  <div class="eyebrow">King James Version · free · no app required</div>
+  <div class="eyebrow">King James &amp; English Standard · free · no app required</div>
   <h1>Read the Bible.</h1>
   <p class="subtitle">Search any verse, phrase, or reference. Browse popular passages. All hosted right here on Shalom — no need to leave the site.</p>
 
@@ -244,6 +251,9 @@
   let lastQ = '';
 
   function loadCorpus(name) {
+    // ESV is searched on the server now -- the corpus is copyright Crossway and
+    // no longer ships to the browser. Nothing to load here.
+    if (name === 'esv') return Promise.resolve(null);
     if (loadingFlags[name] || indexes[name]) return Promise.resolve(indexes[name]);
     loadingFlags[name] = true;
     hint.textContent = 'Loading ' + name.toUpperCase() + '…';
@@ -273,17 +283,50 @@
     return text.replace(re, '<mark>$1</mark>');
   }
 
-  function doSearch(q) {
+  let remoteTotal = 0;
+  let remoteCapped = false;
+
+  // Ask the server for ESV matches. Returns an array of {ref,text}, or null if
+  // the request failed (in which case a message is already on screen).
+  async function searchRemote(q) {
+    hint.textContent = 'Searching ESV…';
+    try {
+      const r = await fetch('/api/bible/esv?q=' + encodeURIComponent(q));
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      if (!d.ok) throw new Error(d.err || 'failed');
+      remoteTotal = d.total || 0;
+      remoteCapped = !!d.capped;
+      hint.textContent = 'Type a verse reference or any words to search';
+      return d.results || [];
+    } catch (e) {
+      hint.textContent = 'Type a verse reference or any words to search';
+      results.innerHTML = '<div class="results-empty">ESV search is unavailable right now — try KJV, or refresh in a moment.</div>';
+      return null;
+    }
+  }
+
+  async function doSearch(q) {
     lastQ = q;
     if (!q.trim()) { results.innerHTML = ''; return; }
-    const idx = indexes[trans];
-    if (!idx) { loadCorpus(trans); return; }
-    const hits = idx.search(q.trim(), { combineWith: 'AND' });
+
+    let hits;
+    if (trans === 'esv') {
+      hits = await searchRemote(q.trim());
+      if (hits === null) return;
+    } else {
+      const idx = indexes[trans];
+      if (!idx) { loadCorpus(trans); return; }
+      hits = idx.search(q.trim(), { combineWith: 'AND' });
+      remoteTotal = 0;
+      remoteCapped = false;
+    }
+
     if (!hits.length) {
       results.innerHTML = '<div class="results-empty">No verses match — try simpler words.</div>';
       return;
     }
-    const totalCount = hits.length;
+    const totalCount = (trans === 'esv' && remoteTotal) ? remoteTotal : hits.length;
     const shown = hits.slice(0, limit);
     const terms = q.trim().split(/\s+/).filter(t => t.length >= 2);
     let html = '<div class="result-meta">' + totalCount + ' verse' + (totalCount === 1 ? '' : 's') + ' found' + (totalCount > limit ? ' · showing first ' + limit : '') + '</div>';
@@ -297,8 +340,14 @@
         '</div>' +
       '</div>';
     }).join('');
-    if (totalCount > limit) {
+    if (limit < hits.length) {
       html += '<button type="button" class="more-btn" id="more-btn">Show more</button>';
+    }
+    if (trans === 'esv' && remoteCapped && limit >= hits.length) {
+      html += '<div class="result-meta" style="margin-top:14px;">Showing the first ' + hits.length + ' matches. Narrow the search to see fewer, closer results.</div>';
+    }
+    if (trans === 'esv') {
+      html += '<div class="esv-credit">Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), copyright © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</div>';
     }
     results.innerHTML = html;
     const more = document.getElementById('more-btn');
