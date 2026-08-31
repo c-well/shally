@@ -35,9 +35,16 @@ class MailApply extends Command
                     'unseen' => $dove->flag($a->mailbox, $a->folder, $a->uid, '\Seen', false),
                     'flag' => $dove->flag($a->mailbox, $a->folder, $a->uid, '\Flagged', true),
                     'unflag' => $dove->flag($a->mailbox, $a->folder, $a->uid, '\Flagged', false),
-                    'archive' => $dove->move($a->mailbox, $a->folder, $a->uid, 'Archive'),
-                    'trash' => $dove->move($a->mailbox, $a->folder, $a->uid, 'Trash'),
+                    'archive' => $dove->move($a->mailbox, $a->folder, $a->uid, config('mailroom.archive_to')),
+                    'trash' => $dove->move($a->mailbox, $a->folder, $a->uid, config('mailroom.trash_to')),
                     'restore' => $dove->move($a->mailbox, $a->folder, $a->uid, 'INBOX'),
+                    // Somebody opened an attachment we were not holding. The
+                    // original never left the mailbox, so we just read it again.
+                    'fetch' => $this->call('mail:sync', [
+                        '--mailbox' => $a->mailbox,
+                        '--folder' => $a->folder,
+                        '--uid' => $a->uid,
+                    ]),
                     default => throw new \RuntimeException("unknown action {$a->action}"),
                 };
 

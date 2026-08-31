@@ -15,7 +15,7 @@ class MailAction extends Model
 
     protected $casts = ['applied_at' => 'datetime'];
 
-    public const ACTIONS = ['seen', 'unseen', 'flag', 'unflag', 'archive', 'trash', 'restore'];
+    public const ACTIONS = ['seen', 'unseen', 'flag', 'unflag', 'archive', 'trash', 'restore', 'fetch'];
 
     public function scopePending($q)
     {

@@ -37,7 +37,10 @@ class MailSearch
         $hits = [];
         $fixes = [];
 
-        MailMessage::where('folder', 'INBOX')->orderByDesc('sent_at')->chunk(500, function ($chunk) use ($ops, $free, &$hits, &$fixes) {
+        // Search everywhere except the bin — a thing you threw away should
+        // not come back as a result, but archived mail is exactly what people
+        // are looking for when they search.
+        MailMessage::where('folder', '!=', config('mailroom.trash_to'))->orderByDesc('sent_at')->chunk(500, function ($chunk) use ($ops, $free, &$hits, &$fixes) {
             foreach ($chunk as $m) {
                 // Scoped terms are gates: fail one and the message is out.
                 foreach ($ops as $o) {
