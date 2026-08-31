@@ -202,6 +202,73 @@
     </div>
   @endif
 
+  {{-- SCHEDULED_FAILURE_BANNER — anything the pipeline could not repair itself.
+       Fed by the ScheduledTaskFailed listener in AppServiceProvider. Shows only
+       failures from the last 3 days, so an old blip does not sit here forever. --}}
+  @php
+    $_fails = json_decode(\App\Models\AppSetting::get('scheduled_failures_json') ?? '[]', true);
+    $_fails = is_array($_fails) ? $_fails : [];
+    $_recent = array_values(array_filter($_fails, fn ($f) =>
+        isset($f['at']) && \Carbon\Carbon::parse($f['at'])->gt(now()->subDays(3))
+    ));
+    $_byTask = [];
+    foreach ($_recent as $f) {
+        $t = $f['task'] ?? 'unknown';
+        $_byTask[$t] = ($_byTask[$t] ?? 0) + 1;
+    }
+    arsort($_byTask);
+  @endphp
+  @if ($_byTask)
+    <div style="background:#fff;border:2px solid #8a6c26;border-left:6px solid #8a6c26;border-radius:6px;padding:16px 22px;margin:18px 0 6px;display:flex;align-items:flex-start;gap:18px;">
+      <div style="font-size:26px;line-height:1;">⚠</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#8a6c26;margin-bottom:6px;">Scheduled jobs failing</div>
+        <div style="font-family:'Instrument Sans', sans-serif;font-size:1.05rem;color:var(--ink);line-height:1.5;">
+          @foreach (array_slice($_byTask, 0, 4, true) as $_t => $_n)
+            <div><strong>{{ $_t }}</strong> — {{ $_n }} {{ $_n === 1 ? 'failure' : 'failures' }} in the last 3 days</div>
+          @endforeach
+        </div>
+        <div style="font-family:'Instrument Sans',sans-serif;font-size:12px;color:var(--ink-soft);margin-top:8px;">These could not fix themselves. Last message: {{ mb_substr($_recent[0]['message'] ?? '', 0, 150) }}</div>
+      </div>
+    </div>
+  @endif
+
+  {{-- YTDLP_CANARY_BANNER — the sermon pipeline's YouTube dependency.
+       Written by /home/shalom/bin/ytdlp-selfcheck.sh (weekly, Mon 5:15am).
+       Deliberately a flat file rather than a DB row: the canary is plain bash
+       so it still runs and still records when Laravel itself is broken. --}}
+  @php
+    $_yt = @json_decode(@file_get_contents('/home/shalom/logs/ytdlp-status.json') ?: 'null', true);
+    $_ytAgeDays = ($_yt['checked_at'] ?? null)
+        ? (int) now()->diffInDays(\Carbon\Carbon::parse($_yt['checked_at']))
+        : null;
+    // Stale means the canary itself stopped running -- which is its own problem.
+    $_ytStale = $_ytAgeDays !== null && $_ytAgeDays > 10;
+  @endphp
+  @if (($_yt['state'] ?? null) === 'failed' || $_ytStale)
+    <div style="background:#fff;border:2px solid #a82a1f;border-left:6px solid #a82a1f;border-radius:6px;padding:16px 22px;margin:18px 0 6px;display:flex;align-items:center;gap:18px;">
+      <div style="font-size:28px;line-height:1;">⚠</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#a82a1f;margin-bottom:4px;">Sermon audio is broken</div>
+        <div style="font-family:'Instrument Sans', sans-serif;font-size:1.2rem;color:var(--ink);line-height:1.3;">
+          @if ($_ytStale)
+            The yt-dlp check has not run in <strong>{{ $_ytAgeDays }} days</strong> — the weekly cron may have stopped.
+          @else
+            yt-dlp <strong>{{ $_yt['version'] ?? '?' }}</strong> cannot download audio, and upgrading did not fix it. Sermons will be held at the validation gate instead of publishing.
+          @endif
+        </div>
+      </div>
+    </div>
+  @elseif (($_yt['state'] ?? null) === 'repaired')
+    <div style="background:#fff;border:2px solid #8a6c26;border-left:6px solid #8a6c26;border-radius:6px;padding:14px 22px;margin:18px 0 6px;display:flex;align-items:center;gap:18px;">
+      <div style="font-size:24px;line-height:1;">✓</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#8a6c26;margin-bottom:4px;">Fixed itself</div>
+        <div style="font-family:'Instrument Sans', sans-serif;font-size:1.05rem;color:var(--ink);line-height:1.3;">yt-dlp had gone stale and was upgraded automatically to <strong>{{ $_yt['version'] ?? '?' }}</strong>. Sermon audio is working. Nothing for you to do.</div>
+      </div>
+    </div>
+  @endif
+
   {{-- EXPENSIVE_CALL_BANNER — red flag if any Anthropic call in last 24h exceeded the threshold --}}
   @php
     $expensiveCall = \App\Models\AnthropicUsageLog::where('created_at', '>=', now()->subDay())
