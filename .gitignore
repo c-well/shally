@@ -60,3 +60,7 @@ Homestead.json
 # ESV corpus — copyright Crossway. Lives on the server outside the web root
 # and is deliberately not in the repo (see BibleSearchController).
 /storage/app/bible/
+
+# Rotated-key .env backups — never publish these
+.env.bak*
+.env.*.bak
