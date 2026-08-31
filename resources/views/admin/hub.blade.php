@@ -111,6 +111,7 @@
     'guests'    => ['Welcome', 'Guests.', 'The connect card + automatic follow-ups — day-1 thanks, day-3 questions, birthdays.', 'Open', route('admin.guests')],
     'notes'     => ['Private', 'Notes & keys.', 'The team drawer — passwords, account details, private notes. Encrypted at rest.', 'Open', route('admin.notes')],
     'messages'  => ['Inbox', 'Messages.', 'Prayer requests & contact-form messages from visitors.', 'Open', route('admin.messages')],
+    'mail'      => ['Mailboxes', 'Mail.', 'Every church mailbox in one room — media, hello, prayer, treasurer, app. Read, sort, reply.', 'Open', route('admin.mail')],
     'users'     => ['People', 'Users.', 'Add Andre, the elders, members. Set their PIN.', 'Manage', route('admin.users')],
     'logs'      => ['Activity', 'Audit log.', 'Every sign-in, magic link, and error from the last 40 days.', 'View', route('admin.logs')],
     'changes'   => ['Undo', 'Edit history.', 'Every content edit — bulletins, pages, lessons — with a one-click undo for each.', 'Open', route('admin.changes')],
@@ -145,7 +146,7 @@
 
   $GROUPS = [
     'week'    => ['This week', ['bulletin', 'events', 'services', 'handouts', 'schedule', 'slides', 'lessons', 'names']],
-    'people'  => ['People & inbox', ['messages', 'users', 'intake', 'buginbox']],
+    'people'  => ['People & inbox', ['mail', 'messages', 'users', 'intake', 'buginbox']],
     'ministry'=> ['Ministries, games & site', ['peace', 'sermons', 'games', 'mystery', 'media', 'pg_landing', 'pg_about', 'pg_visit', 'pg_beliefs', 'pg_notes', 'pg_contact']],
     'system'  => ['System & insights', ['analytics', 'logs', 'changes', 'changelog', 'spend']],
   ];

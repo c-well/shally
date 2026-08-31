@@ -341,3 +341,12 @@ Schedule::command("system:self-update --security-only")
 Schedule::command("system:check-updates")->dailyAt("05:30");
 
 Schedule::command("followups:process")->dailyAt("10:00")->timezone("America/New_York");
+
+// ── Mail ──────────────────────────────────────────────────────────────────
+// The room reads the database, so the database has to keep up with Dovecot.
+// A minute is close enough to feel live and far enough not to hammer the box.
+Schedule::command('mail:sync')->everyMinute()->withoutOverlapping()->name('mail-sync')->onOneServer();
+
+// Marking read, archiving and deleting are queued by the room and made true
+// here, in the same minute.
+Schedule::command('mail:apply')->everyMinute()->withoutOverlapping()->name('mail-apply')->onOneServer();
