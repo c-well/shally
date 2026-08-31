@@ -38,7 +38,7 @@
 
   .infobar { flex-shrink: 0; display: flex; align-items: center; gap: 16px; padding: 6px clamp(14px,4vw,20px); font-size: 13px; color: var(--ink-soft); }
   .infobar b { color: var(--ink); font-weight: 600; }
-  .rmchip { margin-left: auto; font: inherit; font-size: 12px; font-weight: 600; padding: 9px 16px; border-radius: 999px; background: var(--teal); color: #fff; border: 0; cursor: pointer; white-space: nowrap; }
+  .rmchip { margin-left: auto; font: inherit; font-size: 12px; font-weight: 600; padding: 9px 16px; border-radius: var(--r-btn); background: var(--teal); color: #fff; border: 0; cursor: pointer; white-space: nowrap; }
   .rmchip:disabled { background: color-mix(in srgb, var(--ink) 11%, transparent); color: var(--ink-soft); }
   .versestrip { flex-shrink: 0; margin: 0 clamp(14px,4vw,20px); padding: 8px 0; max-height: 3.6em; overflow-y: auto; font-family: 'IBM Plex Serif', serif; font-size: 14px; line-height: 1.65; color: var(--ink-faint); border-top: 1px solid var(--line); }
   .versestrip .vw.got { color: var(--ink); font-weight: 500; }

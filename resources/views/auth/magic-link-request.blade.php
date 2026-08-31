@@ -9,10 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455;
-    --teal:#03617A; --teal-dark:#024357; --line:color-mix(in srgb, var(--ink) 12%, transparent);
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'Poppins', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -73,6 +69,7 @@
 
   footer { padding: 22px clamp(20px, 5vw, 40px) 30px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink-soft); }
 </style>
+@include('partials.theme-vars')
 </head>
 <body>
 <div class="stage">

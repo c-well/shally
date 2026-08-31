@@ -27,7 +27,7 @@
   .who b { color: var(--teal); }
 
   .filters { margin-top: 40px; display: flex; gap: 10px; flex-wrap: wrap; }
-  .chip { font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); cursor: pointer; }
+  .chip { font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: var(--r-btn); border: 1px solid var(--line); background: #fff; color: var(--ink-soft); cursor: pointer; }
   .chip.on { background: var(--teal); color: #fff; border-color: var(--teal); }
 
   .sec { margin-top: 40px; }

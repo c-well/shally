@@ -178,7 +178,7 @@
   html.font-xlarge .prose { font-size: 26px; line-height: 1.85; }
   html.font-xlarge .verse-modal-body { font-size: 24px; line-height: 1.75; }
 
-  .font-toggle { position: fixed; bottom: 22px; right: 22px; display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; background: #fff; border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--ink) 25%, transparent); cursor: pointer; user-select: none; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); transition: border-color 0.15s, color 0.15s, transform 0.1s; z-index: 100; }
+  .font-toggle { position: fixed; bottom: 22px; right: 22px; display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; background: #fff; border: 1px solid var(--line); border-radius: var(--r-btn); box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--ink) 25%, transparent); cursor: pointer; user-select: none; font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); transition: border-color 0.15s, color 0.15s, transform 0.1s; z-index: 100; }
   .font-toggle:hover { border-color: var(--teal); color: var(--teal); }
   .font-toggle:active { transform: translateY(1px); }
   .font-toggle .aa { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 500; letter-spacing: -0.5px; line-height: 1; }
