@@ -16,11 +16,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --parchment:#fefcef; --ink:#1a2332; --ink-soft:#334455;
-    --teal:#03617A; --teal-dark:#024357; --brass:#8a6c26;
-    --line:color-mix(in srgb, var(--ink) 12%, transparent);
-  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   @font-face { font-family: 'Xtreem'; src: url('/fonts/XtreemMedium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
 
@@ -196,6 +191,7 @@
     .center { padding: 16px 18px 36px; }
   }
 </style>
+@include('partials.theme-vars')
 </head>
 <body>
 <div class="stage">

@@ -12,17 +12,17 @@ export default {
     theme: {
         extend: {
             colors: {
-                parchment: '#f4ecd8',
+                parchment: '#fefcef',
                 ink: '#1a2332',
-                'ink-soft': '#3d4a5f',
+                'ink-soft': '#334455',
                 brass: '#b08d3c',
                 teal: {
                     DEFAULT: '#03617A',
                     dark: '#024357',
                     light: '#e6f0f3',
                 },
-                cream: '#faf6ec',
-                line: 'rgba(26, 35, 50, 0.15)',
+                cream: '#faf3dd',
+                line: 'rgba(26, 35, 50, 0.10)',
                 // Department palette from the mockup
                 dept: {
                     deacons: '#6b2737',
@@ -44,6 +44,12 @@ export default {
             maxWidth: {
                 'reading': '42rem', // 672px — comfortable reading column
                 'page': '72rem',    // 1152px — for dashboards / admin screens
+            },
+            borderRadius: {
+                btn:   '8px',
+                field: '8px',
+                card:  '10px',
+                badge: '999px',
             },
             boxShadow: {
                 card: '0 1px 2px 0 rgba(26, 35, 50, 0.04), 0 1px 3px 0 rgba(26, 35, 50, 0.06)',
