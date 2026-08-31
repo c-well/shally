@@ -214,6 +214,17 @@ Route::middleware('auth')->group(function () {
     // Admin hub + tools (super_admin only)
     Route::middleware('role:super_admin')->group(function () {
         Route::view  ('/admin',                        'admin.hub')->name('admin.hub');
+
+        // ── The mail room ────────────────────────────────────────────────
+        // Reads the copy of the mailboxes that mail:sync keeps in the
+        // database. Nothing here talks to Dovecot: the FPM pools have exec
+        // disabled on purpose, so anything that changes a message is written
+        // to mail_actions and applied by mail:apply on the scheduler.
+        Route::get ('/admin/mail',                     [\App\Http\Controllers\AdminMailController::class, 'index'])->name('admin.mail');
+        Route::get ('/admin/mail/api/boxes',           [\App\Http\Controllers\AdminMailController::class, 'boxes'])->name('admin.mail.boxes');
+        Route::get ('/admin/mail/api/messages',        [\App\Http\Controllers\AdminMailController::class, 'messages'])->name('admin.mail.messages');
+        Route::get ('/admin/mail/api/message/{message}', [\App\Http\Controllers\AdminMailController::class, 'show'])->name('admin.mail.show');
+        Route::post('/admin/mail/api/act',             [\App\Http\Controllers\AdminMailController::class, 'act'])->name('admin.mail.act');
         Route::post  ('/admin/push/subscribe', function (\Illuminate\Http\Request $r) {
             $d = $r->validate(['endpoint' => 'required|string|max:1000', 'keys.p256dh' => 'required|string|max:255', 'keys.auth' => 'required|string|max:255']);
             \DB::table('push_subscriptions')->updateOrInsert(
