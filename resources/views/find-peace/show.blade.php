@@ -3,58 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{{ $sermon->title }} · Finding Peace</title>
-<meta name="description" content="{{ $sermon->heart_line }}">
-
-    @if(!empty($poll))
-    <section class="poll-card" id="poll-{{ $poll->id }}" data-poll-id="{{ $poll->id }}">
-      <div class="poll-eyebrow">A quick question</div>
-      <div class="poll-question">{!! $linkifyScripture($poll->question) !!}</div>
-      <form class="poll-form" data-poll-id="{{ $poll->id }}">
-        @csrf
-        <input type="text" name="hp" class="poll-hp" tabindex="-1" autocomplete="off">
-        <input type="hidden" name="poll_id" value="{{ $poll->id }}">
-        <div class="poll-options">
-          @foreach($poll->options as $opt)
-            <label class="poll-option">
-              <input type="radio" name="option_id" value="{{ $opt->id }}" required>
-              <span class="poll-option-text">{{ $opt->option_text }}</span>
-            </label>
-          @endforeach
-        </div>
-        <button type="submit" class="poll-submit" disabled>See what scripture says @include('partials._ar')</button>
-      </form>
-      <div class="poll-results" hidden>
-        @if($poll->scripture_explainer)
-          <div class="poll-explainer">
-            @if($poll->scripture_ref)
-              <span class="ref">{!! $linkifyScripture($poll->scripture_ref) !!}</span>
-            @endif
-            {!! $linkifyScripture($poll->scripture_explainer) !!}
-          </div>
-        @endif
-        <div class="poll-result-rows" style="margin-top: 1.2rem;"></div>
-        <div class="poll-total"></div>
-      </div>
-    </section>
-    @endif
-
-    @if($sermon->topics->isNotEmpty())
-<meta name="keywords" content="{{ $sermon->topics->pluck('name')->implode(', ') }}">
-@endif
-<link rel="canonical" href="{{ url('/find-peace/' . $sermon->slug) }}">
-<meta name="robots" content="index, follow, max-snippet:-1">
-<meta property="og:type" content="article">
 @php
+  // Sharing one Q&A shares that question, not the sermon title — the link was
+  // sent because of the answer.
   $sharedQa = null;
   $qid = request('qa');
   if ($qid && is_numeric($qid)) {
       $sharedQa = $sermon->qaPairs->firstWhere('id', (int) $qid);
   }
 @endphp
-<meta property="og:title" content="{{ $sharedQa ? $sharedQa->question : ($sermon->title . ' · Finding Peace') }}">
-<meta property="og:description" content="{{ $sharedQa ? \Illuminate\Support\Str::limit($sharedQa->answer, 200) : $sermon->heart_line }}">
-<meta property="og:url" content="{{ url('/find-peace/' . $sermon->slug) }}">
+@include('partials.seo-head', [
+    'title'         => $sharedQa ? $sharedQa->question : $sermon->title . ' — a message from Shalom SDA Church',
+    'description'   => $sharedQa
+        ? \Illuminate\Support\Str::limit($sharedQa->answer, 200)
+        : $sermon->heart_line,
+    'path'          => '/find-peace/' . $sermon->slug,
+    'type'          => 'article',
+    'image'         => \App\Services\OgCard::sermonUrl($sermon),
+    'publishedTime' => ($sermon->published_at ?? $sermon->sermon_date)?->toIso8601String(),
+])
 
 @if($sermon->qaPairs->isNotEmpty())
 <script type="application/ld+json">@verbatim
@@ -75,22 +42,27 @@
 }
 @endverbatim</script>
 @endif
-<script type="application/ld+json">{!! json_encode(array_filter([
-  '@context'      => 'https://schema.org',
+<script type="application/ld+json">{!! \App\Support\Ld::json([
   '@type'         => 'Article',
   'headline'      => $sermon->title,
   'description'   => $sermon->heart_line,
+  'image'         => \App\Services\OgCard::sermonUrl($sermon),
   'author'        => $sermon->speaker ? ['@type' => 'Person', 'name' => $sermon->speaker] : null,
   'datePublished' => $sermon->published_at?->toDateString() ?? $sermon->sermon_date?->toDateString(),
+  'dateModified'  => $sermon->updated_at?->toDateString(),
   'url'           => url('/find-peace/' . $sermon->slug),
+  'isPartOf'      => ['@type' => 'CollectionPage', 'name' => 'Finding Peace', 'url' => url('/find-peace')],
   'publisher'     => ['@type' => 'Organization', 'name' => 'The Church of Peace', 'url' => url('/')],
+  'about'         => $sermon->topics->isNotEmpty()
+      ? $sermon->topics->map(fn ($t) => ['@type' => 'Thing', 'name' => $t->name])->values()->all()
+      : null,
   'audio'         => $sermon->audio_url ? array_filter([
       '@type'      => 'AudioObject',
       'contentUrl' => url($sermon->audio_url),
       'name'       => $sermon->title,
       'duration'   => $sermon->audio_duration_seconds ? 'PT' . intdiv($sermon->audio_duration_seconds, 60) . 'M' . ($sermon->audio_duration_seconds % 60) . 'S' : null,
   ]) : null,
-]), JSON_UNESCAPED_SLASHES) !!}</script>
+]) !!}</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -887,6 +859,39 @@ $linkifyScripture = function ($text) use ($linkifyTopics) {
           </a>
         </div>
       </div>
+    @endif
+
+    @if(!empty($poll))
+    <section class="poll-card" id="poll-{{ $poll->id }}" data-poll-id="{{ $poll->id }}">
+      <div class="poll-eyebrow">A quick question</div>
+      <div class="poll-question">{!! $linkifyScripture($poll->question) !!}</div>
+      <form class="poll-form" data-poll-id="{{ $poll->id }}">
+        @csrf
+        <input type="text" name="hp" class="poll-hp" tabindex="-1" autocomplete="off">
+        <input type="hidden" name="poll_id" value="{{ $poll->id }}">
+        <div class="poll-options">
+          @foreach($poll->options as $opt)
+            <label class="poll-option">
+              <input type="radio" name="option_id" value="{{ $opt->id }}" required>
+              <span class="poll-option-text">{{ $opt->option_text }}</span>
+            </label>
+          @endforeach
+        </div>
+        <button type="submit" class="poll-submit" disabled>See what scripture says @include('partials._ar')</button>
+      </form>
+      <div class="poll-results" hidden>
+        @if($poll->scripture_explainer)
+          <div class="poll-explainer">
+            @if($poll->scripture_ref)
+              <span class="ref">{!! $linkifyScripture($poll->scripture_ref) !!}</span>
+            @endif
+            {!! $linkifyScripture($poll->scripture_explainer) !!}
+          </div>
+        @endif
+        <div class="poll-result-rows" style="margin-top: 1.2rem;"></div>
+        <div class="poll-total"></div>
+      </div>
+    </section>
     @endif
 
     @if($sermon->qaPairs->isNotEmpty())

@@ -350,3 +350,7 @@ Schedule::command('mail:sync')->everyMinute()->withoutOverlapping()->name('mail-
 // Marking read, archiving and deleting are queued by the room and made true
 // here, in the same minute.
 Schedule::command('mail:apply')->everyMinute()->withoutOverlapping()->name('mail-apply')->onOneServer();
+
+// A message with no share card shares as a blank square, and scrapers do not
+// come back for a second look — so the card is drawn before anyone shares it.
+Schedule::command('og:cards')->hourlyAt(7)->name('og-cards')->onOneServer();
