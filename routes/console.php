@@ -354,3 +354,8 @@ Schedule::command('mail:apply')->everyMinute()->withoutOverlapping()->name('mail
 // A message with no share card shares as a blank square, and scrapers do not
 // come back for a second look — so the card is drawn before anyone shares it.
 Schedule::command('og:cards')->hourlyAt(7)->name('og-cards')->onOneServer();
+
+// Tombstones tell a client that was offline what disappeared. Past the window
+// a client that stale has to start over anyway, and the delta says so — so
+// they are swept rather than kept forever.
+Schedule::command('mail:prune-tombstones')->dailyAt('03:20')->name('mail-prune-tombstones')->onOneServer();

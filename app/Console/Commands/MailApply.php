@@ -51,6 +51,8 @@ class MailApply extends Command
                 // A move changes the UID, so the local row is now a lie. Drop
                 // it and let the next sync pick the message up where it lives.
                 if (in_array($a->action, ['archive', 'trash', 'restore'], true)) {
+                    // Soft, so the phone learns it left this folder. The next
+                    // sync picks it up again wherever it landed.
                     MailMessage::where('mailbox', $a->mailbox)->where('folder', $a->folder)
                         ->where('uid', $a->uid)->delete();
                 }

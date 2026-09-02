@@ -4,9 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MailMessage extends Model
 {
+    // A deleted message leaves a tombstone rather than a hole, so a client
+    // that was offline can learn it went away instead of showing it forever.
+    use SoftDeletes;
+
     protected $guarded = [];
 
     protected $casts = [

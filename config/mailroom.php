@@ -70,5 +70,11 @@ return [
     'cache_budget' => 250 * 1024 * 1024,   // per mailbox
     'cache_file_ceiling' => 25 * 1024 * 1024,    // one file
 
+    // How long a deleted message stays as a tombstone. A client that has been
+    // offline longer than this cannot be caught up by a delta — the rows that
+    // would tell it what to drop are gone — so the endpoint tells it to start
+    // over rather than handing back a quietly wrong mailbox.
+    'tombstone_days' => 90,
+
     'sync_limit' => 400,
 ];
