@@ -362,6 +362,7 @@ Route::middleware('auth')->group(function () {
         Route::post  ('/admin/peace/schedule/trigger',           [\App\Http\Controllers\AdminPeaceController::class, 'scheduleTrigger'])->name('admin.peace.schedule.trigger');
         Route::get   ('/admin/peace/{slug}/edit',                [\App\Http\Controllers\AdminPeaceController::class, 'edit'])->name('admin.peace.edit');
         Route::post  ('/admin/peace/{slug}',                     [\App\Http\Controllers\AdminPeaceController::class, 'update'])->name('admin.peace.update');
+        Route::post  ('/admin/peace/{slug}/publish',             [\App\Http\Controllers\AdminPeaceController::class, 'publish'])->name('admin.peace.publish');
         Route::post  ('/admin/peace/{slug}/qa',                  [\App\Http\Controllers\AdminPeaceController::class, 'addQa'])->name('admin.peace.qa.add');
         Route::patch ('/admin/peace/{slug}/qa/{qa}',             [\App\Http\Controllers\AdminPeaceController::class, 'updateQa'])->name('admin.peace.qa.update');
         Route::delete('/admin/peace/{slug}/qa/{qa}',             [\App\Http\Controllers\AdminPeaceController::class, 'destroyQa'])->name('admin.peace.qa.destroy');
