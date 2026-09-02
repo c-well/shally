@@ -1,16 +1,27 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
+use App\Models\PeacePoll;
 use App\Models\PeaceQaPair;
 use App\Models\PeaceScripture;
 use App\Models\PeaceSermon;
+use App\Models\PeaceSubscriber;
 use App\Models\PeaceTopic;
+use App\Models\PeaceUserSubmission;
+use App\Services\OgCard;
+use App\Services\Peace\PeaceContentGenerator;
 use App\Services\Peace\ScriptureValidator;
+use Cron\CronExpression;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\Process\Process;
 
 /**
  * Admin UI for Peace sermons.
@@ -36,15 +47,54 @@ class AdminPeaceController extends Controller
         $sermons = PeaceSermon::orderByDesc('sermon_date')
             ->withCount(['qaPairs', 'scriptures'])
             ->get();
+
         return view('admin.peace.index', ['sermons' => $sermons]);
+    }
+
+    /**
+     * Publish or pull back a message.
+     *
+     * Until now the only way to publish was the one-click link in the review
+     * email, so a message whose email had been read and forgotten had no route
+     * to the site at all — which is how thirteen of them ended up sitting in
+     * draft with finished audio. This does exactly what that link does.
+     */
+    public function publish(Request $request, string $slug)
+    {
+        $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
+        $live = $request->boolean('live');
+
+        if ($live) {
+            $sermon->processing_status = 'published';
+            $sermon->published_at ??= now();
+            $sermon->review_deadline = null;
+            $sermon->discarded_at = null;
+            $sermon->save();
+
+            // Draw the share card now rather than leaving the first person who
+            // shares it with a blank square — scrapers do not come back.
+            try {
+                OgCard::ensureSermon($sermon->fresh());
+            } catch (\Throwable $e) {
+                report($e);
+            }
+
+            return back()->with('status', "“{$sermon->title}” is live at /find-peace/{$sermon->slug}.");
+        }
+
+        $sermon->processing_status = 'draft';
+        $sermon->published_at = null;
+        $sermon->save();
+
+        return back()->with('status', "“{$sermon->title}” pulled back to draft. The page now returns 404.");
     }
 
     public function edit(string $slug): View
     {
         $sermon = PeaceSermon::where('slug', $slug)
-            ->with(['qaPairs' => fn($q) => $q->orderBy('display_order'),
-                    'scriptures' => fn($q) => $q->orderBy('display_order'),
-                    'topics'])
+            ->with(['qaPairs' => fn ($q) => $q->orderBy('display_order'),
+                'scriptures' => fn ($q) => $q->orderBy('display_order'),
+                'topics'])
             ->firstOrFail();
 
         // Compute current audio duration via ffprobe (Symfony Process — shell_exec is disabled on this host).
@@ -52,7 +102,7 @@ class AdminPeaceController extends Controller
         if ($sermon->audio_url) {
             $abs = public_path(ltrim($sermon->audio_url, '/'));
             if (is_file($abs)) {
-                $proc = new \Symfony\Component\Process\Process([
+                $proc = new Process([
                     '/usr/local/bin/ffprobe', '-v', 'error',
                     '-show_entries', 'format=duration',
                     '-of', 'default=noprint_wrappers=1:nokey=1',
@@ -64,21 +114,25 @@ class AdminPeaceController extends Controller
                     if ($proc->isSuccessful()) {
                         $audioDur = (int) trim($proc->getOutput());
                     }
-                } catch (\Throwable $e) { /* swallow — duration is best-effort */ }
+                } catch (\Throwable $e) { /* swallow — duration is best-effort */
+                }
             }
         }
         // BOUNDARY_EDITOR — condensed caption events for live caption sync
         $captionEvents = [];
-        $cachePath = storage_path('app/peace-cache/' . $sermon->youtube_video_id . '.en.json3');
+        $cachePath = storage_path('app/peace-cache/'.$sermon->youtube_video_id.'.en.json3');
         if (file_exists($cachePath)) {
             $json = json_decode(file_get_contents($cachePath), true);
             foreach ($json['events'] ?? [] as $ev) {
                 $t = ($ev['tStartMs'] ?? 0) / 1000;
                 $text = trim(implode('', array_column($ev['segs'] ?? [], 'utf8')));
-                if ($text === '') continue;
+                if ($text === '') {
+                    continue;
+                }
                 $captionEvents[] = ['t' => (int) $t, 'text' => mb_substr($text, 0, 160)];
             }
         }
+
         return view('admin.peace.edit', ['sermon' => $sermon, 'audioDur' => $audioDur, 'captionEvents' => $captionEvents]);
     }
 
@@ -87,29 +141,29 @@ class AdminPeaceController extends Controller
         $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
 
         $data = $request->validate([
-            'title'              => 'required|string|max:255',
-            'speaker'            => 'nullable|string|max:255',
-            'heart_line'         => 'nullable|string|max:1000',
+            'title' => 'required|string|max:255',
+            'speaker' => 'nullable|string|max:255',
+            'heart_line' => 'nullable|string|max:1000',
             'summary_paragraphs' => 'nullable|array',
             'summary_paragraphs.*' => 'nullable|string|max:5000',
-            'is_offsite'         => 'sometimes|boolean',
-            'is_no_sermon'       => 'sometimes|boolean',
-            'topics'             => 'nullable|string',
+            'is_offsite' => 'sometimes|boolean',
+            'is_no_sermon' => 'sometimes|boolean',
+            'topics' => 'nullable|string',
         ]);
 
         $sermon->fill([
-            'title'              => $data['title'],
-            'speaker'            => $data['speaker'] ?? null,
-            'heart_line'         => $data['heart_line'] ?? null,
-            'summary_paragraphs' => array_values(array_filter($data['summary_paragraphs'] ?? [], fn($p) => trim($p) !== '')),
-            'is_offsite'         => (bool) ($data['is_offsite'] ?? false),
-            'is_no_sermon'       => (bool) ($data['is_no_sermon'] ?? false),
+            'title' => $data['title'],
+            'speaker' => $data['speaker'] ?? null,
+            'heart_line' => $data['heart_line'] ?? null,
+            'summary_paragraphs' => array_values(array_filter($data['summary_paragraphs'] ?? [], fn ($p) => trim($p) !== '')),
+            'is_offsite' => (bool) ($data['is_offsite'] ?? false),
+            'is_no_sermon' => (bool) ($data['is_no_sermon'] ?? false),
         ]);
         $sermon->save();
 
         if (isset($data['topics'])) {
             $names = array_filter(array_map('trim', explode(',', $data['topics'])));
-            $topicIds = collect($names)->map(fn($n) => PeaceTopic::fromName($n)->id)->all();
+            $topicIds = collect($names)->map(fn ($n) => PeaceTopic::fromName($n)->id)->all();
             $sermon->topics()->sync($topicIds);
         }
 
@@ -121,16 +175,17 @@ class AdminPeaceController extends Controller
         $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
         $data = $request->validate([
             'question' => 'required|string|max:1000',
-            'answer'   => 'required|string|max:5000',
+            'answer' => 'required|string|max:5000',
         ]);
         $maxOrder = $sermon->qaPairs()->max('display_order') ?? 0;
         PeaceQaPair::create([
-            'sermon_id'        => $sermon->id,
-            'question'         => $data['question'],
-            'answer'           => $data['answer'],
-            'display_order'    => $maxOrder + 1,
+            'sermon_id' => $sermon->id,
+            'question' => $data['question'],
+            'answer' => $data['answer'],
+            'display_order' => $maxOrder + 1,
             'confidence_score' => 1.0,
         ]);
+
         return redirect()->route('admin.peace.edit', $slug)->with('status', 'Q&A added.');
     }
 
@@ -139,11 +194,12 @@ class AdminPeaceController extends Controller
         $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
         $row = PeaceQaPair::where('sermon_id', $sermon->id)->where('id', $qa)->firstOrFail();
         $data = $request->validate([
-            'question'      => 'required|string|max:1000',
-            'answer'        => 'required|string|max:5000',
+            'question' => 'required|string|max:1000',
+            'answer' => 'required|string|max:5000',
             'display_order' => 'nullable|integer',
         ]);
         $row->fill($data)->save();
+
         return redirect()->route('admin.peace.edit', $slug)->with('status', "Q&A #{$qa} updated.");
     }
 
@@ -151,6 +207,7 @@ class AdminPeaceController extends Controller
     {
         $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
         PeaceQaPair::where('sermon_id', $sermon->id)->where('id', $qa)->delete();
+
         return redirect()->route('admin.peace.edit', $slug)->with('status', "Q&A #{$qa} removed.");
     }
 
@@ -177,8 +234,10 @@ class AdminPeaceController extends Controller
                 'sermon_id' => $sermon->id,
                 'display_order' => $maxOrder + 1,
             ]));
+
             return redirect()->route('admin.peace.edit', $slug)->with('status', "Scripture {$data['reference_display']} added.");
         }
+
         return redirect()->route('admin.peace.edit', $slug)->with('status', "Couldn't parse reference. Use format like \"1 Samuel 30:6\" or \"Acts 2\".");
     }
 
@@ -186,7 +245,8 @@ class AdminPeaceController extends Controller
     {
         $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
         PeaceScripture::where('sermon_id', $sermon->id)->where('id', $id)->delete();
-        return redirect()->route('admin.peace.edit', $slug)->with('status', "Scripture removed.");
+
+        return redirect()->route('admin.peace.edit', $slug)->with('status', 'Scripture removed.');
     }
 
     // ────────────────────────────────────────────────────────────────
@@ -196,21 +256,22 @@ class AdminPeaceController extends Controller
     public function schedule(): View
     {
         // Laravel-registered scheduled tasks for peace:
-        $scheduled = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
-            ->filter(fn($e) => str_contains((string) $e->command, 'peace:'))
+        $scheduled = collect(app(Schedule::class)->events())
+            ->filter(fn ($e) => str_contains((string) $e->command, 'peace:'))
             ->map(function ($e) {
                 try {
-                    $next = \Cron\CronExpression::factory($e->expression)
+                    $next = CronExpression::factory($e->expression)
                         ->getNextRunDate(now()->setTimezone($e->timezone ?? config('app.timezone')))
                         ->setTimezone('America/New_York');
                 } catch (\Throwable $ex) {
                     $next = null;
                 }
+
                 return [
-                    'kind'        => 'recurring',
-                    'command'     => preg_replace('/.*artisan\s+/', 'artisan ', (string) $e->command),
-                    'expression'  => $e->expression,
-                    'timezone'    => $e->timezone ?? config('app.timezone'),
+                    'kind' => 'recurring',
+                    'command' => preg_replace('/.*artisan\s+/', 'artisan ', (string) $e->command),
+                    'expression' => $e->expression,
+                    'timezone' => $e->timezone ?? config('app.timezone'),
                     'next_run_et' => $next,
                 ];
             })
@@ -224,30 +285,38 @@ class AdminPeaceController extends Controller
         @\exec('crontab -l 2>/dev/null', $cronLines);
         foreach ($cronLines as $line) {
             $line = trim($line);
-            if ($line === '' || str_starts_with($line, '#')) continue;
-            if (!str_contains($line, 'peace:')) continue;
-            if (str_contains($line, 'schedule:run')) continue;
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (! str_contains($line, 'peace:')) {
+                continue;
+            }
+            if (str_contains($line, 'schedule:run')) {
+                continue;
+            }
             $parts = preg_split('/\s+/', $line, 6);
-            if (count($parts) < 6) continue;
+            if (count($parts) < 6) {
+                continue;
+            }
             $expr = implode(' ', array_slice($parts, 0, 5));
             try {
-                $next = \Cron\CronExpression::factory($expr)
+                $next = CronExpression::factory($expr)
                     ->getNextRunDate(now()->setTimezone('Europe/London'))
                     ->setTimezone('America/New_York');
             } catch (\Throwable $e) {
                 $next = null;
             }
             $oneOff[] = [
-                'kind'        => 'one-off',
-                'command'     => preg_replace('/.*artisan\s+/', 'artisan ', $parts[5]),
-                'expression'  => $expr . '  (server time / BST)',
-                'timezone'    => 'Europe/London',
+                'kind' => 'one-off',
+                'command' => preg_replace('/.*artisan\s+/', 'artisan ', $parts[5]),
+                'expression' => $expr.'  (server time / BST)',
+                'timezone' => 'Europe/London',
                 'next_run_et' => $next,
             ];
         }
 
         $recentSermons = PeaceSermon::orderByDesc('created_at')->limit(10)->get([
-            'id','title','slug','speaker','sermon_date','processing_status','published_at','created_at','review_deadline',
+            'id', 'title', 'slug', 'speaker', 'sermon_date', 'processing_status', 'published_at', 'created_at', 'review_deadline',
         ]);
 
         $logTail = [];
@@ -255,7 +324,9 @@ class AdminPeaceController extends Controller
             if (is_readable($logFile)) {
                 // Pure-PHP tail-40 — read last ~32 KB then take final 40 lines
                 $fh = @fopen($logFile, 'r');
-                if (!$fh) continue;
+                if (! $fh) {
+                    continue;
+                }
                 $size = filesize($logFile);
                 fseek($fh, max(0, $size - 32768));
                 $tailBytes = stream_get_contents($fh);
@@ -266,23 +337,25 @@ class AdminPeaceController extends Controller
         }
 
         return view('admin.peace.schedule', [
-            'scheduled'     => array_merge($scheduled, $oneOff),
+            'scheduled' => array_merge($scheduled, $oneOff),
             'recentSermons' => $recentSermons,
-            'logTail'       => $logTail,
+            'logTail' => $logTail,
         ]);
     }
 
     public function scheduleTrigger(Request $request): RedirectResponse
     {
         $request->validate(['confirm' => 'required|in:yes']);
-        $artisanPath = '/opt/cpanel/ea-php83/root/usr/bin/php ' . base_path('artisan');
-        $logPath     = '/home/shalom/peace-manual-fire.log';
-        $cmd = $artisanPath . ' peace:scan-channel >> ' . escapeshellarg($logPath) . ' 2>&1 &';
+        $artisanPath = '/opt/cpanel/ea-php83/root/usr/bin/php '.base_path('artisan');
+        $logPath = '/home/shalom/peace-manual-fire.log';
+        $cmd = $artisanPath.' peace:scan-channel >> '.escapeshellarg($logPath).' 2>&1 &';
 
         $proc = @\proc_open($cmd, [], $pipes);
-        if (\is_resource($proc)) @\proc_close($proc);
+        if (\is_resource($proc)) {
+            @\proc_close($proc);
+        }
 
-        \App\Models\AuditLog::record(
+        AuditLog::record(
             event: 'peace_manual_fire',
             userId: auth()->id(),
             description: 'Manual fire of peace:scan-channel from admin schedule page',
@@ -292,13 +365,12 @@ class AdminPeaceController extends Controller
             ->with('status', 'Manual fire triggered. Pipeline runs in the background (3-5 min). Watch the log tail below.');
     }
 
-
     /** POST /admin/peace/{slug}/recompress — re-encode the CURRENT audio with a different compressor,
      *  keeping existing boundaries. No re-download, no cost, just ffmpeg. */
-    public function recompress(\Illuminate\Http\Request $request, string $slug): \Illuminate\Http\RedirectResponse
+    public function recompress(Request $request, string $slug): RedirectResponse
     {
         $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
-        if (!$sermon->audio_url) {
+        if (! $sermon->audio_url) {
             return back()->with('status', 'No audio file to re-encode.');
         }
         $data = $request->validate([
@@ -307,20 +379,20 @@ class AdminPeaceController extends Controller
         $compType = $data['compressor'];
 
         $audioAbs = public_path(ltrim($sermon->audio_url, '/'));
-        if (!is_file($audioAbs)) {
-            return back()->with('status', 'Audio file not found on disk: ' . $audioAbs);
+        if (! is_file($audioAbs)) {
+            return back()->with('status', 'Audio file not found on disk: '.$audioAbs);
         }
 
         // Backup before re-encode (one-time, idempotent)
         $backupDir = '/home/shalom/tmp/peace-work/originals_backup';
         @\mkdir($backupDir, 0755, true);
-        $backupFile = $backupDir . '/' . $sermon->youtube_video_id . '.mp3';
-        if (!is_file($backupFile)) {
+        $backupFile = $backupDir.'/'.$sermon->youtube_video_id.'.mp3';
+        if (! is_file($backupFile)) {
             @\copy($audioAbs, $backupFile);
         }
 
         // Get duration via ffprobe so we can place the 3-sec fade-out
-        $probe = new \Symfony\Component\Process\Process([
+        $probe = new Process([
             '/usr/local/bin/ffprobe', '-v', 'error',
             '-show_entries', 'format=duration',
             '-of', 'default=noprint_wrappers=1:nokey=1',
@@ -335,15 +407,15 @@ class AdminPeaceController extends Controller
         $fadeFilt = "afade=t=out:st={$fadeStart}:d=3";
 
         $chains = [
-            'none'      => $fadeFilt,
-            'simple'    => 'acompressor=threshold=-22dB:ratio=2.5:attack=50:release=300:knee=6:makeup=2' . ',' . $fadeFilt,
-            'fairchild' => 'compand=attacks=0.3:decays=0.8:points=-80/-80|-60/-55|-40/-30|-20/-14|-6/-6|0/-3,treble=g=1:f=6000:width_type=q:width=0.7,acompressor=threshold=-2dB:ratio=10:attack=2:release=50:knee=2:makeup=1' . ',' . $fadeFilt,
-            'ssl'       => 'acompressor=threshold=-12dB:ratio=4:attack=20:release=100:knee=4:makeup=2,treble=g=0.5:f=10000:width_type=q:width=0.7' . ',' . $fadeFilt,
+            'none' => $fadeFilt,
+            'simple' => 'acompressor=threshold=-22dB:ratio=2.5:attack=50:release=300:knee=6:makeup=2'.','.$fadeFilt,
+            'fairchild' => 'compand=attacks=0.3:decays=0.8:points=-80/-80|-60/-55|-40/-30|-20/-14|-6/-6|0/-3,treble=g=1:f=6000:width_type=q:width=0.7,acompressor=threshold=-2dB:ratio=10:attack=2:release=50:knee=2:makeup=1'.','.$fadeFilt,
+            'ssl' => 'acompressor=threshold=-12dB:ratio=4:attack=20:release=100:knee=4:makeup=2,treble=g=0.5:f=10000:width_type=q:width=0.7'.','.$fadeFilt,
         ];
         $filter = $chains[$compType] ?? $fadeFilt;
 
-        $tmpOut = '/home/shalom/tmp/peace-work/' . $sermon->youtube_video_id . '.recompress.mp3';
-        $proc = new \Symfony\Component\Process\Process([
+        $tmpOut = '/home/shalom/tmp/peace-work/'.$sermon->youtube_video_id.'.recompress.mp3';
+        $proc = new Process([
             '/usr/local/bin/ffmpeg', '-y', '-loglevel', 'error',
             '-i', $audioAbs,
             '-af', $filter,
@@ -352,8 +424,8 @@ class AdminPeaceController extends Controller
         ]);
         $proc->setTimeout(180);
         $proc->run();
-        if (!$proc->isSuccessful() || !is_file($tmpOut) || filesize($tmpOut) < 1000) {
-            return back()->with('status', 'ffmpeg failed. Output: ' . substr(trim($proc->getErrorOutput() . $proc->getOutput()), 0, 300));
+        if (! $proc->isSuccessful() || ! is_file($tmpOut) || filesize($tmpOut) < 1000) {
+            return back()->with('status', 'ffmpeg failed. Output: '.substr(trim($proc->getErrorOutput().$proc->getOutput()), 0, 300));
         }
         // Atomic replace — old file is gone the moment new lands.
         @rename($tmpOut, $audioAbs);
@@ -361,59 +433,59 @@ class AdminPeaceController extends Controller
         // Update DB to note the compressor change (boundaries unchanged).
         $sermon->update([
             'boundary_source' => 'manual',
-            'boundary_reason' => 'Re-encoded via admin edit page (' . $compType . ' compressor, 3s fade, 160k, boundaries unchanged)',
+            'boundary_reason' => 'Re-encoded via admin edit page ('.$compType.' compressor, 3s fade, 160k, boundaries unchanged)',
         ]);
 
         return redirect()->route('admin.peace.edit', $slug)->with('status',
-            'Audio re-encoded with ' . $compType . ' compressor (boundaries unchanged, old file replaced).');
+            'Audio re-encoded with '.$compType.' compressor (boundaries unchanged, old file replaced).');
     }
 
     /** POST /admin/peace/{slug}/trim — re-cut the existing trimmed mp3 to new in/out offsets. */
     public function trim(Request $request, string $slug): RedirectResponse
     {
         $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
-        if (!$sermon->audio_url) {
+        if (! $sermon->audio_url) {
             return back()->with('status', 'No audio file to trim.');
         }
         $data = $request->validate([
-            'start'      => ['required', 'regex:/^\d+:[0-5]\d$/'],
-            'end'        => ['required', 'regex:/^\d+:[0-5]\d$/'],
+            'start' => ['required', 'regex:/^\d+:[0-5]\d$/'],
+            'end' => ['required', 'regex:/^\d+:[0-5]\d$/'],
             'compressor' => ['sometimes', 'in:none,simple,fairchild,ssl'],
         ]);
-        $mmss = fn($v) => array_sum(array_map(fn($p, $i) => (int)$p * pow(60, count(explode(':', $v))-1-$i), explode(':', $v), array_keys(explode(':', $v))));
+        $mmss = fn ($v) => array_sum(array_map(fn ($p, $i) => (int) $p * pow(60, count(explode(':', $v)) - 1 - $i), explode(':', $v), array_keys(explode(':', $v))));
         $startSec = $mmss($data['start']);
-        $endSec   = $mmss($data['end']);
+        $endSec = $mmss($data['end']);
         if ($endSec <= $startSec + 5) {
             return back()->with('status', 'End must be at least 5 seconds after start.');
         }
 
         $audioAbs = public_path(ltrim($sermon->audio_url, '/'));
-        if (!is_file($audioAbs)) {
-            return back()->with('status', 'Audio file not found on disk: ' . $audioAbs);
+        if (! is_file($audioAbs)) {
+            return back()->with('status', 'Audio file not found on disk: '.$audioAbs);
         }
 
         // Backup before re-trim (only if we don't already have one)
         $backupDir = '/home/shalom/tmp/peace-work/originals_backup';
         @\mkdir($backupDir, 0755, true);
-        $backupFile = $backupDir . '/' . $sermon->youtube_video_id . '.mp3';
-        if (!is_file($backupFile)) {
+        $backupFile = $backupDir.'/'.$sermon->youtube_video_id.'.mp3';
+        if (! is_file($backupFile)) {
             @\copy($audioAbs, $backupFile);
         }
 
         // Re-trim into a temp file then atomically replace
-        $tmpOut = '/home/shalom/tmp/peace-work/' . $sermon->youtube_video_id . '.retrim.mp3';
+        $tmpOut = '/home/shalom/tmp/peace-work/'.$sermon->youtube_video_id.'.retrim.mp3';
         $duration = $endSec - $startSec;
         $fadeStart = max(0, $duration - 3);
         $compType = $data['compressor'] ?? 'none';
         $fadeFilt = "afade=t=out:st={$fadeStart}:d=3";
         $chains = [
-            'none'      => $fadeFilt,
-            'simple'    => 'acompressor=threshold=-22dB:ratio=2.5:attack=50:release=300:knee=6:makeup=2' . ',' . $fadeFilt,
-            'fairchild' => 'compand=attacks=0.3:decays=0.8:points=-80/-80|-60/-55|-40/-30|-20/-14|-6/-6|0/-3,treble=g=1:f=6000:width_type=q:width=0.7,acompressor=threshold=-2dB:ratio=10:attack=2:release=50:knee=2:makeup=1' . ',' . $fadeFilt,
-            'ssl'       => 'acompressor=threshold=-12dB:ratio=4:attack=20:release=100:knee=4:makeup=2,treble=g=0.5:f=10000:width_type=q:width=0.7' . ',' . $fadeFilt,
+            'none' => $fadeFilt,
+            'simple' => 'acompressor=threshold=-22dB:ratio=2.5:attack=50:release=300:knee=6:makeup=2'.','.$fadeFilt,
+            'fairchild' => 'compand=attacks=0.3:decays=0.8:points=-80/-80|-60/-55|-40/-30|-20/-14|-6/-6|0/-3,treble=g=1:f=6000:width_type=q:width=0.7,acompressor=threshold=-2dB:ratio=10:attack=2:release=50:knee=2:makeup=1'.','.$fadeFilt,
+            'ssl' => 'acompressor=threshold=-12dB:ratio=4:attack=20:release=100:knee=4:makeup=2,treble=g=0.5:f=10000:width_type=q:width=0.7'.','.$fadeFilt,
         ];
         $filter = $chains[$compType] ?? $fadeFilt;
-        $proc = new \Symfony\Component\Process\Process([
+        $proc = new Process([
             '/usr/local/bin/ffmpeg', '-y', '-loglevel', 'error',
             '-ss', (string) $startSec, '-to', (string) $endSec,
             '-i', $audioAbs,
@@ -423,8 +495,8 @@ class AdminPeaceController extends Controller
         ]);
         $proc->setTimeout(180);
         $proc->run();
-        if (!$proc->isSuccessful() || !is_file($tmpOut) || filesize($tmpOut) < 1000) {
-            return back()->with('status', 'ffmpeg failed. Output: ' . substr(trim($proc->getErrorOutput() . $proc->getOutput()), 0, 300));
+        if (! $proc->isSuccessful() || ! is_file($tmpOut) || filesize($tmpOut) < 1000) {
+            return back()->with('status', 'ffmpeg failed. Output: '.substr(trim($proc->getErrorOutput().$proc->getOutput()), 0, 300));
         }
         @rename($tmpOut, $audioAbs);
 
@@ -432,31 +504,30 @@ class AdminPeaceController extends Controller
         $prevStart = (int) $sermon->sermon_start_seconds;
         $sermon->update([
             'sermon_start_seconds' => $prevStart + $startSec,
-            'sermon_end_seconds'   => $prevStart + $endSec,
-            'boundary_source'      => 'manual',
-            'boundary_reason'      => 'Trim via admin edit page (' . $data['start'] . ' → ' . $data['end'] . ', 3s fade' . ($compType !== 'none' ? ' + ' . $compType . ' compressor' : '') . ', 160k)',
+            'sermon_end_seconds' => $prevStart + $endSec,
+            'boundary_source' => 'manual',
+            'boundary_reason' => 'Trim via admin edit page ('.$data['start'].' → '.$data['end'].', 3s fade'.($compType !== 'none' ? ' + '.$compType.' compressor' : '').', 160k)',
         ]);
 
         return redirect()->route('admin.peace.edit', $slug)->with('status',
-            'Audio re-trimmed. New length: ~' . floor($duration/60) . ':' . str_pad($duration%60, 2, '0', STR_PAD_LEFT) . ' with 3-sec fade-out' . ($compType !== 'none' ? ' + ' . $compType . ' compressor' : '') . ' @ 160k.');
+            'Audio re-trimmed. New length: ~'.floor($duration / 60).':'.str_pad($duration % 60, 2, '0', STR_PAD_LEFT).' with 3-sec fade-out'.($compType !== 'none' ? ' + '.$compType.' compressor' : '').' @ 160k.');
     }
 
-
     /** GET /admin/peace/analytics — Finding Peace traffic dashboard. */
-    public function analytics(): \Illuminate\View\View
+    public function analytics(): View
     {
         $now = now();
-        $win7  = $now->copy()->subDays(7);
+        $win7 = $now->copy()->subDays(7);
         $win30 = $now->copy()->subDays(30);
 
         // Bucket: all path-views under /find-peace
         $base = \DB::table('page_views')->where('path', 'like', '/find-peace%');
 
         $totals = [
-            '24h'  => (clone $base)->where('viewed_at', '>=', $now->copy()->subDay())->count(),
-            '7d'   => (clone $base)->where('viewed_at', '>=', $win7)->count(),
-            '30d'  => (clone $base)->where('viewed_at', '>=', $win30)->count(),
-            'all'  => (clone $base)->count(),
+            '24h' => (clone $base)->where('viewed_at', '>=', $now->copy()->subDay())->count(),
+            '7d' => (clone $base)->where('viewed_at', '>=', $win7)->count(),
+            '30d' => (clone $base)->where('viewed_at', '>=', $win30)->count(),
+            'all' => (clone $base)->count(),
             'uniq7d' => (clone $base)->where('viewed_at', '>=', $win7)->distinct('session_id')->count('session_id'),
         ];
 
@@ -475,7 +546,7 @@ class AdminPeaceController extends Controller
         $topSermons->each(function ($row) use ($slugMap) {
             $slug = ltrim(str_replace('/find-peace/', '', $row->path), '/');
             $row->title = $slugMap[$slug] ?? $row->path;
-            $row->slug  = $slug;
+            $row->slug = $slug;
         });
 
         // Top topics last 30 days
@@ -538,7 +609,7 @@ class AdminPeaceController extends Controller
 
         // Poll response stats
         $pollStats = [
-            'polls_active' => \App\Models\PeacePoll::where('is_active', true)->count(),
+            'polls_active' => PeacePoll::where('is_active', true)->count(),
             'responses_30d' => \DB::table('peace_poll_responses')->where('created_at', '>=', $win30)->count(),
         ];
 
@@ -547,35 +618,38 @@ class AdminPeaceController extends Controller
         ));
     }
 
-
     /** GET /admin/peace/subscribers — view of all peace_subscribers. */
     public function subscribers(): View
     {
-        $subs = \App\Models\PeaceSubscriber::orderByDesc('created_at')
+        $subs = PeaceSubscriber::orderByDesc('created_at')
             ->withCount(['savedQas', 'magicLinks'])
             ->get();
+
         return view('admin.peace.subscribers', compact('subs'));
     }
-
 
     /** GET /admin/peace/submissions — moderation inbox for seeker submissions. */
     public function submissions(Request $request): View
     {
         $filter = $request->input('status', 'pending');
         $allowed = ['all', 'pending', 'approved', 'replied', 'archived'];
-        if (!in_array($filter, $allowed, true)) $filter = 'pending';
+        if (! in_array($filter, $allowed, true)) {
+            $filter = 'pending';
+        }
 
-        $q = \App\Models\PeaceUserSubmission::with(['subscriber', 'sermon', 'topic', 'replier'])
+        $q = PeaceUserSubmission::with(['subscriber', 'sermon', 'topic', 'replier'])
             ->orderByDesc('created_at');
-        if ($filter !== 'all') $q->where('status', $filter);
+        if ($filter !== 'all') {
+            $q->where('status', $filter);
+        }
         $subs = $q->get();
 
         $kpi = [
-            'pending'  => \App\Models\PeaceUserSubmission::where('status', 'pending')->count(),
-            'approved' => \App\Models\PeaceUserSubmission::where('status', 'approved')->count(),
-            'replied'  => \App\Models\PeaceUserSubmission::where('status', 'replied')->count(),
-            'archived' => \App\Models\PeaceUserSubmission::where('status', 'archived')->count(),
-            'total'    => \App\Models\PeaceUserSubmission::count(),
+            'pending' => PeaceUserSubmission::where('status', 'pending')->count(),
+            'approved' => PeaceUserSubmission::where('status', 'approved')->count(),
+            'replied' => PeaceUserSubmission::where('status', 'replied')->count(),
+            'archived' => PeaceUserSubmission::where('status', 'archived')->count(),
+            'total' => PeaceUserSubmission::count(),
         ];
 
         return view('admin.peace.submissions', compact('subs', 'kpi', 'filter'));
@@ -584,33 +658,36 @@ class AdminPeaceController extends Controller
     /** POST /admin/peace/submissions/{id} — approve, archive, restore, or reply. */
     public function submissionsUpdate(Request $request, int $id): RedirectResponse
     {
-        $sub = \App\Models\PeaceUserSubmission::findOrFail($id);
+        $sub = PeaceUserSubmission::findOrFail($id);
         $action = $request->input('action');
 
         switch ($action) {
             case 'approve':
                 $sub->status = 'approved';
                 $sub->save();
-                \App\Models\AuditLog::record(
+                AuditLog::record(
                     event: 'peace_submission_approved',
                     userId: auth()->id(),
-                    description: 'Approved submission #' . $sub->id . ' (' . $sub->type . ')',
+                    description: 'Approved submission #'.$sub->id.' ('.$sub->type.')',
                 );
+
                 return back()->with('status', 'Marked approved.');
 
             case 'archive':
                 $sub->status = 'archived';
                 $sub->save();
-                \App\Models\AuditLog::record(
+                AuditLog::record(
                     event: 'peace_submission_archived',
                     userId: auth()->id(),
-                    description: 'Archived submission #' . $sub->id,
+                    description: 'Archived submission #'.$sub->id,
                 );
+
                 return back()->with('status', 'Archived.');
 
             case 'restore':
                 $sub->status = 'pending';
                 $sub->save();
+
                 return back()->with('status', 'Restored to pending.');
 
             case 'reply':
@@ -629,40 +706,43 @@ class AdminPeaceController extends Controller
                 if ($seekerEmail) {
                     try {
                         $original = mb_substr($sub->body, 0, 600);
-                        $body  = "Hi —\n\n";
-                        $body .= "You shared this with Finding Peace " . $sub->created_at->diffForHumans() . ":\n\n";
-                        $body .= "  " . str_replace("\n", "\n  ", $original) . "\n\n";
-                        $body .= str_repeat('─', 50) . "\n\n";
-                        $body .= $reply . "\n\n";
+                        $body = "Hi —\n\n";
+                        $body .= 'You shared this with Finding Peace '.$sub->created_at->diffForHumans().":\n\n";
+                        $body .= '  '.str_replace("\n", "\n  ", $original)."\n\n";
+                        $body .= str_repeat('─', 50)."\n\n";
+                        $body .= $reply."\n\n";
                         $body .= "— A pastor at The Church of Peace\n\n";
-                        $body .= "Reply to this email if you want to continue the conversation. Or come back to Finding Peace anytime: " . url('/find-peace') . "\n";
+                        $body .= 'Reply to this email if you want to continue the conversation. Or come back to Finding Peace anytime: '.url('/find-peace')."\n";
 
-                        \Illuminate\Support\Facades\Mail::raw($body, function ($m) use ($seekerEmail, $sub) {
+                        Mail::raw($body, function ($m) use ($seekerEmail, $sub) {
                             $m->to($seekerEmail)
-                              ->cc('contact@c-wellpics.com')
-                              ->replyTo('app@thechurchofpeace.org')
-                              ->subject('Reply from a pastor — your ' . $sub->type . ' on Finding Peace');
+                                ->cc('contact@c-wellpics.com')
+                                ->replyTo('app@thechurchofpeace.org')
+                                ->subject('Reply from a pastor — your '.$sub->type.' on Finding Peace');
                         });
                     } catch (\Throwable $e) {
-                        \App\Models\AuditLog::record(
+                        AuditLog::record(
                             event: 'peace_reply_email_failed',
-                            description: 'Reply email failed for submission #' . $sub->id . ': ' . $e->getMessage(),
+                            description: 'Reply email failed for submission #'.$sub->id.': '.$e->getMessage(),
                         );
-                        return back()->with('status', 'Reply saved but email failed: ' . $e->getMessage());
+
+                        return back()->with('status', 'Reply saved but email failed: '.$e->getMessage());
                     }
                 }
 
-                \App\Models\AuditLog::record(
+                AuditLog::record(
                     event: 'peace_submission_replied',
                     userId: auth()->id(),
-                    description: 'Replied to submission #' . $sub->id . ' (' . $sub->type . '), emailed ' . $seekerEmail,
+                    description: 'Replied to submission #'.$sub->id.' ('.$sub->type.'), emailed '.$seekerEmail,
                 );
-                return back()->with('status', 'Reply sent to ' . $seekerEmail);
+
+                return back()->with('status', 'Reply sent to '.$seekerEmail);
 
             default:
                 return back()->with('status', 'Unknown action.');
         }
     }
+
     /**
      * BOUNDARY_EDITOR (2026-05-30) — set sermon_start/end_seconds against the
      * FULL YouTube video. Three actions:
@@ -681,8 +761,8 @@ class AdminPeaceController extends Controller
         $sermon = PeaceSermon::where('slug', $slug)->firstOrFail();
 
         $data = $request->validate([
-            'start'  => 'required|integer|min:0|max:43200',  // max 12h video
-            'end'    => 'required|integer|min:0|max:43200',
+            'start' => 'required|integer|min:0|max:43200',  // max 12h video
+            'end' => 'required|integer|min:0|max:43200',
             'action' => 'required|string|in:save_only,save_and_reslice,save_reslice_regen',
         ]);
 
@@ -694,9 +774,9 @@ class AdminPeaceController extends Controller
         }
 
         $oldStart = $sermon->sermon_start_seconds;
-        $oldEnd   = $sermon->sermon_end_seconds;
+        $oldEnd = $sermon->sermon_end_seconds;
         $sermon->sermon_start_seconds = $data['start'];
-        $sermon->sermon_end_seconds   = $data['end'];
+        $sermon->sermon_end_seconds = $data['end'];
         $sermon->boundary_source = 'manual';
         $sermon->boundary_reason = sprintf(
             'Manually set via admin boundary editor. Previous: %s → %s (%s). New: %s → %s (%s).',
@@ -711,12 +791,12 @@ class AdminPeaceController extends Controller
         $sermon->save();
 
         // Audit log
-        \App\Models\AuditLog::record(
+        AuditLog::record(
             event: 'peace_boundaries_updated',
             userId: $request->user()?->id,
             description: sprintf('Sermon %s: %s → %s', $sermon->slug,
-                gmdate('H:i:s', $oldStart) . '–' . gmdate('H:i:s', $oldEnd),
-                gmdate('H:i:s', $data['start']) . '–' . gmdate('H:i:s', $data['end'])),
+                gmdate('H:i:s', $oldStart).'–'.gmdate('H:i:s', $oldEnd),
+                gmdate('H:i:s', $data['start']).'–'.gmdate('H:i:s', $data['end'])),
             meta: ['sermon_id' => $sermon->id, 'old_start' => $oldStart, 'old_end' => $oldEnd, 'new_start' => $data['start'], 'new_end' => $data['end']],
         );
 
@@ -728,17 +808,19 @@ class AdminPeaceController extends Controller
         // RE-SLICE — download full audio, cut to new span
         $videoId = $sermon->youtube_video_id;
         $audioDir = storage_path('app/public/peace/audio');
-        if (! is_dir($audioDir)) mkdir($audioDir, 0755, true);
+        if (! is_dir($audioDir)) {
+            mkdir($audioDir, 0755, true);
+        }
         $existing = "{$audioDir}/{$videoId}.mp3";
         $fullPath = "/tmp/{$videoId}-full.mp3";
 
         // Backup old slice
         if (file_exists($existing)) {
-            copy($existing, $existing . '.bak.' . now()->format('Ymd-His'));
+            copy($existing, $existing.'.bak.'.now()->format('Ymd-His'));
         }
 
         // Download full audio (~30-60s for a 2hr video)
-        $dl = new \Symfony\Component\Process\Process([
+        $dl = new Process([
             '/home/shalom/bin/ytdlp-auth', '--no-warnings',
             '--ffmpeg-location', '/usr/local/bin/ffmpeg',
             '-x', '--audio-format', 'mp3', '--audio-quality', '5',
@@ -748,12 +830,12 @@ class AdminPeaceController extends Controller
         $dl->setTimeout(300);
         $dl->run();
         if (! $dl->isSuccessful() || ! file_exists($fullPath)) {
-            return back()->with('status', '❌ Audio download failed: ' . substr($dl->getErrorOutput(), 0, 200));
+            return back()->with('status', '❌ Audio download failed: '.substr($dl->getErrorOutput(), 0, 200));
         }
 
         // Slice
         $span = $data['end'] - $data['start'];
-        $slice = new \Symfony\Component\Process\Process([
+        $slice = new Process([
             '/usr/local/bin/ffmpeg', '-y',
             '-ss', (string) $data['start'],
             '-i', $fullPath,
@@ -765,10 +847,10 @@ class AdminPeaceController extends Controller
         $slice->run();
         @unlink($fullPath);
         if (! $slice->isSuccessful() || ! file_exists($existing) || filesize($existing) < 100_000) {
-            return back()->with('status', '❌ Audio slice failed: ' . substr($slice->getErrorOutput(), 0, 200));
+            return back()->with('status', '❌ Audio slice failed: '.substr($slice->getErrorOutput(), 0, 200));
         }
 
-        $sermon->audio_url = '/storage/peace/audio/' . $videoId . '.mp3';
+        $sermon->audio_url = '/storage/peace/audio/'.$videoId.'.mp3';
         $sermon->audio_duration_seconds = $span;
         $sermon->audio_status = 'ready';
         $sermon->save();
@@ -788,39 +870,43 @@ class AdminPeaceController extends Controller
         $sliceText = '';
         foreach ($json['events'] ?? [] as $ev) {
             $t = ($ev['tStartMs'] ?? 0) / 1000;
-            if ($t < $data['start'] || $t > $data['end']) continue;
+            if ($t < $data['start'] || $t > $data['end']) {
+                continue;
+            }
             foreach ($ev['segs'] ?? [] as $seg) {
-                $sliceText .= ' ' . ($seg['utf8'] ?? '');
+                $sliceText .= ' '.($seg['utf8'] ?? '');
             }
         }
         if (strlen($sliceText) < 500) {
-            return back()->with('status', '✓ Audio re-sliced, but caption slice too short to regenerate content (' . strlen($sliceText) . ' chars).');
+            return back()->with('status', '✓ Audio re-sliced, but caption slice too short to regenerate content ('.strlen($sliceText).' chars).');
         }
 
         try {
-            $gen = app(\App\Services\Peace\PeaceContentGenerator::class);
+            $gen = app(PeaceContentGenerator::class);
             $result = $gen->generate($sliceText, [
-                'video_id'    => $videoId,
-                'video_title' => $sermon->title . ' (re-generated)',
+                'video_id' => $videoId,
+                'video_title' => $sermon->title.' (re-generated)',
             ]);
             $oldSlug = $sermon->slug;
-            $sermon->title              = $result['title'] ?? $sermon->title;
-            $sermon->heart_line         = $result['heart_line'] ?? $sermon->heart_line;
+            $sermon->title = $result['title'] ?? $sermon->title;
+            $sermon->heart_line = $result['heart_line'] ?? $sermon->heart_line;
             $sermon->summary_paragraphs = $result['summary'] ?? $sermon->summary_paragraphs;
-            $sermon->speaker            = $result['speaker'] ?? $sermon->speaker;
+            $sermon->speaker = $result['speaker'] ?? $sermon->speaker;
             // Keep the old slug if title didn't change — preserves URLs
-            $newSlug = \Illuminate\Support\Str::slug($sermon->title) . '-' . substr($videoId, 0, 6);
-            if ($newSlug !== $oldSlug) $sermon->slug = $newSlug;
+            $newSlug = Str::slug($sermon->title).'-'.substr($videoId, 0, 6);
+            if ($newSlug !== $oldSlug) {
+                $sermon->slug = $newSlug;
+            }
             $sermon->save();
 
             // Replace Q&As
-            \App\Models\PeaceQaPair::where('sermon_id', $sermon->id)->delete();
+            PeaceQaPair::where('sermon_id', $sermon->id)->delete();
             foreach ($result['qa_pairs'] ?? [] as $i => $qa) {
-                \App\Models\PeaceQaPair::create([
-                    'sermon_id'        => $sermon->id,
-                    'question'         => $qa['question'] ?? '',
-                    'answer'           => $qa['answer'] ?? '',
-                    'display_order'    => $i,
+                PeaceQaPair::create([
+                    'sermon_id' => $sermon->id,
+                    'question' => $qa['question'] ?? '',
+                    'answer' => $qa['answer'] ?? '',
+                    'display_order' => $i,
                     'confidence_score' => $qa['confidence'] ?? 0.8,
                 ]);
             }
@@ -829,7 +915,7 @@ class AdminPeaceController extends Controller
                 ->with('status', sprintf('✓ Boundaries + audio + Q&As all updated. New span %s. Title: %s.',
                     gmdate('i:s', $span), $sermon->title));
         } catch (\Throwable $e) {
-            return back()->with('status', '✓ Audio re-sliced. ❌ Content regen failed: ' . substr($e->getMessage(), 0, 200));
+            return back()->with('status', '✓ Audio re-sliced. ❌ Content regen failed: '.substr($e->getMessage(), 0, 200));
         }
     }
 }

@@ -49,6 +49,13 @@
   .top a { font-size: 13.5px !important; padding: 10px 12px; margin: -10px -12px; }
   .top .meta { font-size: 12.5px !important; }
   @media (max-width: 700px) { .top { padding: 16px 16px; } }
+
+  /* Publishing is the one action on this page that changes what the public
+     sees, so it does not look like the link next to it. */
+  .pub-btn { font: inherit; cursor: pointer; border: 1px solid var(--teal); background: var(--teal); color: #fff; }
+  .pub-btn:hover { background: var(--teal-dark, #024357); border-color: var(--teal-dark, #024357); }
+  .pub-btn.is-live { background: transparent; color: var(--ink-soft); border-color: var(--line, rgba(26,35,50,.15)); }
+  .pub-btn.is-live:hover { color: var(--red, #a82a1f); border-color: var(--red, #a82a1f); background: transparent; }
 </style>
 @include('partials.theme-vars')
 @include('admin.partials._typography')
@@ -94,6 +101,13 @@
         @endif
         @if($sermon->is_offsite ?? false) <span class="flag flag-offsite">Offsite</span> @endif
         @if($sermon->is_no_sermon ?? false) <span class="flag flag-nosermon">No Sermon</span> @endif
+        <form method="POST" action="{{ route('admin.peace.publish', $sermon->slug) }}" style="display:inline">
+          @csrf
+          <input type="hidden" name="live" value="{{ $sermon->processing_status === 'published' ? 0 : 1 }}">
+          <button type="submit" class="edit-btn pub-btn {{ $sermon->processing_status === 'published' ? 'is-live' : '' }}">
+            {{ $sermon->processing_status === 'published' ? 'Unpublish' : 'Publish' }}
+          </button>
+        </form>
         <a href="{{ route('admin.peace.edit', $sermon->slug) }}" class="edit-btn">Edit</a>
       </div>
     </div>
