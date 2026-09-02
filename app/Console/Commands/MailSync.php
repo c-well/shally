@@ -140,7 +140,11 @@ class MailSync extends Command
 
         $verdict = $triage->classify($fromEmail, $fromName, $subject, $this->headerBlob($msg));
 
-        $row = MailMessage::updateOrCreate(
+        // withTrashed: the same UID can come back — a message moved out and
+        // moved in again — and the unique index on (mailbox, folder, uid)
+        // would collide with its own tombstone. Reviving the row also keeps
+        // the id stable, so a client does not see it as a different message.
+        $row = MailMessage::withTrashed()->updateOrCreate(
             ['mailbox' => $box, 'folder' => $folder, 'uid' => $uid],
             [
                 'message_id' => substr((string) $msg->getHeaderValue('Message-ID'), 0, 255) ?: null,
@@ -159,6 +163,10 @@ class MailSync extends Command
                 'kind_reason' => $verdict['reason'],
             ]
         );
+
+        if ($row->trashed()) {
+            $row->restore();
+        }
 
         $this->storeAttachments($row, $msg);
     }

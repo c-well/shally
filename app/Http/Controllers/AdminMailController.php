@@ -7,6 +7,7 @@ use App\Models\MailAttachment;
 use App\Models\MailMessage;
 use App\Services\Mail\MailSearch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class AdminMailController extends Controller
 {
@@ -66,6 +67,74 @@ class AdminMailController extends Controller
             'tally' => $tally,
             'items' => $items->values()->map(fn ($m) => $this->row($m)),
         ]);
+    }
+
+    /**
+     * Everything that changed since the client last asked.
+     *
+     * This is what lets a phone hold its own copy instead of re-reading the
+     * whole mailbox on every open. It asks with the cursor it was given last
+     * time and gets back only what moved — including what was deleted, which
+     * is the half most sync APIs forget. A client that never hears about a
+     * deletion shows that message forever.
+     *
+     * The cursor is (updated_at, id), not updated_at alone: a dozen rows can
+     * share the same second, and a client resuming from a bare timestamp
+     * would silently skip the rest of them.
+     *
+     * Bodies are not included. The list of all 714 messages is under 400 KB;
+     * the bodies are 22 MB. The phone takes the index and fetches a body when
+     * somebody actually opens one.
+     */
+    public function delta(Request $r)
+    {
+        $limit = min((int) $r->query('limit', 500), 1000);
+        [$sinceTime, $sinceId] = $this->cursor($r->query('cursor'));
+
+        $q = MailMessage::withTrashed()
+            ->where(fn ($w) => $w
+                ->where('updated_at', '>', $sinceTime)
+                ->orWhere(fn ($t) => $t->where('updated_at', $sinceTime)->where('id', '>', $sinceId)))
+            ->orderBy('updated_at')->orderBy('id')
+            ->limit($limit + 1)
+            ->get();
+
+        // One more than asked for tells us whether another page is waiting,
+        // without a second COUNT over the same range.
+        $more = $q->count() > $limit;
+        $rows = $q->take($limit);
+
+        $last = $rows->last();
+
+        return response()->json([
+            'cursor' => $last
+                ? $last->updated_at->format('Y-m-d H:i:s').'|'.$last->id
+                : $r->query('cursor', ''),
+            'more' => $more,
+            'changed' => $rows->reject->trashed()->values()->map(fn ($m) => $this->row($m)),
+            'deleted' => $rows->filter->trashed()->pluck('id')->values(),
+
+            // A client older than the tombstone sweep cannot be caught up by a
+            // delta — the rows that would have told it what to drop are gone.
+            // Better to say so than to hand back a quietly wrong mailbox.
+            'stale' => $sinceTime->lessThan(now()->subDays(config('mailroom.tombstone_days', 90))),
+        ]);
+    }
+
+    /** @return array{0: Carbon, 1: int} */
+    private function cursor(?string $raw): array
+    {
+        if (! $raw || ! str_contains($raw, '|')) {
+            return [now()->subYears(50), 0];
+        }
+
+        [$time, $id] = explode('|', $raw, 2);
+
+        try {
+            return [Carbon::parse($time), (int) $id];
+        } catch (\Throwable $e) {
+            return [now()->subYears(50), 0];
+        }
     }
 
     public function show(MailMessage $message)

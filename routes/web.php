@@ -223,6 +223,7 @@ Route::middleware('auth')->group(function () {
         Route::get ('/admin/mail',                     [\App\Http\Controllers\AdminMailController::class, 'index'])->name('admin.mail');
         Route::get ('/admin/mail/api/boxes',           [\App\Http\Controllers\AdminMailController::class, 'boxes'])->name('admin.mail.boxes');
         Route::get ('/admin/mail/api/messages',        [\App\Http\Controllers\AdminMailController::class, 'messages'])->name('admin.mail.messages');
+        Route::get ('/admin/mail/api/delta',           [\App\Http\Controllers\AdminMailController::class, 'delta'])->name('admin.mail.delta');
         Route::get ('/admin/mail/api/message/{message}', [\App\Http\Controllers\AdminMailController::class, 'show'])->name('admin.mail.show');
         Route::post('/admin/mail/api/act',             [\App\Http\Controllers\AdminMailController::class, 'act'])->name('admin.mail.act');
         Route::get ('/admin/mail/file/{attachment}',   [\App\Http\Controllers\AdminMailController::class, 'file'])->name('admin.mail.file');
