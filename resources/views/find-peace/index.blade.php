@@ -3,21 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Finding Peace · Shalom</title>
-<meta name="description" content="A quiet place. Tell us where you are — a feeling, a question, a verse, anything.">
-<link rel="canonical" href="{{ url('/find-peace') }}">
-<meta name="robots" content="index, follow">
-<meta property="og:title" content="Finding Peace · Shalom">
-<meta property="og:description" content="A quiet place. Tell us where you are.">
-<meta property="og:url" content="{{ url('/find-peace') }}">
-<script type="application/ld+json">{!! json_encode([
-  '@context' => 'https://schema.org',
-  '@type'    => 'WebSite',
+@include('partials.seo-head', [
+    'title'       => 'Finding Peace · Messages from Shalom SDA Church, Bronx',
+    'description' => 'A quiet place. Tell us where you are — a feeling, a question, a verse — and find the message that meets it.',
+    'path'        => '/find-peace',
+])
+<script type="application/ld+json">{!! \App\Support\Ld::json([
+  '@type'       => 'CollectionPage',
   'name'        => 'Finding Peace',
   'url'         => url('/find-peace'),
   'description' => 'A quiet place for anyone seeking God — messages of peace, one question at a time.',
+  'isPartOf'    => ['@type' => 'WebSite', 'name' => 'The Church of Peace', 'url' => url('/')],
   'publisher'   => ['@type' => 'Organization', 'name' => 'The Church of Peace', 'url' => url('/')],
-], JSON_UNESCAPED_SLASHES) !!}</script>
+]) !!}</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

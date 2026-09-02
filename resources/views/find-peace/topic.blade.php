@@ -3,13 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{{ $topic->name }} · Finding Peace</title>
-<meta name="description" content="Messages on {{ $topic->name }} — pastoral Q&amp;As and scripture from Shalom's Finding Peace.">
-<link rel="canonical" href="{{ url('/find-peace/topic/' . $topic->slug) }}">
-<meta name="robots" content="index, follow">
-<meta property="og:title" content="{{ $topic->name }} · Finding Peace">
-<meta property="og:description" content="Messages on {{ $topic->name }} from Shalom.">
-<meta property="og:url" content="{{ url('/find-peace/topic/' . $topic->slug) }}">
+@php $topicName = \Illuminate\Support\Str::title($topic->name); @endphp
+@include('partials.seo-head', [
+    'title'       => 'Messages on ' . $topicName . ' · Finding Peace · Shalom SDA Church',
+    'description' => 'What scripture says about ' . strtolower($topic->name)
+        . ' — messages, questions and answers from Shalom Seventh-day Adventist Church in the Bronx.',
+    'path'        => '/find-peace/topic/' . $topic->slug,
+])
+<script type="application/ld+json">{!! \App\Support\Ld::json([
+  '@type'       => 'CollectionPage',
+  'name'        => 'Messages on ' . $topicName,
+  'url'         => url('/find-peace/topic/' . $topic->slug),
+  'about'       => ['@type' => 'Thing', 'name' => $topicName],
+  'isPartOf'    => ['@type' => 'CollectionPage', 'name' => 'Finding Peace', 'url' => url('/find-peace')],
+  'publisher'   => ['@type' => 'Organization', 'name' => 'The Church of Peace', 'url' => url('/')],
+]) !!}</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

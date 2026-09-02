@@ -14,7 +14,10 @@
   $description ??= 'Shalom Seventh-day Adventist Church in the Bronx — Sabbath worship, weekly bulletin, Sabbath School lesson, sermon archive, and prayer meetings.';
   $path        ??= request()->getPathInfo();
   $url          = $base . $path;
-  $image        = $base . ($image ?? '/og-default.png?v=3');  // ?v bumps force scrapers (Apple/FB cache per URL) to refetch after a redesign
+  $image        = $image ?? ($base . '/og-default.png?v=3');  // ?v bumps force scrapers (Apple/FB cache per URL) to refetch after a redesign
+  $image        = str_starts_with($image, 'http') ? $image : $base . $image;
+  $type         ??= 'website';
+  $publishedTime ??= null;
 @endphp
 
 <title>{{ $title }}</title>
@@ -22,13 +25,16 @@
 <link rel="canonical" href="{{ $url }}">
 
 {{-- Open Graph (Facebook, LinkedIn, iMessage) --}}
-<meta property="og:type"        content="website">
+<meta property="og:type"        content="{{ $type }}">
 <meta property="og:site_name"   content="The Church of Peace · Shalom SDA">
 <meta property="og:title"       content="{{ $title }}">
 <meta property="og:description" content="{{ $description }}">
 <meta property="og:url"         content="{{ $url }}">
 <meta property="og:image"       content="{{ $image }}">
 <meta property="og:locale"      content="en_US">
+@if($publishedTime)
+<meta property="article:published_time" content="{{ $publishedTime }}">
+@endif
 
 {{-- Twitter / X card --}}
 <meta name="twitter:card"        content="summary_large_image">
