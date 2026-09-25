@@ -1,9 +1,37 @@
-{{-- Shared admin typography — Varela Round headings, Noto Serif body (2026-05-23,
-     per Karlons request). ADMIN ONLY — public-facing views keep their own fonts.
-     To update the rule, edit this one partial — every admin view @includes it. --}}
+{{-- Shared admin typography — Instrument Sans / Newsreader / JetBrains Mono.
+     ADMIN ONLY — public-facing views keep their own fonts. To update the rule,
+     edit this one partial; every admin view @includes it.
+
+     2026-09-25, Karlon picked Option A from _ops-admin-type.html. This is the
+     mail room's own type system moved to the rest of the admin, so the back
+     end reads as one thing rather than two.
+
+     It replaces Varela Round + Noto Serif, which failed for a measurable
+     reason rather than a matter of taste: Varela Round is published in a
+     SINGLE weight (400). Every `font-weight: 600` below used to be synthesised
+     by the browser smearing the 400, which is what made the whole admin look
+     thickened and slightly blurred. Instrument Sans carries 400–700, so
+     hierarchy now comes from the font instead of from a guess.
+
+     Three faces, three jobs — do not mix them up:
+       Instrument Sans   interface. Headings, names, labels, buttons, meta.
+       Newsreader        record titles and anything read as prose. Optical
+                         sizing, so it holds at 17px and at 15px alike.
+       JetBrains Mono    COLUMNAR data only — a date on a row, a file size, a
+                         log line, code. A headline figure is a quantity, not
+                         a column: it stays in Instrument Sans with
+                         tabular-nums. Monospace forces every digit to the
+                         same advance and puts a gap inside "30". --}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Noto+Serif:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+{{-- Shared admin shell — the responsive floor under every admin page. Loads
+     AFTER each page's own <style> (this partial is included last in every
+     admin head), so it can correct a page that never considered a phone.
+     Source of truth: resources/admin/admin.css — edit there and copy to
+     public_html/css/, because public/ is a symlink outside the repo. --}}
+<link rel="stylesheet" href="/css/admin.css?v={{ @filemtime(public_path('css/admin.css')) ?: 1 }}">
 <style>
   /* No italic anywhere in admin — Karlons directive. Scoped to NOT include
      .preview-body and the markdown toolbar where italic is meaningful (it shows
@@ -12,27 +40,76 @@
     font-style: normal !important;
   }
 
-  /* Body copy — Noto Serif. Override inline Poppins/system defaults in admin blades. */
+  /* ── Interface — Instrument Sans ────────────────────────────────────────
+     The default for everything. !important because thirty admin blades each
+     declare their own inline Poppins/system stack and this partial has to
+     outrank all of them without editing any. */
   body, body p, body td, body th, body li, body span, body div, body a,
   body input, body select, body textarea, body button {
-    font-family: "Noto Serif", "Times New Roman", serif !important;
-  }
-  /* Keep monospace where it carries meaning (code, .mono, numeric cells). */
-  body code, body pre, body .mono, body .num, body kbd, body samp {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+    font-family: "Instrument Sans", system-ui, -apple-system, sans-serif !important;
   }
 
-  /* All admin headings + labels use Varela Round. */
+  /* ── Prose — Newsreader ─────────────────────────────────────────────────
+     A record title is the thing you are scanning the list for, and a lede or
+     a summary is read rather than operated. Both get the serif. Declared
+     after the sans so it wins, and kept to a short list so the serif never
+     leaks into controls. */
+  body .lede, body .prose, body .preview-body, body .preview-body p,
+  body .row .title, body .sermon-row .title, body .lesson-row .title,
+  body .poll-row .title, body .item-row .title,
+  body .rec-title, body .entry-title, body .msg-subject, body .subj,
+  body .summary-text, body textarea.prose, body .blurb {
+    font-family: "Newsreader", Georgia, "Times New Roman", serif !important;
+    font-optical-sizing: auto;
+    letter-spacing: -0.004em;
+  }
+  body .lede, body .prose, body .preview-body { line-height: 1.62; }
+
+  /* ── Columns — JetBrains Mono ───────────────────────────────────────────
+     Only where digits or tokens stack in a column and must line up: the date
+     on a record row, a file size, a log timestamp, code. NOT for headline
+     figures — see .num/.stat-num below. */
+  body code, body pre, body .mono, body kbd, body samp,
+  body .row .date, body .sermon-row .date, body .lesson-row .date,
+  body .stamp, body .ts, body .addr, body .filesize, body .fsize, body .uid {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Figures ────────────────────────────────────────────────────────────
+     A count on a tile is read as a quantity. It stays in the interface face
+     and gets tabular figures, which is the only thing monospace was buying. */
+  body .num, body .stat-num, body .stat-value, body .count, body .figure,
+  body .st-n, body .metric {
+    font-family: "Instrument Sans", system-ui, sans-serif !important;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  /* Any cell of numbers aligns, whatever face it ended up in. */
+  body td, body th, body .n, body .amount, body .qty { font-variant-numeric: tabular-nums; }
+
+  /* ── Headings and labels ────────────────────────────────────────────────
+     Instrument Sans has real weights now, so hierarchy is weight + size, and
+     display sizes take NEGATIVE tracking — Varela Round's positive 0.02em was
+     right for a geometric round and is loose here. Uppercase micro-labels are
+     the exception and keep their positive tracking, because that is what
+     makes small caps legible. */
   body h1, body h2, body h3, body h4,
-  body .admin-title, body .admin-h, body .page-title,
+  body .admin-title, body .admin-h, body .page-title {
+    font-family: "Instrument Sans", system-ui, sans-serif !important;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    text-wrap: balance;
+  }
   body label, body .admin-label, body .field-label,
   body .label, body .eyebrow, body .card-eyebrow, body .meta {
-    font-family: "Varela Round", Arial, sans-serif !important;
-    letter-spacing: 0.02em;
+    font-family: "Instrument Sans", system-ui, sans-serif !important;
     font-weight: 600;
   }
-  body h1, body .page-title { font-size: 22px; }
-  body h2 { font-size: 16px; }
+  body h1, body .page-title { font-size: 22px; line-height: 1.18; }
+  body h2 { font-size: 16px; line-height: 1.25; }
   body h3 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft, #334455); }
   body label, body .admin-label, body .field-label {
     letter-spacing: 0.06em;

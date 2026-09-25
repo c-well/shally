@@ -1,0 +1,339 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Shalom · Admin shell
+   ═══════════════════════════════════════════════════════════════════════════
+   Every admin page is its own standalone document with its own inline <style>.
+   That is how the admin grew, and rewriting thirty pages into one layout is a
+   different job. What this file does instead is sit UNDER all of them as a
+   floor: it loads from admin/partials/_typography.blade.php, which every admin
+   view already includes, and it loads AFTER each page's own <style>, so it can
+   correct a page that never considered a phone without that page knowing.
+
+   The rule this file exists to enforce: a row of record + actions must never
+   be able to demand more width than the screen has. Before this file, the
+   sermons list asked for 90px + three 18px gaps + two unshrinkable buttons
+   inside a 287px box on a 375pt iPhone, the title column collapsed to one word
+   per line, and the whole document went wider than the viewport — which slides
+   the header and the page title off the left edge.
+
+   Three tiers:
+     all widths   guards — nothing may be intrinsically wider than its parent
+     <= 1024px    iPad — two-column splits become one, chrome tightens
+     <= 700px     phone — record rows stack, actions gather on their own line
+
+   Karlon, 2026-09-23.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ── 1 · Guards, every width ─────────────────────────────────────────────────
+     These are not phone rules. They stop an element being intrinsically too
+     wide in the first place, which is the actual cause every time a page ends
+     up horizontally scrolled. Keep them unconditional. ──────────────────────*/
+
+html, body {
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+  max-width: 100%;
+}
+
+/* A grid or flex child refuses to shrink below its content unless told it may.
+   This one line is what keeps a long sermon title, a long email address or a
+   raw URL from widening the page. :where() keeps specificity at zero so any
+   page that has a considered reason to set its own min-width still wins. */
+:where(main, .list, .card, .panel, .row, .rows, .grid, .cols, .columns,
+       .two-col, .split, .fields, .field-row, .form-row, .stack) > * {
+  min-width: 0;
+}
+
+/* Replaced content never dictates layout width. */
+:where(img, svg, video, canvas, iframe, embed, object) {
+  max-width: 100%;
+  height: auto;
+}
+
+/* A table is the one thing that legitimately needs to be wider than a phone.
+   Give it its own scroller rather than letting it push the document. */
+:where(table) { max-width: 100%; }
+:where(.table-wrap, .table-scroll, .tablewrap) {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Unbroken strings — tokens, log lines, addresses, file names. */
+:where(code, pre, .mono, .token, .url, .addr, .filename) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+:where(pre) { max-width: 100%; overflow-x: auto; }
+
+/* A row of pills, tabs or filters owns its own horizontal scrolling. It does
+   not get to widen the page, and it does not get a visible scrollbar. */
+:where(.filters, .filter-bar, .tabs, .pills, .chips, .toolbar, .seg) {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+:where(.filters, .filter-bar, .tabs, .pills, .chips, .toolbar, .seg)::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* ── 2 · iPad and small laptop, <= 1024px ───────────────────────────────────
+     A two-up editor at 1024 is two 480px columns, which is narrower than a
+     phone. Anything built as a side-by-side becomes one column here, not at
+     700, because that is where it actually stops working. ──────────────────*/
+
+@media (max-width: 1024px) {
+  .two-col,
+  .columns,
+  .split,
+  .qa,
+  .meta-row,
+  .field-row,
+  .row2,
+  .grid2,
+  .fields,
+  .cond-row,
+  .fcard-row2,
+  .add-form,
+  .opt-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  /* The split editor is a fixed-height pane pair on a desktop. Stacked, each
+     half needs its own height or the second one has none. */
+  .split { min-height: 0 !important; }
+  .split > * { min-height: 42vh; }
+}
+
+
+/* ── 3 · Phone, <= 700px ────────────────────────────────────────────────────
+     One thing at a time, full width, in the order you would read it. ───────*/
+
+@media (max-width: 700px) {
+
+  /* ── Page frame ──────────────────────────────────────────────────────────
+       A consistent gutter, honouring the notch, so no admin page is ever
+       flush to the glass on one side and inset on the other. */
+  main {
+    padding-left: calc(18px + env(safe-area-inset-left)) !important;
+    padding-right: calc(18px + env(safe-area-inset-right)) !important;
+    padding-top: 26px !important;
+    padding-bottom: calc(56px + env(safe-area-inset-bottom)) !important;
+    max-width: 100%;
+  }
+  header.top, .top {
+    padding-left: calc(16px + env(safe-area-inset-left)) !important;
+    padding-right: calc(16px + env(safe-area-inset-right)) !important;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* A 72px display heading is a desktop flourish. On a phone it is four lines
+     before any content. Cap it and let it balance. */
+  main h1, main .page-title {
+    font-size: clamp(26px, 8vw, 34px) !important;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .lede { font-size: 15px !important; line-height: 1.55; }
+
+  /* The card the rows live in keeps a hairline, not a desktop inset. */
+  .list, .rows, .card-list {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    margin-top: 28px !important;
+  }
+
+
+  /* ── The row engine ──────────────────────────────────────────────────────
+       Every record row in this admin is the same shape: some metadata, the
+       thing itself, then one or more actions. On a desktop that is a grid with
+       fixed columns. On a phone a fixed column is a promise the screen cannot
+       keep, so the row becomes a wrapping flex line instead.
+
+       Flex wrap is what makes this work with no markup change. Everything that
+       is not an action is told to take a whole line; every action is told to
+       take only what it needs. The actions therefore fall through and gather
+       together on the last line by themselves, which is exactly the card you
+       would have hand-built.
+
+       !important is here because several of these rows carry the column list
+       in a style attribute, which nothing else can outrank. */
+  .row,
+  .sermon-row,
+  .poll-row,
+  .lesson-row,
+  .slide-card,
+  .event-row,
+  .msg-row,
+  .user-row,
+  .sub-row,
+  .item-row {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px !important;
+    grid-template-columns: none !important;
+    padding: 16px 2px !important;
+  }
+
+  /* Content: a whole line each, in source order. */
+  .row > *,
+  .sermon-row > *,
+  .poll-row > *,
+  .lesson-row > *,
+  .slide-card > *,
+  .event-row > *,
+  .msg-row > *,
+  .user-row > *,
+  .sub-row > *,
+  .item-row > * {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  /* Actions: only as wide as they are, so they share the final line. */
+  .row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .sermon-row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .poll-row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .lesson-row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .slide-card > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .event-row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .msg-row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .user-row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .sub-row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete),
+  .item-row > :is(a[class*="btn"], a.edit, a.delete, button, form, .btn, .actions, .ic, .del, .edit, .delete) {
+    flex: 0 0 auto;
+  }
+
+  /* A record title is the thing you are looking for in the list, so it stays
+     prominent — but 21px in a column that has just become full width no longer
+     needs to shout, and it must be allowed to break. */
+  .row .title, .sermon-row .title, .lesson-row .title, .poll-row .title,
+  .row .name, .sermon-row .name {
+    font-size: 17px !important;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .row .meta, .sermon-row .meta, .lesson-row .meta {
+    font-size: 12px !important;
+    line-height: 1.45;
+    margin-top: 3px;
+  }
+  /* The date reads as a label above the title rather than a lost column. */
+  .row .date, .sermon-row .date, .lesson-row .date {
+    font-size: 11px !important;
+    letter-spacing: 0.06em;
+    order: -1;
+  }
+
+  /* A slide's thumbnail is its identity — full width, not a 200px column. */
+  .slide-card img { width: 100% !important; height: auto !important; }
+
+
+  /* ── Touch targets ───────────────────────────────────────────────────────
+       A 10px uppercase button with 7px of padding is 26px tall. Apple's floor
+       is 44. Every action in the admin gets there, without the pages having to
+       agree on a class name. */
+  .row :is(a[class*="btn"], button, .btn),
+  .sermon-row :is(a[class*="btn"], button, .btn),
+  .poll-row :is(a[class*="btn"], button, .btn),
+  .lesson-row :is(a[class*="btn"], button, .btn),
+  .slide-card :is(a[class*="btn"], button, .btn),
+  .event-row :is(a[class*="btn"], button, .btn),
+  a.add-btn, a.addbtn, .btn, button.btn, button[type="submit"] {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+  /* Letter-spaced uppercase micro-labels stop fitting once the button has to
+     be thumb-sized. Give them back a readable size and less tracking. */
+  .row :is(a[class*="btn"], button, .btn),
+  .sermon-row :is(a[class*="btn"], button, .btn),
+  .poll-row :is(a[class*="btn"], button, .btn),
+  .lesson-row :is(a[class*="btn"], button, .btn) {
+    font-size: 11px !important;
+    letter-spacing: 0.1em !important;
+  }
+
+
+  /* ── Anything typable is 16px or iOS zooms the page on focus ─────────────
+       This is the single most common cause of an admin page that looks fine
+       until you tap a field and can never get the layout back. Not negotiable,
+       and it must beat the pages' own font-size rules. */
+  input, select, textarea,
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="number"], input[type="search"], input[type="url"],
+  input[type="date"], input[type="time"], input[type="datetime-local"] {
+    font-size: 16px !important;
+    max-width: 100%;
+  }
+  textarea { min-height: 7.5rem; }
+  /* A field that was sized for a desktop column fills the line instead. */
+  .field input:not([type="checkbox"]):not([type="radio"]),
+  .field select, .field textarea,
+  .form-row input:not([type="checkbox"]):not([type="radio"]),
+  .form-row select, .form-row textarea {
+    width: 100%;
+  }
+
+
+  /* ── Button rows wrap; they never scroll the document ────────────────────*/
+  .actions, .msg-actions, .sub-actions, .sys-actions, .tile-actions,
+  .ticket-actions, .save-row, .jog-buttons, .btn-row, .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  /* Statistic tiles pair up rather than stacking into a column of ten. */
+  .stats, .stat-grid, .tiles, .th-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  /* An empty state does not need 48px of inset on a 375pt screen. */
+  .empty { padding: 32px 16px !important; }
+}
+
+
+/* ── 4 · Narrow phone, <= 380px ─────────────────────────────────────────────
+     iPhone SE and the smallest Androids. Only what actually stops fitting. ──*/
+
+@media (max-width: 380px) {
+  main {
+    padding-left: calc(14px + env(safe-area-inset-left)) !important;
+    padding-right: calc(14px + env(safe-area-inset-right)) !important;
+  }
+  .list, .rows, .card-list { padding-left: 10px !important; padding-right: 10px !important; }
+  .stats, .stat-grid, .tiles { grid-template-columns: minmax(0, 1fr) !important; }
+  .row :is(a[class*="btn"], button, .btn),
+  .sermon-row :is(a[class*="btn"], button, .btn) {
+    flex: 1 1 calc(50% - 5px);
+  }
+}
+
+
+/* ── 5 · Accessibility floors ───────────────────────────────────────────────*/
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 120ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--teal, #03617A);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
