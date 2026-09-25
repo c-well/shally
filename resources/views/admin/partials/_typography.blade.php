@@ -1,45 +1,117 @@
-{{-- Shared admin typography — Instrument Sans / Newsreader / JetBrains Mono.
-     ADMIN ONLY — public-facing views keep their own fonts. To update the rule,
-     edit this one partial; every admin view @includes it.
+{{-- ═══════════════════════════════════════════════════════════════════════
+     Shared admin typography — ADMIN ONLY. Public views keep their own fonts.
+     Every admin view @includes this partial, so this one file sets the type
+     for the whole back end.
 
-     2026-09-25, Karlon picked Option A from _ops-admin-type.html. This is the
-     mail room's own type system moved to the rest of the admin, so the back
-     end reads as one thing rather than two.
+     TWO SCHEMES LIVE HERE. Which one renders is a setting, not an edit:
 
-     It replaces Varela Round + Noto Serif, which failed for a measurable
-     reason rather than a matter of taste: Varela Round is published in a
-     SINGLE weight (400). Every `font-weight: 600` below used to be synthesised
-     by the browser smearing the 400, which is what made the whole admin look
-     thickened and slightly blurred. Instrument Sans carries 400–700, so
-     hierarchy now comes from the font instead of from a guess.
+       house    Instrument Sans / Newsreader / JetBrains Mono.   (default)
+                The mail room's own system, adopted for the rest of the admin
+                on 2026-09-25 so the back end reads as one thing, not two.
 
-     Three faces, three jobs — do not mix them up:
+       legacy   Varela Round / Noto Serif.
+                What the admin ran from 2026-05-23. Kept verbatim so Karlon
+                can revert without a deploy.
+
+     Switch it from the Admin hub, beside the site theme picker. A super admin
+     can also append ?admin_type=legacy (or =house) to any admin URL to LOOK at
+     the other scheme without changing it for anyone else.
+
+     Why house replaced legacy, for the record: Varela Round is published in a
+     SINGLE weight. document.fonts reports "Varela Round w400" and nothing
+     else, while the admin asks for font-weight 600 on every heading and label
+     — so all of it was browser-synthesised fake bold, which is what made the
+     back end look thickened and slightly blurred. Instrument Sans carries
+     400–700, so hierarchy comes from the font rather than from a guess.
+
+     House has three faces doing three jobs — do not mix them up:
        Instrument Sans   interface. Headings, names, labels, buttons, meta.
-       Newsreader        record titles and anything read as prose. Optical
-                         sizing, so it holds at 17px and at 15px alike.
+       Newsreader        record titles and anything read as prose.
        JetBrains Mono    COLUMNAR data only — a date on a row, a file size, a
                          log line, code. A headline figure is a quantity, not
-                         a column: it stays in Instrument Sans with
+                         a column: counts stay in Instrument Sans with
                          tabular-nums. Monospace forces every digit to the
-                         same advance and puts a gap inside "30". --}}
+                         same advance and puts a gap inside "30".
+     ═══════════════════════════════════════════════════════════════════════ --}}
+@php
+    $SCHEMES   = ['house', 'legacy'];
+    $adminType = \App\Models\AppSetting::get('admin_type', 'house');
+
+    // Preview only — looking is not switching, and it is super-admin only.
+    if (auth()->check() && auth()->user()->role === 'super_admin'
+        && in_array(request('admin_type'), $SCHEMES, true)) {
+        $adminType = request('admin_type');
+    }
+    if (! in_array($adminType, $SCHEMES, true)) {
+        $adminType = 'house';
+    }
+@endphp
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 {{-- Shared admin shell — the responsive floor under every admin page. Loads
      AFTER each page's own <style> (this partial is included last in every
-     admin head), so it can correct a page that never considered a phone.
+     admin head), so it can correct a page that never considered a phone. It
+     is scheme-independent: layout does not change when the type does.
      Source of truth: resources/admin/admin.css — edit there and copy to
      public_html/css/, because public/ is a symlink outside the repo. --}}
 <link rel="stylesheet" href="/css/admin.css?v={{ @filemtime(public_path('css/admin.css')) ?: 1 }}">
+
 <style>
-  /* No italic anywhere in admin — Karlons directive. Scoped to NOT include
-     .preview-body and the markdown toolbar where italic is meaningful (it shows
-     the public rendering / what the I button does). */
+  /* No italic anywhere in admin — Karlons directive. Applies to both schemes.
+     Scoped to NOT include .preview-body and the markdown toolbar where italic
+     is meaningful (it shows the public rendering / what the I button does). */
   body :not(.preview-body):not(.preview-body *):not([data-md="italic"]):not([data-md="italic"] *) {
     font-style: normal !important;
   }
+</style>
 
+
+@if ($adminType === 'legacy')
+{{-- ─── LEGACY ─────────────────────────────────────────────────────────────
+     Varela Round headings, Noto Serif body (2026-05-23). Preserved verbatim
+     as the revert target. Do not "improve" it — its job is to be exactly what
+     was here before. ───────────────────────────────────────────────────── --}}
+<link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Noto+Serif:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Body copy — Noto Serif. Override inline Poppins/system defaults in admin blades. */
+  body, body p, body td, body th, body li, body span, body div, body a,
+  body input, body select, body textarea, body button {
+    font-family: "Noto Serif", "Times New Roman", serif !important;
+  }
+  /* Keep monospace where it carries meaning (code, .mono, numeric cells). */
+  body code, body pre, body .mono, body .num, body kbd, body samp {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  }
+
+  /* All admin headings + labels use Varela Round. */
+  body h1, body h2, body h3, body h4,
+  body .admin-title, body .admin-h, body .page-title,
+  body label, body .admin-label, body .field-label,
+  body .label, body .eyebrow, body .card-eyebrow, body .meta {
+    font-family: "Varela Round", Arial, sans-serif !important;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+  }
+  body h1, body .page-title { font-size: 22px; }
+  body h2 { font-size: 16px; }
+  body h3 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft, #334455); }
+  body label, body .admin-label, body .field-label {
+    letter-spacing: 0.06em;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--ink-soft, #334455);
+    font-weight: 600;
+  }
+</style>
+
+
+@else
+{{-- ─── HOUSE (default) ───────────────────────────────────────────────────
+     Instrument Sans / Newsreader / JetBrains Mono. ──────────────────────── --}}
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
   /* ── Interface — Instrument Sans ────────────────────────────────────────
      The default for everything. !important because thirty admin blades each
      declare their own inline Poppins/system stack and this partial has to
@@ -91,7 +163,7 @@
   body td, body th, body .n, body .amount, body .qty { font-variant-numeric: tabular-nums; }
 
   /* ── Headings and labels ────────────────────────────────────────────────
-     Instrument Sans has real weights now, so hierarchy is weight + size, and
+     Instrument Sans has real weights, so hierarchy is weight + size, and
      display sizes take NEGATIVE tracking — Varela Round's positive 0.02em was
      right for a geometric round and is loose here. Uppercase micro-labels are
      the exception and keep their positive tracking, because that is what
@@ -119,6 +191,22 @@
     font-weight: 600;
   }
 </style>
+@endif
+
+
+{{-- A super admin previewing the other scheme gets told so, because a preview
+     that looks identical to a save is how you end up thinking you switched. --}}
+@if (auth()->check() && auth()->user()->role === 'super_admin' && in_array(request('admin_type'), ['house','legacy'], true))
+<div style="position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:9999;
+            display:flex; align-items:center; gap:10px; white-space:nowrap;
+            background:#16202b; color:#fff; border-radius:999px;
+            padding:9px 10px 9px 16px; box-shadow:0 12px 30px -12px rgba(0,0,0,.55);
+            font-family:'Instrument Sans',system-ui,sans-serif; font-size:12px;">
+  <span>Previewing <b>{{ request('admin_type') }}</b> — not saved</span>
+  <a href="{{ url()->current() }}" style="background:rgba(255,255,255,.14); color:#fff;
+     text-decoration:none; border-radius:999px; padding:5px 12px; font-size:11px; font-weight:600;">Exit</a>
+</div>
+@endif
 
 @if (auth()->check() && auth()->user()->role === 'super_admin')
 {{-- ─────────────────────────────────────────────────────────────────────

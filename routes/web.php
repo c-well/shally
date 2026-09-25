@@ -298,6 +298,15 @@ Route::middleware('auth')->group(function () {
             \App\Models\AuditLog::record(event: 'site_theme_changed', userId: auth()->id(), description: 'Site theme set to: ' . $data['theme']);
             return response()->json(['ok' => true, 'theme' => $data['theme']]);
         })->name('admin.settings.theme');
+        // Which type scheme the admin renders in. Both live in
+        // admin/partials/_typography.blade.php; this only chooses. Kept as a
+        // setting rather than an edit so a revert needs no deploy.
+        Route::post  ('/admin/settings/admin-type', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate(['scheme' => 'required|in:house,legacy']);
+            \App\Models\AppSetting::set('admin_type', $data['scheme']);
+            \App\Models\AuditLog::record(event: 'admin_type_changed', userId: auth()->id(), description: 'Admin type set to: ' . $data['scheme']);
+            return response()->json(['ok' => true, 'scheme' => $data['scheme']]);
+        })->name('admin.settings.admin-type');
         Route::get   ('/admin/anthropic-usage', function () {
             $now = \Carbon\Carbon::now('America/New_York');
             $startToday = $now->copy()->startOfDay()->setTimezone('UTC');
