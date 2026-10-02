@@ -71,7 +71,7 @@ class KidsController extends Controller
     {
         $p = $this->player($request);
 
-        return response()->json(['ok' => true, 'name' => $p->name, 'total_stars' => (int) $p->progress()->sum('earned_stars'),
+        return response()->json(['ok' => true, 'name' => $p->name, 'preview' => $p->review_status === 'test', 'total_stars' => (int) $p->progress()->sum('earned_stars'),
             'levels' => $p->progress()->get(['game_level_id', 'earned_stars'])->mapWithKeys(fn ($v) => [$v->game_level_id => $v->earned_stars])]);
     }
 

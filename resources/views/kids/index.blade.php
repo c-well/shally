@@ -120,7 +120,7 @@
   try {
     const pl=JSON.parse(localStorage.getItem('cop_kid')||'null');
     if(pl?.token)fetch('{{ route('kids.profile') }}',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({token:pl.token})}).then(r=>r.ok?r.json():null).then(d=>{
-      if(!d)return;document.getElementById('who').textContent=`Welcome back, ${d.name} · ★ ${d.total_stars}`;
+      if(!d)return;if(d.preview){localStorage.removeItem('cop_kid');document.getElementById('who').textContent='Choose a game to start your adventure.';return;}document.getElementById('who').textContent=`Welcome back, ${d.name} · ★ ${d.total_stars}`;
       pl.total_stars=d.total_stars;localStorage.setItem('cop_kid',JSON.stringify(pl));
       document.querySelectorAll('[data-level]').forEach(card=>{const stars=d.levels[card.dataset.level]||0;if(stars){const go=card.querySelector('.go');go.textContent=stars===3?'★★★ Completed · Play again →':'★ In progress · Play →';}});
     }).catch(()=>{});

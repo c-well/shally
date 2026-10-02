@@ -127,6 +127,7 @@ class KidsGamesTest extends TestCase
         $registered = $this->postJson('/kids/register', ['name' => 'Preview', 'preview' => true, 'review_status' => 'known'])->assertOk()->json();
         $p = GamePlayer::where('token', $registered['token'])->first();
         $this->assertSame('test', $p->review_status);
+        $this->postJson('/kids/profile', ['token' => $p->token])->assertOk()->assertJsonPath('preview', true);
         $run = $this->start($p, $this->level());
         foreach (range(0, 2) as $i) {
             $this->move($p, $run, $i + 1, ['type' => 'reveal', 'index' => $i])->assertOk()->assertJsonPath('total_stars', 0);

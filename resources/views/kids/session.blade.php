@@ -44,7 +44,7 @@ const GameSession = (() => {
             if (!name) throw new Error('Choose a nickname to begin.');
             player = await post('{{ route('kids.register') }}',{name,preview}); remember();
           }
-          const data = await begin(); gate.classList.remove('show'); resolve(data);
+          const data = await begin();if(!preview && data.preview){player=null;try{localStorage.removeItem(key);}catch(_){}throw new Error('Choose a nickname for your own game.');}gate.classList.remove('show');resolve(data);
         } catch (e) { if(e.status===404){player=null;try{localStorage.removeItem(key);}catch(_){} error.textContent='Let’s start a fresh player profile. Choose a nickname below.';}else error.textContent=e.message;gate.classList.add('show'); }
         finally { go.disabled = false; }
       }
