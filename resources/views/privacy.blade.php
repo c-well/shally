@@ -96,8 +96,10 @@
     </ul>
     <p>Email <a href="mailto:contact@thechurchofpeace.org">contact@thechurchofpeace.org</a> for any of those. We aim to respond within 7 days.</p>
 
-    <h2>Children</h2>
-    <p>The site isn't directed at children under 13. If a child signs up by mistake, email us and we'll delete the record.</p>
+    <h2>Children and Scripture games</h2>
+    <p>Our Scripture games welcome children. Please use a nickname instead of a full name. A random player token is saved in this browser so we can keep game progress and stars. No email address, birth date, camera, or microphone is needed to play.</p>
+    <p>Earning stars may put the nickname and stars on the public learning board. Church administrators can see game sessions, valid moves, completions, and approximate activity time to distinguish ordinary play from testing or unusual activity. These are estimates, not identity checks. This feature adds no IP-address collection, device fingerprinting, location tracking, or raw input recordings.</p>
+    <p>Game session details are removed after 90 days. Nicknames, earned progress, and staff review labels remain until removed on request. A parent or guardian can contact us to remove a child's nickname and game records. Clearing browser storage removes access from that browser but does not delete the server record.</p>
 
     <h2>Changes</h2>
     <p>If we change this policy, we'll update the date at the top. For material changes (new data we collect, new third-party recipient), we'll post a banner on the home page for 30 days.</p>

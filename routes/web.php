@@ -76,7 +76,9 @@ Route::get ('/sermons/{slug}', fn (string $slug) => redirect()->route('messages.
 Route::get ('/kids', [\App\Http\Controllers\KidsController::class, 'index'])->name('kids');
 Route::get ('/kids/play/{level}', [\App\Http\Controllers\KidsController::class, 'play'])->name('kids.play');
 Route::post('/kids/register', [\App\Http\Controllers\KidsController::class, 'register'])->middleware('throttle:20,10')->name('kids.register');
-Route::post('/kids/save', [\App\Http\Controllers\KidsController::class, 'save'])->middleware('throttle:200,1')->name('kids.save');
+Route::post('/kids/begin', [\App\Http\Controllers\KidsController::class, 'begin'])->middleware('throttle:60,10')->name('kids.begin');
+Route::post('/kids/profile', [\App\Http\Controllers\KidsController::class, 'profile'])->middleware('throttle:60,1')->name('kids.profile');
+Route::post('/kids/save', [\App\Http\Controllers\KidsController::class, 'save'])->middleware('throttle:600,1')->name('kids.save');
 Route::get ('/kids/leaderboard', [\App\Http\Controllers\KidsController::class, 'leaderboard'])->name('kids.leaderboard');
 Route::get ('/youth',                         [\App\Http\Controllers\MysteryGameController::class, 'landing'])->name('youth');
 Route::post('/youth/room',                    [\App\Http\Controllers\MysteryGameController::class, 'createRoom'])->middleware('throttle:30,1')->name('youth.room.create');
@@ -344,6 +346,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/intake-sub/{submission}/remove', [\App\Http\Controllers\AdminIntakeController::class, 'remove'])->name('admin.intake.remove');
         Route::post('/admin/intake-sub/{submission}/restore',[\App\Http\Controllers\AdminIntakeController::class, 'restore'])->name('admin.intake.restore');
         Route::post('/admin/intake/{form}/menu', [\App\Http\Controllers\AdminIntakeController::class, 'toggleMenu'])->name('admin.intake.menu');
+        Route::get('/admin/games/players', [\App\Http\Controllers\AdminGamePlayersController::class, 'index'])->name('admin.games.players');
+        Route::patch('/admin/games/players/{player}', [\App\Http\Controllers\AdminGamePlayersController::class, 'update'])->name('admin.games.players.update');
         Route::get   ('/admin/games',                 [\App\Http\Controllers\AdminGameLevelsController::class, 'index'])->name('admin.games');
         Route::post  ('/admin/games',                 [\App\Http\Controllers\AdminGameLevelsController::class, 'store'])->name('admin.games.store');
         Route::patch ('/admin/games/{level}',         [\App\Http\Controllers\AdminGameLevelsController::class, 'update'])->name('admin.games.update');

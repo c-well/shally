@@ -51,6 +51,7 @@
 <div class="top"><a href="{{ route('admin.hub') }}">@include('partials._arl') Admin</a><span class="meta">SCRIPTURE GAMES</span></div>
 <main>
   <h1>Scripture games.</h1>
+  <p class="lede"><a href="{{ route('admin.games.players') }}">Who is playing? View player activity and team reviews →</a></p>
   <p class="lede">Each level is a real verse. Add as many as you like — pick a book, a game, and an age, and it shows up for the kids at <b>/kids</b>. Edits save as you type.</p>
   @if (session('status'))<div class="flash">{{ session('status') }}</div>@endif
 
@@ -77,7 +78,7 @@
       <div class="hd">
         <span class="badge">{{ ['word_search'=>'Word search','verse_tetris'=>'Verse Tetris','memory_match'=>'Memory','hidden_words'=>'Hidden words'][$l->game_type] }}</span>
         <span class="badge">{{ ['little'=>'4–6','older'=>'7–9','teens'=>'Teens'][$l->age_band] ?? $l->age_band }}</span>
-        <span class="sp"></span>
+        <span class="sp"></span><a class="mini" href="{{ route('kids.play', $l) }}?preview=1" target="_blank" rel="noopener">Test play</a>
         <button class="mini {{ $l->is_active ? 'on' : '' }}" data-toggle="{{ route('admin.games.toggle', $l) }}" data-on="{{ $l->is_active ? 1 : 0 }}">{{ $l->is_active ? 'Live' : 'Hidden' }}</button>
         <button class="mini danger" data-delete="{{ route('admin.games.destroy', $l) }}" data-confirm="Delete this level ({{ $l->reference }})?">Delete</button>
       </div>

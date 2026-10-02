@@ -49,6 +49,7 @@
   .board li .nm { font-weight: 500; }
   .board li .st { color: var(--brass-dark, #8c6f2e); font-weight: 600; }
   .empty { font-size: 13px; color: var(--ink-soft); font-style: italic; margin-top: 12px; }
+.family-note{margin-top:36px;font-size:13px;line-height:1.6;color:var(--ink-soft)}.family-note a{color:var(--teal)}.lvl .go{min-height:18px}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 @include('partials.theme-vars')
 </head>
@@ -58,14 +59,14 @@
 <main>
   <div class="eyebrow">For our children</div>
   <h1>Scripture Games.</h1>
-  <p class="lede">Not just play — these bring the <b>Word of God</b> before our kids. Every game teaches a real verse, one piece at a time. Pick a verse, learn it, and earn a star.</p>
+  <p class="lede">A little discovery. A little practice. A verse to carry with you. Explore the <b>Word of God</b> through games, and earn stars as you finish.</p>
   <div class="who" id="who"></div>
 
   <div class="filters" id="filters">
-    <button class="chip on" data-band="all">All ages</button>
-    <button class="chip" data-band="little">Little (4–6)</button>
-    <button class="chip" data-band="older">Kids (7–9)</button>
-    <button class="chip" data-band="teens">Teens</button>
+    <button class="chip on" aria-pressed="true" data-band="all">All ages</button>
+    <button class="chip" aria-pressed="false" data-band="little">Little (4–6)</button>
+    <button class="chip" aria-pressed="false" data-band="older">Kids (7–9)</button>
+    <button class="chip" aria-pressed="false" data-band="teens">Teens</button>
   </div>
 
   @php
@@ -78,14 +79,14 @@
     ];
   @endphp
 
-  @foreach (['verse_tetris','word_search','memory_match','hidden_words'] as $gt)
+  @foreach (['memory_match','hidden_words','word_search','verse_tetris'] as $gt)
     @if (($byType[$gt] ?? collect())->isNotEmpty())
       <div class="sec" data-sec>
         <h2>{{ $meta[$gt][1] }} {{ $meta[$gt][0] }}</h2>
         <div class="sub">{{ $meta[$gt][2] }}</div>
         <div class="grid">
           @foreach ($byType[$gt] as $lvl)
-            <a class="lvl" href="{{ route('kids.play', $lvl) }}" data-band="{{ $lvl->age_band }}">
+            <a class="lvl" href="{{ route('kids.play', $lvl) }}" data-band="{{ $lvl->age_band }}" data-level="{{ $lvl->id }}">
               <div class="ref">{{ $lvl->reference }}</div>
               <div class="t">{{ $lvl->title ?: $lvl->book }}</div>
               <div class="bk">{{ $lvl->book }} · {{ ['little'=>'Ages 4–6','older'=>'Ages 7–9','teens'=>'Teens'][$lvl->age_band] ?? $lvl->age_band }}</div>
@@ -97,29 +98,37 @@
     @endif
   @endforeach
 
+  <p class="family-note">For families: choose a nickname instead of a full name. Games save progress on this browser. <a href="{{ route('privacy') }}">How we handle game information →</a></p>
   <div class="board">
-    <h2>⭐️ Top learners</h2>
-    <p>We're not competing — we're cheering each other on to know the Word better.</p>
+    <h2>⭐️ Learning together</h2>
+    <p>Celebrating completed puzzles and verse progress. Nicknames appear here with stars earned through our updated games.</p>
     @if ($leaders->isNotEmpty())
       <ol>
         @foreach ($leaders as $p)
-          <li><span class="nm">{{ $p->name }}</span> <span class="st">★ {{ $p->total_stars }}</span></li>
+          <li><span class="nm">{{ $p->name }}</span> <span class="st">★ {{ $p->checked_stars }}</span></li>
         @endforeach
       </ol>
     @else
-      <div class="empty">Be the first — play a game and your name appears here.</div>
+      <div class="empty">A new chapter starts here. Finish a game to add your nickname and stars.</div>
     @endif
   </div>
 </main>
 
 @include('partials.footer')
 <script>
-  // player greeting
-  try { var pl = JSON.parse(localStorage.getItem('cop_kid') || 'null'); if (pl) document.getElementById('who').innerHTML = 'Welcome back, <b>' + pl.name + '</b> · ★ ' + (pl.total_stars || 0); } catch (e) {}
+  // Fetch current checked totals; never render a nickname as HTML.
+  try {
+    const pl=JSON.parse(localStorage.getItem('cop_kid')||'null');
+    if(pl?.token)fetch('{{ route('kids.profile') }}',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({token:pl.token})}).then(r=>r.ok?r.json():null).then(d=>{
+      if(!d)return;document.getElementById('who').textContent=`Welcome back, ${d.name} · ★ ${d.total_stars}`;
+      pl.total_stars=d.total_stars;localStorage.setItem('cop_kid',JSON.stringify(pl));
+      document.querySelectorAll('[data-level]').forEach(card=>{const stars=d.levels[card.dataset.level]||0;if(stars){const go=card.querySelector('.go');go.textContent=stars===3?'★★★ Completed · Play again →':'★ In progress · Play →';}});
+    }).catch(()=>{});
+  } catch(_){}
   // age filter
   var chips = document.querySelectorAll('.chip');
   chips.forEach(function (c) { c.addEventListener('click', function () {
-    chips.forEach(x => x.classList.remove('on')); c.classList.add('on');
+    chips.forEach(x => x.classList.remove('on')); c.classList.add('on'); chips.forEach(x=>x.setAttribute('aria-pressed',String(x===c)));
     var band = c.getAttribute('data-band');
     document.querySelectorAll('.lvl').forEach(function (l) { l.style.display = (band === 'all' || l.getAttribute('data-band') === band) ? '' : 'none'; });
     document.querySelectorAll('[data-sec]').forEach(function (s) { var any = [].slice.call(s.querySelectorAll('.lvl')).some(l => l.style.display !== 'none'); s.style.display = any ? '' : 'none'; });

@@ -359,3 +359,6 @@ Schedule::command('og:cards')->hourlyAt(7)->name('og-cards')->onOneServer();
 // a client that stale has to start over anyway, and the delta says so — so
 // they are swept rather than kept forever.
 Schedule::command('mail:prune-tombstones')->dailyAt('03:20')->name('mail-prune-tombstones')->onOneServer();
+
+// Keep only 90 days of minimal kids game session evidence; earned progress is retained.
+Schedule::command('model:prune', ['--model' => [\App\Models\GameRun::class]])->dailyAt('04:40')->withoutOverlapping();

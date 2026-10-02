@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>{{ $level->reference }} — Verse Tetris</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,6 +67,8 @@
   .shapes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 6px; }
   .shp { aspect-ratio: 1; font: inherit; font-weight: 700; font-size: 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--teal); cursor: pointer; }
   .shp:active { background: var(--cream); }
+
+.ov{visibility:hidden}.ov.show{visibility:visible}.card{max-height:90dvh;overflow:auto}.card p{margin-top:14px;line-height:1.6;color:var(--ink-soft)}.small{font:12px/1.5 'IBM Plex Sans',sans-serif;color:var(--ink-soft)}.small a{color:var(--teal)}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0)}.cbtn{flex-direction:column;gap:2px}.cbtn small{font:10px 'IBM Plex Sans',sans-serif}.save-row{padding:0 20px;font-size:11px;min-height:17px;color:var(--ink-soft);flex-shrink:0}.save-row button{font:inherit;padding:3px 8px;margin-left:8px}.verse-progress{margin:0 20px;font-weight:600;flex-shrink:0}.infobar{flex-wrap:wrap;gap:6px 12px}.who{white-space:normal;overflow-wrap:anywhere;max-width:100%}.btn:disabled{opacity:.5}.stars-big{font-size:30px}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 @include('partials.theme-vars')
 </head>
@@ -86,14 +88,15 @@
     <span class="who" id="who"></span>
     <button class="rmchip" id="morphBtn" disabled>Re-morph ×0</button>
   </div>
-  <div class="versestrip" id="verse"></div>
+  <div id="verseProgress" class="small verse-progress"></div><div class="versestrip" id="verse"></div>
+  <div class="save-row"><span id="saveStatus" role="status"></span><button id="retrySave" hidden>Retry saving</button></div>
 
   <div class="ctrls">
-    <button class="cbtn" data-act="left">◀</button>
-    <button class="cbtn" data-act="rotate">⟳</button>
-    <button class="cbtn" data-act="right">▶</button>
-    <button class="cbtn" data-act="soft">▼</button>
-    <button class="cbtn" data-act="hard">⤓</button>
+    <button class="cbtn" data-act="left" aria-label="Left"><span aria-hidden="true">◀</span><small>Left</small></button>
+    <button class="cbtn" data-act="rotate" aria-label="Turn"><span aria-hidden="true">⟳</span><small>Turn</small></button>
+    <button class="cbtn" data-act="right" aria-label="Right"><span aria-hidden="true">▶</span><small>Right</small></button>
+    <button class="cbtn" data-act="soft" aria-label="Lower"><span aria-hidden="true">▼</span><small>Lower</small></button>
+    <button class="cbtn" data-act="hard" aria-label="Drop"><span aria-hidden="true">⤓</span><small>Drop</small></button>
   </div>
 </div>
 
@@ -126,10 +129,11 @@
 {{-- Win --}}
 <div class="ov" id="winOv"><div class="card">
   <div class="stars-big">⭐️⭐️⭐️</div>
-  <h2>Verse mastered!</h2>
+  <h2>Verse complete!</h2>
   <p style="color:var(--ink-soft);margin-top:8px">You built <b>{{ $level->reference }}</b> word by word.</p>
   <div class="verse-final">“{{ $level->verse_text }}”</div>
-  <div><a class="btn" href="{{ route('kids') }}">More games @include('partials._ar')</a></div>
+  @if($nextLevel)<div><a class="btn" href="{{ route('kids.play',$nextLevel) }}{{ request()->boolean('preview') ? '?preview=1' : '' }}">Next adventure →</a></div>@endif
+  <div><a class="btn btn-ghost" href="{{ route('kids') }}">Choose another game</a></div>
   <div><button class="btn btn-ghost" onclick="location.reload()">Play again</button></div>
 </div></div>
 
@@ -142,44 +146,30 @@
   <div><a class="btn btn-ghost" href="{{ route('kids') }}">Other games</a></div>
 </div></div>
 
-{{-- Name gate --}}
-<div class="ov" id="nameGate"><div class="card">
-  <h2>Hi there! 👋</h2>
-  <p style="color:var(--ink-soft);margin-top:10px">What should we call you? Your stars are saved.</p>
-  <input id="nameInput" type="text" maxlength="60" placeholder="Your name" autocomplete="off">
-  <div><button class="btn" id="nameGo">Let's go @include('partials._ar')</button></div>
+@include('kids.player-gate')
+<div class="ov" id="introOv" role="dialog" aria-modal="true" aria-labelledby="introTitle"><div class="card">
+  <div class="ref">Build a verse, one line at a time</div><h2 id="introTitle">Ready to play?</h2>
+  <p>Fit the blocks together. Every full row reveals a word of your verse.</p>
+  <p>Questions about Jesus give you a chance to earn a new shape. A wrong answer is a chance to learn — take your time.</p>
+  <p class="small">Use the buttons below the board, or ← → to move, ↑ to turn, ↓ to lower, Space to drop, and P to pause. Swipe to move and tap to turn on a touch screen.</p>
+  <button class="btn" id="startButton">Start playing →</button>
 </div></div>
 
 @php $levelData = ['id' => $level->id, 'reference' => $level->reference, 'verse' => $level->verse_text]; @endphp
 <script>
 const LEVEL = @json($levelData);
 const QUESTIONS = @json($questions);
-const CSRF = document.querySelector('meta[name=csrf-token]').content;
 
-// ── player identity + save ──
-let player = null;
-try { player = JSON.parse(localStorage.getItem('cop_kid') || 'null'); } catch (e) {}
-function paintWho() { document.getElementById('who').innerHTML = player ? ('<b>' + player.name + '</b> · ★ ' + (player.total_stars || 0)) : ''; }
-function gate() { if (player && player.token) { paintWho(); startGame(); return; } document.getElementById('nameGate').classList.add('show'); setTimeout(() => document.getElementById('nameInput').focus(), 200); }
-document.getElementById('nameGo').addEventListener('click', register);
-document.getElementById('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') register(); });
-function register() {
-  const name = document.getElementById('nameInput').value.trim(); if (!name) return;
-  fetch('{{ route('kids.register') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ name }) })
-    .then(r => r.json()).then(d => { if (d.ok) { player = { token: d.token, name: d.name, total_stars: 0 }; localStorage.setItem('cop_kid', JSON.stringify(player)); document.getElementById('nameGate').classList.remove('show'); paintWho(); startGame(); } });
-}
-function save(state, completed, stars) {
-  if (!player) return;
-  fetch('{{ route('kids.save') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify({ token: player.token, level_id: LEVEL.id, state, completed: !!completed, stars: stars || 0, score: (state && state.score) || 0 }) })
-    .then(r => r.json()).then(d => { if (d.ok) { player.total_stars = d.total_stars; localStorage.setItem('cop_kid', JSON.stringify(player)); paintWho(); } });
-}
 
+</script>
+@include('kids.session')
+<script>
 // ── Tetris engine ──
 const COLS = 10, ROWS = 18;
 const SHAPES = { I:{m:[[1,1,1,1]],c:1}, O:{m:[[1,1],[1,1]],c:2}, T:{m:[[0,1,0],[1,1,1]],c:3}, S:{m:[[0,1,1],[1,1,0]],c:4}, Z:{m:[[1,1,0],[0,1,1]],c:5}, J:{m:[[1,0,0],[1,1,1]],c:6}, L:{m:[[0,0,1],[1,1,1]],c:7} };
 const TYPES = Object.keys(SHAPES);
 const words = LEVEL.verse.replace(/\s+/g, ' ').trim().split(' ');
+let pendingQuestion=false;
 let board, cur, nextType, score, lines, revealed, dropMs, penalty, tokens, paused, userPaused, over, loop, pieceCount, curQ;
 const boardEl = document.getElementById('board'), verseEl = document.getElementById('verse');
 const qOv = document.getElementById('qOv'), qText = document.getElementById('qText'), qOpts = document.getElementById('qOpts'), qResult = document.getElementById('qResult'), qCont = document.getElementById('qCont');
@@ -193,11 +183,14 @@ function buildCells() { boardEl.innerHTML = ''; for (let i = 0; i < ROWS * COLS;
 function collide(m, r, x) { for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) { if (!m[i][j]) continue; const R = r + i, X = x + j; if (X < 0 || X >= COLS || R >= ROWS) return true; if (R >= 0 && board[R][X]) return true; } return false; }
 function spawn() { const t = nextType; nextType = rand(TYPES); const s = SHAPES[t]; cur = { type: t, m: s.m.map(r => r.slice()), c: s.c, r: 0, x: Math.floor((COLS - s.m[0].length) / 2) }; if (collide(cur.m, cur.r, cur.x)) gameOver(); }
 function speed() { const lv = Math.floor(lines / 8); dropMs = Math.max(130, (720 - lv * 55) * penalty); }
-function lockPiece() {
+async function lockPiece() {
+  paused = true;
   cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS) board[R][X] = cur.c; } }));
   cur = null;
   const full = []; for (let r = 0; r < ROWS; r++) if (board[r].every(c => c)) full.push(r);
   render();
+  await GameSession.move({type:'piece',lines:full.length});
+  paused = false;
   if (full.length) animateClear(full); else afterLock();
 }
 function animateClear(full) {
@@ -224,7 +217,7 @@ function render() {
   for (let i = 0; i < ROWS * COLS; i++) { const v = disp[(i / COLS) | 0][i % COLS]; cells[i].className = v > 0 ? 'tc c' + v : (v < 0 ? 'tc ghost c' + (-v) : 'tc'); }
 }
 function renderStats() { document.getElementById('st-lines').textContent = lines; document.getElementById('st-score').textContent = score; }
-function renderVerse() { verseEl.innerHTML = words.map((w, i) => i < revealed ? '<span class="vw got">' + w + '</span>' : '<span class="vw">' + w.replace(/[A-Za-z0-9]/g, '_') + '</span>').join(' '); verseEl.scrollTop = verseEl.scrollHeight; }
+function renderVerse() { verseEl.replaceChildren(); words.forEach((w,i)=>{ const span=document.createElement('span');span.className=i<revealed?'vw got':'vw';span.textContent=i<revealed?w:w.replace(/[A-Za-z0-9]/g,'_');verseEl.append(span,document.createTextNode(' '));});document.getElementById('verseProgress').textContent=`${revealed} of ${words.length} words`;verseEl.scrollTop=verseEl.scrollHeight; }
 function updateTokens() { morphBtn.textContent = 'Re-morph ×' + tokens; morphBtn.disabled = tokens <= 0; }
 
 function move(dx) { if (frozen() || !cur) return; if (!collide(cur.m, cur.r, cur.x + dx)) { cur.x += dx; render(); } }
@@ -238,10 +231,11 @@ function startLoop() { clearTimeout(loop); loop = setTimeout(() => { step(); sta
 const pauseOv = document.getElementById('pauseOv');
 document.getElementById('pauseBtn').addEventListener('click', () => setPause(true));
 document.getElementById('resumeBtn').addEventListener('click', () => setPause(false));
-function setPause(on) { if (over) return; userPaused = on; pauseOv.classList.toggle('show', on); }
+function setPause(on) { if (over || qOv.classList.contains('show')) return; userPaused=on; pauseOv.classList.toggle('show',on); if(!on && pendingQuestion){pendingQuestion=false;askQuestion();} }
 
 // ── questions ──
 function askQuestion() {
+  if(userPaused){pendingQuestion=true;return;}
   paused = true; curQ = rand(QUESTIONS);
   qText.textContent = curQ.question; qOpts.innerHTML = ''; qResult.textContent = ''; qResult.className = 'qresult'; qCont.style.display = 'none';
   curQ.options.forEach((o, i) => { const b = document.createElement('button'); b.className = 'qopt'; b.textContent = o; b.dataset.i = i; qOpts.appendChild(b); });
@@ -251,8 +245,8 @@ qOpts.addEventListener('click', e => {
   const b = e.target.closest('.qopt'); if (!b || !curQ || qCont.style.display !== 'none') return;
   const i = +b.dataset.i, correct = i === curQ.answer;
   [].forEach.call(qOpts.children, x => { x.disabled = true; if (+x.dataset.i === curQ.answer) x.classList.add('right'); });
-  if (correct) { tokens++; updateTokens(); qResult.innerHTML = '✓ Correct! <b>+1 re-morph.</b> ' + (curQ.teaching || ''); qResult.className = 'qresult ok'; }
-  else { b.classList.add('wrong'); penalty *= 0.88; speed(); qResult.innerHTML = 'The answer: <b>' + curQ.options[curQ.answer] + '</b>. ' + (curQ.teaching || '') + ' <em>The pieces fall faster now.</em>'; qResult.className = 'qresult bad'; }
+  if (correct) { tokens++; updateTokens(); qResult.textContent = '✓ Correct! +1 new shape. ' + (curQ.teaching || ''); qResult.className = 'qresult ok'; }
+  else { b.classList.add('wrong'); qResult.textContent = 'Let’s learn together. The answer is ' + curQ.options[curQ.answer] + '. ' + (curQ.teaching || ''); qResult.className = 'qresult bad'; }
   qCont.style.display = '';
 });
 qCont.addEventListener('click', () => { qOv.classList.remove('show'); curQ = null; paused = false; });
@@ -274,7 +268,15 @@ function doMorph(t) {
 
 // ── controls: buttons + gestures ──
 document.querySelector('.ctrls').addEventListener('click', e => { const b = e.target.closest('.cbtn'); if (!b) return; const a = b.dataset.act; if (a === 'left') move(-1); else if (a === 'right') move(1); else if (a === 'rotate') rotateCur(); else if (a === 'soft') softDrop(); else if (a === 'hard') hardDrop(); });
-document.addEventListener('keydown', e => { if (qOv.classList.contains('show') || pauseOv.classList.contains('show')) return; if (e.key === 'ArrowLeft') move(-1); else if (e.key === 'ArrowRight') move(1); else if (e.key === 'ArrowUp') rotateCur(); else if (e.key === 'ArrowDown') softDrop(); else if (e.key === ' ') { e.preventDefault(); hardDrop(); } else if (e.key.toLowerCase() === 'p') setPause(!userPaused); });
+document.addEventListener('keydown', e => {
+  if(e.target.matches('input,button,a,select,textarea') && (e.key===' '||e.key==='Enter'))return;
+  if(document.getElementById('introOv').classList.contains('show') || document.getElementById('nameGate').classList.contains('show') || qOv.classList.contains('show') || morphOv.classList.contains('show'))return;
+  if(e.key.toLowerCase()==='p'){e.preventDefault();setPause(!userPaused);return;}
+  if(pauseOv.classList.contains('show'))return;
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();
+  if(e.key==='ArrowLeft')move(-1);else if(e.key==='ArrowRight')move(1);else if(e.key==='ArrowUp')rotateCur();else if(e.key==='ArrowDown')softDrop();else if(e.key===' ')hardDrop();
+});
+
 
 // swipe/tap on the board
 let ts = null;
@@ -287,11 +289,13 @@ boardEl.addEventListener('touchend', e => {
   ts = null;
 }, { passive: true });
 
-function winVerse() { over = true; clearTimeout(loop); save({ score, lines, revealed }, true, 3); setTimeout(() => document.getElementById('winOv').classList.add('show'), 450); }
-function gameOver() { over = true; clearTimeout(loop); save({ score, lines, revealed }, revealed >= words.length, revealed > 0 ? 1 : 0); document.getElementById('goMsg').textContent = 'You cleared ' + lines + ' lines and uncovered ' + revealed + ' of ' + words.length + ' words. Come back and finish the verse!'; setTimeout(() => document.getElementById('goOv').classList.add('show'), 300); }
+function winVerse() { over = true; clearTimeout(loop); setTimeout(() => document.getElementById('winOv').classList.add('show'), 450); }
+function gameOver() { over = true; clearTimeout(loop); document.getElementById('goMsg').textContent = 'You cleared ' + lines + ' lines and uncovered ' + revealed + ' of ' + words.length + ' words. Your best result is saved. Try again to build the whole verse!'; setTimeout(() => document.getElementById('goOv').classList.add('show'), 300); }
 
-function startGame() { board = newBoard(); score = 0; lines = 0; revealed = 0; penalty = 1; tokens = 0; pieceCount = 0; over = false; paused = false; userPaused = false; nextType = rand(TYPES); buildCells(); renderStats(); renderVerse(); updateTokens(); speed(); spawn(); render(); startLoop(); }
-gate();
+function startGame() { pendingQuestion=false; board = newBoard(); score = 0; lines = 0; revealed = 0; penalty = 1; tokens = 0; pieceCount = 0; over = false; paused = false; userPaused = false; nextType = rand(TYPES); buildCells(); renderStats(); renderVerse(); updateTokens(); speed(); spawn(); render(); startLoop(); }
+GameSession.ready().then(()=>{document.getElementById('introOv').classList.add('show');document.getElementById('startButton').focus();});
+document.getElementById('startButton').addEventListener('click',()=>{document.getElementById('introOv').classList.remove('show');startGame();document.getElementById('pauseBtn').focus();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden && board && !over)setPause(true);});
 </script>
 </body>
 </html>
