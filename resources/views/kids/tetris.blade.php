@@ -83,6 +83,7 @@
   </div>
 
   <div class="arcade-hud"><span><b id="paceBadge" class="pace-badge">Gentle · Level 1</b> UP NEXT <span id="nextShape" class="next-shape" aria-label="Next block"></span></span><button id="soundToggle" aria-pressed="false">Sound off</button></div>
+  <p class="quiet-notice" data-quiet-notice role="status" hidden></p>
   <div class="play-stage">
     <div class="boardarea"><div class="arcade-toast" id="arcadeToast" role="status"></div><div class="board" id="board"></div></div>
     <aside class="verse-panel" aria-label="Read along">
@@ -154,6 +155,7 @@
   <div class="intro-block-art game-preview" aria-hidden="true">@include('kids.game-art', ['kind'=>'verse_tetris'])</div>
   <div class="ref">{{ $level->reference }}</div><h2 id="introTitle">{{ $mission['title'] }}</h2>
   <p>Land letter blocks. Build the verse.</p>
+  <p class="quiet-notice" data-quiet-notice hidden></p>
   <label class="pace-picker" for="startPace">Choose your pace<select id="startPace"><option value="gentle">Gentle — time to think</option><option value="steady">Steady — find your rhythm</option><option value="challenge">Challenge — quicker blocks</option></select></label>
   <button class="btn" id="startButton">Play →</button>
   <details class="play-help"><summary>How to play</summary><p><b>Move:</b> ← → or swipe<br><b>Turn:</b> ↑ or tap the board<br><b>Drop:</b> Space or swipe down</p><p>Clear 2 rows to earn a shape swap.<br>Every 8 cleared rows takes you up a level.<br>Change your pace from Pause anytime with P or the pause button.</p></details>

@@ -59,3 +59,7 @@ Memory pictures now map consistently to word meanings: parent-and-child scenes f
 ## Pace levels
 
 Verse Blocks defaults to Gentle (1200ms per row), with Steady (720ms) and Challenge (460ms) choices before play and in Pause. Each 8 cleared rows advances the level and gently increases speed, with mode-specific lower limits (800/280/130ms). Changing pace keeps the current board and verse progress; the choice is saved only on the current browser. Pace does not multiply public stars. The verse remains readable in every mode. The active mascot is the softer illustrated sheep with CSS motion; the experimental procedural 3D model is disabled.
+
+## Church-hours audio
+
+All kids games read published service windows from ServiceTime (America/New_York). A saved sound-on choice is overridden when a game opens during a service or stays open into one. A short notice explains the quiet default; players may explicitly unmute on that page for headphones. This service-time override never changes their saved preference, and ending a service never automatically enables sound. The clock is anchored to the server, uses New York daylight-saving rules, and rechecks before each cue, every 15 seconds, and on visibility changes. Service schedule edits apply on the next page load. No additional visitor information is collected.

@@ -22,7 +22,7 @@ class KidsGamesTest extends TestCase
         config(['app.key' => 'base64:'.base64_encode(str_repeat('k', 32)), 'database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:', 'session.driver' => 'array', 'cache.default' => 'array']);
         DB::purge('sqlite');
         $this->withoutMiddleware(TrackPageView::class);
-        foreach (['0001_01_01_000000_create_users_table.php', '2026_04_18_224910_add_role_to_users_table.php', '2026_04_24_200000_create_audit_logs_table.php', '2026_05_23_020525_create_app_settings_table.php', '2026_06_26_create_games.php', '2026_10_02_170000_add_kids_activity_evidence.php'] as $file) {
+        foreach (['0001_01_01_000000_create_users_table.php', '2026_04_18_224910_add_role_to_users_table.php', '2026_04_24_200000_create_audit_logs_table.php', '2026_05_23_020525_create_app_settings_table.php', '2026_08_25_010000_create_service_times_table.php', '2026_06_26_create_games.php', '2026_10_02_170000_add_kids_activity_evidence.php'] as $file) {
             (require database_path('migrations/'.$file))->up();
         }
     }

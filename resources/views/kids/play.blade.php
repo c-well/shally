@@ -85,6 +85,7 @@
 
   <div class="play-companion">@include('kids.mascot', ['mascotClass'=>'companion-sheep'])</div></div><div class="journey"><span id="progressText" aria-live="polite">Ready for an adventure?</span><progress id="progressBar" value="0" max="1" aria-label="Game progress"></progress></div>
   <div class="tools"><button id="soundToggle" type="button" aria-pressed="false">Sound off</button><button data-mascot-motion type="button" aria-pressed="true">Pause mascot motion</button>@if($level->game_type==='word_search')<button id="hintButton" type="button">Need a clue?</button>@endif</div>
+  <p class="quiet-notice" data-quiet-notice role="status" hidden></p>
   <section class="verse-learning" aria-label="Your verse"><div class="read-heading"><span>READ ALONG</span><b>{{ $level->reference }}</b></div><p id="learningVerse">{{ $level->verse_text }}</p><p id="wordMeaning" class="word-meaning">{{ $level->game_type === 'memory_match' ? 'Match a pair to explore what the word means.' : 'Read the verse as you play.' }}</p></section>
   @if ($level->game_type === 'word_search')
     <p class="hint">Drag across a word, or tap its first and last letter. Words can run across, down, or diagonally.</p>
