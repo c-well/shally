@@ -64,7 +64,7 @@
     <p class="lede">Match, explore, find, and build. Your next Bible adventure starts here.</p>
     <a class="btn" href="#choose-game">Let's explore <span aria-hidden="true">↗</span></a>
     <div class="who" id="who"></div></div>
-    <img class="hero-art" src="/kids-assets/adventure-world-v1.jpg" width="1200" height="800" alt="A little sheep exploring floating islands along a starry path to an open book" fetchpriority="high">
+    <div class="hero-world"><img class="hero-art" src="/kids-assets/adventure-path-v1.jpg" width="1200" height="800" alt="Floating islands with a starry path to an open book" fetchpriority="high">@include('kids.mascot', ['mascotClass'=>'hero-sheep'])<button class="mascot-motion" data-mascot-motion type="button" aria-pressed="true">Pause mascot motion</button></div>
   </section>
   <div class="catalog-heading" id="choose-game"><div><div class="eyebrow">PICK YOUR ADVENTURE</div><h2>What will you discover?</h2></div><p>Four ways to play. A verse in every adventure.</p></div>
   <div class="filters" id="filters">
@@ -119,6 +119,7 @@
 </main>
 
 @include('partials.footer')
+@include('kids.mascot-script')
 <script>
   // Fetch current checked totals; never render a nickname as HTML.
   try {

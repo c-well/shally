@@ -83,8 +83,8 @@
   <div class="game-kicker">{{ ['memory_match'=>'MEMORY MATCH','word_search'=>'WORD QUEST','hidden_words'=>'TREASURE TRAIL'][$level->game_type] ?? 'LET’S PLAY' }}</div><div class="ref">{{ $level->reference }}</div>
   <h1>{{ $level->title ?: $level->book }}</h1>
 
-  <div class="journey"><span id="progressText" aria-live="polite">Ready for an adventure?</span><progress id="progressBar" value="0" max="1" aria-label="Game progress"></progress></div>
-  <div class="tools"><button id="soundToggle" type="button" aria-pressed="false">Sound off</button>@if($level->game_type==='word_search')<button id="hintButton" type="button">Need a clue?</button>@endif</div>
+  <div class="play-companion">@include('kids.mascot', ['mascotClass'=>'companion-sheep'])</div><div class="journey"><span id="progressText" aria-live="polite">Ready for an adventure?</span><progress id="progressBar" value="0" max="1" aria-label="Game progress"></progress></div>
+  <div class="tools"><button id="soundToggle" type="button" aria-pressed="false">Sound off</button><button data-mascot-motion type="button" aria-pressed="true">Pause mascot motion</button>@if($level->game_type==='word_search')<button id="hintButton" type="button">Need a clue?</button>@endif</div>
   @if ($level->game_type === 'word_search')
     <p class="hint">Drag across a word, or tap its first and last letter. Words can run across, down, or diagonally.</p>
     <div class="ws"><div class="ws-grid" id="grid"></div></div>
@@ -104,7 +104,7 @@
 {{-- Win --}}
 <div class="ov" id="winOv" role="dialog" aria-modal="true" aria-label="Game complete">
   <div class="card">
-    <div class="win-art" aria-hidden="true"><span class="win-spark">★</span><span class="win-spark">★</span><span class="win-spark">★</span></div>
+    <div class="win-companion">@include('kids.mascot', ['mascotClass'=>'celebration-sheep'])</div><div class="win-art" aria-hidden="true"><span class="win-spark">★</span><span class="win-spark">★</span><span class="win-spark">★</span></div>
     <div class="stars-big" id="winStars">Adventure complete</div>
     <h2>You found your verse!</h2>
     <p class="win-summary" id="winSummary">Three stars. One big discovery.</p>
@@ -121,6 +121,7 @@ const LEVEL = @json($levelData);
 </script>
 @include('kids.session')
 @include('kids.audio')
+@include('kids.mascot-script')
 <script>
 let challenge, state, locked=false, attempts=0, streak=0;
 const feedback=document.getElementById('feedback');
@@ -141,7 +142,7 @@ function progress(){
 }
 function finish(){
   if(!state.completed)return;
-  const ov=document.getElementById('winOv');GameAudio.play('win');ov.classList.add('show');ov.querySelector('.btn').focus();if(LEVEL.type==='memory_match')document.getElementById('winSummary').textContent=`${challenge.total} pairs collected in ${attempts} turns this visit.`;
+  const ov=document.getElementById('winOv');GameAudio.play('win');ov.classList.add('show');KidsMascot.cheer();ov.querySelector('.btn').focus();if(LEVEL.type==='memory_match')document.getElementById('winSummary').textContent=`${challenge.total} pairs collected in ${attempts} turns this visit.`;
   if(GameSession.preview){document.getElementById('winStars').textContent='Practice complete';document.getElementById('winStars').classList.add('preview');document.getElementById('winSummary').textContent='A discovery to take with you. No public stars in practice mode.';}
 }
 async function act(event){const d=await GameSession.move(event);state=d.state;progress();return d;}
@@ -161,7 +162,7 @@ function memory(){
       await act({type:'flip',index:i});
       if(previous!==undefined && previous!==null){attempts++;
         if((state.matched||[]).includes(i)){
-          [previous,i].forEach(n=>{const c=root.children[n];c.classList.remove('up');c.classList.add('done');c.disabled=true;c.setAttribute('aria-label',`${challenge.cards[n]}, matched`);});streak++;GameAudio.play('match');feedback.textContent=streak>1?`${streak} matches in a row!`:'Perfect pair! Keep going.';
+          [previous,i].forEach(n=>{const c=root.children[n];c.classList.remove('up');c.classList.add('done');c.disabled=true;c.setAttribute('aria-label',`${challenge.cards[n]}, matched`);});streak++;GameAudio.play('match');KidsMascot.cheer();feedback.textContent=streak>1?`${streak} matches in a row!`:'Perfect pair! Keep going.';
         }else{
           streak=0;feedback.textContent='Nearly! Remember those cards for your next turn.';
           await new Promise(r=>setTimeout(r,900));[previous,i].forEach(n=>{root.children[n].classList.remove('up');root.children[n].setAttribute('aria-label',`Card ${n+1}, face down`);});
@@ -186,7 +187,7 @@ function hidden(){
       button.addEventListener('click',async()=>{
         if(locked)return;
         if(word!==correct){button.classList.add('try-again');feedback.textContent='Look closely. Find the word that matches the clue.';return;}
-        locked=true;button.classList.add('correct');GameAudio.play('match');
+        locked=true;button.classList.add('correct');GameAudio.play('match');KidsMascot.cheer();
         await act({type:'reveal',index:state.progress,word});paint();locked=false;
         feedback.textContent=state.completed?'You collected every word!':'One step closer to the treasure!';
         if(!state.completed)choices.querySelector('button').focus();finish();
@@ -221,7 +222,7 @@ function wordSearch(){
     first=null;
     if(!match || (state.found||[]).includes(match)){clear();feedback.textContent=match?'You already found that word. Try another!':'Try a straight line between the first and last letter.';return;}
     locked=true;
-    await act({type:'word',start:[+a.dataset.r,+a.dataset.c],end:[+b.dataset.r,+b.dataset.c]});clear();paintFound();GameAudio.play('match');feedback.textContent=`You found ${match.toLowerCase()}!`;locked=false;finish();
+    await act({type:'word',start:[+a.dataset.r,+a.dataset.c],end:[+b.dataset.r,+b.dataset.c]});clear();paintFound();GameAudio.play('match');KidsMascot.cheer();feedback.textContent=`You found ${match.toLowerCase()}!`;locked=false;finish();
   }
   function tap(cell){if(locked)return;if(!first){first=cell;clear();cell.classList.add('sel');feedback.textContent='Now choose the last letter.';}else submit(first,cell);}
   root.addEventListener('pointerdown',e=>{if(locked)return;const cell=cellAt(e);if(!cell)return;e.preventDefault();dragStart=cell;moved=false;});

@@ -105,7 +105,7 @@
 {{-- Pause --}}
 <div class="ov" id="pauseOv"><div class="card">
   <h2>Paused</h2>
-  <p style="color:var(--ink-soft);margin-top:8px">Take a breath.</p>
+  <p style="color:var(--ink-soft);margin-top:8px">Take a breath.</p><details class="play-help"><summary>How to play</summary><p>← → move · ↑ turn · ↓ lower<br>Space drops · P pauses<br>On touch: swipe to move, tap to turn.</p><p>Every cleared row reveals a phrase.<br>Clear 2 rows to earn a shape swap.</p></details>
   <div><button class="btn" id="resumeBtn">Resume @include('partials._ar')</button></div>
   <div><a class="btn btn-ghost" href="{{ route('kids') }}">Quit to games</a></div>
 </div></div>
@@ -121,7 +121,7 @@
 
 {{-- Win --}}
 <div class="ov" id="winOv"><div class="card">
-  <div class="win-art" aria-hidden="true"><span class="win-spark">★</span><span class="win-spark">★</span><span class="win-spark">★</span></div>
+  <div class="win-companion">@include('kids.mascot', ['mascotClass'=>'celebration-sheep'])</div><div class="win-art" aria-hidden="true"><span class="win-spark">★</span><span class="win-spark">★</span><span class="win-spark">★</span></div>
   <h2>Verse complete!</h2>
   <p style="color:var(--ink-soft);margin-top:8px">You discovered <b>{{ $level->reference }}</b>.</p>
   <div class="verse-final">“{{ $level->verse_text }}”</div>
@@ -142,11 +142,11 @@
 
 @include('kids.player-gate')
 <div class="ov" id="introOv" role="dialog" aria-modal="true" aria-labelledby="introTitle"><div class="card">
-  <div class="ref">YOUR VERSE MISSION</div><h2 id="introTitle">Find your flow.</h2>
-  <p>{{ $mission['title'] }}. Every full row uncovers a phrase from {{ $level->reference }}. Build it, read it, carry it with you.</p>
-  <p>Every two cleared lines earns a shape swap. Use it when you need a different block.</p>
-  <p class="small">Use the buttons below the board, or ← → to move, ↑ to turn, ↓ to lower, Space to drop, and P to pause. Swipe to move and tap to turn on a touch screen.</p>
-  <button class="btn" id="startButton">Start playing →</button>
+  <div class="intro-block-art game-preview" aria-hidden="true">@include('kids.game-art', ['kind'=>'verse_tetris'])</div>
+  <div class="ref">{{ $level->reference }}</div><h2 id="introTitle">{{ $mission['title'] }}</h2>
+  <p>Stack blocks. Clear rows. Discover the verse.</p>
+  <button class="btn" id="startButton">Play →</button>
+  <details class="play-help"><summary>How to play</summary><p><b>Move:</b> ← → or swipe<br><b>Turn:</b> ↑ or tap the board<br><b>Drop:</b> Space or swipe down</p><p>Clear 2 rows to earn a shape swap.<br>Pause anytime with P or the pause button.</p></details>
 </div></div>
 
 @php $levelData = ['id' => $level->id, 'reference' => $level->reference, 'verse' => $level->verse_text]; @endphp
@@ -160,6 +160,7 @@ let versePhrases = [];
 </script>
 @include('kids.session')
 @include('kids.audio')
+@include('kids.mascot-script')
 <script>
 // ── Tetris engine ──
 document.getElementById('soundToggle').addEventListener('click',e=>{const on=GameAudio.toggle();e.currentTarget.textContent=on?'Sound on':'Sound off';e.currentTarget.setAttribute('aria-pressed',String(on));});
@@ -271,7 +272,7 @@ boardEl.addEventListener('touchend', e => {
   ts = null;
 }, { passive: true });
 
-function winVerse() { GameAudio.play('win'); over = true; clearTimeout(loop); setTimeout(() => document.getElementById('winOv').classList.add('show'), 450); }
+function winVerse() { GameAudio.play('win'); over = true; clearTimeout(loop); setTimeout(() => {document.getElementById('winOv').classList.add('show');KidsMascot.cheer();}, 450); }
 function gameOver() { over = true; clearTimeout(loop); document.getElementById('goMsg').textContent = 'You cleared ' + lines + ' lines and uncovered ' + revealed + ' of ' + words.length + ' words. Your best result is saved. Try again to build the whole verse!'; setTimeout(() => document.getElementById('goOv').classList.add('show'), 300); }
 
 function startGame() { pieceBag=[]; board = newBoard(); score = 0; lines = 0; revealed = 0; penalty = 1; tokens = 0; pieceCount = 0; over = false; paused = false; userPaused = false; nextType = takeType(); buildCells(); renderStats(); renderVerse(); updateTokens(); speed(); spawn(); render(); startLoop(); }
