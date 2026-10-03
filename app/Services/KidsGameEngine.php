@@ -19,8 +19,12 @@ class KidsGameEngine
         }
         if ($level->game_type === 'verse_tetris') {
             $phrases = KidsVerseMission::phrases($level->verse_text);
+            $steps = KidsVerseMission::letterSteps($level->verse_text);
+            if (! $steps) {
+                throw new InvalidArgumentException('This verse needs letters to build.');
+            }
 
-            return ['phrases' => $phrases, 'total' => count($phrases)];
+            return ['mode' => 'letter_blocks', 'phrases' => $phrases, 'letter_steps' => $steps, 'total' => count($steps)];
         }
         $keys = $level->keywords();
         if ($level->game_type === 'memory_match') {
@@ -179,7 +183,13 @@ class KidsGameEngine
                 $state['pieces'] = $pieces;
                 $state['lines'] = $totalLines;
                 $state['score'] += [0, 40, 100, 300, 1200][$lines];
-                $state['progress'] = min($challenge['total'], $totalLines);
+                if (($challenge['mode'] ?? null) === 'letter_blocks') {
+                    $state['progress'] = min($challenge['total'], $pieces);
+                    $built = array_slice($challenge['letter_steps'], 0, $state['progress']);
+                    $state['words_built'] = count(array_filter($built, fn ($step) => $step['finishes_word']));
+                } else {
+                    $state['progress'] = min($challenge['total'], $totalLines);
+                }
                 break;
             default: $this->invalid();
         }

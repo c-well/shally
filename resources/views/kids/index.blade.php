@@ -77,7 +77,7 @@
   @php
     $byType = $levels->groupBy('game_type');
     $meta = [
-      'verse_tetris' => ['Verse Blocks', 'STACK + CLEAR', 'Find your flow. Stack blocks, clear rows, and build a verse.'],
+      'verse_tetris' => ['Verse Blocks', 'SPELL + BUILD', 'Land letter blocks and build your verse, one word at a time.'],
       'word_search'  => ['Word Quest', 'SEEK + FIND', 'Spot the hidden words. Connect the letters. Complete your quest.'],
       'memory_match' => ['Memory Match', 'FLIP + MATCH', 'A little flip. A perfect pair. How many can you remember?'],
       'hidden_words' => ['Treasure Trail', 'EXPLORE + COLLECT', 'Follow the path and collect the words to uncover your verse.'],

@@ -79,13 +79,13 @@ const GameSession = (() => {
     document.querySelectorAll('main,.game,body>.top').forEach(el=>el.inert=!!current);
     document.querySelectorAll('.ov').forEach(el=>el.inert=el!==current);
     if(current!==activeDialog){
-      if(current){if(!activeDialog)previousFocus=document.activeElement;queueMicrotask(()=>current.querySelector('input,button,a')?.focus());}
+      if(current){if(!activeDialog)previousFocus=document.activeElement;queueMicrotask(()=>(current.querySelector('input')||current.querySelector('.btn:not([disabled])')||current.querySelector('button:not([data-sheep]),a,summary'))?.focus());}
       else if(previousFocus?.isConnected)previousFocus.focus();
       activeDialog=current;
     }
   };
   document.querySelectorAll('.ov').forEach(ov=>{ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');new MutationObserver(syncDialogs).observe(ov,{attributes:true,attributeFilter:['class']});});
-  document.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const ov=Array.from(document.querySelectorAll('.ov.show')).pop();if(!ov)return;const items=Array.from(ov.querySelectorAll('button,a,input,select')).filter(el=>!el.disabled&&el.getClientRects().length);if(!items.length)return;const first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
+  document.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const ov=Array.from(document.querySelectorAll('.ov.show')).pop();if(!ov)return;const items=Array.from(ov.querySelectorAll('button,a,input,select,summary')).filter(el=>!el.disabled&&el.getClientRects().length);if(!items.length)return;const first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
   return {ready,move,begin,preview,message};
 })();
 </script>

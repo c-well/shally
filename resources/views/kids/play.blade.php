@@ -80,11 +80,12 @@
 </div>
 
 <main>
-  <div class="game-kicker">{{ ['memory_match'=>'MEMORY MATCH','word_search'=>'WORD QUEST','hidden_words'=>'TREASURE TRAIL'][$level->game_type] ?? 'LET’S PLAY' }}</div><div class="ref">{{ $level->reference }}</div>
-  <h1>{{ $level->title ?: $level->book }}</h1>
+  <div class="puzzle-heading"><div class="puzzle-title"><div class="game-kicker">{{ ['memory_match'=>'MEMORY MATCH','word_search'=>'WORD QUEST','hidden_words'=>'TREASURE TRAIL'][$level->game_type] ?? 'LET’S PLAY' }}</div><div class="ref">{{ $level->reference }}</div>
+  <h1>{{ $level->title ?: $level->book }}</h1></div>
 
-  <div class="play-companion">@include('kids.mascot', ['mascotClass'=>'companion-sheep'])</div><div class="journey"><span id="progressText" aria-live="polite">Ready for an adventure?</span><progress id="progressBar" value="0" max="1" aria-label="Game progress"></progress></div>
+  <div class="play-companion">@include('kids.mascot', ['mascotClass'=>'companion-sheep'])</div></div><div class="journey"><span id="progressText" aria-live="polite">Ready for an adventure?</span><progress id="progressBar" value="0" max="1" aria-label="Game progress"></progress></div>
   <div class="tools"><button id="soundToggle" type="button" aria-pressed="false">Sound off</button><button data-mascot-motion type="button" aria-pressed="true">Pause mascot motion</button>@if($level->game_type==='word_search')<button id="hintButton" type="button">Need a clue?</button>@endif</div>
+  <section class="verse-learning" aria-label="Your verse"><div class="read-heading"><span>READ ALONG</span><b>{{ $level->reference }}</b></div><p id="learningVerse">{{ $level->verse_text }}</p><p id="wordMeaning" class="word-meaning">{{ $level->game_type === 'memory_match' ? 'Match a pair to explore what the word means.' : 'Read the verse as you play.' }}</p></section>
   @if ($level->game_type === 'word_search')
     <p class="hint">Drag across a word, or tap its first and last letter. Words can run across, down, or diagonally.</p>
     <div class="ws"><div class="ws-grid" id="grid"></div></div>
@@ -126,19 +127,30 @@ const LEVEL = @json($levelData);
 let challenge, state, locked=false, attempts=0, streak=0;
 const feedback=document.getElementById('feedback');
 document.getElementById('soundToggle').addEventListener('click',e=>{const on=GameAudio.toggle();e.currentTarget.textContent=on?'Sound on':'Sound off';e.currentTarget.setAttribute('aria-pressed',String(on));});
-const picturePaths=[
- '<path d="M12 20C12 7 31 5 32 20C34 5 52 7 52 20C52 34 32 48 32 48S12 34 12 20Z" fill="currentColor"/>',
- '<path d="m32 7 7 15 17 2-12 12 3 18-15-8-15 8 3-18L8 24l17-2Z" fill="currentColor"/>',
- '<path d="M11 45C10 17 28 10 53 10C53 35 44 52 19 49Z" fill="currentColor"/><path d="m18 45 23-23" stroke="white" stroke-width="4" stroke-linecap="round"/>',
- '<path d="M9 44a23 23 0 0 1 46 0" fill="none" stroke="currentColor" stroke-width="9"/><path d="M21 44a11 11 0 0 1 22 0" fill="none" stroke="currentColor" stroke-width="5"/>',
- '<path d="M9 15q13-5 23 3 10-8 23-3v34q-13-5-23 2-10-7-23-2Z" fill="currentColor"/><path d="M32 20v26" stroke="white" stroke-width="3"/>',
- '<circle cx="32" cy="32" r="14" fill="currentColor"/><path d="M32 5v6m0 42v6M5 32h6m42 0h6M13 13l5 5m28 28 5 5M13 51l5-5m28-28 5-5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>'
-];
-function picture(index){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 64 64');svg.setAttribute('aria-hidden','true');svg.innerHTML=picturePaths[index%picturePaths.length];return svg;}
+const MEANINGS={
+ MOTHER:'Mother: a parent who cares for her child.',FATHER:'Father: a parent who cares for his child.',HONOUR:'Honour means showing respect and care. How can you help at home?',
+ SHEPHERD:'A shepherd cares for sheep. This verse says the Lord cares for us.',LORD:'The Lord is God. The Bible tells us about his care.',GOD:'The Bible teaches us about God, who made us and loves us.',
+ WANT:'“I shall not want” means God cares for my needs.',LOVE:'Love means caring for someone in what we say and do.',LOVETH:'Loveth means loves—showing care for someone.',
+ BEGINNING:'Beginning means the start. This verse tells about the start of creation.',CREATED:'Created means made. God made the heavens and the earth.',HEAVEN:'The heavens are the skies above us.',EARTH:'Earth is the world God made, where we live.'
+};
+const BIBLE='<path d="M12 20q10-5 20 1 10-6 20-1v28q-10-5-20 1-10-6-20-1Z" fill="#fffaf0" stroke="#8862bd" stroke-width="3"/><path d="M32 22v25m-14-18h8m-8 6h8m12-6h8m-8 6h8" stroke="#b29acb" stroke-width="2" stroke-linecap="round"/><path d="M32 8v5M18 10l3 5m25-5-3 5" stroke="#dea62d" stroke-width="3" stroke-linecap="round"/>';
+const HEART='<path d="M18 23c0-11 13-13 14-3 2-10 15-8 15 3 0 10-15 19-15 19S18 33 18 23" fill="#e77991"/><path d="m10 38 9 9h25l10-10M10 38l8-2 10 8m26-7-8-1-10 8" fill="none" stroke="#b98760" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+const EARTH='<circle cx="32" cy="32" r="21" fill="#6ca9dd"/><path d="m19 15 10-3 6 9-7 4 4 7-8 5-3-9-9-2m27 9 12-6 1 12-9 9-6-7Z" fill="#78bd87"/><path d="M17 18a20 20 0 0 1 19-7" fill="none" stroke="#cde8f6" stroke-width="3" stroke-linecap="round"/>';
+function parentPicture(mother){return `<path d="M9 47c0-12 4-19 14-19s15 7 15 19" fill="${mother?'#9374c8':'#508aa9'}"/>${mother?'<path d="M14 21c0-15 21-15 21 0v10H14Z" fill="#563629"/>':'<path d="M15 22V16c0-12 19-12 19 0v6Z" fill="#563629"/>'}<ellipse cx="24" cy="21" rx="8" ry="10" fill="#d7a071"/>${mother?'<circle cx="13" cy="16" r="5" fill="#563629"/>':'<path d="M17 14q7-8 15 0" fill="#563629"/>'}<path d="M18 40q10 10 24 2" fill="none" stroke="#d7a071" stroke-width="5" stroke-linecap="round"/><path d="M33 49c0-9 3-13 10-13s11 4 11 13" fill="#e8ae53"/><circle cx="43" cy="30" r="8" fill="#d7a071"/><path d="M36 27q7-9 14 0" fill="#563629"/><path d="M21 23h1m5 0h1m12 8h1m5 0h1" stroke="#513729" stroke-width="2" stroke-linecap="round"/>`;}
+const PICTURES={
+ MOTHER:parentPicture(true),FATHER:parentPicture(false),HONOUR:HEART,LOVE:HEART,LOVETH:HEART,LORD:BIBLE,GOD:BIBLE,BIBLE,
+ SHEPHERD:'<path d="M46 53V17c0-10 15-10 15-1v7" fill="none" stroke="#aa7952" stroke-width="4" stroke-linecap="round"/><path d="M15 42v9m17-9v9" stroke="#69513e" stroke-width="4" stroke-linecap="round"/><g fill="#fff9e7" stroke="#d7c9ad" stroke-width="1.5"><circle cx="22" cy="34" r="12"/><circle cx="13" cy="32" r="7"/><circle cx="24" cy="25" r="7"/><circle cx="31" cy="33" r="8"/></g><ellipse cx="35" cy="28" rx="7" ry="9" fill="#cba479"/><circle cx="37" cy="27" r="1.5" fill="#493c35"/>',
+ WANT:'<path d="m12 34 5 20h31l5-20Z" fill="#ca9458"/><path d="M19 35v-8c0-12 11-12 11 0v8" fill="#e9bb76" stroke="#b8874e" stroke-width="2"/><path d="m21 25 5-3m-5 10 5-3" stroke="#b8874e" stroke-width="2"/><path d="M38 16h9v6l4 6v8H34v-8l4-6Z" fill="#80bfd8" stroke="#468ea9" stroke-width="2"/><path d="M16 41h34m-31 7h27" stroke="#986d41" stroke-width="2"/>',
+ BEGINNING:'<path d="M10 40a22 22 0 0 1 44 0" fill="#a2d5ea"/><path d="M21 40a11 11 0 0 1 22 0" fill="#f1c353"/><path d="M32 18v6m-17 4 5 4m29-4-5 4" stroke="#e7b14a" stroke-width="3" stroke-linecap="round"/><path d="M8 41q13-7 24 0 13-8 24 0v12H8Z" fill="#80b894"/>',
+ CREATED:'<path d="M9 49q-1-12 5-16l9 7h18l9-7q7 4 5 16" fill="#d6a477"/><path d="M31 43V22" stroke="#55905b" stroke-width="3"/><path d="M31 31q-16 0-14-14 16 0 14 14m1-7q0-16 16-15 0 15-16 15" fill="#79b67a"/><path d="M19 44h26" stroke="#b48156" stroke-width="3" stroke-linecap="round"/>',
+ HEAVEN:'<circle cx="42" cy="21" r="10" fill="#ecc567"/><path d="M11 45a9 9 0 0 1 0-18 12 12 0 0 1 23-3 10 10 0 1 1 8 21Z" fill="#fff" stroke="#94bbd5" stroke-width="2"/>',EARTH
+};
+function picture(word){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 64 64');svg.setAttribute('aria-hidden','true');svg.innerHTML='<circle cx="32" cy="32" r="30" fill="#f6f1e9"/>'+(PICTURES[word]||BIBLE);return svg;}
+function paintLearning(){const root=document.getElementById('learningVerse');root.replaceChildren();const collected=LEVEL.type==='memory_match'?(state.matched||[]).map(i=>challenge.cards[i]):LEVEL.type==='word_search'?(state.found||[]):challenge.words.slice(0,state.progress).map(w=>w.toUpperCase());LEVEL.verse.split(/(\s+)/).forEach(word=>{const span=document.createElement('span');span.textContent=word;const key=word.replace(/[^a-z]/gi,'').toUpperCase();if(key&&collected.includes(key))span.className='learned-word';root.append(span);});}
 function progress(){
   const unit=LEVEL.type==='memory_match'?'pairs': 'words';
   document.getElementById('progressText').textContent=`${state.progress} of ${challenge.total} ${unit} discovered`;
-  document.getElementById('progressBar').max=challenge.total;document.getElementById('progressBar').value=state.progress;
+  document.getElementById('progressBar').max=challenge.total;document.getElementById('progressBar').value=state.progress;paintLearning();
 }
 function finish(){
   if(!state.completed)return;
@@ -150,9 +162,9 @@ function memory(){
   const root=document.getElementById('mm');
   challenge.cards.forEach((word,i)=>{
     const card=document.createElement('button');card.className='mcard';card.type='button';
-    const back=document.createElement('span');back.className='q';back.append(picture(4));
+    const back=document.createElement('span');back.className='q';back.append(picture('BIBLE'));
     const front=document.createElement('span');front.className='w';
-    const icon=document.createElement('span');icon.className='icon';const artIndex=[...new Set(challenge.cards)].indexOf(word);icon.append(picture(artIndex));card.style.setProperty('--card-color',['#db4771','#986916','#11836e','#6756c7','#347bb2','#bd571e'][artIndex%6]);icon.setAttribute('aria-hidden','true');
+    const icon=document.createElement('span');icon.className='icon';icon.append(picture(word));icon.setAttribute('aria-hidden','true');
     front.append(icon,document.createTextNode(word));card.append(back,front);root.append(card);
     const matched=(state.matched||[]).includes(i);card.classList.toggle('done',matched);card.disabled=matched;card.setAttribute('aria-label',matched?`${word}, matched`:`Card ${i+1}, face down`);
     if(state.first===i){card.classList.add('up');card.setAttribute('aria-label',word);}
@@ -162,7 +174,7 @@ function memory(){
       await act({type:'flip',index:i});
       if(previous!==undefined && previous!==null){attempts++;
         if((state.matched||[]).includes(i)){
-          [previous,i].forEach(n=>{const c=root.children[n];c.classList.remove('up');c.classList.add('done');c.disabled=true;c.setAttribute('aria-label',`${challenge.cards[n]}, matched`);});streak++;GameAudio.play('match');KidsMascot.cheer();feedback.textContent=streak>1?`${streak} matches in a row!`:'Perfect pair! Keep going.';
+          [previous,i].forEach(n=>{const c=root.children[n];c.classList.remove('up');c.classList.add('done');c.disabled=true;c.setAttribute('aria-label',`${challenge.cards[n]}, matched`);});streak++;GameAudio.play('match');KidsMascot.cheer();document.getElementById('wordMeaning').textContent=MEANINGS[word]||'Find this word in your verse.';feedback.textContent=streak>1?`${streak} matches in a row!`:'Perfect pair! Keep going.';
         }else{
           streak=0;feedback.textContent='Nearly! Remember those cards for your next turn.';
           await new Promise(r=>setTimeout(r,900));[previous,i].forEach(n=>{root.children[n].classList.remove('up');root.children[n].setAttribute('aria-label',`Card ${n+1}, face down`);});

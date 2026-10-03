@@ -82,9 +82,12 @@ class KidsController extends Controller
         $level = GameLevel::active()->findOrFail($d['level_id']);
         $hash = hash('sha256', $level->verse_text.'|'.$level->age_band.'|'.$level->game_type);
         $run = null;
-        if ($level->game_type !== 'verse_tetris' && ! empty($d['run_token'])) {
+        if (! empty($d['run_token'])) {
             $run = GameRun::where('token', $d['run_token'])->where('game_player_id', $p->id)->where('game_level_id', $level->id)
                 ->where('verse_hash', $hash)->whereNull('completed_at')->where('created_at', '>', now()->subDay())->first();
+        }
+        if ($run && $level->game_type === 'verse_tetris' && ($run->challenge['mode'] ?? null) !== 'letter_blocks') {
+            $run = null;
         }
         if (! $run) {
             try {

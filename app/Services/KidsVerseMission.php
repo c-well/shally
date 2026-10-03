@@ -45,6 +45,20 @@ class KidsVerseMission
         };
     }
 
+    public static function letterSteps(string $verse): array
+    {
+        $steps = [];
+        foreach (preg_split('/\s+/u', trim($verse), -1, PREG_SPLIT_NO_EMPTY) as $index => $word) {
+            $letters = preg_split('//u', preg_replace('/[^\p{L}\p{N}]/u', '', $word), -1, PREG_SPLIT_NO_EMPTY);
+            $chunks = array_chunk($letters, 4);
+            foreach ($chunks as $chunkIndex => $chunk) {
+                $steps[] = ['word_index' => $index, 'letters' => implode('', $chunk), 'finishes_word' => $chunkIndex === count($chunks) - 1];
+            }
+        }
+
+        return $steps;
+    }
+
     public static function phrases(string $verse): array
     {
         return array_map(fn ($words) => implode(' ', $words), array_chunk(preg_split('/\s+/u', trim($verse), -1, PREG_SPLIT_NO_EMPTY), 4));

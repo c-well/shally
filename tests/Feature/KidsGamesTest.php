@@ -123,7 +123,11 @@ class KidsGamesTest extends TestCase
             $this->move($p, $run, $i, ['type' => 'piece', 'lines' => 0])->assertOk();
         }
         $this->move($p, $run, 8, ['type' => 'piece', 'lines' => 1])->assertOk()->assertJsonPath('total_stars', 1)->assertJsonPath('state.score', 40);
-        $this->move($p, $run, 9, ['type' => 'piece', 'lines' => 2])->assertOk()->assertJsonPath('total_stars', 3)->assertJsonPath('state.score', 140);
+        $this->move($p, $run, 9, ['type' => 'piece', 'lines' => 2])->assertOk()->assertJsonPath('total_stars', 1)->assertJsonPath('state.score', 140);
+        for ($i = 10; $i <= $run['challenge']['total']; $i++) {
+            $response = $this->move($p, $run, $i, ['type' => 'piece', 'lines' => 0])->assertOk();
+        }
+        $response->assertJsonPath('total_stars', 3)->assertJsonPath('state.completed', true);
     }
 
     public function test_trail_checks_chosen_word_and_tetris_preserves_verse_in_phrases(): void
@@ -134,10 +138,28 @@ class KidsGamesTest extends TestCase
         $this->move($p, $run, 1, ['type' => 'reveal', 'index' => 0, 'word' => 'God'])->assertOk()->assertJsonPath('state.progress', 1);
         $verse = 'I am the way, the truth, and the life.';
         $blocks = $this->start($p, $this->level('verse_tetris', $verse));
-        $this->assertSame(3, $blocks['challenge']['total']);
+        $this->assertSame('letter_blocks', $blocks['challenge']['mode']);
+        $this->assertSame(implode('', preg_split('/[^\p{L}\p{N}]+/u', $verse)), implode('', array_column($blocks['challenge']['letter_steps'], 'letters')));
         $this->assertSame($verse, implode(' ', $blocks['challenge']['phrases']));
         $legacy = app(KidsGameEngine::class)->move('hidden_words', ['words' => ['God'], 'total' => 1], [], ['type' => 'reveal', 'index' => 0]);
         $this->assertSame(1, $legacy['progress']);
+    }
+
+    public function test_letter_blocks_build_from_first_piece_resume_and_do_not_double_count_retries(): void
+    {
+        $p = $this->player();
+        $level = $this->level('verse_tetris', 'God loves us.');
+        $run = $this->start($p, $level);
+        $this->assertSame(['God', 'love', 's', 'us'], array_column($run['challenge']['letter_steps'], 'letters'));
+        $this->move($p, $run, 1, ['type' => 'piece', 'lines' => 0])->assertOk()->assertJsonPath('state.words_built', 1)->assertJsonPath('state.progress', 1)->assertJsonPath('total_stars', 1);
+        $this->move($p, $run, 1, ['type' => 'piece', 'lines' => 0])->assertOk()->assertJsonPath('state.progress', 1);
+        $this->postJson('/kids/begin', ['token' => $p->token, 'level_id' => $level->id, 'run_token' => $run['run_token']])->assertOk()->assertJsonPath('run_token', $run['run_token'])->assertJsonPath('sequence', 1)->assertJsonPath('state.words_built', 1);
+        $this->move($p, $run, 2, ['type' => 'piece', 'lines' => 0])->assertOk()->assertJsonPath('state.words_built', 1);
+        $this->move($p, $run, 3, ['type' => 'piece', 'lines' => 0])->assertOk()->assertJsonPath('state.words_built', 2);
+        $this->move($p, $run, 4, ['type' => 'piece', 'lines' => 0])->assertOk()->assertJsonPath('state.words_built', 3)->assertJsonPath('state.completed', true)->assertJsonPath('total_stars', 3);
+        $legacy = app(KidsGameEngine::class)->move('verse_tetris', ['total' => 3], ['pieces' => 7, 'lines' => 0], ['type' => 'piece', 'lines' => 1]);
+        $this->assertSame(1, $legacy['progress']);
+        $this->assertFalse($legacy['completed']);
     }
 
     public function test_preview_stays_out_of_leaderboard_and_never_claims_known_identity(): void

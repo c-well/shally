@@ -82,7 +82,16 @@
     <button class="pausebtn" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
   </div>
 
-  <div class="arcade-hud"><span>UP NEXT <span id="nextShape" class="next-shape" aria-label="Next block"></span></span><button id="soundToggle" aria-pressed="false">Sound off</button></div><div class="mission-note"><b>{{ $mission['title'] }}</b><span id="missionNote">{{ $mission['notes'][0] }}</span></div><div class="boardarea"><div class="arcade-toast" id="arcadeToast" role="status"></div><div class="board" id="board"></div></div>
+  <div class="arcade-hud"><span>UP NEXT <span id="nextShape" class="next-shape" aria-label="Next block"></span></span><button id="soundToggle" aria-pressed="false">Sound off</button></div>
+  <div class="play-stage">
+    <div class="boardarea"><div class="arcade-toast" id="arcadeToast" role="status"></div><div class="board" id="board"></div></div>
+    <aside class="verse-panel" aria-label="Read along">
+      <div class="read-heading"><span>READ ALONG</span><b>{{ $level->reference }}</b></div>
+      <div class="word-builder"><span id="buildLabel">BUILD THE FIRST WORD</span><div id="letterSlots" aria-label="Word being built"></div></div><div class="versestrip" id="verse" aria-label="Your verse">{{ $level->verse_text }}</div>
+      <div class="verse-footer"><span id="verseProgress" class="small verse-progress"></span><button type="button" id="readVerse">Pause &amp; read</button></div>
+      <div class="mission-note"><b>{{ $mission['title'] }}</b><span id="missionNote">{{ $mission['notes'][0] }}</span></div>
+    </aside>
+  </div>
 
   <div class="infobar">
     <span>Lines <b id="st-lines">0</b></span>
@@ -90,7 +99,6 @@
     <span class="who" id="who"></span>
     <button class="rmchip" id="morphBtn" disabled>Shape swap · 2 lines</button>
   </div>
-  <div id="verseProgress" class="small verse-progress"></div><div class="versestrip" id="verse" aria-label="Your verse"></div>
   <div class="save-row"><span id="saveStatus" role="status"></span><button id="retrySave" hidden>Retry saving</button></div>
 
   <div class="ctrls">
@@ -104,8 +112,8 @@
 
 {{-- Pause --}}
 <div class="ov" id="pauseOv"><div class="card">
-  <h2>Paused</h2>
-  <p style="color:var(--ink-soft);margin-top:8px">Take a breath.</p><details class="play-help"><summary>How to play</summary><p>← → move · ↑ turn · ↓ lower<br>Space drops · P pauses<br>On touch: swipe to move, tap to turn.</p><p>Every cleared row reveals a phrase.<br>Clear 2 rows to earn a shape swap.</p></details>
+  <h2>Pause &amp; read</h2><div class="ref">{{ $level->reference }}</div><div class="verse-final pause-verse">{{ $level->verse_text }}</div>
+  <p>{{ $mission['notes'][0] }}</p><details class="play-help"><summary>How to play</summary><p>← → move · ↑ turn · ↓ lower<br>Space drops · P pauses<br>On touch: swipe to move, tap to turn.</p><p>Every landed piece adds letters to the verse.<br>Clear 2 rows to earn a shape swap.</p></details>
   <div><button class="btn" id="resumeBtn">Resume @include('partials._ar')</button></div>
   <div><a class="btn btn-ghost" href="{{ route('kids') }}">Quit to games</a></div>
 </div></div>
@@ -133,10 +141,10 @@
 
 {{-- Game over --}}
 <div class="ov" id="goOv"><div class="card">
-  <h2>Good run!</h2>
+  <h2>Your words are safe.</h2>
   <p style="color:var(--ink-soft);margin-top:8px" id="goMsg"></p>
   <div class="verse-final">“{{ $level->verse_text }}”</div>
-  <div><button class="btn" onclick="location.reload()">Try again</button></div>
+  <div><button class="btn" id="continueVerse">Keep building →</button></div>
   <div><a class="btn btn-ghost" href="{{ route('kids') }}">Other games</a></div>
 </div></div>
 
@@ -144,7 +152,7 @@
 <div class="ov" id="introOv" role="dialog" aria-modal="true" aria-labelledby="introTitle"><div class="card">
   <div class="intro-block-art game-preview" aria-hidden="true">@include('kids.game-art', ['kind'=>'verse_tetris'])</div>
   <div class="ref">{{ $level->reference }}</div><h2 id="introTitle">{{ $mission['title'] }}</h2>
-  <p>Stack blocks. Clear rows. Discover the verse.</p>
+  <p>Land letter blocks. Build the verse.</p>
   <button class="btn" id="startButton">Play →</button>
   <details class="play-help"><summary>How to play</summary><p><b>Move:</b> ← → or swipe<br><b>Turn:</b> ↑ or tap the board<br><b>Drop:</b> Space or swipe down</p><p>Clear 2 rows to earn a shape swap.<br>Pause anytime with P or the pause button.</p></details>
 </div></div>
@@ -153,7 +161,7 @@
 <script>
 const LEVEL = @json($levelData);
 const MISSION = @json($mission);
-let versePhrases = [];
+let versePhrases = [],letterSteps=[],initialState={};
 
 
 
@@ -171,7 +179,7 @@ let pieceBag=[];
 function takeType(){if(!pieceBag.length){pieceBag=[...TYPES];for(let i=pieceBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pieceBag[i],pieceBag[j]]=[pieceBag[j],pieceBag[i]];}}return pieceBag.pop();}
 const words = LEVEL.verse.replace(/\s+/g, ' ').trim().split(' ');
 
-let board, cur, nextType, score, lines, revealed, dropMs, penalty, tokens, paused, userPaused, over, loop, pieceCount;
+let board, letterBoard, builtSteps=0, serverComplete=false, cur, nextType, score, lines, revealed, dropMs, penalty, tokens, paused, userPaused, over, loop, pieceCount;
 const boardEl = document.getElementById('board'), verseEl = document.getElementById('verse');
 const morphBtn = document.getElementById('morphBtn');
 function frozen() { return over || paused || userPaused; }
@@ -182,15 +190,17 @@ function newBoard() { return Array.from({ length: ROWS }, () => Array(COLS).fill
 function buildCells() { boardEl.innerHTML = ''; for (let i = 0; i < ROWS * COLS; i++) { const d = document.createElement('div'); d.className = 'tc'; boardEl.appendChild(d); } }
 function collide(m, r, x) { for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) { if (!m[i][j]) continue; const R = r + i, X = x + j; if (X < 0 || X >= COLS || R >= ROWS) return true; if (R >= 0 && board[R][X]) return true; } return false; }
 function paintNext(){const root=document.getElementById('nextShape'),shape=SHAPES[nextType];root.replaceChildren();root.style.gridTemplateColumns=`repeat(${shape.m[0].length},9px)`;root.setAttribute('aria-label',`Next block: ${nextType}`);shape.m.flat().forEach(n=>{const cell=document.createElement('i');cell.className=n?`tc c${shape.c}`:'next-empty';root.append(cell);});}
-function spawn() { const t = nextType; nextType = takeType(); paintNext(); const s = SHAPES[t]; cur = { type: t, m: s.m.map(r => r.slice()), c: s.c, r: 0, x: Math.floor((COLS - s.m[0].length) / 2) }; if (collide(cur.m, cur.r, cur.x)) gameOver(); }
+function pieceMatrix(s){let n=0;return s.map(row=>row.map(v=>v?++n:0));}
+function spawn() { const t = nextType; nextType = takeType(); paintNext(); const s = SHAPES[t]; cur = { type: t, m: pieceMatrix(s.m), letters:Array.from(letterSteps[builtSteps]?.letters||'').map(c=>c.toUpperCase()), c: s.c, r: 0, x: Math.floor((COLS - s.m[0].length) / 2) }; if (collide(cur.m, cur.r, cur.x)) gameOver(); }
 function speed() { const lv = Math.floor(lines / 8); dropMs = Math.max(130, (720 - lv * 55) * penalty); }
 async function lockPiece() {
   paused = true;
-  cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS) board[R][X] = cur.c; } }));
+  cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS) {board[R][X] = cur.c;letterBoard[R][X]=cur.letters?.[v-1]||'';} } }));
   cur = null;
   const full = []; for (let r = 0; r < ROWS; r++) if (board[r].every(c => c)) full.push(r);
   render();
-  await GameSession.move({type:'piece',lines:full.length});
+  const result=await GameSession.move({type:'piece',lines:full.length});
+  builtSteps=result.state.progress;revealed=result.state.words_built||0;score=result.state.score;serverComplete=result.state.completed;renderVerse();renderStats();
   paused = false;
   if (full.length) animateClear(full); else afterLock();
 }
@@ -198,27 +208,41 @@ function animateClear(full) {
   paused = true;
   full.forEach(r => { for (let c = 0; c < COLS; c++) boardEl.children[r * COLS + c].classList.add('clearing'); });
   setTimeout(function () {
-    board = board.filter((_, r) => full.indexOf(r) === -1);
-    while (board.length < ROWS) board.unshift(Array(COLS).fill(0));
-    const n = full.length; const before=Math.floor(lines/2); lines += n; tokens+=Math.floor(lines/2)-before;updateTokens();GameAudio.play(n>1?'win':'match');const toast=document.getElementById('arcadeToast');toast.textContent=['','Nice clear!','Double clear!','Triple clear!','Four-line clear!'][n];toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1000); score += [0, 40, 100, 300, 1200][n]; revealed = Math.min(words.length, versePhrases.slice(0,lines).join(' ').split(/\s+/).filter(Boolean).length);
+    board = board.filter((_, r) => full.indexOf(r) === -1);letterBoard=letterBoard.filter((_,r)=>!full.includes(r));
+    while (board.length < ROWS){board.unshift(Array(COLS).fill(0));letterBoard.unshift(Array(COLS).fill(''));}
+    const n = full.length; const before=Math.floor(lines/2); lines += n; tokens+=Math.floor(lines/2)-before;updateTokens();GameAudio.play(n>1?'win':'match');const toast=document.getElementById('arcadeToast');toast.textContent=['','Nice clear!','Double clear!','Triple clear!','Four-line clear!'][n];toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1000);
     renderStats(); renderVerse(); speed(); paused = false; render();
-    if (revealed >= words.length) { winVerse(); return; }
     afterLock();
   }, 250);
 }
-function afterLock() { GameAudio.play('tap'); pieceCount++; if (!over) { spawn();  } render(); }
+function afterLock() { GameAudio.play('tap'); pieceCount++;if(serverComplete){winVerse();render();return;}if(!over)spawn();render(); }
 function render() {
-  const disp = board.map(r => r.slice());
+  const disp = board.map(r => r.slice()),letters=letterBoard.map(r=>r.slice());
   if (cur && !over) {
     let gr = cur.r; while (!collide(cur.m, gr + 1, cur.x)) gr++;
     cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = gr + i, X = cur.x + j; if (R >= 0 && R < ROWS && X >= 0 && X < COLS && !disp[R][X]) disp[R][X] = -cur.c; } }));
-    cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS && X >= 0 && X < COLS) disp[R][X] = cur.c; } }));
+    cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS && X >= 0 && X < COLS) {disp[R][X] = cur.c;letters[R][X]=cur.letters?.[v-1]||'';} } }));
   }
   const cells = boardEl.children;
-  for (let i = 0; i < ROWS * COLS; i++) { const v = disp[(i / COLS) | 0][i % COLS]; cells[i].className = v > 0 ? 'tc c' + v : (v < 0 ? 'tc ghost c' + (-v) : 'tc'); }
+  for (let i = 0; i < ROWS * COLS; i++) { const v = disp[(i / COLS) | 0][i % COLS]; cells[i].className = v > 0 ? 'tc c' + v : (v < 0 ? 'tc ghost c' + (-v) : 'tc');cells[i].textContent=v>0?letters[(i/COLS)|0][i%COLS]:''; }
 }
 function renderStats() { document.getElementById('st-lines').textContent = lines; document.getElementById('st-score').textContent = score; }
-function renderVerse() { verseEl.replaceChildren();versePhrases.slice(0,lines).forEach(phrase=>{const span=document.createElement('span');span.className='vw got';span.textContent=phrase+' ';verseEl.append(span);});if(lines<versePhrases.length){const next=document.createElement('span');next.className='vw';next.textContent=lines?' · Keep building…':'Clear a row to discover the first phrase.';verseEl.append(next);}document.getElementById('verseProgress').textContent=`${Math.min(lines,versePhrases.length)} of ${versePhrases.length} phrases · ${LEVEL.reference}`;document.getElementById('missionNote').textContent=MISSION.notes[Math.min(MISSION.notes.length-1,Math.floor(lines/Math.max(1,versePhrases.length)*MISSION.notes.length))];verseEl.scrollTop=verseEl.scrollHeight; }
+function renderVerse() {
+  verseEl.replaceChildren();
+  const current=letterSteps[builtSteps]?.word_index??words.length;
+  words.forEach((word,i)=>{const span=document.createElement('span');span.className='vw'+(i<current?' got':i===current?' current':'');span.textContent=word+' ';verseEl.append(span);});
+  const slots=document.getElementById('letterSlots');slots.replaceChildren();
+  if(current<words.length){
+    const spelling=Array.from(words[current].replace(/[^\p{L}\p{N}]/gu,'').toUpperCase());
+    const placed=letterSteps.slice(0,builtSteps).filter(step=>step.word_index===current).reduce((n,step)=>n+Array.from(step.letters).length,0);
+    spelling.forEach((letter,i)=>{const tile=document.createElement('span');tile.textContent=letter;tile.className=i<placed?'letter built':'letter';slots.append(tile);});
+    document.getElementById('buildLabel').textContent='BUILD THIS WORD';
+  }else document.getElementById('buildLabel').textContent='VERSE BUILT!';
+  document.getElementById('verseProgress').textContent=`${revealed} of ${words.length} words built`;
+  document.getElementById('missionNote').textContent=MISSION.notes[Math.min(MISSION.notes.length-1,Math.floor(revealed/Math.max(1,words.length)*MISSION.notes.length))];
+  boardEl.setAttribute('aria-label',current<words.length?`Letter blocks for ${words[current]}`:'Verse complete');
+}
+
 function updateTokens() { morphBtn.textContent = tokens?'Shape swap ×' + tokens:'Shape swap · 2 lines'; morphBtn.disabled = tokens <= 0; }
 
 function move(dx) { if (frozen() || !cur) return; if (!collide(cur.m, cur.r, cur.x + dx)) { cur.x += dx; render(); } }
@@ -231,6 +255,7 @@ function startLoop() { clearTimeout(loop); loop = setTimeout(() => { step(); sta
 // ── pause ──
 const pauseOv = document.getElementById('pauseOv');
 document.getElementById('pauseBtn').addEventListener('click', () => setPause(true));
+document.getElementById('readVerse').addEventListener('click',()=>setPause(true));
 document.getElementById('resumeBtn').addEventListener('click', () => setPause(false));
 function setPause(on) { if (over) return; userPaused=on; pauseOv.classList.toggle('show',on); }
 
@@ -242,7 +267,7 @@ document.getElementById('morphCancel').addEventListener('click', closeMorph);
 function closeMorph() { morphOv.classList.remove('show'); userPaused = false; }
 shapesEl.addEventListener('click', e => { const b = e.target.closest('.shp'); if (b) doMorph(b.dataset.t); });
 function doMorph(t) {
-  const s = SHAPES[t], m = s.m.map(r => r.slice());
+  const s = SHAPES[t], m = pieceMatrix(s.m);
   for (const dr of [0, -1]) for (const k of [0, -1, 1, -2, 2, -3, 3]) {
     if (cur && !collide(m, cur.r + dr, cur.x + k)) { cur.m = m; cur.c = s.c; cur.type = t; cur.r += dr; cur.x += k; tokens--; updateTokens(); closeMorph(); render(); return; }
   }
@@ -273,10 +298,12 @@ boardEl.addEventListener('touchend', e => {
 }, { passive: true });
 
 function winVerse() { GameAudio.play('win'); over = true; clearTimeout(loop); setTimeout(() => {document.getElementById('winOv').classList.add('show');KidsMascot.cheer();}, 450); }
-function gameOver() { over = true; clearTimeout(loop); document.getElementById('goMsg').textContent = 'You cleared ' + lines + ' lines and uncovered ' + revealed + ' of ' + words.length + ' words. Your best result is saved. Try again to build the whole verse!'; setTimeout(() => document.getElementById('goOv').classList.add('show'), 300); }
+function gameOver() { over = true; clearTimeout(loop); document.getElementById('goMsg').textContent = `You've built ${revealed} of ${words.length} words. Make room on a fresh board and keep going.`; setTimeout(() => document.getElementById('goOv').classList.add('show'), 300); }
 
-function startGame() { pieceBag=[]; board = newBoard(); score = 0; lines = 0; revealed = 0; penalty = 1; tokens = 0; pieceCount = 0; over = false; paused = false; userPaused = false; nextType = takeType(); buildCells(); renderStats(); renderVerse(); updateTokens(); speed(); spawn(); render(); startLoop(); }
-GameSession.ready().then(data=>{versePhrases=data.challenge.phrases||words;document.getElementById('introOv').classList.add('show');document.getElementById('startButton').focus();});
+function resetBoard(){board=newBoard();letterBoard=Array.from({length:ROWS},()=>Array(COLS).fill(''));pieceBag=[];over=false;paused=false;userPaused=false;nextType=takeType();buildCells();renderStats();renderVerse();updateTokens();speed();spawn();render();startLoop();}
+function startGame(){score=initialState.score||0;lines=initialState.lines||0;builtSteps=initialState.progress||0;revealed=initialState.words_built||0;pieceCount=initialState.pieces||0;serverComplete=false;penalty=1;tokens=0;resetBoard();}
+document.getElementById('continueVerse').addEventListener('click',()=>{document.getElementById('goOv').classList.remove('show');resetBoard();});
+GameSession.ready().then(data=>{versePhrases=data.challenge.phrases||words;letterSteps=data.challenge.letter_steps||[];initialState=data.state;if(initialState.progress)document.getElementById('startButton').textContent='Keep building →';document.getElementById('introOv').classList.add('show');document.getElementById('startButton').focus();});
 document.getElementById('startButton').addEventListener('click',()=>{document.getElementById('introOv').classList.remove('show');startGame();document.getElementById('pauseBtn').focus();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden && board && !over)setPause(true);});
 </script>

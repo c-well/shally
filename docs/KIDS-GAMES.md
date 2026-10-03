@@ -41,3 +41,17 @@ Verse Blocks no longer interrupts play with quizzes. Seven-piece bags provide al
 Validation: `php vendor/bin/phpunit tests/Feature/KidsGamesTest.php` checks scoring, move validation, phrase preservation, test-account separation, and access control. `node tests/kids-blocks.mjs` checks the actual gameplay script through line locking, phrase reveal, power-ups, completion, and the former quiz interruption boundary. Phone browser checks cover catalog, word grid, trail completion, dialogs, and block controls.
 
 The October 3 follow-up adds an independently animated sheep cutout in the catalog and puzzle screens, with tap-to-hop and discovery celebrations. Idle motion can be paused using a saved browser preference and is disabled by reduced-motion settings. The arcade start screen now shows a short verse mission and Play; controls and power-ups live in expandable “How to play” help, also available while paused.
+
+## Live 3D mascot
+
+`resources/kids-assets/sheep-3d-v1.js` builds an articulated sheep from mesh geometry and instanced fleece, lit and shaded in WebGL with Three.js 0.180.0. The locally hosted dependency and its MIT license are under `vendor/three-0.180.0`; deploy this directory and the module to matching paths beneath public/kids-assets. No runtime CDN or external service is used.
+
+The head follows the pointer; ears, arms, and legs animate during a hop, eyes blink, and the body turns to show its depth. The existing PNG remains visible until 3D initializes successfully, and returns if the graphics context is lost. Rendering stops when offscreen or the page is hidden, is capped at about 30 frames per second, and respects saved motion and system reduced-motion settings. Completion mascots animate on demand. Dialog focus starts at the main action; expandable help is included in keyboard navigation.
+
+## Letter blocks and readable Scripture
+
+The current block game supersedes the earlier phrase-per-line approach. A new `letter_blocks` challenge contains server-created `letter_steps`, at most four letters from one word per piece. Long words span pieces; landing a piece advances exactly one step, and completed words highlight in the full verse. The whole verse is readable from the first move; the word builder and optional Pause & read view support reading at a child's pace. Row clears still earn score and shape swaps. Numbered squares retain their letters through rotation and shape changes.
+
+Only the server chooses progression and completion. Idempotent retries cannot advance another letter step. Incomplete letter-block sessions resume their word progress on a fresh board; filling the board offers a fresh board without losing words. Legacy active runs retain line-based scoring and are replaced with the current mode at the next begin request. Current tests include first-piece progress, multi-piece words, resume, retries, old-run compatibility, shape rotation, fresh-board continuation, and completion.
+
+Memory pictures now map consistently to word meanings: parent-and-child scenes for Mother/Father, caring hands for Honour/Love, sheep and crook for Shepherd, provisions for Want, sunrise for Beginning, growing plant for Created, sky for Heaven, globe for Earth, and a Bible for God/Lord. Each matched pair supplies a brief explanation; matched words highlight in the verse already visible above the cards. These are symbolic learning pictures, not depictions of God.

@@ -13,3 +13,7 @@ Sheep prompt: Extract and faithfully recreate ONLY the friendly fluffy sheep exp
 Background prompt: Edit this landscape game illustration. Remove the sheep explorer completely, including its backpack and shadow, and seamlessly continue the lilac stepping-stone path and soft turquoise grass behind where it stood. Keep everything else: same composition, floating islands, luminous open book, castle, trees, stars, color palette, camera perspective and dreamy 3D clay style. No animals or people anywhere. The right foreground must be an empty path platform where a separately animated mascot will be placed by the website. Do not add text.
 
 Deploy `sheep-v1.png` and `adventure-path-v1.jpg` from this directory to the matching public/kids-assets directory. The original scene remains used for small static backdrop panels.
+
+## 3D implementation
+
+The mascot now has a code-built articulated mesh in `sheep-3d-v1.js`. Its wool, face, eyes, limbs, and coral backpack are lit and rendered with locally hosted Three.js 0.180.0. Dependency provenance: npm package `three@0.180.0`, MIT license retained in `vendor/three-0.180.0/LICENSE`. The previous generated PNG is the no-WebGL/context-loss fallback. The 3D model is procedural project code; no new image-generation prompt was used for this revision.
