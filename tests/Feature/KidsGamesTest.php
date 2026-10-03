@@ -44,6 +44,10 @@ class KidsGamesTest extends TestCase
 
     private function move(GamePlayer $p, array $run, int $seq, array $event)
     {
+        if (($event['type'] ?? null) === 'reveal' && ! array_key_exists('word', $event)) {
+            $event['word'] = $run['challenge']['words'][$event['index']] ?? '';
+        }
+
         return $this->postJson('/kids/save', ['token' => $p->token, 'run_token' => $run['run_token'], 'sequence' => $seq, 'event' => $event, 'stars' => 3, 'completed' => true, 'score' => 999999]);
     }
 
@@ -113,13 +117,27 @@ class KidsGamesTest extends TestCase
     public function test_tetris_checks_physical_limits_and_calculates_score(): void
     {
         $p = $this->player();
-        $run = $this->start($p, $this->level('verse_tetris'));
+        $run = $this->start($p, $this->level('verse_tetris', 'I can do all things through Christ which strengtheneth me'));
         $this->move($p, $run, 1, ['type' => 'piece', 'lines' => 4])->assertUnprocessable();
         for ($i = 1; $i <= 7; $i++) {
             $this->move($p, $run, $i, ['type' => 'piece', 'lines' => 0])->assertOk();
         }
         $this->move($p, $run, 8, ['type' => 'piece', 'lines' => 1])->assertOk()->assertJsonPath('total_stars', 1)->assertJsonPath('state.score', 40);
         $this->move($p, $run, 9, ['type' => 'piece', 'lines' => 2])->assertOk()->assertJsonPath('total_stars', 3)->assertJsonPath('state.score', 140);
+    }
+
+    public function test_trail_checks_chosen_word_and_tetris_preserves_verse_in_phrases(): void
+    {
+        $p = $this->player();
+        $run = $this->start($p, $this->level());
+        $this->move($p, $run, 1, ['type' => 'reveal', 'index' => 0, 'word' => 'wrong'])->assertUnprocessable();
+        $this->move($p, $run, 1, ['type' => 'reveal', 'index' => 0, 'word' => 'God'])->assertOk()->assertJsonPath('state.progress', 1);
+        $verse = 'I am the way, the truth, and the life.';
+        $blocks = $this->start($p, $this->level('verse_tetris', $verse));
+        $this->assertSame(3, $blocks['challenge']['total']);
+        $this->assertSame($verse, implode(' ', $blocks['challenge']['phrases']));
+        $legacy = app(KidsGameEngine::class)->move('hidden_words', ['words' => ['God'], 'total' => 1], [], ['type' => 'reveal', 'index' => 0]);
+        $this->assertSame(1, $legacy['progress']);
     }
 
     public function test_preview_stays_out_of_leaderboard_and_never_claims_known_identity(): void
@@ -234,10 +252,10 @@ class KidsGamesTest extends TestCase
     {
         $p = $this->player();
         $l = $this->level();
-        $run = $this->start($p,$l);
+        $run = $this->start($p, $l);
         GameRun::query()->update(['created_at' => now()->subDays(91)]);
-        $this->artisan('model:prune',['--model' => [GameRun::class]])->assertExitCode(0);
-        $this->assertSame(0,GameRun::count());
-        $this->assertSame(1,GamePlayer::count());
+        $this->artisan('model:prune', ['--model' => [GameRun::class]])->assertExitCode(0);
+        $this->assertSame(0, GameRun::count());
+        $this->assertSame(1, GamePlayer::count());
     }
 }

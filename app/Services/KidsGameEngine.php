@@ -15,10 +15,12 @@ class KidsGameEngine
             throw new InvalidArgumentException('This verse needs some words.');
         }
         if ($level->game_type === 'hidden_words') {
-            return ['words' => $words, 'total' => count($words)];
+            return ['words' => $words, 'total' => count($words), 'mode' => 'word_trail'];
         }
         if ($level->game_type === 'verse_tetris') {
-            return ['total' => count($words)];
+            $phrases = KidsVerseMission::phrases($level->verse_text);
+
+            return ['phrases' => $phrases, 'total' => count($phrases)];
         }
         $keys = $level->keywords();
         if ($level->game_type === 'memory_match') {
@@ -102,6 +104,9 @@ class KidsGameEngine
             case 'hidden_words':
                 $index = $event['index'] ?? null;
                 if (($event['type'] ?? '') !== 'reveal' || ! is_int($index) || $index !== $state['progress'] || $index >= $challenge['total']) {
+                    $this->invalid();
+                }
+                if (($challenge['mode'] ?? null) === 'word_trail' && ($event['word'] ?? null) !== $challenge['words'][$index]) {
                     $this->invalid();
                 }
                 $state['progress']++;

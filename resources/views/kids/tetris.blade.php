@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>{{ $level->reference }} — Verse Tetris</title>
+<title>{{ $level->reference }} — Verse Blocks</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: var(--parchment); color: var(--ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overflow: hidden; overscroll-behavior: none; }
@@ -71,24 +71,26 @@
 .ov{visibility:hidden}.ov.show{visibility:visible}.card{max-height:90dvh;overflow:auto}.card p{margin-top:14px;line-height:1.6;color:var(--ink-soft)}.small{font:12px/1.5 'IBM Plex Sans',sans-serif;color:var(--ink-soft)}.small a{color:var(--teal)}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0)}.cbtn{flex-direction:column;gap:2px}.cbtn small{font:10px 'IBM Plex Sans',sans-serif}.save-row{padding:0 20px;font-size:11px;min-height:17px;color:var(--ink-soft);flex-shrink:0}.save-row button{font:inherit;padding:3px 8px;margin-left:8px}.verse-progress{margin:0 20px;font-weight:600;flex-shrink:0}.infobar{flex-wrap:wrap;gap:6px 12px}.who{white-space:normal;overflow-wrap:anywhere;max-width:100%}.btn:disabled{opacity:.5}.stars-big{font-size:30px}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 @include('partials.theme-vars')
+@include('kids.design')
 </head>
-<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
+<body class="kids kids-tetris" data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
+@php $mission = \App\Services\KidsVerseMission::forReference($level->reference); @endphp
 <div class="game">
   <div class="topbar">
     <a class="back" href="{{ route('kids') }}">@include('partials._arl') Games</a>
-    <div class="tb-mid"><div class="tb-ref">{{ $level->reference }}</div><div class="tb-title">{{ $level->title ?: $level->book }}</div></div>
+    <div class="tb-mid"><div class="tb-ref">{{ $level->reference }}</div><div class="tb-title">Verse Blocks</div></div>
     <button class="pausebtn" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
   </div>
 
-  <div class="boardarea"><div class="board" id="board"></div></div>
+  <div class="arcade-hud"><span>UP NEXT <span id="nextShape" class="next-shape" aria-label="Next block"></span></span><button id="soundToggle" aria-pressed="false">Sound off</button></div><div class="mission-note"><b>{{ $mission['title'] }}</b><span id="missionNote">{{ $mission['notes'][0] }}</span></div><div class="boardarea"><div class="arcade-toast" id="arcadeToast" role="status"></div><div class="board" id="board"></div></div>
 
   <div class="infobar">
     <span>Lines <b id="st-lines">0</b></span>
     <span>Score <b id="st-score">0</b></span>
     <span class="who" id="who"></span>
-    <button class="rmchip" id="morphBtn" disabled>Re-morph ×0</button>
+    <button class="rmchip" id="morphBtn" disabled>Shape swap · 2 lines</button>
   </div>
-  <div id="verseProgress" class="small verse-progress"></div><div class="versestrip" id="verse"></div>
+  <div id="verseProgress" class="small verse-progress"></div><div class="versestrip" id="verse" aria-label="Your verse"></div>
   <div class="save-row"><span id="saveStatus" role="status"></span><button id="retrySave" hidden>Retry saving</button></div>
 
   <div class="ctrls">
@@ -110,28 +112,20 @@
 
 {{-- Re-morph picker --}}
 <div class="ov" id="morphOv"><div class="card">
-  <div class="ref" style="margin-bottom:6px">Re-morph</div>
+  <div class="ref" style="margin-bottom:6px">SHAPE SWAP</div>
   <h2>Pick a new shape</h2>
   <p style="color:var(--ink-soft);margin-top:6px;font-size:14px">It might not fit perfectly — but it can help.</p>
   <div class="shapes" id="shapes"></div>
   <div><button class="btn btn-ghost" id="morphCancel">Never mind</button></div>
 </div></div>
 
-{{-- Question --}}
-<div class="ov" id="qOv"><div class="card">
-  <div class="ref" style="margin-bottom:10px">A question about Jesus</div>
-  <div class="qq" id="qText"></div>
-  <div class="qopts" id="qOpts"></div>
-  <div class="qresult" id="qResult"></div>
-  <button class="btn" id="qCont" style="display:none">Keep playing @include('partials._ar')</button>
-</div></div>
-
 {{-- Win --}}
 <div class="ov" id="winOv"><div class="card">
-  <div class="stars-big">⭐️⭐️⭐️</div>
+  <div class="win-art" aria-hidden="true"><span class="win-spark">★</span><span class="win-spark">★</span><span class="win-spark">★</span></div>
   <h2>Verse complete!</h2>
-  <p style="color:var(--ink-soft);margin-top:8px">You built <b>{{ $level->reference }}</b> word by word.</p>
+  <p style="color:var(--ink-soft);margin-top:8px">You discovered <b>{{ $level->reference }}</b>.</p>
   <div class="verse-final">“{{ $level->verse_text }}”</div>
+  <div class="take-it-with-you"><b>TAKE IT INTO YOUR DAY</b><p>{{ $mission['practice'] }}</p><details><summary>{{ $mission['reflect'] }}</summary><p>{{ $mission['answer'] }}</p></details></div>
   @if($nextLevel)<div><a class="btn" href="{{ route('kids.play',$nextLevel) }}{{ request()->boolean('preview') ? '?preview=1' : '' }}">Next adventure →</a></div>@endif
   <div><a class="btn btn-ghost" href="{{ route('kids') }}">Choose another game</a></div>
   <div><button class="btn btn-ghost" onclick="location.reload()">Play again</button></div>
@@ -148,9 +142,9 @@
 
 @include('kids.player-gate')
 <div class="ov" id="introOv" role="dialog" aria-modal="true" aria-labelledby="introTitle"><div class="card">
-  <div class="ref">Build a verse, one line at a time</div><h2 id="introTitle">Ready to play?</h2>
-  <p>Fit the blocks together. Every full row reveals a word of your verse.</p>
-  <p>Questions about Jesus give you a chance to earn a new shape. A wrong answer is a chance to learn — take your time.</p>
+  <div class="ref">YOUR VERSE MISSION</div><h2 id="introTitle">Find your flow.</h2>
+  <p>{{ $mission['title'] }}. Every full row uncovers a phrase from {{ $level->reference }}. Build it, read it, carry it with you.</p>
+  <p>Every two cleared lines earns a shape swap. Use it when you need a different block.</p>
   <p class="small">Use the buttons below the board, or ← → to move, ↑ to turn, ↓ to lower, Space to drop, and P to pause. Swipe to move and tap to turn on a touch screen.</p>
   <button class="btn" id="startButton">Start playing →</button>
 </div></div>
@@ -158,21 +152,26 @@
 @php $levelData = ['id' => $level->id, 'reference' => $level->reference, 'verse' => $level->verse_text]; @endphp
 <script>
 const LEVEL = @json($levelData);
-const QUESTIONS = @json($questions);
+const MISSION = @json($mission);
+let versePhrases = [];
+
 
 
 </script>
 @include('kids.session')
+@include('kids.audio')
 <script>
 // ── Tetris engine ──
+document.getElementById('soundToggle').addEventListener('click',e=>{const on=GameAudio.toggle();e.currentTarget.textContent=on?'Sound on':'Sound off';e.currentTarget.setAttribute('aria-pressed',String(on));});
 const COLS = 10, ROWS = 18;
 const SHAPES = { I:{m:[[1,1,1,1]],c:1}, O:{m:[[1,1],[1,1]],c:2}, T:{m:[[0,1,0],[1,1,1]],c:3}, S:{m:[[0,1,1],[1,1,0]],c:4}, Z:{m:[[1,1,0],[0,1,1]],c:5}, J:{m:[[1,0,0],[1,1,1]],c:6}, L:{m:[[0,0,1],[1,1,1]],c:7} };
 const TYPES = Object.keys(SHAPES);
+let pieceBag=[];
+function takeType(){if(!pieceBag.length){pieceBag=[...TYPES];for(let i=pieceBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pieceBag[i],pieceBag[j]]=[pieceBag[j],pieceBag[i]];}}return pieceBag.pop();}
 const words = LEVEL.verse.replace(/\s+/g, ' ').trim().split(' ');
-let pendingQuestion=false;
-let board, cur, nextType, score, lines, revealed, dropMs, penalty, tokens, paused, userPaused, over, loop, pieceCount, curQ;
+
+let board, cur, nextType, score, lines, revealed, dropMs, penalty, tokens, paused, userPaused, over, loop, pieceCount;
 const boardEl = document.getElementById('board'), verseEl = document.getElementById('verse');
-const qOv = document.getElementById('qOv'), qText = document.getElementById('qText'), qOpts = document.getElementById('qOpts'), qResult = document.getElementById('qResult'), qCont = document.getElementById('qCont');
 const morphBtn = document.getElementById('morphBtn');
 function frozen() { return over || paused || userPaused; }
 
@@ -181,7 +180,8 @@ function rotate(m) { return m[0].map((_, i) => m.map(r => r[i]).reverse()); }
 function newBoard() { return Array.from({ length: ROWS }, () => Array(COLS).fill(0)); }
 function buildCells() { boardEl.innerHTML = ''; for (let i = 0; i < ROWS * COLS; i++) { const d = document.createElement('div'); d.className = 'tc'; boardEl.appendChild(d); } }
 function collide(m, r, x) { for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) { if (!m[i][j]) continue; const R = r + i, X = x + j; if (X < 0 || X >= COLS || R >= ROWS) return true; if (R >= 0 && board[R][X]) return true; } return false; }
-function spawn() { const t = nextType; nextType = rand(TYPES); const s = SHAPES[t]; cur = { type: t, m: s.m.map(r => r.slice()), c: s.c, r: 0, x: Math.floor((COLS - s.m[0].length) / 2) }; if (collide(cur.m, cur.r, cur.x)) gameOver(); }
+function paintNext(){const root=document.getElementById('nextShape'),shape=SHAPES[nextType];root.replaceChildren();root.style.gridTemplateColumns=`repeat(${shape.m[0].length},9px)`;root.setAttribute('aria-label',`Next block: ${nextType}`);shape.m.flat().forEach(n=>{const cell=document.createElement('i');cell.className=n?`tc c${shape.c}`:'next-empty';root.append(cell);});}
+function spawn() { const t = nextType; nextType = takeType(); paintNext(); const s = SHAPES[t]; cur = { type: t, m: s.m.map(r => r.slice()), c: s.c, r: 0, x: Math.floor((COLS - s.m[0].length) / 2) }; if (collide(cur.m, cur.r, cur.x)) gameOver(); }
 function speed() { const lv = Math.floor(lines / 8); dropMs = Math.max(130, (720 - lv * 55) * penalty); }
 async function lockPiece() {
   paused = true;
@@ -199,13 +199,13 @@ function animateClear(full) {
   setTimeout(function () {
     board = board.filter((_, r) => full.indexOf(r) === -1);
     while (board.length < ROWS) board.unshift(Array(COLS).fill(0));
-    const n = full.length; lines += n; score += [0, 40, 100, 300, 1200][n]; revealed = Math.min(words.length, revealed + n);
+    const n = full.length; const before=Math.floor(lines/2); lines += n; tokens+=Math.floor(lines/2)-before;updateTokens();GameAudio.play(n>1?'win':'match');const toast=document.getElementById('arcadeToast');toast.textContent=['','Nice clear!','Double clear!','Triple clear!','Four-line clear!'][n];toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1000); score += [0, 40, 100, 300, 1200][n]; revealed = Math.min(words.length, versePhrases.slice(0,lines).join(' ').split(/\s+/).filter(Boolean).length);
     renderStats(); renderVerse(); speed(); paused = false; render();
     if (revealed >= words.length) { winVerse(); return; }
     afterLock();
   }, 250);
 }
-function afterLock() { pieceCount++; if (!over) { spawn(); if (pieceCount % 5 === 0 && QUESTIONS.length) askQuestion(); } render(); }
+function afterLock() { GameAudio.play('tap'); pieceCount++; if (!over) { spawn();  } render(); }
 function render() {
   const disp = board.map(r => r.slice());
   if (cur && !over) {
@@ -217,8 +217,8 @@ function render() {
   for (let i = 0; i < ROWS * COLS; i++) { const v = disp[(i / COLS) | 0][i % COLS]; cells[i].className = v > 0 ? 'tc c' + v : (v < 0 ? 'tc ghost c' + (-v) : 'tc'); }
 }
 function renderStats() { document.getElementById('st-lines').textContent = lines; document.getElementById('st-score').textContent = score; }
-function renderVerse() { verseEl.replaceChildren(); words.forEach((w,i)=>{ const span=document.createElement('span');span.className=i<revealed?'vw got':'vw';span.textContent=i<revealed?w:w.replace(/[A-Za-z0-9]/g,'_');verseEl.append(span,document.createTextNode(' '));});document.getElementById('verseProgress').textContent=`${revealed} of ${words.length} words`;verseEl.scrollTop=verseEl.scrollHeight; }
-function updateTokens() { morphBtn.textContent = 'Re-morph ×' + tokens; morphBtn.disabled = tokens <= 0; }
+function renderVerse() { verseEl.replaceChildren();versePhrases.slice(0,lines).forEach(phrase=>{const span=document.createElement('span');span.className='vw got';span.textContent=phrase+' ';verseEl.append(span);});if(lines<versePhrases.length){const next=document.createElement('span');next.className='vw';next.textContent=lines?' · Keep building…':'Clear a row to discover the first phrase.';verseEl.append(next);}document.getElementById('verseProgress').textContent=`${Math.min(lines,versePhrases.length)} of ${versePhrases.length} phrases · ${LEVEL.reference}`;document.getElementById('missionNote').textContent=MISSION.notes[Math.min(MISSION.notes.length-1,Math.floor(lines/Math.max(1,versePhrases.length)*MISSION.notes.length))];verseEl.scrollTop=verseEl.scrollHeight; }
+function updateTokens() { morphBtn.textContent = tokens?'Shape swap ×' + tokens:'Shape swap · 2 lines'; morphBtn.disabled = tokens <= 0; }
 
 function move(dx) { if (frozen() || !cur) return; if (!collide(cur.m, cur.r, cur.x + dx)) { cur.x += dx; render(); } }
 function rotateCur() { if (frozen() || !cur) return; const rm = rotate(cur.m); for (const k of [0, -1, 1, -2, 2]) { if (!collide(rm, cur.r, cur.x + k)) { cur.m = rm; cur.x += k; render(); return; } } }
@@ -231,30 +231,12 @@ function startLoop() { clearTimeout(loop); loop = setTimeout(() => { step(); sta
 const pauseOv = document.getElementById('pauseOv');
 document.getElementById('pauseBtn').addEventListener('click', () => setPause(true));
 document.getElementById('resumeBtn').addEventListener('click', () => setPause(false));
-function setPause(on) { if (over || qOv.classList.contains('show')) return; userPaused=on; pauseOv.classList.toggle('show',on); if(!on && pendingQuestion){pendingQuestion=false;askQuestion();} }
-
-// ── questions ──
-function askQuestion() {
-  if(userPaused){pendingQuestion=true;return;}
-  paused = true; curQ = rand(QUESTIONS);
-  qText.textContent = curQ.question; qOpts.innerHTML = ''; qResult.textContent = ''; qResult.className = 'qresult'; qCont.style.display = 'none';
-  curQ.options.forEach((o, i) => { const b = document.createElement('button'); b.className = 'qopt'; b.textContent = o; b.dataset.i = i; qOpts.appendChild(b); });
-  qOv.classList.add('show');
-}
-qOpts.addEventListener('click', e => {
-  const b = e.target.closest('.qopt'); if (!b || !curQ || qCont.style.display !== 'none') return;
-  const i = +b.dataset.i, correct = i === curQ.answer;
-  [].forEach.call(qOpts.children, x => { x.disabled = true; if (+x.dataset.i === curQ.answer) x.classList.add('right'); });
-  if (correct) { tokens++; updateTokens(); qResult.textContent = '✓ Correct! +1 new shape. ' + (curQ.teaching || ''); qResult.className = 'qresult ok'; }
-  else { b.classList.add('wrong'); qResult.textContent = 'Let’s learn together. The answer is ' + curQ.options[curQ.answer] + '. ' + (curQ.teaching || ''); qResult.className = 'qresult bad'; }
-  qCont.style.display = '';
-});
-qCont.addEventListener('click', () => { qOv.classList.remove('show'); curQ = null; paused = false; });
+function setPause(on) { if (over) return; userPaused=on; pauseOv.classList.toggle('show',on); }
 
 // ── re-morph (overlay picker) ──
 const morphOv = document.getElementById('morphOv'), shapesEl = document.getElementById('shapes');
 TYPES.forEach(t => { const b = document.createElement('button'); b.className = 'shp'; b.dataset.t = t; b.textContent = t; shapesEl.appendChild(b); });
-morphBtn.addEventListener('click', () => { if (tokens <= 0 || over) return; userPaused = true; morphOv.classList.add('show'); });
+morphBtn.addEventListener('click', () => { if (tokens <= 0 || frozen() || !cur) return; userPaused = true; morphOv.classList.add('show'); });
 document.getElementById('morphCancel').addEventListener('click', closeMorph);
 function closeMorph() { morphOv.classList.remove('show'); userPaused = false; }
 shapesEl.addEventListener('click', e => { const b = e.target.closest('.shp'); if (b) doMorph(b.dataset.t); });
@@ -270,7 +252,7 @@ function doMorph(t) {
 document.querySelector('.ctrls').addEventListener('click', e => { const b = e.target.closest('.cbtn'); if (!b) return; const a = b.dataset.act; if (a === 'left') move(-1); else if (a === 'right') move(1); else if (a === 'rotate') rotateCur(); else if (a === 'soft') softDrop(); else if (a === 'hard') hardDrop(); });
 document.addEventListener('keydown', e => {
   if(e.target.matches('input,button,a,select,textarea') && (e.key===' '||e.key==='Enter'))return;
-  if(document.getElementById('introOv').classList.contains('show') || document.getElementById('nameGate').classList.contains('show') || qOv.classList.contains('show') || morphOv.classList.contains('show'))return;
+  if(document.getElementById('introOv').classList.contains('show') || document.getElementById('nameGate').classList.contains('show') || morphOv.classList.contains('show'))return;
   if(e.key.toLowerCase()==='p'){e.preventDefault();setPause(!userPaused);return;}
   if(pauseOv.classList.contains('show'))return;
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();
@@ -289,11 +271,11 @@ boardEl.addEventListener('touchend', e => {
   ts = null;
 }, { passive: true });
 
-function winVerse() { over = true; clearTimeout(loop); setTimeout(() => document.getElementById('winOv').classList.add('show'), 450); }
+function winVerse() { GameAudio.play('win'); over = true; clearTimeout(loop); setTimeout(() => document.getElementById('winOv').classList.add('show'), 450); }
 function gameOver() { over = true; clearTimeout(loop); document.getElementById('goMsg').textContent = 'You cleared ' + lines + ' lines and uncovered ' + revealed + ' of ' + words.length + ' words. Your best result is saved. Try again to build the whole verse!'; setTimeout(() => document.getElementById('goOv').classList.add('show'), 300); }
 
-function startGame() { pendingQuestion=false; board = newBoard(); score = 0; lines = 0; revealed = 0; penalty = 1; tokens = 0; pieceCount = 0; over = false; paused = false; userPaused = false; nextType = rand(TYPES); buildCells(); renderStats(); renderVerse(); updateTokens(); speed(); spawn(); render(); startLoop(); }
-GameSession.ready().then(()=>{document.getElementById('introOv').classList.add('show');document.getElementById('startButton').focus();});
+function startGame() { pieceBag=[]; board = newBoard(); score = 0; lines = 0; revealed = 0; penalty = 1; tokens = 0; pieceCount = 0; over = false; paused = false; userPaused = false; nextType = takeType(); buildCells(); renderStats(); renderVerse(); updateTokens(); speed(); spawn(); render(); startLoop(); }
+GameSession.ready().then(data=>{versePhrases=data.challenge.phrases||words;document.getElementById('introOv').classList.add('show');document.getElementById('startButton').focus();});
 document.getElementById('startButton').addEventListener('click',()=>{document.getElementById('introOv').classList.remove('show');startGame();document.getElementById('pauseBtn').focus();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden && board && !over)setPause(true);});
 </script>

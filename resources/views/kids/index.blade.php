@@ -13,7 +13,7 @@
 ])
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
@@ -52,16 +52,21 @@
 .family-note{margin-top:36px;font-size:13px;line-height:1.6;color:var(--ink-soft)}.family-note a{color:var(--teal)}.lvl .go{min-height:18px}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 @include('partials.theme-vars')
+@include('kids.design')
 </head>
-<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
+<body class="kids kids-index" data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 @include('partials.site-menu')
 
 <main>
-  <div class="eyebrow">For our children</div>
-  <h1>Scripture Games.</h1>
-  <p class="lede">A little discovery. A little practice. A verse to carry with you. Explore the <b>Word of God</b> through games, and earn stars as you finish.</p>
-  <div class="who" id="who"></div>
-
+  <section class="adventure-hero">
+    <div class="hero-copy"><div class="eyebrow">THE CHURCH OF PEACE · KIDS</div>
+    <h1>Little games.<br><span>Big discoveries.</span></h1>
+    <p class="lede">Match, explore, find, and build. Your next Bible adventure starts here.</p>
+    <a class="btn" href="#choose-game">Let's explore <span aria-hidden="true">↗</span></a>
+    <div class="who" id="who"></div></div>
+    <img class="hero-art" src="/kids-assets/adventure-world-v1.jpg" width="1200" height="800" alt="A little sheep exploring floating islands along a starry path to an open book" fetchpriority="high">
+  </section>
+  <div class="catalog-heading" id="choose-game"><div><div class="eyebrow">PICK YOUR ADVENTURE</div><h2>What will you discover?</h2></div><p>Four ways to play. A verse in every adventure.</p></div>
   <div class="filters" id="filters">
     <button class="chip on" aria-pressed="true" data-band="all">All ages</button>
     <button class="chip" aria-pressed="false" data-band="little">Little (4–6)</button>
@@ -72,35 +77,34 @@
   @php
     $byType = $levels->groupBy('game_type');
     $meta = [
-      'verse_tetris' => ['Verse Tetris', '🧱', 'Real Tetris — clear lines to build the verse; questions about Jesus power you up. (Teens)'],
-      'word_search'  => ['Word Search', '🔎', 'Find the hidden words, then read the whole verse.'],
-      'memory_match' => ['Memory Match', '🃏', 'Flip and match the pairs to reveal the verse.'],
-      'hidden_words' => ['Hidden Words', '✨', 'Tap to uncover each word of the verse.'],
+      'verse_tetris' => ['Verse Blocks', 'STACK + CLEAR', 'Find your flow. Stack blocks, clear rows, and build a verse.'],
+      'word_search'  => ['Word Quest', 'SEEK + FIND', 'Spot the hidden words. Connect the letters. Complete your quest.'],
+      'memory_match' => ['Memory Match', 'FLIP + MATCH', 'A little flip. A perfect pair. How many can you remember?'],
+      'hidden_words' => ['Treasure Trail', 'EXPLORE + COLLECT', 'Follow the path and collect the words to uncover your verse.'],
     ];
   @endphp
 
   @foreach (['memory_match','hidden_words','word_search','verse_tetris'] as $gt)
     @if (($byType[$gt] ?? collect())->isNotEmpty())
-      <div class="sec" data-sec>
-        <h2>{{ $meta[$gt][1] }} {{ $meta[$gt][0] }}</h2>
-        <div class="sub">{{ $meta[$gt][2] }}</div>
+      <section class="sec genre-{{ $gt }}" data-sec>
+        <div class="genre-head"><div class="game-preview" aria-hidden="true">@include('kids.game-art', ['kind'=>$gt])</div><div><div class="genre-tag">{{ $meta[$gt][1] }}</div><h2>{{ $meta[$gt][0] }}</h2><div class="sub">{{ $meta[$gt][2] }}</div></div></div>
         <div class="grid">
           @foreach ($byType[$gt] as $lvl)
             <a class="lvl" href="{{ route('kids.play', $lvl) }}" data-band="{{ $lvl->age_band }}" data-level="{{ $lvl->id }}">
               <div class="ref">{{ $lvl->reference }}</div>
               <div class="t">{{ $lvl->title ?: $lvl->book }}</div>
               <div class="bk">{{ $lvl->book }} · {{ ['little'=>'Ages 4–6','older'=>'Ages 7–9','teens'=>'Teens'][$lvl->age_band] ?? $lvl->age_band }}</div>
-              <div class="go">Play @include('partials._ar')</div>
+              <div class="go">Let’s play @include('partials._ar')</div>
             </a>
           @endforeach
         </div>
-      </div>
+      </section>
     @endif
   @endforeach
 
   <p class="family-note">For families: choose a nickname instead of a full name. Games save progress on this browser. <a href="{{ route('privacy') }}">How we handle game information →</a></p>
   <div class="board">
-    <h2>⭐️ Learning together</h2>
+    <h2>Our discovery crew</h2>
     <p>Celebrating completed puzzles and verse progress. Nicknames appear here with stars earned through our updated games.</p>
     @if ($leaders->isNotEmpty())
       <ol>

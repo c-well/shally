@@ -7,7 +7,7 @@
 <title>{{ $level->reference }} — Scripture Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--parchment); color: var(--ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
@@ -70,8 +70,9 @@
   .ov{visibility:hidden}.ov.show{visibility:visible}.card{max-height:90dvh;overflow:auto}.small{font:12px/1.6 'IBM Plex Sans',sans-serif!important;margin-top:12px;color:var(--ink-soft)}.small a{color:var(--teal)}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.journey{max-width:460px;margin:22px auto 0;font-size:13px;font-weight:600;color:var(--teal)}progress{display:block;width:100%;height:9px;margin-top:8px;accent-color:var(--teal);border:0}.tools{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}.tools button{font:inherit;font-size:13px;padding:10px 14px;border:1px solid var(--line);border-radius:24px;background:white;color:var(--teal);cursor:pointer}.feedback{min-height:24px;margin-top:18px;font-size:14px;color:var(--teal)}.mm{grid-template-columns:repeat(3,minmax(0,1fr));max-width:440px}.mcard{aspect-ratio:1.15;font:600 22px 'IBM Plex Sans',sans-serif;min-width:0}.mcard .w{overflow-wrap:anywhere}.mcard .icon{display:block;font-size:32px;margin-bottom:4px}.mcard.up,.mcard.done{font-size:clamp(10px,2.7vw,15px)}.mcard.done{border-color:#709879}.htile:disabled{opacity:.5;cursor:default}.htile.next{border:2px solid var(--teal);box-shadow:0 0 0 4px #dfeceb}.htile.on{opacity:1}.cell.hinted{outline:3px solid #c0923f;outline-offset:1px}.cell{padding:0;font-family:inherit}.btn{display:inline-block;text-decoration:none}.btn[hidden]{display:none}.stars-big.preview{font:600 18px system-ui;letter-spacing:0}progress{border-radius:10px;overflow:hidden}progress::-webkit-progress-bar{background:#e0e8e4}progress::-webkit-progress-value{background:var(--teal);border-radius:10px}.who{max-width:60%;overflow-wrap:anywhere}.ws{max-width:100%}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 @include('partials.theme-vars')
+@include('kids.design')
 </head>
-<body data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
+<body class="kids kids-play" data-theme="{{ \App\Models\AppSetting::get('site_theme', 'default') }}">
 
 <div class="top">
   <a href="{{ route('kids') }}">@include('partials._arl') Games</a>
@@ -79,21 +80,21 @@
 </div>
 
 <main>
-  <div class="ref">{{ $level->reference }}</div>
+  <div class="game-kicker">{{ ['memory_match'=>'MEMORY MATCH','word_search'=>'WORD QUEST','hidden_words'=>'TREASURE TRAIL'][$level->game_type] ?? 'LET’S PLAY' }}</div><div class="ref">{{ $level->reference }}</div>
   <h1>{{ $level->title ?: $level->book }}</h1>
 
   <div class="journey"><span id="progressText" aria-live="polite">Ready for an adventure?</span><progress id="progressBar" value="0" max="1" aria-label="Game progress"></progress></div>
-  <div class="tools"><button id="soundToggle" type="button" aria-pressed="true">🔊 Sound on</button>@if($level->game_type==='word_search')<button id="hintButton" type="button">💡 Show a starting letter</button>@endif</div>
+  <div class="tools"><button id="soundToggle" type="button" aria-pressed="false">Sound off</button>@if($level->game_type==='word_search')<button id="hintButton" type="button">Need a clue?</button>@endif</div>
   @if ($level->game_type === 'word_search')
     <p class="hint">Drag across a word, or tap its first and last letter. Words can run across, down, or diagonally.</p>
     <div class="ws"><div class="ws-grid" id="grid"></div></div>
     <div class="words" id="wordlist"></div>
   @elseif ($level->game_type === 'memory_match')
-    <p class="hint">Turn over two cards. Match the pictures and words, and say them together!</p>
+    <p class="hint">Flip two cards. Find their twins. Collect every pair!</p>
     <div class="mm" id="mm"></div>
   @elseif ($level->game_type === 'hidden_words')
-    <p class="hint">Follow the glowing word. Tap, listen, and say it with me!</p>
-    <div class="hw" id="hw"></div>
+    <p class="hint">Find the matching word to take your next step along the trail.</p>
+    <div class="trail-scene" aria-hidden="true"><div class="trail-marker" id="trailMarker"></div></div><div class="trail-clue" id="trailClue"></div><div class="trail-choices" id="trailChoices"></div><div class="hw" id="hw"></div>
   @endif
 <p id="feedback" class="feedback" aria-live="polite"></p><p id="saveStatus" class="small" role="status"></p><button id="retrySave" type="button" class="btn" hidden>Retry saving</button>
 </main>
@@ -103,14 +104,14 @@
 {{-- Win --}}
 <div class="ov" id="winOv" role="dialog" aria-modal="true" aria-label="Game complete">
   <div class="card">
-    <div class="stars-big pop" id="winStars">⭐️⭐️⭐️</div>
-    <h2>You did it!</h2>
-    <p>You practiced <b>{{ $level->reference }}</b></p>
-    <div class="verse">“{{ $level->verse_text }}”</div>
-    <div><button class="btn" id="listenVerse">🔊 Hear the verse</button></div>
-    @if($nextLevel)<div><a class="btn" href="{{ route('kids.play',$nextLevel) }}{{ request()->boolean('preview') ? '?preview=1' : '' }}">Next adventure →</a></div>@endif
-    <div><a class="btn btn-ghost" href="{{ route('kids') }}">Choose another game</a></div>
-    <div><button class="btn btn-ghost" onclick="location.reload()">Play again</button></div>
+    <div class="win-art" aria-hidden="true"><span class="win-spark">★</span><span class="win-spark">★</span><span class="win-spark">★</span></div>
+    <div class="stars-big" id="winStars">Adventure complete</div>
+    <h2>You found your verse!</h2>
+    <p class="win-summary" id="winSummary">Three stars. One big discovery.</p>
+    <div class="verse"><small>{{ $level->reference }}</small>{{ $level->verse_text }}</div>
+    @if($nextLevel)<a class="btn" id="nextAdventure" href="{{ route('kids.play',$nextLevel) }}{{ request()->boolean('preview') ? '?preview=1' : '' }}">Next adventure <span aria-hidden="true">→</span></a>@endif
+    <a class="btn btn-ghost" href="{{ route('kids') }}">Choose another game</a>
+    <button class="replay-link" onclick="location.reload()">Play this one again</button>
   </div>
 </div>
 
@@ -119,13 +120,20 @@
 const LEVEL = @json($levelData);
 </script>
 @include('kids.session')
+@include('kids.audio')
 <script>
-let challenge, state, locked=false, sound=true;
+let challenge, state, locked=false, attempts=0, streak=0;
 const feedback=document.getElementById('feedback');
-const icons={SHEPHERD:'🐑',LORD:'✨',WANT:'🌿',LOVE:'💛',LOVETH:'💛',GOD:'✨',CREATED:'🌱',BEGINNING:'🌅',HEAVEN:'☁️',EARTH:'🌍',HONOUR:'🏅',FATHER:'👨',MOTHER:'👩',LIGHT:'🕯️',LAMP:'🏮',PEACE:'🕊️',PEACEMAKERS:'🕊️',CHILDREN:'🧒'};
-function speak(text,force=false){if((!sound&&!force) || !('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.8;speechSynthesis.speak(u);}catch(_){}}
-document.getElementById('soundToggle').addEventListener('click',e=>{sound=!sound;e.currentTarget.textContent=sound?'🔊 Sound on':'🔇 Sound off';e.currentTarget.setAttribute('aria-pressed',String(sound));if(!sound && 'speechSynthesis'in window)speechSynthesis.cancel();});
-document.getElementById('listenVerse').addEventListener('click',()=>speak(LEVEL.verse,true));
+document.getElementById('soundToggle').addEventListener('click',e=>{const on=GameAudio.toggle();e.currentTarget.textContent=on?'Sound on':'Sound off';e.currentTarget.setAttribute('aria-pressed',String(on));});
+const picturePaths=[
+ '<path d="M12 20C12 7 31 5 32 20C34 5 52 7 52 20C52 34 32 48 32 48S12 34 12 20Z" fill="currentColor"/>',
+ '<path d="m32 7 7 15 17 2-12 12 3 18-15-8-15 8 3-18L8 24l17-2Z" fill="currentColor"/>',
+ '<path d="M11 45C10 17 28 10 53 10C53 35 44 52 19 49Z" fill="currentColor"/><path d="m18 45 23-23" stroke="white" stroke-width="4" stroke-linecap="round"/>',
+ '<path d="M9 44a23 23 0 0 1 46 0" fill="none" stroke="currentColor" stroke-width="9"/><path d="M21 44a11 11 0 0 1 22 0" fill="none" stroke="currentColor" stroke-width="5"/>',
+ '<path d="M9 15q13-5 23 3 10-8 23-3v34q-13-5-23 2-10-7-23-2Z" fill="currentColor"/><path d="M32 20v26" stroke="white" stroke-width="3"/>',
+ '<circle cx="32" cy="32" r="14" fill="currentColor"/><path d="M32 5v6m0 42v6M5 32h6m42 0h6M13 13l5 5m28 28 5 5M13 51l5-5m28-28 5-5" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>'
+];
+function picture(index){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 64 64');svg.setAttribute('aria-hidden','true');svg.innerHTML=picturePaths[index%picturePaths.length];return svg;}
 function progress(){
   const unit=LEVEL.type==='memory_match'?'pairs': 'words';
   document.getElementById('progressText').textContent=`${state.progress} of ${challenge.total} ${unit} discovered`;
@@ -133,29 +141,29 @@ function progress(){
 }
 function finish(){
   if(!state.completed)return;
-  const ov=document.getElementById('winOv');ov.classList.add('show');document.getElementById('listenVerse').focus();
-  if(GameSession.preview){document.getElementById('winStars').textContent='Practice complete ✨';document.getElementById('winStars').classList.add('preview');}
+  const ov=document.getElementById('winOv');GameAudio.play('win');ov.classList.add('show');ov.querySelector('.btn').focus();if(LEVEL.type==='memory_match')document.getElementById('winSummary').textContent=`${challenge.total} pairs collected in ${attempts} turns this visit.`;
+  if(GameSession.preview){document.getElementById('winStars').textContent='Practice complete';document.getElementById('winStars').classList.add('preview');document.getElementById('winSummary').textContent='A discovery to take with you. No public stars in practice mode.';}
 }
 async function act(event){const d=await GameSession.move(event);state=d.state;progress();return d;}
 function memory(){
   const root=document.getElementById('mm');
   challenge.cards.forEach((word,i)=>{
     const card=document.createElement('button');card.className='mcard';card.type='button';
-    const back=document.createElement('span');back.className='q';back.textContent='✦';
+    const back=document.createElement('span');back.className='q';back.append(picture(4));
     const front=document.createElement('span');front.className='w';
-    const icon=document.createElement('span');icon.className='icon';icon.textContent=icons[word] || ['🌟','🌻','🦋','🌈','🌳','🕊️'][challenge.cards.indexOf(word)%6];icon.setAttribute('aria-hidden','true');
+    const icon=document.createElement('span');icon.className='icon';const artIndex=[...new Set(challenge.cards)].indexOf(word);icon.append(picture(artIndex));card.style.setProperty('--card-color',['#db4771','#986916','#11836e','#6756c7','#347bb2','#bd571e'][artIndex%6]);icon.setAttribute('aria-hidden','true');
     front.append(icon,document.createTextNode(word));card.append(back,front);root.append(card);
     const matched=(state.matched||[]).includes(i);card.classList.toggle('done',matched);card.disabled=matched;card.setAttribute('aria-label',matched?`${word}, matched`:`Card ${i+1}, face down`);
     if(state.first===i){card.classList.add('up');card.setAttribute('aria-label',word);}
     card.addEventListener('click',async()=>{
       if(locked || card.classList.contains('done') || state.first===i)return;
-      locked=true;const previous=state.first;card.classList.add('up');card.setAttribute('aria-label',word);speak(word);
+      locked=true;const previous=state.first;card.classList.add('up');card.setAttribute('aria-label',word);GameAudio.play('tap');
       await act({type:'flip',index:i});
-      if(previous!==undefined && previous!==null){
+      if(previous!==undefined && previous!==null){attempts++;
         if((state.matched||[]).includes(i)){
-          [previous,i].forEach(n=>{const c=root.children[n];c.classList.remove('up');c.classList.add('done');c.disabled=true;c.setAttribute('aria-label',`${challenge.cards[n]}, matched`);});feedback.textContent='A match! Well remembered.';
+          [previous,i].forEach(n=>{const c=root.children[n];c.classList.remove('up');c.classList.add('done');c.disabled=true;c.setAttribute('aria-label',`${challenge.cards[n]}, matched`);});streak++;GameAudio.play('match');feedback.textContent=streak>1?`${streak} matches in a row!`:'Perfect pair! Keep going.';
         }else{
-          feedback.textContent='Keep exploring — remember where those two live.';
+          streak=0;feedback.textContent='Nearly! Remember those cards for your next turn.';
           await new Promise(r=>setTimeout(r,900));[previous,i].forEach(n=>{root.children[n].classList.remove('up');root.children[n].setAttribute('aria-label',`Card ${n+1}, face down`);});
         }
       }
@@ -164,17 +172,27 @@ function memory(){
   });
 }
 function hidden(){
-  const root=document.getElementById('hw');
-  challenge.words.forEach((word,i)=>{
-    const tile=document.createElement('button');tile.className='htile';tile.type='button';root.append(tile);
-    tile.addEventListener('click',async()=>{
-      if(locked || i!==state.progress)return;
-      locked=true;speak(word);await act({type:'reveal',index:i});paint();locked=false;
-      feedback.textContent=state.completed?'Now say the whole verse together!':'Wonderful! Follow the next glowing word.';
-      if(!state.completed)root.children[state.progress].focus();finish();
+  const root=document.getElementById('hw'),choices=document.getElementById('trailChoices'),clue=document.getElementById('trailClue');
+  challenge.words.forEach(()=>{const tile=document.createElement('span');tile.className='htile';root.append(tile);});
+  function paint(){
+    Array.from(root.children).forEach((tile,i)=>{tile.textContent=i<state.progress?challenge.words[i]:'·';tile.classList.toggle('on',i<state.progress);});
+    document.getElementById('trailMarker').style.left=(8+state.progress/challenge.total*80)+'%';
+    choices.replaceChildren();
+    if(state.completed){clue.textContent='Treasure found!';return;}
+    const correct=challenge.words[state.progress];clue.textContent=`Find the word: ${correct}`;
+    const alternatives=[...new Set(challenge.words.filter(w=>w!==correct))].sort(()=>Math.random()-.5).slice(0,2);
+    const options=[correct,...alternatives].sort(()=>Math.random()-.5);
+    options.forEach(word=>{const button=document.createElement('button');button.type='button';button.className='word-choice';button.textContent=word;choices.append(button);
+      button.addEventListener('click',async()=>{
+        if(locked)return;
+        if(word!==correct){button.classList.add('try-again');feedback.textContent='Look closely. Find the word that matches the clue.';return;}
+        locked=true;button.classList.add('correct');GameAudio.play('match');
+        await act({type:'reveal',index:state.progress,word});paint();locked=false;
+        feedback.textContent=state.completed?'You collected every word!':'One step closer to the treasure!';
+        if(!state.completed)choices.querySelector('button').focus();finish();
+      });
     });
-  });
-  function paint(){Array.from(root.children).forEach((tile,i)=>{tile.textContent=i<state.progress?challenge.words[i]:'•••';tile.disabled=i!==state.progress;tile.classList.toggle('on',i<state.progress);tile.classList.toggle('next',i===state.progress);tile.setAttribute('aria-label',i<state.progress?challenge.words[i]:`Reveal word ${i+1}`);});}
+  }
   paint();
 }
 function wordSearch(){
@@ -203,7 +221,7 @@ function wordSearch(){
     first=null;
     if(!match || (state.found||[]).includes(match)){clear();feedback.textContent=match?'You already found that word. Try another!':'Try a straight line between the first and last letter.';return;}
     locked=true;
-    await act({type:'word',start:[+a.dataset.r,+a.dataset.c],end:[+b.dataset.r,+b.dataset.c]});clear();paintFound();speak(match);feedback.textContent=`You found ${match.toLowerCase()}!`;locked=false;finish();
+    await act({type:'word',start:[+a.dataset.r,+a.dataset.c],end:[+b.dataset.r,+b.dataset.c]});clear();paintFound();GameAudio.play('match');feedback.textContent=`You found ${match.toLowerCase()}!`;locked=false;finish();
   }
   function tap(cell){if(locked)return;if(!first){first=cell;clear();cell.classList.add('sel');feedback.textContent='Now choose the last letter.';}else submit(first,cell);}
   root.addEventListener('pointerdown',e=>{if(locked)return;const cell=cellAt(e);if(!cell)return;e.preventDefault();dragStart=cell;moved=false;});
