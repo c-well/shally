@@ -26,6 +26,9 @@ class KidsGameEngine
 
             return ['mode' => 'letter_blocks', 'phrases' => $phrases, 'letter_steps' => $steps, 'total' => count($steps)];
         }
+        if ($level->game_type === 'escape_room') {
+            return ['mode' => 'philippi_v1', 'total' => 3];
+        }
         $keys = $level->keywords();
         if ($level->game_type === 'memory_match') {
             $keys = array_slice($keys, 0, $level->age_band === 'little' ? 5 : 6);
@@ -105,6 +108,9 @@ class KidsGameEngine
     {
         $state += ['progress' => 0, 'score' => 0];
         switch ($type) {
+            case 'escape_room':
+                $state = KidsEscapeRoom::move($state, $event);
+                break;
             case 'hidden_words':
                 $index = $event['index'] ?? null;
                 if (($event['type'] ?? '') !== 'reveal' || ! is_int($index) || $index !== $state['progress'] || $index >= $challenge['total']) {

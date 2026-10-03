@@ -66,7 +66,7 @@
     <div class="who" id="who"></div></div>
     <div class="hero-world"><img class="hero-art" src="/kids-assets/adventure-path-v1.jpg" width="1200" height="800" alt="Floating islands with a starry path to an open book" fetchpriority="high">@include('kids.mascot', ['mascotClass'=>'hero-sheep'])<button class="mascot-motion" data-mascot-motion type="button" aria-pressed="true">Pause mascot motion</button></div>
   </section>
-  <div class="catalog-heading" id="choose-game"><div><div class="eyebrow">PICK YOUR ADVENTURE</div><h2>What will you discover?</h2></div><p>Four ways to play. A verse in every adventure.</p></div>
+  <div class="catalog-heading" id="choose-game"><div><div class="eyebrow">PICK YOUR ADVENTURE</div><h2>What will you discover?</h2></div><p>Choose your kind of adventure. Discover the Word as you play.</p></div>
   <div class="filters" id="filters">
     <button class="chip on" aria-pressed="true" data-band="all">All ages</button>
     <button class="chip" aria-pressed="false" data-band="little">Little (4–6)</button>
@@ -77,6 +77,7 @@
   @php
     $byType = $levels->groupBy('game_type');
     $meta = [
+      'escape_room' => ['Bible Escape Rooms', 'EXPLORE + SOLVE', 'Search the scene. Follow Scripture clues. Unlock the next chapter.'],
       'verse_tetris' => ['Verse Blocks', 'SPELL + BUILD', 'Land letter blocks and build your verse, one word at a time.'],
       'word_search'  => ['Word Quest', 'SEEK + FIND', 'Spot the hidden words. Connect the letters. Complete your quest.'],
       'memory_match' => ['Memory Match', 'FLIP + MATCH', 'A little flip. A perfect pair. How many can you remember?'],
@@ -84,7 +85,7 @@
     ];
   @endphp
 
-  @foreach (['memory_match','hidden_words','word_search','verse_tetris'] as $gt)
+  @foreach (['escape_room','memory_match','hidden_words','word_search','verse_tetris'] as $gt)
     @if (($byType[$gt] ?? collect())->isNotEmpty())
       <section class="sec genre-{{ $gt }}" data-sec>
         <div class="genre-head"><div class="game-preview" aria-hidden="true">@include('kids.game-art', ['kind'=>$gt])</div><div><div class="genre-tag">{{ $meta[$gt][1] }}</div><h2>{{ $meta[$gt][0] }}</h2><div class="sub">{{ $meta[$gt][2] }}</div></div></div>

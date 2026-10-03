@@ -76,7 +76,7 @@
   @foreach ($levels as $l)
     <div class="lvl {{ $l->is_active ? '' : 'off' }}" data-id="{{ $l->id }}">
       <div class="hd">
-        <span class="badge">{{ ['word_search'=>'Word search','verse_tetris'=>'Verse Tetris','memory_match'=>'Memory','hidden_words'=>'Hidden words'][$l->game_type] }}</span>
+        <span class="badge">{{ ['word_search'=>'Word search','verse_tetris'=>'Verse Tetris','memory_match'=>'Memory','hidden_words'=>'Hidden words','escape_room'=>'Escape room'][$l->game_type] }}</span>
         <span class="badge">{{ ['little'=>'4–6','older'=>'7–9','teens'=>'Teens'][$l->age_band] ?? $l->age_band }}</span>
         <span class="sp"></span><a class="mini" href="{{ route('kids.play', $l) }}?preview=1" target="_blank" rel="noopener">Test play</a>
         <button class="mini {{ $l->is_active ? 'on' : '' }}" data-toggle="{{ route('admin.games.toggle', $l) }}" data-on="{{ $l->is_active ? 1 : 0 }}">{{ $l->is_active ? 'Live' : 'Hidden' }}</button>

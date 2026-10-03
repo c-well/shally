@@ -39,6 +39,10 @@ class KidsController extends Controller
         abort_unless($level->is_active, 404);
         $nextLevel = GameLevel::active()->where('age_band', $level->age_band)->where('id', '!=', $level->id)->orderByRaw('id > ? desc', [$level->id])->orderBy('id')->first();
         $data = ['level' => $level, 'nextLevel' => $nextLevel, 'keywords' => $level->keywords()];
+        if ($level->game_type === 'escape_room') {
+            $data['rooms'] = \App\Services\KidsEscapeRoom::rooms();
+            return response()->view('kids.escape', $data)->header('Cache-Control', 'no-store, private');
+        }
         if ($level->game_type === 'verse_tetris') {
             $data['questions'] = GameQuestion::active()->inRandomOrder()->limit(24)->get(['question', 'options', 'answer', 'teaching']);
 
@@ -108,7 +112,7 @@ class KidsController extends Controller
         if (! $request->filled('run_token')) {
             return response()->json(['message' => 'Reload this game to use the updated scoring.'], 409);
         }
-        $d = $request->validate(['run_token' => 'required|uuid', 'sequence' => 'required|integer|min:1', 'event' => 'required|array', 'event.type' => 'required|string|max:20', 'event.word' => 'sometimes|string|max:200', 'event.index' => 'sometimes|integer|min:0|max:600', 'event.lines' => 'sometimes|integer|min:0|max:4', 'event.start' => 'sometimes|array|size:2', 'event.start.*' => 'integer|min:0|max:12', 'event.end' => 'sometimes|array|size:2', 'event.end.*' => 'integer|min:0|max:12']);
+        $d = $request->validate(['run_token' => 'required|uuid', 'sequence' => 'required|integer|min:1', 'event' => 'required|array', 'event.type' => 'required|string|max:20', 'event.room' => 'sometimes|integer|min:0|max:2', 'event.object' => 'sometimes|string|max:20', 'event.answer' => 'sometimes|array|max:5', 'event.answer.*' => 'required', 'event.item' => 'sometimes|string|max:20', 'event.target' => 'sometimes|string|max:20', 'event.word' => 'sometimes|string|max:200', 'event.index' => 'sometimes|integer|min:0|max:600', 'event.lines' => 'sometimes|integer|min:0|max:4', 'event.start' => 'sometimes|array|size:2', 'event.start.*' => 'integer|min:0|max:12', 'event.end' => 'sometimes|array|size:2', 'event.end.*' => 'integer|min:0|max:12']);
 
         return DB::transaction(function () use ($p, $d, $engine) {
             // Serialize all writes for one player, including concurrent tabs.

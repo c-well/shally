@@ -63,3 +63,13 @@ Verse Blocks defaults to Gentle (1200ms per row), with Steady (720ms) and Challe
 ## Church-hours audio
 
 All kids games read published service windows from ServiceTime (America/New_York). A saved sound-on choice is overridden when a game opens during a service or stays open into one. A short notice explains the quiet default; players may explicitly unmute on that page for headphones. This service-time override never changes their saved preference, and ending a service never automatically enables sound. The clock is anchored to the server, uses New York daylight-saving rules, and rechecks before each cue, every 15 seconds, and on visibility changes. Service schedule edits apply on the next page load. No additional visitor information is collected.
+
+## Midnight in Philippi — escape room
+
+A teen point-and-click adventure adapted from Acts 16:25–34 (KJV), with three illustrated scenes and nine objects to inspect. Room 1 restores the sequence of Acts 16:25; room 2 turns word dials to restore “we are all here”; room 3 pairs Scripture, a basin, and bread with hearing, caring, and sharing. The game explicitly identifies objects/puzzles as an imagined adaptation and links the full passage. The characters stay to help the jailer rather than fleeing. There is no timer, horror imagery, synthetic narration, or audio-only clue.
+
+The server checks discovered clues, room sequence, and answers. Wrong answers return helpful feedback without resetting a run. Room and object progress, including partial matches, survive reload through the existing 24-hour run mechanism. Unsubmitted fragment/dial arrangements reset on reload. Hints are optional and carry no reward penalty. Existing completion/star rules and test-play exclusions apply. Assets are local compressed JPEGs; motion honors reduced-motion settings.
+
+Publish `KidsEscapeRoomSeeder` only after the views, engine, and images are deployed. It creates the story once and preserves subsequent staff Live/Hidden choices. No database schema changes are required. Catalog and admin labels support `escape_room`; new stories require authored rooms rather than generic verse-only generation.
+
+Validation: server tests cover discovery requirements, skipped rooms, wrong answers, resumption, object matching, and idempotent rewards. Manual browser walkthrough completed all three rooms, including wrong dials and reloading mid-match, at desktop and 390px phone widths. A local service fixture verified the quiet notice overrides remembered sound-on.

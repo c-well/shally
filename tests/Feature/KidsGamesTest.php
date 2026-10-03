@@ -280,4 +280,50 @@ class KidsGamesTest extends TestCase
         $this->assertSame(0, GameRun::count());
         $this->assertSame(1, GamePlayer::count());
     }
+    public function test_escape_room_requires_discoveries_correct_solutions_and_resumes(): void
+    {
+        $p = $this->player();
+        $level = $this->level('escape_room');
+        $run = $this->start($p, $level);
+        $this->assertSame('philippi_v1', $run['challenge']['mode']);
+        $seq = 1;
+        $this->move($p, $run, $seq++, ['type' => 'solve', 'room' => 0, 'answer' => [2, 4, 3, 1, 0]])->assertOk()->assertJsonPath('state.progress', 0);
+        $this->move($p, $run, $seq, ['type' => 'inspect', 'room' => 2, 'object' => 'bread'])->assertUnprocessable();
+        foreach (['window', 'scroll', 'bench'] as $object) {
+            $this->move($p, $run, $seq++, ['type' => 'inspect', 'room' => 0, 'object' => $object])->assertOk();
+        }
+        $wrong = ['type' => 'solve', 'room' => 0, 'answer' => [0, 1, 2, 3, 4]];
+        $this->move($p, $run, $seq++, $wrong)->assertOk()->assertJsonPath('state.progress', 0)->assertJsonPath('state.completed', false);
+        $this->move($p, $run, $seq++, ['type' => 'solve', 'room' => 0, 'answer' => [2, 4, 3, 1, 0]])->assertOk()->assertJsonPath('state.progress', 1);
+        $this->postJson('/kids/begin', ['token' => $p->token, 'level_id' => $level->id, 'run_token' => $run['run_token']])->assertOk()->assertJsonPath('state.progress', 1)->assertJsonCount(3, 'state.discovered');
+        foreach (['door', 'chains', 'lamp'] as $object) {
+            $this->move($p, $run, $seq++, ['type' => 'inspect', 'room' => 1, 'object' => $object])->assertOk();
+        }
+        $this->move($p, $run, $seq++, ['type' => 'solve', 'room' => 1, 'answer' => ['WE', 'ARE', 'ALL', 'HERE']])->assertOk()->assertJsonPath('state.progress', 2);
+        foreach (['water', 'scroll', 'bread'] as $object) {
+            $this->move($p, $run, $seq++, ['type' => 'inspect', 'room' => 2, 'object' => $object])->assertOk();
+        }
+        $this->move($p, $run, $seq++, ['type' => 'solve', 'room' => 2, 'item' => 'bread', 'target' => 'hear'])->assertOk()->assertJsonPath('state.progress', 2)->assertJsonCount(0, 'state.placed');
+        foreach (['scroll' => 'hear', 'water' => 'care'] as $item => $target) {
+            $this->move($p, $run, $seq++, ['type' => 'solve', 'room' => 2, 'item' => $item, 'target' => $target])->assertOk()->assertJsonPath('state.completed', false);
+        }
+        $this->travel(12)->seconds();
+        $event = ['type' => 'solve', 'room' => 2, 'item' => 'bread', 'target' => 'share'];
+        $this->move($p, $run, $seq, $event)->assertOk()->assertJsonPath('state.completed', true)->assertJsonPath('state.score', 3)->assertJsonPath('total_stars', 3);
+        $this->move($p, $run, $seq, $event)->assertOk()->assertJsonPath('total_stars', 3);
+        $this->assertSame(1, GameProgress::count());
+    }
+
+    public function test_game_audio_uses_only_published_service_windows(): void
+    {
+        \App\Models\ServiceTime::create(['name' => 'Worship', 'when_label' => 'SAT', 'days' => [6], 'live_from' => '10:50:00', 'live_until' => '14:30:00', 'is_published' => true]);
+        \App\Models\ServiceTime::create(['name' => 'Hidden', 'when_label' => 'MON', 'days' => [1], 'live_from' => '02:12:00', 'live_until' => '03:13:00', 'is_published' => false]);
+        $html = view('kids.audio')->render();
+        preg_match('/const CHURCH_AUDIO = (.+);/', $html, $match);
+        $audio = json_decode($match[1], true);
+        $this->assertSame('America/New_York', $audio['timezone']);
+        $this->assertSame([['days' => [6], 'from' => '10:50', 'until' => '14:30']], $audio['windows']);
+
+    }
+
 }
