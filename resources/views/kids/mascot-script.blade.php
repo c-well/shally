@@ -8,5 +8,3 @@ const KidsMascot=(()=>{
   reduced.addEventListener('change',sync);sync();return{cheer};
 })();
 </script>
-
-<script type="module" src="/kids-assets/sheep-3d-v1.js"></script>

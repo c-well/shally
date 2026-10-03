@@ -8,7 +8,7 @@ class Element{
  append(...xs){this.children.push(...xs)}appendChild(x){this.append(x)}replaceChildren(...xs){this.children=xs}addEventListener(){}setAttribute(k,v){this[k]=v}focus(){}get innerHTML(){return ''}set innerHTML(v){this.children=[]}
 }
 const steps=[{word_index:0,letters:'God',finishes_word:true},{word_index:1,letters:'love',finishes_word:false},{word_index:1,letters:'s',finishes_word:true},{word_index:2,letters:'us',finishes_word:true}];
-function setup(){const elements=new Map(),timers=[],moves=[];let score=0;const get=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id)};const context=vm.createContext({console,Math,LEVEL:{reference:'1 John 4:8',verse:'God loves us.'},MISSION:{notes:['Love','Giving','Trust']},versePhrases:[],letterSteps:steps,initialState:{},document:{getElementById:get,querySelector:get,createElement:()=>new Element(),createTextNode:x=>({textContent:x}),addEventListener(){}},GameSession:{move:async e=>{moves.push(e);score+=[0,40,100,300,1200][e.lines];return{state:{progress:moves.length,words_built:steps.slice(0,moves.length).filter(s=>s.finishes_word).length,score,completed:moves.length===steps.length}};},ready:()=>new Promise(()=>{})},KidsMascot:{cheer(){}},GameAudio:{play(){},toggle(){return false}},setTimeout:fn=>{timers.push(fn);return timers.length},clearTimeout(){}});vm.runInContext(script,context);vm.runInContext('startGame()',context);return{context,get,timers,moves,run:s=>vm.runInContext(s,context)}}
+function setup(savedPace){const storage=new Map(savedPace?[["cop_blocks_pace",savedPace]]:[]);const elements=new Map(),timers=[],moves=[];let score=0;const get=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id)};const context=vm.createContext({console,Math,localStorage:{getItem:key=>storage.get(key),setItem:(key,value)=>storage.set(key,value)},LEVEL:{reference:'1 John 4:8',verse:'God loves us.'},MISSION:{notes:['Love','Giving','Trust']},versePhrases:[],letterSteps:steps,initialState:{},document:{getElementById:get,querySelector:get,createElement:()=>new Element(),createTextNode:x=>({textContent:x}),addEventListener(){}},GameSession:{move:async e=>{moves.push(e);score+=[0,40,100,300,1200][e.lines];return{state:{progress:moves.length,words_built:steps.slice(0,moves.length).filter(s=>s.finishes_word).length,score,completed:moves.length===steps.length}};},ready:()=>new Promise(()=>{})},KidsMascot:{cheer(){}},GameAudio:{play(){},toggle(){return false}},setTimeout:fn=>{timers.push(fn);return timers.length},clearTimeout(){}});vm.runInContext(script,context);vm.runInContext('startGame()',context);return{context,get,timers,moves,run:s=>vm.runInContext(s,context)}}
 const g=setup();
 assert.equal(g.get('verse').children.map(x=>x.textContent).join('').trim(),'God loves us.');
 assert.equal(g.get('verse').children[0].className,'vw current');
@@ -25,3 +25,14 @@ g.run('resetBoard()');assert.equal(g.run('builtSteps'),2);assert.equal(g.run('re
 await land(g);assert.equal(g.run('revealed'),2);await land(g);assert.equal(g.run('over'),true);while(g.timers.length)g.timers.shift()();assert.equal(g.get('winOv').classList.contains('show'),true);assert.equal(g.get('verseProgress').textContent,'3 of 3 words built');
 const scoring=setup();await land(scoring,true);await land(scoring,true);assert.equal(scoring.run('lines'),2);assert.equal(scoring.run('score'),80);assert.equal(scoring.run('tokens'),1);assert.equal(scoring.run('revealed'),1);
 console.log('PASS: verse visible immediately, letters attached to blocks, first-piece learning, long words, rotation, fresh-board continuation, scoring, swaps, and completion.');
+
+// Pace is an adjustable preference: it must never reset the board or learning progress.
+const paceGame=setup();assert.equal(paceGame.run('dropMs'),1200);
+paceGame.run('builtSteps=2;revealed=1;board[17][0]=3;choosePace("challenge")');
+assert.equal(paceGame.run('dropMs'),460);assert.equal(paceGame.run('builtSteps'),2);assert.equal(paceGame.run('board[17][0]'),3);
+paceGame.run('lines=8;speed()');assert.equal(paceGame.run('dropMs'),415);assert.equal(paceGame.get('paceBadge').textContent,'Challenge · Level 2');
+paceGame.run('choosePace("steady")');assert.equal(paceGame.run('dropMs'),665);
+paceGame.run('choosePace("invalid")');assert.equal(paceGame.run('pace'),'steady');
+paceGame.run('lines=999;choosePace("gentle")');assert.equal(paceGame.run('dropMs'),800);
+assert.equal(setup('challenge').run('dropMs'),460);assert.equal(setup('invalid').run('dropMs'),1200);
+console.log('PASS: three pace choices, level progression, speed limits, saved preference, and progress preserved when changing pace.');

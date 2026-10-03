@@ -82,7 +82,7 @@
     <button class="pausebtn" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
   </div>
 
-  <div class="arcade-hud"><span>UP NEXT <span id="nextShape" class="next-shape" aria-label="Next block"></span></span><button id="soundToggle" aria-pressed="false">Sound off</button></div>
+  <div class="arcade-hud"><span><b id="paceBadge" class="pace-badge">Gentle · Level 1</b> UP NEXT <span id="nextShape" class="next-shape" aria-label="Next block"></span></span><button id="soundToggle" aria-pressed="false">Sound off</button></div>
   <div class="play-stage">
     <div class="boardarea"><div class="arcade-toast" id="arcadeToast" role="status"></div><div class="board" id="board"></div></div>
     <aside class="verse-panel" aria-label="Read along">
@@ -114,6 +114,7 @@
 <div class="ov" id="pauseOv"><div class="card">
   <h2>Pause &amp; read</h2><div class="ref">{{ $level->reference }}</div><div class="verse-final pause-verse">{{ $level->verse_text }}</div>
   <p>{{ $mission['notes'][0] }}</p><details class="play-help"><summary>How to play</summary><p>← → move · ↑ turn · ↓ lower<br>Space drops · P pauses<br>On touch: swipe to move, tap to turn.</p><p>Every landed piece adds letters to the verse.<br>Clear 2 rows to earn a shape swap.</p></details>
+  <label class="pace-picker" for="pausePace">Choose your pace<select id="pausePace"><option value="gentle">Gentle — time to think</option><option value="steady">Steady — find your rhythm</option><option value="challenge">Challenge — quicker blocks</option></select></label>
   <div><button class="btn" id="resumeBtn">Resume @include('partials._ar')</button></div>
   <div><a class="btn btn-ghost" href="{{ route('kids') }}">Quit to games</a></div>
 </div></div>
@@ -153,8 +154,9 @@
   <div class="intro-block-art game-preview" aria-hidden="true">@include('kids.game-art', ['kind'=>'verse_tetris'])</div>
   <div class="ref">{{ $level->reference }}</div><h2 id="introTitle">{{ $mission['title'] }}</h2>
   <p>Land letter blocks. Build the verse.</p>
+  <label class="pace-picker" for="startPace">Choose your pace<select id="startPace"><option value="gentle">Gentle — time to think</option><option value="steady">Steady — find your rhythm</option><option value="challenge">Challenge — quicker blocks</option></select></label>
   <button class="btn" id="startButton">Play →</button>
-  <details class="play-help"><summary>How to play</summary><p><b>Move:</b> ← → or swipe<br><b>Turn:</b> ↑ or tap the board<br><b>Drop:</b> Space or swipe down</p><p>Clear 2 rows to earn a shape swap.<br>Pause anytime with P or the pause button.</p></details>
+  <details class="play-help"><summary>How to play</summary><p><b>Move:</b> ← → or swipe<br><b>Turn:</b> ↑ or tap the board<br><b>Drop:</b> Space or swipe down</p><p>Clear 2 rows to earn a shape swap.<br>Every 8 cleared rows takes you up a level.<br>Change your pace from Pause anytime with P or the pause button.</p></details>
 </div></div>
 
 @php $levelData = ['id' => $level->id, 'reference' => $level->reference, 'verse' => $level->verse_text]; @endphp
@@ -172,6 +174,10 @@ let versePhrases = [],letterSteps=[],initialState={};
 <script>
 // ── Tetris engine ──
 document.getElementById('soundToggle').addEventListener('click',e=>{const on=GameAudio.toggle();e.currentTarget.textContent=on?'Sound on':'Sound off';e.currentTarget.setAttribute('aria-pressed',String(on));});
+const PACES={gentle:{label:'Gentle',base:1200,step:25,min:800},steady:{label:'Steady',base:720,step:55,min:280},challenge:{label:'Challenge',base:460,step:45,min:130}};
+let pace='gentle';try{const saved=localStorage.getItem('cop_blocks_pace');if(Object.hasOwn(PACES,saved))pace=saved;}catch(_){}
+function choosePace(value){if(!Object.hasOwn(PACES,value))return;pace=value;try{localStorage.setItem('cop_blocks_pace',pace);}catch(_){}document.getElementById('startPace').value=pace;document.getElementById('pausePace').value=pace;if(board){speed();startLoop();}}
+['startPace','pausePace'].forEach(id=>{const control=document.getElementById(id);control.value=pace;control.addEventListener('change',e=>choosePace(e.target.value));});
 const COLS = 10, ROWS = 18;
 const SHAPES = { I:{m:[[1,1,1,1]],c:1}, O:{m:[[1,1],[1,1]],c:2}, T:{m:[[0,1,0],[1,1,1]],c:3}, S:{m:[[0,1,1],[1,1,0]],c:4}, Z:{m:[[1,1,0],[0,1,1]],c:5}, J:{m:[[1,0,0],[1,1,1]],c:6}, L:{m:[[0,0,1],[1,1,1]],c:7} };
 const TYPES = Object.keys(SHAPES);
@@ -179,7 +185,7 @@ let pieceBag=[];
 function takeType(){if(!pieceBag.length){pieceBag=[...TYPES];for(let i=pieceBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pieceBag[i],pieceBag[j]]=[pieceBag[j],pieceBag[i]];}}return pieceBag.pop();}
 const words = LEVEL.verse.replace(/\s+/g, ' ').trim().split(' ');
 
-let board, letterBoard, builtSteps=0, serverComplete=false, cur, nextType, score, lines, revealed, dropMs, penalty, tokens, paused, userPaused, over, loop, pieceCount;
+let board, letterBoard, builtSteps=0, serverComplete=false, cur, nextType, score, lines, revealed, dropMs, tokens, paused, userPaused, over, loop, pieceCount;
 const boardEl = document.getElementById('board'), verseEl = document.getElementById('verse');
 const morphBtn = document.getElementById('morphBtn');
 function frozen() { return over || paused || userPaused; }
@@ -192,7 +198,7 @@ function collide(m, r, x) { for (let i = 0; i < m.length; i++) for (let j = 0; j
 function paintNext(){const root=document.getElementById('nextShape'),shape=SHAPES[nextType];root.replaceChildren();root.style.gridTemplateColumns=`repeat(${shape.m[0].length},9px)`;root.setAttribute('aria-label',`Next block: ${nextType}`);shape.m.flat().forEach(n=>{const cell=document.createElement('i');cell.className=n?`tc c${shape.c}`:'next-empty';root.append(cell);});}
 function pieceMatrix(s){let n=0;return s.map(row=>row.map(v=>v?++n:0));}
 function spawn() { const t = nextType; nextType = takeType(); paintNext(); const s = SHAPES[t]; cur = { type: t, m: pieceMatrix(s.m), letters:Array.from(letterSteps[builtSteps]?.letters||'').map(c=>c.toUpperCase()), c: s.c, r: 0, x: Math.floor((COLS - s.m[0].length) / 2) }; if (collide(cur.m, cur.r, cur.x)) gameOver(); }
-function speed() { const lv = Math.floor(lines / 8); dropMs = Math.max(130, (720 - lv * 55) * penalty); }
+function speed() { const lv=Math.floor(lines/8),setting=PACES[pace];dropMs=Math.max(setting.min,setting.base-lv*setting.step);document.getElementById('paceBadge').textContent=`${setting.label} · Level ${lv+1}`; }
 async function lockPiece() {
   paused = true;
   cur.m.forEach((row, i) => row.forEach((v, j) => { if (v) { const R = cur.r + i, X = cur.x + j; if (R >= 0 && R < ROWS) {board[R][X] = cur.c;letterBoard[R][X]=cur.letters?.[v-1]||'';} } }));
@@ -301,7 +307,7 @@ function winVerse() { GameAudio.play('win'); over = true; clearTimeout(loop); se
 function gameOver() { over = true; clearTimeout(loop); document.getElementById('goMsg').textContent = `You've built ${revealed} of ${words.length} words. Make room on a fresh board and keep going.`; setTimeout(() => document.getElementById('goOv').classList.add('show'), 300); }
 
 function resetBoard(){board=newBoard();letterBoard=Array.from({length:ROWS},()=>Array(COLS).fill(''));pieceBag=[];over=false;paused=false;userPaused=false;nextType=takeType();buildCells();renderStats();renderVerse();updateTokens();speed();spawn();render();startLoop();}
-function startGame(){score=initialState.score||0;lines=initialState.lines||0;builtSteps=initialState.progress||0;revealed=initialState.words_built||0;pieceCount=initialState.pieces||0;serverComplete=false;penalty=1;tokens=0;resetBoard();}
+function startGame(){score=initialState.score||0;lines=initialState.lines||0;builtSteps=initialState.progress||0;revealed=initialState.words_built||0;pieceCount=initialState.pieces||0;serverComplete=false;tokens=0;resetBoard();}
 document.getElementById('continueVerse').addEventListener('click',()=>{document.getElementById('goOv').classList.remove('show');resetBoard();});
 GameSession.ready().then(data=>{versePhrases=data.challenge.phrases||words;letterSteps=data.challenge.letter_steps||[];initialState=data.state;if(initialState.progress)document.getElementById('startButton').textContent='Keep building →';document.getElementById('introOv').classList.add('show');document.getElementById('startButton').focus();});
 document.getElementById('startButton').addEventListener('click',()=>{document.getElementById('introOv').classList.remove('show');startGame();document.getElementById('pauseBtn').focus();});

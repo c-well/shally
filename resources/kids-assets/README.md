@@ -16,4 +16,6 @@ Deploy `sheep-v1.png` and `adventure-path-v1.jpg` from this directory to the mat
 
 ## 3D implementation
 
-The mascot now has a code-built articulated mesh in `sheep-3d-v1.js`. Its wool, face, eyes, limbs, and coral backpack are lit and rendered with locally hosted Three.js 0.180.0. Dependency provenance: npm package `three@0.180.0`, MIT license retained in `vendor/three-0.180.0/LICENSE`. The previous generated PNG is the no-WebGL/context-loss fallback. The 3D model is procedural project code; no new image-generation prompt was used for this revision.
+An experimental, currently disabled mascot has a code-built articulated mesh in `sheep-3d-v1.js`. Its wool, face, eyes, limbs, and coral backpack are lit and rendered with locally hosted Three.js 0.180.0. Dependency provenance: npm package `three@0.180.0`, MIT license retained in `vendor/three-0.180.0/LICENSE`. The previous generated PNG is the no-WebGL/context-loss fallback. The 3D model is procedural project code; no new image-generation prompt was used for this revision.
+
+The friendly illustrated sheep is the active mascot. The procedural mesh was disabled after visual feedback; its assets remain available for future art refinement.
