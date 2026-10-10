@@ -14,6 +14,8 @@ const DEFENSES_PER_PRAYER=5;
 let prayerGems=[],predators=[],prayerTokens=0,prayerPower=0,prayersOffered=0,prayerGlow=0,prayerPulse=0,defensePulse=0,defenseCooldown=0,trail=[],trailDistance=0;
 let WIDTH=1200;const HEIGHT=600,WORLD=3600;
 const animalSprite=new Image();let animalSpriteReady=false;animalSprite.onload=()=>{animalSpriteReady=true};animalSprite.src='assets/animals-natural.png';
+const goliathSprite=new Image();let goliathReady=false;goliathSprite.onload=()=>{goliathReady=true};goliathSprite.src='assets/goliath.png';
+let boss,shot=null,slingWind=0,slingCooldown=0;
 const davidSprite=new Image();let davidSpriteReady=false;davidSprite.onload=()=>{davidSpriteReady=true};davidSprite.src='assets/david-character.png';
 const scenery=new Image();let sceneryReady=false;scenery.onload=()=>{sceneryReady=true};scenery.src='assets/david-worlds.png';
 const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -28,7 +30,7 @@ function sizeCanvas(){const box=canvas.getBoundingClientRect();if(!box.width||!b
 function toast(s){$('#toast').textContent=s;$('#toast').style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').style.opacity=0,3000)}
 function setOverlay(over,title,desc,button,hint,action){$('#scroll-tip').hidden=true;clearInput();$('#description').style.whiteSpace='normal';$('#description').style.maxHeight='none';$('#description').style.overflowY='visible';$('#overline').textContent=over;$('#title').innerHTML=title;$('#description').textContent=desc;$('#start').innerHTML=button+' <span>→</span>';$('#hint').textContent=hint;$('#overlay').classList.remove('hidden');$('.game').classList.remove('is-playing');overlayAction=action;$('#start').onclick=()=>{unlockAudio();action()};$('#restart').hidden=state==='intro'||state==='complete';$('#journal').hidden=state==='journal';syncMusic();$('#start').focus({preventScroll:true});}
 function resume(){$('#scroll-tip').hidden=true;state='playing';$('#overlay').classList.add('hidden');$('.game').classList.add('is-playing');clearInput();canvas.focus({preventScroll:true});syncMusic();}
-function init(index){li=index;const l=levels[li];state='intro';p={x:80,y:390,vx:0,vy:0,w:34,h:57,ground:false,face:1};camera=0;prayerTokens=0;prayerPower=0;prayersOffered=0;prayerGlow=0;prayerPulse=0;defensePulse=0;defenseCooldown=0;hearts=3;collected=0;companions=0;stoneCount=0;discovered=new Set();particles=[];checkpoint=80;invuln=0;coyote=0;ending=0;landSquash=0;clearInput();
+function init(index){boss={x:3350,mode:'waiting',timer:0,ammo:5};shot=null;slingWind=0;slingCooldown=0;li=index;const l=levels[li];state='intro';p={x:80,y:390,vx:0,vy:0,w:34,h:57,ground:false,face:1};camera=0;prayerTokens=0;prayerPower=0;prayersOffered=0;prayerGlow=0;prayerPulse=0;defensePulse=0;defenseCooldown=0;hearts=3;collected=0;companions=0;stoneCount=0;discovered=new Set();particles=[];checkpoint=80;invuln=0;coyote=0;ending=0;landSquash=0;clearInput();
 platforms=[{x:0,y:492,w:650},{x:760,y:492,w:590},{x:1480,y:492,w:620},{x:2220,y:492,w:1380},{x:370,y:395,w:155},{x:870,y:388,w:160},{x:1160,y:330,w:135},{x:1580,y:388,w:160},{x:1860,y:330,w:135},{x:2300,y:392,w:165},{x:2630,y:355,w:150}];
 lights=[220,425,570,805,925,1070,1210,1515,1650,1810,1900,2050,2300,2370,2510,2690,2860,3020].map((x,i)=>({x,y:(platforms.find(q=>q.x<=x&&q.x+q.w>=x&&q.y<490)?.y||492)-50,taken:false}));
 scrolls=[{x:435,y:355,id:0},{x:1650,y:348,id:1},{x:2700,y:315,id:2}];animals=[{x:590,y:464,kind:'sheep',found:false},{x:1130,y:464,kind:'sheep',found:false},{x:2020,y:464,kind:'sheep',found:false}];stones=[270,970,1540,2400,2890].map(x=>({x,y:468,taken:false}));
@@ -43,7 +45,7 @@ function discover(id){discovered.add(id);saved[li]??={facts:[],complete:false};i
 function journal(){const entries=Object.entries(saved).flatMap(([i,v])=>(v.facts||[]).map(id=>`${levels[i].name} — ${levels[i].facts[id][0]}: ${levels[i].facts[id][1]} (${levels[i].facts[id][2]})`));state='journal';setOverlay('YOUR CHARACTER JOURNAL','Every hero<br>has a story.',entries.length?entries.join('\n\n'):'Find glowing scrolls on the high paths to unlock real discoveries about each Bible character.','Back to adventure','Discoveries are saved on this device.',resume);$('#description').style.whiteSpace='pre-line';$('#description').style.maxHeight='210px';$('#description').style.overflowY='auto';}
 function complete(){saved[li]??={facts:[],complete:false};saved[li].complete=true;persist();state='complete';beep(1000);setOverlay('CHAPTER COMPLETE · '+levels[li].ref,li===2?'A heart full<br>of discoveries.':'A little courage.<br>A big adventure.',levels[li].end+(discovered.size<3?' There are still hidden story scrolls to find!':''),li<2?'Explore the next chapter':'Play the stories again',`Collected ${collected} lights · Discovered ${discovered.size}/3 character facts`,()=>init((li+1)%3));}
 function hurt(){if(invuln>0)return;hearts--;beep(160);if(hearts<=0){state='retry';setOverlay('EVERY HERO TRIES AGAIN','Take a breath.<br>Try again.', 'Your journal discoveries are safe. A fresh start is part of every adventure.','Try this chapter again','Tip: hold a direction and tap jump to cross gaps.',()=>{init(li);resume()});}else{p.x=checkpoint;p.y=370;p.vy=0;p.vx=0;invuln=2;resetTrail();animals.filter(a=>a.found).forEach((a,i)=>{a.x=p.x-40-i*40;a.y=480;});toast('A little stumble. Keep going!')}hud();}
-function interact(){if(state!=='playing')return;if(li===0){if(defend())return;animals.forEach(a=>{if(!a.found&&Math.abs(p.x-a.x)<90&&Math.abs(p.y+p.h-a.y)<85){a.found=true;companions++;beep();toast(['One sheep safe! Look for the next one.','Two sheep together! One more to find.','The flock is together! Guide them home.'][companions-1]);hud()}})}if(p.x>3190&&p.y+p.h>370){if(li===0&&companions>=3)complete();else if(li===1&&stoneCount>=5){burst(3330,380,35);state='ending';ending=1.2;beep(440)}else if(li===2&&discovered.size===3)complete();else toast(li===0?'Find all three sheep first.':li===1?'Find five smooth stones along the path.':'Discover all three scrolls on the higher paths.');}}
+function interact(){if(state!=='playing')return;if(li===1&&p.x>2900){useSling();return;}if(li===0){if(defend())return;animals.forEach(a=>{if(!a.found&&Math.abs(p.x-a.x)<90&&Math.abs(p.y+p.h-a.y)<85){a.found=true;companions++;beep();toast(['One sheep safe! Look for the next one.','Two sheep together! One more to find.','The flock is together! Guide them home.'][companions-1]);hud()}})}if(p.x>3190&&p.y+p.h>370){if(li===0&&companions>=3)complete();else if(li===2&&discovered.size===3)complete();else toast(li===0?'Find all three sheep first.':li===1?'Find five smooth stones along the path.':'Discover all three scrolls on the higher paths.');}}
 function burst(x,y,n=12){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*180,vy:-Math.random()*200,life:1})}
 function update(dt){
  if(state==='playing'||state==='intro'||state==='ending')t+=dt;particles.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=300*dt;q.life-=dt});particles=particles.filter(q=>q.life>0);
@@ -56,6 +58,7 @@ function update(dt){
  for(const q of platforms){if(p.x+p.w>q.x&&p.x<q.x+q.w&&oldBottom<=q.y+.5&&p.y+p.h>=q.y&&p.vy>=0){p.y=q.y-p.h;if(!wasGround&&p.vy>100){landSquash=.25;burst(p.x+17,q.y,4)}p.vy=0;p.ground=true;}}
  if(p.y>700){hurt();return;}if(p.ground&&p.x>780&&p.x<1300)checkpoint=790;if(p.ground&&p.x>1510&&p.x<2060)checkpoint=1510;if(p.ground&&p.x>2240)checkpoint=2240;
  updateFlock(dt);
+ if(li===1){updateGoliath(dt);if(state!=='playing')return;}
  for(const gem of prayerGems)if(!gem.taken&&Math.hypot(p.x+17-gem.x,p.y+30-gem.y)<38){gem.taken=true;prayerTokens++;burst(gem.x,gem.y,18);beep(920);hud();toast('Sapphire prayer found! Tap PRAY, Q, or B / ○ to kindle your aura.');}
  if(li===0){updatePredators(dt);if(state!=='playing')return;}
  for(const l of lights)if(!l.taken&&Math.hypot(p.x+17-l.x,p.y+27-l.y)<38){l.taken=true;collected++;burst(l.x,l.y);beep();hud()}
@@ -72,7 +75,7 @@ function tree(x,y,s=1){ctx.save();ctx.translate(x,y);ctx.scale(s,s);shape('#6b64
 function cloud(x,y,s=1){ellipse(x,y,68*s,16*s,'#ffffff35');ellipse(x-24*s,y-9*s,30*s,19*s,'#ffffff35');ellipse(x+19*s,y-15*s,37*s,23*s,'#ffffff35')}
 function hero(x,y,scale=1){
  const moving=Math.abs(p.vx)>8&&p.ground&&state==='playing';let frame=0;
- if(prayerPulse>.9)frame=6;else if(defensePulse>0)frame=7;else if(!p.ground&&state==='playing')frame=4;else if(landSquash>.08)frame=5;else if(moving)frame=[1,2,3,2][Math.floor(t*10)%4];
+ if(slingWind>0)frame=7;else if(prayerPulse>.9)frame=6;else if(defensePulse>0)frame=7;else if(!p.ground&&state==='playing')frame=4;else if(landSquash>.08)frame=5;else if(moving)frame=[1,2,3,2][Math.floor(t*10)%4];
  ctx.save();ctx.translate(x+17,y+p.h);ctx.scale(scale*p.face,scale);ellipse(0,1,20,4,'#142d2855');
  if(davidSpriteReady){const w=davidSprite.naturalWidth/4,h=davidSprite.naturalHeight/2,bob=moving?Math.sin(t*20)*.7:Math.sin(t*2)*.4;ctx.drawImage(davidSprite,frame%4*w,Math.floor(frame/4)*h,w,h,-43,-83+bob,86,84);}
  else{rect(-12,-30,25,27,'#d3ae6b',5);ellipse(0,-49,15,19,'#77462d');ellipse(0,-65,15,8,'#231f1e');ellipse(7,-50,2,3,'#201e1a');rect(-12,-5,9,8,'#60432c',3);rect(3,-5,9,8,'#60432c',3);}
@@ -93,7 +96,43 @@ function animal(a){
  naturalAnimal('sheep',a.x,a.y+16,a.face,a.speed>8,a.phase);
  if(!a.found&&Math.abs(p.x-a.x)<100){rect(a.x-26,a.y-63,55,25,'#f9f0d6',8);ctx.fillStyle='#45634f';ctx.font='12px sans-serif';ctx.fillText(actionLabel()+' ♥',a.x-19,a.y-46)}
 }
-function destination(){const x=3240;if(li===0){rect(x+40,353,245,142,'#c9b58c',7);shape('#806d51',[[x+20,359],[x+161,276],[x+305,359]]);rect(x+133,411,53,83,'#6b654a',25);rect(x+68,389,36,35,'#eee0af',4);for(let i=0;i<7;i++)line(x+10+i*43,455,x+10+i*43,508,'#92774e',7);line(x,469,x+300,469,'#a18b5f',7);}if(li===1){ctx.save();if(state==='ending'){ctx.translate(x+112,489);ctx.rotate((1.2-ending)*1.2);ctx.translate(-x-112,-489);}ellipse(x+110,489,46,8,'#3a4c3533');rect(x+83,421,23,70,'#5b4d40',7);rect(x+119,421,23,70,'#5b4d40',7);rect(x+65,329,95,100,'#717d72',17);rect(x+68,366,90,18,'#c4b37a');ellipse(x+112,303,32,34,'#c99c73');shape('#677873',[[x+76,303],[x+80,270],[x+112,256],[x+145,274],[x+147,303]]);rect(x+143,353,54,78,'#a68559',24);line(x+48,277,x+48,489,'#665442',5);shape('#bbc3ac',[[x+37,282],[x+48,247],[x+60,282]]);ctx.restore();}if(li===2){ellipse(x+140,386,190,150,'#6c7775');ellipse(x+105,414,100,105,'#364d50');ellipse(x+150,481,34,8,'#253d3e');rect(x+131,418,40,69,'#b48c62',12);ellipse(x+151,401,18,22,'#dcb78d');shape('#cdb77a',[[x+133,384],[x+130,371],[x+144,377],[x+151,365],[x+159,377],[x+171,371],[x+169,387]]);rect(x+131,443,40,8,'#e5c780');} if(p.x>3120){ctx.font='bold 13px sans-serif';ctx.fillStyle='#fff9dd';ctx.fillText(li===1?actionLabel()+' · Use your sling':li===2?actionLabel()+' · Choose mercy':'Home →',x-55,230)}}
+function useSling(){
+ if(stoneCount<5){toast('Find all five smooth stones before facing Goliath.');return;}
+ if(slingCooldown>0||shot||slingWind>0)return;
+ if(boss.mode==='waiting'){toast('Approach carefully. Watch his warning, then keep your distance.');return;}
+ if(boss.ammo<=0){boss.ammo=5;boss.x=3350;boss.mode='warn';boss.timer=1.8;toast('Try the encounter again. Five stones ready.');return;}
+ slingWind=.55;slingCooldown=1;beep(330);
+}
+function updateGoliath(dt){
+ slingCooldown=Math.max(0,slingCooldown-dt);
+ if(p.x<2900){boss.x=3350;boss.mode='waiting';shot=null;slingWind=0;boss.ammo=5;return;}
+ if(boss.mode==='waiting'){boss.mode='warn';boss.timer=1.8;toast('Goliath approaches! Step back when he raises his spear. Sling when he pauses.');}
+ if(slingWind>0){slingWind=Math.max(0,slingWind-dt);if(slingWind===0){boss.ammo--;shot={x:p.x+17,y:p.y+12,tx:boss.x-15,ty:263,flight:0,hit:boss.mode==='open'&&Math.abs(p.x+17-boss.x)>100&&Math.abs(p.x+17-boss.x)<460};beep(650);}}
+ if(shot){shot.flight+=dt;const u=Math.min(1,shot.flight/.38);if(u===1){if(shot.hit){burst(boss.x-15,263,18);state='ending';ending=1.2;shot=null;return;}shot=null;toast(boss.ammo?'Wait for his pause and give your sling room.':actionLabel()+' · Try again with five stones');}}
+ boss.timer-=dt;
+ if(boss.mode==='warn'&&boss.timer<=0){boss.mode='advance';boss.timer=.85;}
+ else if(boss.mode==='advance'){
+  boss.x+=Math.sign(p.x+17-boss.x)*105*dt;boss.x=Math.max(3110,Math.min(3410,boss.x));
+  if(Math.abs(p.x+17-boss.x)<100&&p.y+p.h>410&&invuln<=0){hurt();boss.mode='waiting';boss.x=3350;shot=null;slingWind=0;return;}
+  if(boss.timer<=0){boss.mode='open';boss.timer=2.4;toast('Now! '+actionLabel()+' · Sling toward his forehead');}
+ }else if(boss.mode==='open'&&boss.timer<=0){boss.mode='warn';boss.timer=1.4;}
+}
+function drawGoliath(){
+ const x=boss.x,feet=492;ellipse(x,feet,49,7,'#35281c44');
+ ctx.save();ctx.translate(x,feet);
+ if(state==='ending'){const u=Math.min(1,(1.2-ending)/1.05);ctx.rotate(-u*Math.PI*.48);}
+ else if(!reducedMotion){ctx.rotate(boss.mode==='advance'?Math.sin(t*8)*.012:Math.sin(t*1.7)*.004);}
+ if(goliathReady)ctx.drawImage(goliathSprite,-98,-268,179,281);
+ ctx.restore();
+ if(state==='playing'&&p.x>2900){
+  const open=boss.mode==='open';rect(x-89,198,178,29,open?'#244d3ee6':'#623d2ee6',9);ctx.textAlign='center';ctx.font='bold 13px sans-serif';ctx.fillStyle='#fff3d4';ctx.fillText(open?'SLING NOW · '+actionLabel():boss.mode==='advance'?'KEEP YOUR DISTANCE':'WATCH HIS SPEAR',x,217);ctx.textAlign='left';
+  if(open){ctx.strokeStyle='#ffe5a0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x-15,263,9,0,Math.PI*2);ctx.stroke();}
+  ctx.fillStyle='#fff3d4';ctx.font='12px sans-serif';ctx.fillText('Sling stones: '+boss.ammo,x-45,184);
+ }
+ if(slingWind>0){const hx=p.x+17,hy=p.y+8,angle=t*30;line(hx,hy,hx+Math.cos(angle)*27,hy+Math.sin(angle)*15,'#8d6944',2);ellipse(hx+Math.cos(angle)*27,hy+Math.sin(angle)*15,4,3,'#eee2c3');}
+ if(shot){const u=Math.min(1,shot.flight/.38);ellipse(shot.x+(shot.tx-shot.x)*u,shot.y+(shot.ty-shot.y)*u-Math.sin(u*Math.PI)*20,4,3,'#fff0cb');}
+}
+function destination(){const x=3240;if(li===0){rect(x+40,353,245,142,'#c9b58c',7);shape('#806d51',[[x+20,359],[x+161,276],[x+305,359]]);rect(x+133,411,53,83,'#6b654a',25);rect(x+68,389,36,35,'#eee0af',4);for(let i=0;i<7;i++)line(x+10+i*43,455,x+10+i*43,508,'#92774e',7);line(x,469,x+300,469,'#a18b5f',7);}if(li===1)drawGoliath();if(li===2){ellipse(x+140,386,190,150,'#6c7775');ellipse(x+105,414,100,105,'#364d50');ellipse(x+150,481,34,8,'#253d3e');rect(x+131,418,40,69,'#b48c62',12);ellipse(x+151,401,18,22,'#dcb78d');shape('#cdb77a',[[x+133,384],[x+130,371],[x+144,377],[x+151,365],[x+159,377],[x+171,371],[x+169,387]]);rect(x+131,443,40,8,'#e5c780');} if(p.x>3120){ctx.font='bold 13px sans-serif';ctx.fillStyle='#fff9dd';ctx.fillText(li===1?actionLabel()+' · Sling when he pauses':li===2?actionLabel()+' · Choose mercy':'Home →',x-55,230)}}
 function draw(){
  ctx.setTransform(canvas.width/WIDTH,0,0,canvas.height/HEIGHT,0,0);ctx.clearRect(0,0,WIDTH,HEIGHT);const l=levels[li];
  const gr=ctx.createLinearGradient(0,0,0,600);gr.addColorStop(0,l.color[0]);gr.addColorStop(1,l.color[1]);ctx.fillStyle=gr;ctx.fillRect(0,0,WIDTH,HEIGHT);
