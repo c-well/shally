@@ -1,14 +1,19 @@
 'use strict';
 const canvas=document.querySelector('#canvas'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
 const levels=[
-{name:'The Young Shepherd',ref:'1 Samuel 16; 17:12–37',theme:'CARE & FAITHFULNESS',title:'Great courage<br>starts small.',desc:'Explore the hills of Bethlehem as young David. Gather three sheep and find hidden scrolls about the shepherd who would become king.',hint:'Move close to each sheep. Tap ACT, press E, or use X / □ to guide it home.',goal:'Gather 3 sheep, then reach home.',color:['#7dbec4','#dce8c4','#557e72'],facts:[['The youngest brother','David was Jesse’s youngest son. When Samuel came to his family, David was out caring for the sheep.','1 Samuel 16:10–11'],['More than appearances','God told Samuel that people look at outward appearance, but the Lord looks at the heart. Samuel anointed David.','1 Samuel 16:7, 12–13'],['A musician and a protector','David played the lyre for Saul. As a shepherd, he also protected his flock from a lion and a bear.','1 Samuel 16:23; 17:34–37']],end:'The flock is home! Before David faced a giant, he cared for sheep and played music. Small responsibilities were part of his story.'},
+{name:'The Young Shepherd',ref:'1 Samuel 16; 17:12–37',theme:'CARE & FAITHFULNESS',title:'Great courage<br>starts small.',desc:'Gather David’s sheep and protect the flock. Find sapphire prayers, pray to kindle your aura, and use its light to fend off wolves and lions. Every prayer gives five defenses.',hint:'Pray: Q / B / ○ / PRAY. Defend or gather sheep: E / X / □ / ACT. The aura and wolves are imaginative gameplay.',goal:'Gather 3 sheep, then reach home.',color:['#7dbec4','#dce8c4','#557e72'],facts:[['The youngest brother','David was Jesse’s youngest son. When Samuel came to his family, David was out caring for the sheep.','1 Samuel 16:10–11'],['More than appearances','God told Samuel that people look at outward appearance, but the Lord looks at the heart. Samuel anointed David.','1 Samuel 16:7, 12–13'],['A musician and a protector','David played the lyre for Saul. As a shepherd, he also protected his flock from a lion and a bear.','1 Samuel 16:23; 17:34–37']],end:'The flock is home! Before David faced a giant, he cared for sheep and played music. Small responsibilities were part of his story.'},
 {name:'David & Goliath',ref:'1 Samuel 17',theme:'COURAGE & FAITH',title:'Courage comes<br>in every size.',desc:'Explore the valley as David. Collect five smooth stones and discover the shepherd behind the famous story.',hint:'Gather five stones, then use ACT, E, or X / □ near Goliath.',goal:'Gather 5 stones. Reach Goliath and press E.',color:['#dfbd83','#f7e4ab','#a18358'],facts:[['A shepherd first','David cared for his father’s sheep. He described protecting them from a lion and a bear.','1 Samuel 17:34–37'],['An unexpected errand','David’s father sent him to the army camp with food for his brothers and a gift for their commander.','1 Samuel 17:17–20'],['His own kind of courage','David took off Saul’s armor because he was not used to it. He chose five smooth stones and trusted God.','1 Samuel 17:38–47']],end:'The giant has fallen! David used his sling and a stone. His confidence came from trusting God, not from being the biggest.'},
 {name:'The Cave of Mercy',ref:'1 Samuel 24',theme:'RESTRAINT & MERCY',title:'Being strong.<br>Choosing mercy.',desc:'Explore the wilderness of En Gedi. Discover what happened when David had a chance to hurt Saul—and chose to spare him.',hint:'Find three scrolls, then use ACT, E, or X / □ near Saul to choose mercy.',goal:'Discover 3 scrolls. Reach Saul and press E.',color:['#728fa3','#bcc8c0','#677981'],facts:[['Hiding in the wilderness','Saul searched for David near the rocky crags of En Gedi. David and his men were hiding deep inside a cave.','1 Samuel 24:1–3'],['A choice in the cave','David secretly cut off a corner of Saul’s robe, then felt troubled about it. He would not let his men attack Saul.','1 Samuel 24:4–7'],['Proof of mercy','David showed Saul the piece of his robe as proof that he had spared him. Saul acknowledged that David had treated him well.','1 Samuel 24:8–18']],end:'You chose mercy. David showed Saul the corner of his robe and explained that he had spared his life. Courage can mean holding back.'}
 ];
 const input=new GameControls();
 let saved={};try{const data=JSON.parse(localStorage.getItem('little-light-journal')||'{}');for(let i=0;i<3;i++){const v=data?.[i];if(v&&Array.isArray(v.facts))saved[i]={facts:[...new Set(v.facts.filter(n=>Number.isInteger(n)&&n>=0&&n<3))],complete:v.complete===true};}}catch{}
 let li=0,state='intro',p,platforms,lights,scrolls,animals,stones,particles=[],camera=0,t=0,hearts=3,collected=0,companions=0,stoneCount=0,discovered=new Set(),invuln=0,checkpoint=80,sound=false,audioCtx,toastTimer,coyote=0,landSquash=0,overlayAction=null,ending=0;
+// Tune encounters here without changing combat or prayer rules.
+const SHEPHERD_ENCOUNTERS=[{x:520,kind:'wolf'},{x:960,kind:'wolf'},{x:1240,kind:'lion'},{x:1670,kind:'wolf'},{x:1990,kind:'wolf'},{x:2380,kind:'lion'},{x:2780,kind:'wolf'},{x:3040,kind:'wolf'}];
+const DEFENSES_PER_PRAYER=5;
+let prayerGems=[],predators=[],prayerTokens=0,prayerPower=0,prayersOffered=0,prayerGlow=0,prayerPulse=0,defensePulse=0,defenseCooldown=0,trail=[],trailDistance=0;
 let WIDTH=1200;const HEIGHT=600,WORLD=3600;
+const davidSprite=new Image();let davidSpriteReady=false;davidSprite.onload=()=>{davidSpriteReady=true};davidSprite.src='assets/david-character.png';
 const scenery=new Image();let sceneryReady=false;scenery.onload=()=>{sceneryReady=true};scenery.src='assets/david-worlds.png';
 const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const music=new Audio();music.loop=true;music.volume=.45;music.preload='metadata';let musicWanted=false,musicUrl=null;
@@ -18,31 +23,40 @@ function persist(){try{localStorage.setItem('little-light-journal',JSON.stringif
 function beep(freq=650){if(!sound)return;try{unlockAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.connect(g);g.connect(audioCtx.destination);o.frequency.setValueAtTime(freq,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(freq*1.3,audioCtx.currentTime+.1);g.gain.setValueAtTime(.065,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.2);o.start();o.stop(audioCtx.currentTime+.2)}catch{}}
 function actionLabel(){return input.mode==='gamepad'?'X / □':input.mode==='touch'?'ACT':'E';}
 function clearInput(){input.clear();document.querySelectorAll('[data-action]').forEach(b=>b.classList.remove('pressed'));}
-function sizeCanvas(){const box=canvas.getBoundingClientRect();if(!box.width||!box.height)return;WIDTH=HEIGHT*box.width/box.height;const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);camera=Math.max(0,Math.min(WORLD-WIDTH,camera));}
+function sizeCanvas(){const box=canvas.getBoundingClientRect();if(!box.width||!box.height)return;WIDTH=HEIGHT*box.width/box.height;const dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);camera=Math.max(0,Math.min(WORLD-WIDTH,camera));positionScrollTip();}
 function toast(s){$('#toast').textContent=s;$('#toast').style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').style.opacity=0,3000)}
-function setOverlay(over,title,desc,button,hint,action){clearInput();$('#description').style.whiteSpace='normal';$('#description').style.maxHeight='none';$('#description').style.overflowY='visible';$('#overline').textContent=over;$('#title').innerHTML=title;$('#description').textContent=desc;$('#start').innerHTML=button+' <span>→</span>';$('#hint').textContent=hint;$('#overlay').classList.remove('hidden');$('.game').classList.remove('is-playing');overlayAction=action;$('#start').onclick=()=>{unlockAudio();action()};$('#restart').hidden=state==='intro'||state==='complete';$('#journal').hidden=state==='journal';syncMusic();$('#start').focus({preventScroll:true});}
-function resume(){state='playing';$('#overlay').classList.add('hidden');$('.game').classList.add('is-playing');clearInput();canvas.focus({preventScroll:true});syncMusic();}
-function init(index){li=index;const l=levels[li];state='intro';p={x:80,y:390,vx:0,vy:0,w:34,h:57,ground:false,face:1};camera=0;hearts=3;collected=0;companions=0;stoneCount=0;discovered=new Set();particles=[];checkpoint=80;invuln=0;coyote=0;ending=0;landSquash=0;clearInput();
+function setOverlay(over,title,desc,button,hint,action){$('#scroll-tip').hidden=true;clearInput();$('#description').style.whiteSpace='normal';$('#description').style.maxHeight='none';$('#description').style.overflowY='visible';$('#overline').textContent=over;$('#title').innerHTML=title;$('#description').textContent=desc;$('#start').innerHTML=button+' <span>→</span>';$('#hint').textContent=hint;$('#overlay').classList.remove('hidden');$('.game').classList.remove('is-playing');overlayAction=action;$('#start').onclick=()=>{unlockAudio();action()};$('#restart').hidden=state==='intro'||state==='complete';$('#journal').hidden=state==='journal';syncMusic();$('#start').focus({preventScroll:true});}
+function resume(){$('#scroll-tip').hidden=true;state='playing';$('#overlay').classList.add('hidden');$('.game').classList.add('is-playing');clearInput();canvas.focus({preventScroll:true});syncMusic();}
+function init(index){li=index;const l=levels[li];state='intro';p={x:80,y:390,vx:0,vy:0,w:34,h:57,ground:false,face:1};camera=0;prayerTokens=0;prayerPower=0;prayersOffered=0;prayerGlow=0;prayerPulse=0;defensePulse=0;defenseCooldown=0;hearts=3;collected=0;companions=0;stoneCount=0;discovered=new Set();particles=[];checkpoint=80;invuln=0;coyote=0;ending=0;landSquash=0;clearInput();
 platforms=[{x:0,y:492,w:650},{x:760,y:492,w:590},{x:1480,y:492,w:620},{x:2220,y:492,w:1380},{x:370,y:395,w:155},{x:870,y:388,w:160},{x:1160,y:330,w:135},{x:1580,y:388,w:160},{x:1860,y:330,w:135},{x:2300,y:392,w:165},{x:2630,y:355,w:150}];
 lights=[220,425,570,805,925,1070,1210,1515,1650,1810,1900,2050,2300,2370,2510,2690,2860,3020].map((x,i)=>({x,y:(platforms.find(q=>q.x<=x&&q.x+q.w>=x&&q.y<490)?.y||492)-50,taken:false}));
 scrolls=[{x:435,y:355,id:0},{x:1650,y:348,id:1},{x:2700,y:315,id:2}];animals=[{x:590,y:464,kind:'sheep',found:false},{x:1130,y:464,kind:'sheep',found:false},{x:2020,y:464,kind:'sheep',found:false}];stones=[270,970,1540,2400,2890].map(x=>({x,y:468,taken:false}));
+animals.forEach((a,i)=>Object.assign(a,{vx:0,phase:i*2.3,face:1,speed:0,restY:a.y}));resetTrail();
+prayerGems=li===0?[{x:260,y:453,taken:false},{x:1515,y:453,taken:false}]:[];
+predators=li===0?SHEPHERD_ENCOUNTERS.map((e,i)=>({...e,home:e.x,y:468,face:-1,phase:i*1.9,mode:'patrol',timer:0,vx:0,alpha:1})):[];
+$('#prayer-hud').hidden=li!==0;document.querySelector('[data-action="pray"]').hidden=li!==0;
 $('#chapter').textContent=`0${li+1} / ${l.name.toUpperCase()}`;$('#objective').textContent=l.goal;document.querySelectorAll('[data-level]').forEach((b,i)=>b.classList.toggle('selected',i===li));setOverlay(`CHAPTER ${li+1} · ${l.ref.toUpperCase()}`,l.title,l.desc,'Begin the adventure',l.hint,resume);hud();}
-function hud(){$('#score').textContent=`✦ ${collected}  ·  ▤ ${discovered.size}/3`;$('#hearts').textContent='♥ '.repeat(hearts)+'♡ '.repeat(3-hearts);$('#progress').style.width=Math.min(100,p.x/(WORLD-250)*100)+'%';$('#objective').textContent=li===0?`Sheep friends ${companions}/3 · Find home`:li===1?`Smooth stones ${stoneCount}/5 · ${actionLabel()} to sling`: `Story scrolls ${discovered.size}/3 · Find Saul`;}
-function discover(id){discovered.add(id);saved[li]??={facts:[],complete:false};if(!saved[li].facts.includes(id))saved[li].facts.push(id);persist();hud();beep(900);state='discovery';const f=levels[li].facts[id];setOverlay('STORY DISCOVERED · '+f[2],f[0],f[1],'Keep exploring',`Character journal: ${saved[li].facts.length} of 3 discoveries saved`,resume)}
+function hud(){$('#prayer-hud').textContent=`◆ ${prayerTokens} prayers · ${prayerPower} defenses`;$('#prayer-hud').setAttribute('aria-label',`${prayerTokens} prayer collectibles, ${prayerPower} defenses remaining`);$('#score').textContent=`✦ ${collected}  ·  ▤ ${discovered.size}/3`;$('#hearts').textContent='♥ '.repeat(hearts)+'♡ '.repeat(3-hearts);$('#progress').style.width=Math.min(100,p.x/(WORLD-250)*100)+'%';$('#objective').textContent=li===0?`Sheep friends ${companions}/3 · Find home`:li===1?`Smooth stones ${stoneCount}/5 · ${actionLabel()} to sling`: `Story scrolls ${discovered.size}/3 · Find Saul`;}
+function positionScrollTip(){const card=$('#scroll-tip');if(card.hidden)return;const box=canvas.getBoundingClientRect(),w=Math.min(310,box.width-24);card.style.width=w+'px';card.style.left=Math.max(12,Math.min(box.width-w-12,(p.x+17-camera)/WIDTH*box.width-w*.5))+'px';card.style.top=Math.max(90,Math.min(box.height-240,(p.y-160)/HEIGHT*box.height))+'px';}
+function discover(id){discovered.add(id);saved[li]??={facts:[],complete:false};if(!saved[li].facts.includes(id))saved[li].facts.push(id);persist();hud();beep(900);state='discovery';clearInput();syncMusic();$('.game').classList.remove('is-playing');const f=levels[li].facts[id];$('#scroll-title').textContent=f[0];$('#scroll-copy').textContent=f[1];$('#scroll-ref').textContent=f[2];$('#scroll-tip').hidden=false;overlayAction=resume;positionScrollTip();$('#scroll-continue').focus({preventScroll:true});}
 function journal(){const entries=Object.entries(saved).flatMap(([i,v])=>(v.facts||[]).map(id=>`${levels[i].name} — ${levels[i].facts[id][0]}: ${levels[i].facts[id][1]} (${levels[i].facts[id][2]})`));state='journal';setOverlay('YOUR CHARACTER JOURNAL','Every hero<br>has a story.',entries.length?entries.join('\n\n'):'Find glowing scrolls on the high paths to unlock real discoveries about each Bible character.','Back to adventure','Discoveries are saved on this device.',resume);$('#description').style.whiteSpace='pre-line';$('#description').style.maxHeight='210px';$('#description').style.overflowY='auto';}
 function complete(){saved[li]??={facts:[],complete:false};saved[li].complete=true;persist();state='complete';beep(1000);setOverlay('CHAPTER COMPLETE · '+levels[li].ref,li===2?'A heart full<br>of discoveries.':'A little courage.<br>A big adventure.',levels[li].end+(discovered.size<3?' There are still hidden story scrolls to find!':''),li<2?'Explore the next chapter':'Play the stories again',`Collected ${collected} lights · Discovered ${discovered.size}/3 character facts`,()=>init((li+1)%3));}
-function hurt(){if(invuln>0)return;hearts--;beep(160);if(hearts<=0){state='retry';setOverlay('EVERY HERO TRIES AGAIN','Take a breath.<br>Try again.', 'Your journal discoveries are safe. A fresh start is part of every adventure.','Try this chapter again','Tip: hold a direction and tap jump to cross gaps.',()=>{init(li);resume()});}else{p.x=checkpoint;p.y=370;p.vy=0;invuln=2;toast('A little stumble. Keep going!')}hud();}
-function interact(){if(state!=='playing')return;if(li===0){animals.forEach(a=>{if(!a.found&&Math.abs(p.x-a.x)<90&&Math.abs(p.y+p.h-a.y)<85){a.found=true;companions++;beep();toast(['One sheep safe! Look for the next one.','Two sheep together! One more to find.','The flock is together! Guide them home.'][companions-1]);hud()}})}if(p.x>3190&&p.y+p.h>370){if(li===0&&companions>=3)complete();else if(li===1&&stoneCount>=5){burst(3330,380,35);state='ending';ending=1.2;beep(440)}else if(li===2&&discovered.size===3)complete();else toast(li===0?'Find all three sheep first.':li===1?'Find five smooth stones along the path.':'Discover all three scrolls on the higher paths.');}}
+function hurt(){if(invuln>0)return;hearts--;beep(160);if(hearts<=0){state='retry';setOverlay('EVERY HERO TRIES AGAIN','Take a breath.<br>Try again.', 'Your journal discoveries are safe. A fresh start is part of every adventure.','Try this chapter again','Tip: hold a direction and tap jump to cross gaps.',()=>{init(li);resume()});}else{p.x=checkpoint;p.y=370;p.vy=0;p.vx=0;invuln=2;resetTrail();animals.filter(a=>a.found).forEach((a,i)=>{a.x=p.x-40-i*40;a.y=480;});toast('A little stumble. Keep going!')}hud();}
+function interact(){if(state!=='playing')return;if(li===0){if(defend())return;animals.forEach(a=>{if(!a.found&&Math.abs(p.x-a.x)<90&&Math.abs(p.y+p.h-a.y)<85){a.found=true;companions++;beep();toast(['One sheep safe! Look for the next one.','Two sheep together! One more to find.','The flock is together! Guide them home.'][companions-1]);hud()}})}if(p.x>3190&&p.y+p.h>370){if(li===0&&companions>=3)complete();else if(li===1&&stoneCount>=5){burst(3330,380,35);state='ending';ending=1.2;beep(440)}else if(li===2&&discovered.size===3)complete();else toast(li===0?'Find all three sheep first.':li===1?'Find five smooth stones along the path.':'Discover all three scrolls on the higher paths.');}}
 function burst(x,y,n=12){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*180,vy:-Math.random()*200,life:1})}
 function update(dt){
- t+=dt;particles.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=300*dt;q.life-=dt});particles=particles.filter(q=>q.life>0);
+ if(state==='playing'||state==='intro'||state==='ending')t+=dt;particles.forEach(q=>{q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=300*dt;q.life-=dt});particles=particles.filter(q=>q.life>0);
  if(state==='ending'){ending-=dt;if(ending<=0)complete();return;}if(state!=='playing')return;
+ prayerPulse=Math.max(0,prayerPulse-dt);defensePulse=Math.max(0,defensePulse-dt);defenseCooldown=Math.max(0,defenseCooldown-dt);prayerGlow+=(Math.min(1,prayerPower/10)-prayerGlow)*Math.min(1,dt*3);
  invuln=Math.max(0,invuln-dt);landSquash=Math.max(0,landSquash-dt*4);coyote=p.ground?.11:Math.max(0,coyote-dt);
- const target=input.move*265;p.vx+=(target-p.vx)*Math.min(1,dt*(p.ground?20:12));if(Math.abs(p.vx)<.5)p.vx=0;if(Math.abs(p.vx)>3)p.face=Math.sign(p.vx);
- if(input.jumpBuffer>0&&coyote>0){p.vy=-660;p.ground=false;coyote=0;input.consumeJump();burst(p.x+17,p.y+p.h,5);beep(350);}
+ const target=(prayerPulse>.9?0:input.move)*265;p.vx+=(target-p.vx)*Math.min(1,dt*(p.ground?20:12));if(Math.abs(p.vx)<.5)p.vx=0;if(Math.abs(p.vx)>3)p.face=Math.sign(p.vx);
+ if(input.jumpBuffer>0&&coyote>0&&prayerPulse<=.9){p.vy=-660;p.ground=false;coyote=0;input.consumeJump();burst(p.x+17,p.y+p.h,5);beep(350);}
  input.tick(dt);const oldBottom=p.y+p.h,wasGround=p.ground;p.vy+=1450*dt;p.x=Math.max(0,Math.min(WORLD-60,p.x+p.vx*dt));p.y+=p.vy*dt;p.ground=false;
  for(const q of platforms){if(p.x+p.w>q.x&&p.x<q.x+q.w&&oldBottom<=q.y+.5&&p.y+p.h>=q.y&&p.vy>=0){p.y=q.y-p.h;if(!wasGround&&p.vy>100){landSquash=.25;burst(p.x+17,q.y,4)}p.vy=0;p.ground=true;}}
  if(p.y>700){hurt();return;}if(p.ground&&p.x>780&&p.x<1300)checkpoint=790;if(p.ground&&p.x>1510&&p.x<2060)checkpoint=1510;if(p.ground&&p.x>2240)checkpoint=2240;
+ updateFlock(dt);
+ for(const gem of prayerGems)if(!gem.taken&&Math.hypot(p.x+17-gem.x,p.y+30-gem.y)<38){gem.taken=true;prayerTokens++;burst(gem.x,gem.y,18);beep(920);hud();toast('Sapphire prayer found! Tap PRAY, Q, or B / ○ to kindle your aura.');}
+ if(li===0){updatePredators(dt);if(state!=='playing')return;}
  for(const l of lights)if(!l.taken&&Math.hypot(p.x+17-l.x,p.y+27-l.y)<38){l.taken=true;collected++;burst(l.x,l.y);beep();hud()}
  if(li===1)for(const s of stones)if(!s.taken&&Math.hypot(p.x+17-s.x,p.y+40-s.y)<38){s.taken=true;stoneCount++;beep(480);toast(`Smooth stone ${stoneCount} of 5`);hud()}
  for(const s of scrolls)if(!discovered.has(s.id)&&Math.hypot(p.x+17-s.x,p.y+25-s.y)<43){discover(s.id);return}
@@ -56,31 +70,32 @@ function star(x,y,r=9){ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);rect(
 function tree(x,y,s=1){ctx.save();ctx.translate(x,y);ctx.scale(s,s);shape('#6b6450',[[-7,0],[8,0],[3,-125],[-4,-125]]);line(0,-75,-27,-115,'#6b6450',6);ellipse(-24,-130,37,40,'#537c68');ellipse(17,-153,43,49,'#678f70');ellipse(44,-117,34,30,'#739777');ellipse(-10,-168,31,33,'#86a583');ctx.restore()}
 function cloud(x,y,s=1){ellipse(x,y,68*s,16*s,'#ffffff35');ellipse(x-24*s,y-9*s,30*s,19*s,'#ffffff35');ellipse(x+19*s,y-15*s,37*s,23*s,'#ffffff35')}
 function hero(x,y,scale=1){
- ctx.save();ctx.translate(x+17,y+57);const moving=Math.abs(p.vx)>8&&p.ground&&state==='playing';const walk=moving?Math.sin(t*15)*6:0,bob=moving?Math.abs(Math.sin(t*15))*2:Math.sin(t*2)*.7;
- ctx.scale(scale*p.face*(1+landSquash*.3),scale*(1-landSquash*.25));ctx.translate(0,-29-bob);
- ellipse(0,31,23,4,'#142d2866');
- // Flowing scarf and a little satchel follow the movement.
- shape(li===2?'#8587af':'#b85c43',[[-10,-7],[-24,-6],[-35-Math.abs(p.vx)*.025,-2+Math.sin(t*7)*3],[-26,6],[-7,1]]);
- rect(-12,19+walk,10,14,'#483b30',4);rect(3,19-walk,10,14,'#483b30',4);line(-10,29+walk,-2,29+walk,'#c1a16d',3);line(5,29-walk,13,29-walk,'#c1a16d',3);
- const tunic=ctx.createLinearGradient(-15,0,18,0);tunic.addColorStop(0,li===2?'#57778b':'#ad7546');tunic.addColorStop(.5,li===2?'#8aabbb':'#e6be77');tunic.addColorStop(1,li===2?'#385768':'#a36a3d');
- shape(tunic,[[-13,-5],[11,-6],[18,23],[-17,23]]);line(-11,19,12,19,'#ead8a5',2);rect(-16,7,32,5,'#5e4833',2);rect(-4,7,7,5,'#dbb65e',1);line(-10,-4,13,12,'#664c33',3);rect(-22,5,12,15,'#7d5639',4);
- ellipse(0,-16,17,20,'#d99c66');ellipse(4,-18,13,17,'#f1c18b');ellipse(-15,-13,5,7,'#dc9f69');ellipse(9,-17,2.8,3.8,'#283b39');ellipse(10,-18,1,1,'#fff4c7');line(4,-5,10,-6,'#a26745',1.5);ellipse(11,-9,3,1.8,'#db9875');
- shape('#44362d',[[-17,-12],[-20,-26],[-13,-36],[1,-38],[14,-31],[18,-24],[8,-24],[4,-30],[-4,-23],[-10,-24],[-11,-11]]);for(let i=0;i<4;i++)ellipse(-12+i*7,-31-Math.sin(i)*3,6,5,'#604635');line(-15,-31,5,-36,'#8b633f',2);
- if(li===2)shape('#624832',[[-11,-5],[-6,9],[5,9],[13,-5],[5,0],[-3,-1]]);
- rect(-23,-1-walk*.5,9,17,'#d9a16e',5);rect(15,-1+walk*.5,9,18,'#efbd84',5);
- if(li===0){line(27,-21,27,33,'#4b3b2d',4);ctx.strokeStyle='#9b7a4b';ctx.lineWidth=3;ctx.beginPath();ctx.arc(22,-21,5,Math.PI,Math.PI*2);ctx.stroke();}if(li===1){ctx.strokeStyle='#684e38';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(28,2,9,-1,2.5);ctx.stroke();}ctx.restore();
+ const moving=Math.abs(p.vx)>8&&p.ground&&state==='playing';let frame=0;
+ if(prayerPulse>.9)frame=6;else if(defensePulse>0)frame=7;else if(!p.ground&&state==='playing')frame=4;else if(landSquash>.08)frame=5;else if(moving)frame=[1,2,3,2][Math.floor(t*10)%4];
+ ctx.save();ctx.translate(x+17,y+p.h);ctx.scale(scale*p.face,scale);ellipse(0,1,20,4,'#142d2855');
+ if(davidSpriteReady){const w=davidSprite.naturalWidth/4,h=davidSprite.naturalHeight/2,bob=moving?Math.sin(t*20)*.7:Math.sin(t*2)*.4;ctx.drawImage(davidSprite,frame%4*w,Math.floor(frame/4)*h,w,h,-43,-83+bob,86,84);}
+ else{rect(-12,-30,25,27,'#d3ae6b',5);ellipse(0,-49,15,19,'#77462d');ellipse(0,-65,15,8,'#231f1e');ellipse(7,-50,2,3,'#201e1a');rect(-12,-5,9,8,'#60432c',3);rect(3,-5,9,8,'#60432c',3);}
+ ctx.restore();
 }
-function animal(a){let x=a.x,y=a.y;if(a.found){const idx=animals.filter(v=>v.found).indexOf(a);x=p.x-40-idx*40;y=p.y+p.h-12}ellipse(x,y+10,17,4,'#26474620');if(a.kind==='dove'){ellipse(x,y,13,9,'#f8f2d6');ellipse(x+10,y-8,6,7,'#fff8e6');shape('#c49f5a',[[x+14,y-9],[x+23,y-6],[x+14,y-5]]);line(x-4,y-2,x-17,y-13+Math.sin(t*5)*5,'#d9e9df',5)}else{ellipse(x,y,17,12,'#eee6cf');ellipse(x+12,y-9,9,10,'#f8edcf');if(a.kind==='rabbit'){ellipse(x+9,y-24,3,13,'#f5e8cd');ellipse(x+17,y-23,3,12,'#e4d8bb')}else{ellipse(x-8,y-5,12,12,'#faf1d9');line(x-10,y+7,x-10,y+15,'#605e48',3);line(x+10,y+7,x+10,y+15,'#605e48',3)}ellipse(x+15,y-10,2,2,'#354c42')}if(!a.found&&Math.abs(p.x-a.x)<100){rect(x-24,y-65,48,25,'#f9f0d6',8);ctx.fillStyle='#45634f';ctx.font='12px sans-serif';ctx.fillText(actionLabel()+' ♥',x-18,y-48)}}
+function animal(a){
+ const moving=a.speed>8;const walk=moving?Math.sin(t*12+a.phase)*3:0;const hop=moving?Math.abs(Math.sin(t*8+a.phase))*2:Math.sin(t*1.6+a.phase)*.5;
+ ctx.save();ctx.translate(a.x,a.y-hop);ctx.scale(a.face,1);ellipse(0,16,19,4,'#142d2844');
+ line(-10,6,-12,15+walk,'#5c5544',3);line(9,7,11,15-walk,'#5c5544',3);ellipse(0,0,19,12,'#d7d4b7');
+ for(let i=0;i<6;i++)ellipse(-12+i*5,-5-Math.sin(i)*3,7,8,i%2?'#f8eed4':'#eee5c9');
+ const graze=!moving&&Math.sin(t*.6+a.phase)>.6?5:0;ellipse(15,-5+graze,8,10,'#b6a88b');ellipse(18,-3+graze,6,8,'#f0e3c1');ellipse(21,-6+graze,1.8,2,'#34453c');ellipse(12,-12+graze,5,2.7,'#a29879');line(-17,-1,-24,-4+Math.sin(t*3+a.phase)*2,'#e4dcc2',4);ctx.restore();
+ if(!a.found&&Math.abs(p.x-a.x)<100){rect(a.x-26,a.y-63,55,25,'#f9f0d6',8);ctx.fillStyle='#45634f';ctx.font='12px sans-serif';ctx.fillText(actionLabel()+' ♥',a.x-19,a.y-46)}
+}
 function destination(){const x=3240;if(li===0){rect(x+40,353,245,142,'#c9b58c',7);shape('#806d51',[[x+20,359],[x+161,276],[x+305,359]]);rect(x+133,411,53,83,'#6b654a',25);rect(x+68,389,36,35,'#eee0af',4);for(let i=0;i<7;i++)line(x+10+i*43,455,x+10+i*43,508,'#92774e',7);line(x,469,x+300,469,'#a18b5f',7);}if(li===1){ctx.save();if(state==='ending'){ctx.translate(x+112,489);ctx.rotate((1.2-ending)*1.2);ctx.translate(-x-112,-489);}ellipse(x+110,489,46,8,'#3a4c3533');rect(x+83,421,23,70,'#5b4d40',7);rect(x+119,421,23,70,'#5b4d40',7);rect(x+65,329,95,100,'#717d72',17);rect(x+68,366,90,18,'#c4b37a');ellipse(x+112,303,32,34,'#c99c73');shape('#677873',[[x+76,303],[x+80,270],[x+112,256],[x+145,274],[x+147,303]]);rect(x+143,353,54,78,'#a68559',24);line(x+48,277,x+48,489,'#665442',5);shape('#bbc3ac',[[x+37,282],[x+48,247],[x+60,282]]);ctx.restore();}if(li===2){ellipse(x+140,386,190,150,'#6c7775');ellipse(x+105,414,100,105,'#364d50');ellipse(x+150,481,34,8,'#253d3e');rect(x+131,418,40,69,'#b48c62',12);ellipse(x+151,401,18,22,'#dcb78d');shape('#cdb77a',[[x+133,384],[x+130,371],[x+144,377],[x+151,365],[x+159,377],[x+171,371],[x+169,387]]);rect(x+131,443,40,8,'#e5c780');} if(p.x>3120){ctx.font='bold 13px sans-serif';ctx.fillStyle='#fff9dd';ctx.fillText(li===1?actionLabel()+' · Use your sling':li===2?actionLabel()+' · Choose mercy':'Home →',x-55,230)}}
 function draw(){
  ctx.setTransform(canvas.width/WIDTH,0,0,canvas.height/HEIGHT,0,0);ctx.clearRect(0,0,WIDTH,HEIGHT);const l=levels[li];
  const gr=ctx.createLinearGradient(0,0,0,600);gr.addColorStop(0,l.color[0]);gr.addColorStop(1,l.color[1]);ctx.fillStyle=gr;ctx.fillRect(0,0,WIDTH,HEIGHT);
- if(sceneryReady){const bh=scenery.naturalHeight/3,bw=scenery.naturalWidth,sw=Math.min(bw,bh*WIDTH/HEIGHT),sx=(bw-sw)*(.12+.76*camera/Math.max(1,WORLD-WIDTH));ctx.drawImage(scenery,sx,li*bh+.5,sw,bh-1,0,0,WIDTH,HEIGHT);}
+ if(sceneryReady){const bh=scenery.naturalHeight/3,bw=scenery.naturalWidth,sw=Math.min(bw,bh*WIDTH/HEIGHT),sx=(bw-sw)*(.12+.76*camera/Math.max(1,WORLD-WIDTH));drawLivingBackdrop(sx,sw,bh);}
  else{for(let k=0;k<2;k++){ctx.beginPath();ctx.moveTo(0,600);for(let x=0;x<=WIDTH+20;x+=20)ctx.lineTo(x,290+k*80+Math.sin((x+camera*(.13+k*.12))/220)*50);ctx.lineTo(WIDTH,600);ctx.fillStyle=k?'#527e7155':'#729d8455';ctx.fill();}}
+ drawDistantLife();
  const mist=ctx.createLinearGradient(0,250,0,560);mist.addColorStop(0,'#bedbc000');mist.addColorStop(1,li===2?'#678fa34d':'#ffecc033');ctx.fillStyle=mist;ctx.fillRect(0,250,WIDTH,350);
  if(!reducedMotion){for(let i=0;i<17;i++){const x=((i*131+t*(5+i%3)-camera*.35)%(WIDTH+60)+WIDTH+60)%(WIDTH+60)-30;const y=110+(i*61)%320+Math.sin(t*.6+i)*16;ellipse(x,y,li===2?2:1.3,li===2?2:1.3,li===2?'#eafab899':'#ffefc977');}}
  ctx.save();ctx.translate(-camera,0);destination();for(const q of platforms){if(q.x>camera+WIDTH+50||q.x+q.w<camera-50)continue;drawPlatform(q);}
-for(const a of lights)if(!a.taken){ellipse(a.x,a.y,16,16,'#ffedb218');star(a.x,a.y+Math.sin(t*3+a.x)*4,11)}for(const s of scrolls)if(!discovered.has(s.id)){const y=s.y+Math.sin(t*2)*4;ellipse(s.x,y,28,28,'#fff4bd25');rect(s.x-12,y-16,24,32,'#f6dfad',3);rect(s.x-15,y-17,29,5,'#b78b4f',3);for(let i=0;i<3;i++)line(s.x-6,y-7+i*6,s.x+6,y-7+i*6,'#b58e59',2);star(s.x+16,y-19,7)}if(li===0)animals.forEach(animal);if(li===1)for(const s of stones)if(!s.taken){ellipse(s.x,s.y,10,7,'#d8e2d1');ellipse(s.x-2,s.y-3,5,2,'#f8f1d2')}
+for(const a of lights)if(!a.taken){ellipse(a.x,a.y,16,16,'#ffedb218');star(a.x,a.y+Math.sin(t*3+a.x)*4,11)}for(const s of scrolls)if(!discovered.has(s.id)){const y=s.y+Math.sin(t*2)*4;ellipse(s.x,y,28,28,'#fff4bd25');rect(s.x-12,y-16,24,32,'#f6dfad',3);rect(s.x-15,y-17,29,5,'#b78b4f',3);for(let i=0;i<3;i++)line(s.x-6,y-7+i*6,s.x+6,y-7+i*6,'#b58e59',2);star(s.x+16,y-19,7)}if(li===0){prayerGems.forEach(drawPrayerGem);predators.forEach(drawPredator);animals.forEach(animal);drawPrayerAura();}if(li===1)for(const s of stones)if(!s.taken){ellipse(s.x,s.y,10,7,'#d8e2d1');ellipse(s.x-2,s.y-3,5,2,'#f8f1d2')}
 if(invuln<=0||Math.floor(t*10)%2)hero(p.x,p.y);for(const a of particles){ctx.globalAlpha=a.life;star(a.x,a.y,6)}ctx.globalAlpha=1;
 ctx.restore();const water=ctx.createLinearGradient(0,540,0,600);water.addColorStop(0,'#73b6b650');water.addColorStop(1,'#3f869aaa');ctx.fillStyle=water;ctx.fillRect(0,551,WIDTH,49);for(let i=0;i<Math.ceil(WIDTH/40);i++){const x=(i*67+t*15-camera*.5)%(WIDTH+60);line(x,564+(i%4)*11,x+24,564+(i%4)*11,'#d0ece34a',2)}}
 function drawPlatform(q){
@@ -91,34 +106,34 @@ function drawPlatform(q){
  rect(x-2,y-1,w+4,12,li===2?'#869178':li===1?'#c4ac65':'#9aae62',5);line(x+4,y+2,x+w-4,y+2,li===2?'#bfccaa':'#e3d999',2);
  for(let xx=Math.max(x+5,Math.floor(camera/15)*15);xx<x+w-4&&xx<camera+WIDTH+20;xx+=15){const n=Math.sin(xx*.17);line(xx,y+5,xx-3+n*2,y-5-Math.abs(n)*8,li===2?'#8faa8d':li===1?'#ded089':'#bdca80',1.5);if(Math.floor(xx)%7===0){line(xx,y,xx+1,y-15,'#74894c',1.5);ellipse(xx+1,y-16,3,2,li===2?'#b5b6e1':'#f4d99a');}}
 }
-function pause(){if(state==='playing'){state='paused';setOverlay('TAKE A LITTLE BREAK','Your adventure<br>can wait.',levels[li].hint,'Keep playing','Controller: A / × continues · shoulders switch chapters',resume)}else if(state==='paused')resume()}
+function pause(){if(state==='discovery'){resume();return;}if(state==='playing'){state='paused';setOverlay('TAKE A LITTLE BREAK','Your adventure<br>can wait.',levels[li].hint,'Keep playing','Controller: A / × continues · shoulders switch chapters',resume)}else if(state==='paused')resume()}
 function pollController(){
  let pads=[];try{pads=navigator.getGamepads?navigator.getGamepads():[];}catch{}
  const actions=input.poll(pads);const status=$('#controller-status');
- const message=actions.connected?'Controller ready · A / × jump · X / □ act · Start pause':actions.unsupported?'This controller needs standard mapping. Touch and keyboard still work.':'Controller: pair with your device, then press a button';if(status.textContent!==message)status.textContent=message;
+ const message=actions.connected?'Controller ready · A / × jump · X / □ act · B / ○ pray · Start pause':actions.unsupported?'This controller needs standard mapping. Touch and keyboard still work.':'Controller: pair with your device, then press a button';if(status.textContent!==message)status.textContent=message;
  if(actions.disconnected&&state==='playing'){pause();toast('Controller disconnected. Reconnect or use touch controls.');}
  if(document.hidden||$('#music-panel').open)return;
  if(actions.pause){pause();return;}
- if(state==='playing'){if(actions.interact)interact();if(actions.journal)journal();}
- else if(state!=='ending'){if(actions.jump&&overlayAction)overlayAction();else if(actions.back&&state==='paused')resume();else if(actions.journal&&state!=='journal')journal();else if(actions.prev)init((li+2)%3);else if(actions.next)init((li+1)%3);}
+ if(state==='playing'){if(actions.interact)interact();if(actions.back)pray();if(actions.journal)journal();}
+ else if(state!=='ending'){if(actions.jump&&overlayAction)overlayAction();else if(actions.back&&(state==='paused'||state==='discovery'))resume();else if(actions.journal&&state!=='journal')journal();else if(actions.prev)init((li+2)%3);else if(actions.next)init((li+1)%3);}
 }
-const gameKeys=['ArrowLeft','ArrowRight','ArrowUp','KeyA','KeyD','KeyW','Space','KeyE','KeyP','Escape','KeyJ'];
+const gameKeys=['ArrowLeft','ArrowRight','ArrowUp','KeyA','KeyD','KeyW','Space','KeyE','KeyP','Escape','KeyJ','KeyQ'];
 window.addEventListener('keydown',e=>{
  if($('#music-panel').open||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
- if(!gameKeys.includes(e.code))return;
+ if(!gameKeys.includes(e.code))return;if(state==='discovery'&&['Space','KeyE','Escape'].includes(e.code)){e.preventDefault();resume();return;}
  if(state==='playing'||e.code==='Escape'||e.code==='KeyP')e.preventDefault();if(e.repeat)return;
  input.press(e.code);unlockAudio();
- if(e.code==='KeyE')interact();if(e.code==='KeyP'||e.code==='Escape')pause();if(e.code==='KeyJ')journal();
+ if(e.code==='KeyE')interact();if(e.code==='KeyQ')pray();if(e.code==='KeyP'||e.code==='Escape')pause();if(e.code==='KeyJ')journal();
 });window.addEventListener('keyup',e=>input.release(e.code));
 function suspend(){clearInput();if(state==='playing')pause();music.pause();if(audioCtx?.state==='running')audioCtx.suspend().catch(()=>{});}
 window.addEventListener('blur',suspend);document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend()});window.addEventListener('pagehide',suspend);
-$('#pause').onclick=pause;$('#sound').onclick=()=>{sound=!sound;$('#sound').textContent=sound?'Effects on':'Effects off';$('#sound').setAttribute('aria-pressed',String(sound));unlockAudio();beep()};
+$('#scroll-continue').onclick=resume;$('#pause').onclick=pause;$('#sound').onclick=()=>{sound=!sound;$('#sound').textContent=sound?'Effects on':'Effects off';$('#sound').setAttribute('aria-pressed',String(sound));unlockAudio();beep()};
 $('#journal').onclick=$('#journal-outside').onclick=journal;
 $('#restart').onclick=()=>{init(li);resume()};
 $('#expand').onclick=async()=>{const focused=document.body.classList.toggle('game-focus');$('#expand').textContent=focused?'✕':'⛶';$('#expand').setAttribute('aria-label',focused?'Exit expanded game':'Expand game');requestAnimationFrame(sizeCanvas);};
 for(const b of document.querySelectorAll('[data-level]'))b.onclick=()=>init(+b.dataset.level);
 for(const b of document.querySelectorAll('[data-action]')){
- b.addEventListener('pointerdown',e=>{if(state!=='playing')return;e.preventDefault();unlockAudio();b.setPointerCapture(e.pointerId);input.touch(e.pointerId,b.dataset.action);b.classList.add('pressed');if(b.dataset.action==='interact')interact();});
+ b.addEventListener('pointerdown',e=>{if(state!=='playing')return;e.preventDefault();unlockAudio();b.setPointerCapture(e.pointerId);input.touch(e.pointerId,b.dataset.action);b.classList.add('pressed');if(b.dataset.action==='interact')interact();if(b.dataset.action==='pray')pray();});
  const release=e=>{input.releaseTouch(e.pointerId);if(!input.has(b.dataset.action))b.classList.remove('pressed');};
  b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);
  b.addEventListener('contextmenu',e=>e.preventDefault());
@@ -137,4 +152,83 @@ $('#volume').oninput=e=>music.volume=Number(e.target.value);
 window.addEventListener('resize',()=>{sizeCanvas();clearInput()});if(window.visualViewport)window.visualViewport.addEventListener('resize',sizeCanvas);if(window.ResizeObserver)new ResizeObserver(sizeCanvas).observe(canvas);
 let last=performance.now(),accumulator=0;const STEP=1/120;
 function frame(now){const elapsed=Math.min(.1,Math.max(0,(now-last)/1000));last=now;pollController();accumulator+=elapsed;while(accumulator>=STEP){update(STEP);accumulator-=STEP;}draw();requestAnimationFrame(frame)}
+function resetTrail(){trailDistance=0;trail=[{x:p.x+17,y:Math.min(492,p.y+p.h),d:0}];}
+function updateFlock(dt){
+ if(li!==0)return;const last=trail[trail.length-1],x=p.x+17,y=p.y+p.h,step=Math.hypot(x-last.x,y-last.y);
+ if(step>1){trailDistance+=step;trail.push({x,y,d:trailDistance});while(trail.length>2&&trail[1].d<trailDistance-700)trail.shift();}
+ let order=0;
+ for(const a of animals){if(!a.found){a.speed=0;continue;}const distance=Math.max(0,trailDistance-(48+order*43));order++;let left=trail[0],right=left;
+ for(let j=1;j<trail.length;j++){right=trail[j];if(right.d>=distance)break;left=right;}
+ const mix=right.d===left.d?0:Math.max(0,Math.min(1,(distance-left.d)/(right.d-left.d)));const tx=left.x+(right.x-left.x)*mix,ty=left.y+(right.y-left.y)*mix-16;
+ const old=a.x,follow=1-Math.exp(-dt*(6.2+order*.8));a.x+=(tx-a.x)*follow;a.y+=(ty-a.y)*follow;a.speed=Math.abs(a.x-old)/dt;if(a.speed>5)a.face=Math.sign(tx-a.x)||a.face;
+ }
+}
+function pray(){
+ if(state!=='playing'||li!==0)return;
+ if(prayerTokens<1){toast('Find a glowing sapphire prayer first.');return;}
+ prayerTokens--;prayerPower+=DEFENSES_PER_PRAYER;prayersOffered++;prayerPulse=1.5;invuln=Math.max(invuln,.9);burst(p.x+17,p.y+25,22);beep(1040);hud();toast(`David prays. His light grows — ${prayerPower} defenses ready.`);
+}
+function nearestPredator(){return predators.filter(e=>e.mode!=='flee'&&e.mode!=='gone'&&Math.hypot(e.x-p.x-17,e.y-p.y-30)<135).sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x))[0];}
+function defend(){
+ const enemy=nearestPredator();if(!enemy)return false;
+ if(prayerPower<=0){toast(prayerTokens?'Pray first: Q / B / ○ / PRAY.':'No aura yet. Find a sapphire prayer, or jump past the predator.');return true;}
+ if(defenseCooldown>0)return true;
+ prayerPower--;enemy.mode='flee';enemy.face=Math.sign(enemy.x-p.x-17)||p.face;enemy.timer=1.2;defensePulse=.55;defenseCooldown=.3;invuln=Math.max(invuln,.45);burst(enemy.x,enemy.y,18);beep(760);hud();toast(`The ${enemy.kind} retreats! ${prayerPower} defenses left.`);return true;
+}
+function updatePredators(dt){
+ for(const e of predators){
+  if(e.mode==='gone')continue;
+  if(e.mode==='flee'){e.x+=e.face*280*dt;e.timer-=dt;e.alpha=Math.max(0,e.timer/1.2);if(e.timer<=0)e.mode='gone';continue;}
+  // Each predator stays on its own solid ground. A visible wind-up precedes a lunge.
+  const floor=platforms.find(q=>q.y===492&&e.home>=q.x&&e.home<q.x+q.w),dx=p.x+17-e.x,close=Math.abs(dx)<175&&p.y+p.h>390;
+  if(!floor)continue;
+  if(e.mode==='patrol'){e.vx=Math.sin(t*.65+e.phase)*22;if(close){e.mode='warn';e.timer=.85;e.face=Math.sign(dx)||1;}}
+  else if(e.mode==='warn'){e.vx=0;e.timer-=dt;if(e.timer<=0){e.mode='lunge';e.timer=.5;e.face=Math.sign(dx)||e.face;}}
+  else if(e.mode==='lunge'){e.vx=e.face*(e.kind==='lion'?160:190);e.timer-=dt;if(e.timer<=0){e.mode='rest';e.timer=1.4;}}
+  else{e.vx=0;e.timer-=dt;if(e.timer<=0)e.mode='patrol';}
+  e.x=Math.max(floor.x+28,Math.min(floor.x+floor.w-28,e.x+e.vx*dt));if(Math.abs(e.vx)>1)e.face=Math.sign(e.vx);
+  if(e.mode==='lunge'&&Math.abs(dx)<36&&Math.abs(p.y+p.h-492)<52&&invuln<=0){hurt();return;}
+ }
+}
+function drawPrayerGem(gem){
+ if(gem.taken)return;const y=gem.y+(reducedMotion?0:Math.sin(t*2.4+gem.x)*4),pulse=reducedMotion?1:.85+Math.sin(t*2)*.15;
+ const glow=ctx.createRadialGradient(gem.x,y,2,gem.x,y,32);glow.addColorStop(0,'#d3faffaa');glow.addColorStop(.45,'#499cff66');glow.addColorStop(1,'#267dff00');ctx.fillStyle=glow;ctx.fillRect(gem.x-32,y-32,64,64);
+ ctx.save();ctx.translate(gem.x,y);ctx.scale(pulse,1);ellipse(0,0,12,16,'#0e4ea1');ellipse(0,0,10,14,'#5bc6ff');shape('#bcecff',[[0,-12],[7,-5],[4,8],[0,12],[-6,5],[-7,-5]]);shape('#297bd0',[[0,-12],[0,12],[4,8],[7,-5]]);line(-4,-7,0,-10,'#f5ffff',2);ctx.restore();
+}
+function drawPrayerAura(){
+ if(prayerGlow<.005&&prayerPulse<=0&&defensePulse<=0)return;const x=p.x+17,y=p.y+29,r=38+prayerGlow*32+prayerPulse*10;
+ const glow=ctx.createRadialGradient(x,y,8,x,y,r);glow.addColorStop(0,`rgba(179,232,255,${.08+prayerGlow*.13})`);glow.addColorStop(.5,`rgba(53,147,255,${.12+prayerGlow*.3})`);glow.addColorStop(1,'#2089ff00');ctx.fillStyle=glow;ctx.fillRect(x-r,y-r,r*2,r*2);
+ ctx.strokeStyle=`rgba(137,222,255,${.3+prayerGlow*.4})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y,r*.6,r*.85,0,0,Math.PI*2);ctx.stroke();
+ if(prayerPulse>0){ctx.globalAlpha=prayerPulse/1.5;ellipse(x,y+31,42+(1.5-prayerPulse)*35,6,'#7dd5ff99');ctx.globalAlpha=1;}
+ if(defensePulse>0){ctx.strokeStyle=`rgba(147,224,255,${defensePulse/.55})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,35+(1-defensePulse/.55)*115,0,Math.PI*2);ctx.stroke();}
+}
+function drawPredator(e){
+ if(e.mode==='gone'||e.x<camera-100||e.x>camera+WIDTH+100)return;const lion=e.kind==='lion',stride=Math.abs(e.vx)>3||e.mode==='flee'?Math.sin(t*13+e.phase)*5:Math.sin(t*2+e.phase)*.7;
+ ctx.save();ctx.globalAlpha=e.alpha;ctx.translate(e.x,e.y);ctx.scale(e.face,1);ellipse(0,22,30,5,'#162c3544');
+ for(const [x,phase]of[[-18,1],[-8,-1],[13,-1],[22,1]])line(x,6,x+stride*phase,22,lion?'#81562f':'#414c59',5);
+ ellipse(0,0,29,14,lion?'#bb8a4e':'#76848e');ellipse(-7,-5,21,9,lion?'#d6ab66':'#9cabb1');
+ line(-24,-4,-43,-12+stride,lion?'#af834d':'#788c99',lion?4:9);if(lion){ellipse(-44,-12+stride,5,4,'#6b472e');ellipse(25,-7,18,21,'#765033');ellipse(27,-7,13,17,'#9b693c');}
+ ellipse(28,-6,12,12,lion?'#d9ac65':'#8194a2');shape(lion?'#c59a5a':'#879ba9',[[18,-13],[19,-26],[28,-16]]);if(!lion)shape('#9aa9af',[[30,-12],[49,-5],[33,2]]);else ellipse(38,-2,8,6,'#e4bf7a');ellipse(lion?44:48,-3,3,3,'#27343b');ellipse(31,-9,2.2,2.2,'#f5dfa0');ctx.restore();
+ if(e.mode==='warn'){ctx.fillStyle='#ffdd93';ctx.font='bold 23px sans-serif';ctx.fillText('!',e.x-4,e.y-43);}
+}
+function drawLivingBackdrop(sx,sw,bh){
+ ctx.drawImage(scenery,sx,li*bh+.5,sw,bh-1,0,0,WIDTH,HEIGHT);
+ if(reducedMotion)return;
+ // Only the leafy upper edge moves; distant buildings and cliffs remain anchored.
+ for(let row=0;row<130;row+=10){const strength=(1-row/130)*1.4,wind=Math.sin(t*.65+row*.014)*strength;
+ ctx.drawImage(scenery,sx,li*bh+.5+row/HEIGHT*(bh-1),sw,10/HEIGHT*(bh-1),wind,row,WIDTH,10.4);}
+}
+function drawDistantLife(){
+ const windTime=reducedMotion?0:t;
+ // Two layers of little olive trees move independently with wind and camera depth.
+ for(let layer=0;layer<2;layer++)for(let i=0;i<8;i++){
+  const spacing=220+layer*70,x=i*spacing-camera*(.12+layer*.13),y=360+layer*60+Math.sin(i*1.4)*18;
+  if(x< -50||x>WIDTH+50)continue;const scale=.28+layer*.12,sway=Math.sin(windTime*.7+i*1.8)*.035;
+  ctx.save();ctx.globalAlpha=layer?.22:.15;ctx.translate(x,y);ctx.rotate(sway);tree(0,0,scale);ctx.restore();
+ }
+ if(reducedMotion)return;
+ for(let i=0;i<3;i++){const x=((i*430+t*(7+i*3)-camera*.09)%(WIDTH+300)+WIDTH+300)%(WIDTH+300)-150;const fog=ctx.createRadialGradient(x,345+i*49,1,x,345+i*49,180);fog.addColorStop(0,li===2?'#b5e4ef0d':'#fff5d410');fog.addColorStop(1,'#ffffff00');ctx.fillStyle=fog;ctx.fillRect(x-180,165+i*49,360,360);}
+ for(let i=0;i<3;i++){const x=((i*360+t*18-camera*.07)%(WIDTH+100)+WIDTH+100)%(WIDTH+100)-50,y=135+i*18+Math.sin(t*.35+i)*10,wing=Math.sin(t*4+i)*3;line(x-5,y+wing,x,y,'#243e4944',1.3);line(x,y,x+5,y+wing,'#243e4944',1.3);}
+}
+
 init(0);sizeCanvas();requestAnimationFrame(frame);
