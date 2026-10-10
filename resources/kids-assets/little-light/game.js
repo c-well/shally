@@ -160,15 +160,23 @@ $('#volume').oninput=e=>music.volume=Number(e.target.value);
 window.addEventListener('resize',()=>{sizeCanvas();clearInput()});if(window.visualViewport)window.visualViewport.addEventListener('resize',sizeCanvas);if(window.ResizeObserver)new ResizeObserver(sizeCanvas).observe(canvas);
 let last=performance.now(),accumulator=0;const STEP=1/120;
 function frame(now){const elapsed=Math.min(.1,Math.max(0,(now-last)/1000));last=now;pollController();accumulator+=elapsed;while(accumulator>=STEP){update(STEP);accumulator-=STEP;}draw();requestAnimationFrame(frame)}
-function resetTrail(){trailDistance=0;trail=[{x:p.x+17,y:Math.min(492,p.y+p.h),d:0}];}
+function resetTrail(){trailDistance=0;trail=[{x:p.x+17,y:492,d:0}];}
 function updateFlock(dt){
- if(li!==0)return;const last=trail[trail.length-1],x=p.x+17,y=p.y+p.h,step=Math.hypot(x-last.x,y-last.y);
+ if(li!==0)return;
+ // Lambs wait below while David explores raised platforms or jumps.
+ const onLowerGround=p.ground&&Math.abs(p.y+p.h-492)<1;
+ if(!onLowerGround){animals.forEach(a=>{a.speed=0});return;}
+ const last=trail[trail.length-1],x=p.x+17,y=492,step=Math.abs(x-last.x);
  if(step>1){trailDistance+=step;trail.push({x,y,d:trailDistance});while(trail.length>2&&trail[1].d<trailDistance-700)trail.shift();}
  let order=0;
  for(const a of animals){if(!a.found){a.speed=0;continue;}const distance=Math.max(0,trailDistance-(48+order*43));order++;let left=trail[0],right=left;
  for(let j=1;j<trail.length;j++){right=trail[j];if(right.d>=distance)break;left=right;}
  const mix=right.d===left.d?0:Math.max(0,Math.min(1,(distance-left.d)/(right.d-left.d)));const tx=left.x+(right.x-left.x)*mix,ty=left.y+(right.y-left.y)*mix-16;
- const old=a.x,follow=1-Math.exp(-dt*(6.2+order*.8));a.x+=(tx-a.x)*follow;a.y+=(ty-a.y)*follow;a.speed=Math.abs(a.x-old)/dt;if(a.speed>5)a.face=Math.sign(tx-a.x)||a.face;
+ const old=a.x,follow=1-Math.exp(-dt*(6.2+order*.8));a.x+=(tx-a.x)*follow;a.y=476;
+ // A short hop carries the flock across ground gaps, never onto coin platforms.
+ const ground=platforms.filter(q=>q.y===492).sort((a,b)=>a.x-b.x);
+ for(let j=1;j<ground.length;j++){const edge=ground[j-1].x+ground[j-1].w,end=ground[j].x;if(a.x>edge&&a.x<end)a.y-=Math.sin((a.x-edge)/(end-edge)*Math.PI)*30;}
+ a.speed=Math.abs(a.x-old)/dt;if(a.speed>5)a.face=Math.sign(tx-a.x)||a.face;
  }
 }
 function pray(){
