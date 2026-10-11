@@ -402,7 +402,14 @@
           </button>
           <div class="site-menu-section-body">
             <div class="site-menu-sub-list">
-              <button class="site-menu-sub-link site-menu-sub-link-form" data-standard-url="{{ route('bulletins.load-standard', $bulletin) }}" type="button">{{ $bulletin->lines->isEmpty() ? 'Load standard order' : 'Reset to default' }}</button>
+              {{-- "Reset to default" used to run a fourteen line list hardcoded in
+                   PHP, while the real bulletin has eighteen lines and eight standing
+                   notices — so the button quietly made the bulletin WORSE and left
+                   every announcement untouched. It now runs the normal week André
+                   saved. Both resets are undoable server-side. --}}
+              <button class="site-menu-sub-link site-menu-sub-link-form" data-nw-restore="order" data-nw-base="/bulletins/{{ $bulletin->id }}/default" type="button">Reset the order of service</button>
+              <button class="site-menu-sub-link site-menu-sub-link-form" data-nw-restore="order_announcements" data-nw-base="/bulletins/{{ $bulletin->id }}/default" type="button">Reset order &amp; weekly notices</button>
+              <button class="site-menu-sub-link site-menu-sub-link-form" data-nw-save="/bulletins/{{ $bulletin->id }}/default" type="button">Save this week as normal</button>
               <button class="site-menu-sub-link site-menu-sub-link-form" data-next-week-url="{{ route('bulletins.next-week') }}" type="button">Next Sabbath</button>
               <button class="site-menu-sub-link site-menu-sub-link-form" id="new-event-series-btn" type="button">Event series</button>
               <a class="site-menu-sub-link" href="{{ route('bulletins.pdf', $bulletin) }}" target="_blank" rel="noopener">Download PDF</a>

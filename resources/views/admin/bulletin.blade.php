@@ -95,6 +95,43 @@
   .ic svg { width: 17px; height: 17px; }
 
   .addrow { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+  /* ── Our normal week ──────────────────────────────────────────────────
+     A floor to land on after a few weeks of adding. Deliberately quiet and
+     at the bottom: it is the thing you reach for when something went wrong,
+     not part of the weekly routine. */
+  .nw { margin-top: 38px; padding: 18px 20px; background: var(--cream, #faf3dd);
+        border: 1px solid var(--line); border-radius: 10px; }
+  .nw-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .nw-head b { font-size: 13px; font-weight: 600; letter-spacing: 0.01em; }
+  .nw-state { font-size: 12px; color: var(--ink-soft); }
+  .nw-state .none { color: var(--brass, #8a6c26); }
+  .nw-row { display: flex; gap: 9px; margin-top: 14px; flex-wrap: wrap; }
+  .nw-btn { font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+            padding: 11px 15px; border-radius: 7px; cursor: pointer;
+            border: 1px solid var(--line); background: #fff; color: var(--teal); }
+  .nw-btn:hover { border-color: var(--teal); }
+  .nw-btn.save { border-style: dashed; color: var(--ink-soft); }
+  .nw-btn.undo { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .nw-btn[hidden] { display: none; }
+  .nw-note { margin-top: 11px; font-size: 11.5px; line-height: 1.5; color: var(--ink-soft); }
+
+  /* Tick list shown when saving — which notices belong to every week. */
+  .nw-dim { position: fixed; inset: 0; background: rgba(20,24,30,.42); z-index: 60;
+            display: none; align-items: center; justify-content: center; padding: 18px; }
+  .nw-dim.open { display: flex; }
+  .nw-card { background: #fff; border-radius: 12px; width: min(440px, 100%);
+             max-height: 82vh; display: flex; flex-direction: column; overflow: hidden;
+             box-shadow: 0 24px 60px -20px rgba(20,24,30,.5); }
+  .nw-card h3 { margin: 0; padding: 18px 20px 6px; font-size: 15px; }
+  .nw-card p.sub { margin: 0; padding: 0 20px 14px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+  .nw-list { overflow-y: auto; padding: 0 20px; border-top: 1px solid var(--line); }
+  .nw-item { display: flex; gap: 11px; align-items: flex-start; padding: 11px 0;
+             border-bottom: 1px solid var(--line); font-size: 13.5px; cursor: pointer; }
+  .nw-item:last-child { border-bottom: 0; }
+  .nw-item input { margin-top: 2px; width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--teal); }
+  .nw-foot { padding: 14px 20px; display: flex; gap: 9px; justify-content: flex-end;
+             border-top: 1px solid var(--line); flex-wrap: wrap; }
   .addbtn { font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; padding: 11px 16px; border: 1px dashed var(--line); border-radius: 7px; background: transparent; color: var(--teal); cursor: pointer; }
   .addbtn:hover { border-color: var(--teal); border-style: solid; }
   .addbtn.ghost { color: var(--ink-soft); }
@@ -243,7 +280,47 @@
     @endforeach
   </div>
   <div class="addrow"><button class="addbtn" id="add-ann">+ Add announcement</button></div>
+
+  {{-- ── Our normal week ──────────────────────────────────────────────────
+       startNextWeek() copies LAST week forward, which means every week
+       inherits the one before it and the additions compound. This is the
+       anchor that does not move: a week André marks as normal, to land on
+       when a bulletin has drifted. --}}
+  <div class="nw" id="normalweek" data-base="/bulletins/{{ $bulletin->id }}/default">
+    <div class="nw-head">
+      <b>Our normal week</b>
+      <span class="nw-state" id="nwState">Checking&hellip;</span>
+    </div>
+    <div class="nw-row">
+      <button class="nw-btn" id="nwOrder">Reset the order of service</button>
+      <button class="nw-btn" id="nwFull">Reset order &amp; weekly notices</button>
+      <button class="nw-btn save" id="nwSave">Save this week as normal</button>
+      <button class="nw-btn undo" id="nwUndo" hidden>Undo that reset</button>
+      <button class="nw-btn save" id="nwRollback" hidden>Undo the last save</button>
+    </div>
+    <p class="nw-note">
+      Resetting the order never touches your announcements. The fuller reset also puts
+      the weekly notices back &mdash; anything with a picture or a video is kept either way.
+      Who is serving is always left blank, because that changes every week.
+    </p>
+  </div>
 </main>
+
+{{-- Which notices belong to every week. Without this step a dated notice
+     would come back to life on a reset months later. --}}
+<div class="nw-dim" id="nwDim">
+  <div class="nw-card" role="dialog" aria-modal="true" aria-labelledby="nwDlgH">
+    <h3 id="nwDlgH">Save this week as normal</h3>
+    <p class="sub">Tick the notices that belong on <em>every</em> bulletin. Leave anything
+      dated or one-off unticked, so it never comes back on a reset. The order of
+      service is always saved.</p>
+    <div class="nw-list" id="nwList"></div>
+    <div class="nw-foot">
+      <button class="nw-btn" id="nwCancel">Cancel</button>
+      <button class="nw-btn undo" id="nwConfirm">Save as normal</button>
+    </div>
+  </div>
+</div>
 @endif
 
 <div class="saved-pip" id="pip">Saved</div>
@@ -476,6 +553,90 @@
       return;
     }
   });
+  // ── Our normal week ──────────────────────────────────────────────────
+  (function () {
+    var root = document.getElementById('normalweek'); if (!root) return;
+    var BASE = root.getAttribute('data-base');
+    var stateEl = document.getElementById('nwState');
+    var btnUndo = document.getElementById('nwUndo');
+    var btnRoll = document.getElementById('nwRollback');
+    var dim = document.getElementById('nwDim'), list = document.getElementById('nwList');
+
+    function paint(d) {
+      if (d.has_default) {
+        var from = d.saved_from ? (' from ' + d.saved_from) : '';
+        stateEl.innerHTML = 'Saved' + from + ' &middot; ' + d.lines + ' items, ' + d.anns + ' weekly notices';
+      } else {
+        stateEl.innerHTML = '<span class="none">Not set yet</span> &mdash; the built-in order of service is used until you save one';
+      }
+      btnUndo.hidden = !d.can_undo;
+      btnRoll.hidden = !d.can_rollback;
+    }
+    function refresh() { api('GET', BASE).then(function (r) { if (r.ok && r.d) paint(r.d); }); }
+    refresh();
+
+    function reset(scope, msg) {
+      window.shConfirm(msg, { okLabel: 'Reset' }).then(function (ok) {
+        if (!ok) return;
+        api('POST', BASE + '/restore', { scope: scope }).then(function (r) {
+          if (r.ok && r.d && r.d.ok) { window.shToast('Reset to the normal week. You can undo this.'); setTimeout(function(){location.reload();}, 600); }
+          else window.shToast('Could not reset — try again.');
+        });
+      });
+    }
+    document.getElementById('nwOrder').addEventListener('click', function () {
+      reset('order', 'Put the order of service back to the normal week? Your announcements are left exactly as they are.');
+    });
+    document.getElementById('nwFull').addEventListener('click', function () {
+      reset('order_announcements', 'Put the order of service AND the weekly notices back to normal? Anything you added this week that is not part of the normal week will be removed. Notices with a picture or video are kept.');
+    });
+
+    btnUndo.addEventListener('click', function () {
+      api('POST', BASE + '/undo').then(function (r) {
+        if (r.ok && r.d && r.d.ok) { window.shToast('Put back the way it was.'); setTimeout(function(){location.reload();}, 600); }
+        else window.shToast('Nothing to undo.');
+      });
+    });
+    btnRoll.addEventListener('click', function () {
+      window.shConfirm('Go back to the previous saved normal week? This changes the default itself, not this bulletin.', { okLabel: 'Go back' }).then(function (ok) {
+        if (!ok) return;
+        api('POST', '/bulletins/default/rollback').then(function (r) {
+          if (r.ok && r.d && r.d.ok) { window.shToast('The normal week is back to the earlier version.'); refresh(); }
+          else window.shToast('No earlier version to go back to.');
+        });
+      });
+    });
+
+    // Save — opens the tick list first.
+    document.getElementById('nwSave').addEventListener('click', function () {
+      api('GET', BASE).then(function (r) {
+        if (!r.ok || !r.d) return;
+        var items = r.d.current_announcements || [];
+        list.innerHTML = items.length ? '' : '<p class="sub" style="padding:14px 0;">This bulletin has no announcements — only the order of service will be saved.</p>';
+        items.forEach(function (a) {
+          var lab = document.createElement('label'); lab.className = 'nw-item';
+          var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = a.id; cb.checked = true;
+          var sp = document.createElement('span'); sp.textContent = a.title;
+          lab.appendChild(cb); lab.appendChild(sp); list.appendChild(lab);
+        });
+        dim.classList.add('open');
+      });
+    });
+    function close() { dim.classList.remove('open'); }
+    document.getElementById('nwCancel').addEventListener('click', close);
+    dim.addEventListener('click', function (e) { if (e.target === dim) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && dim.classList.contains('open')) close(); });
+
+    document.getElementById('nwConfirm').addEventListener('click', function () {
+      var ids = Array.prototype.slice.call(list.querySelectorAll('input:checked')).map(function (c) { return parseInt(c.value, 10); });
+      api('POST', BASE, { announcement_ids: ids }).then(function (r) {
+        close();
+        if (r.ok && r.d && r.d.ok) { window.shToast('Saved as the normal week — ' + r.d.lines + ' items, ' + r.d.anns + ' notices.'); refresh(); }
+        else window.shToast('Could not save — try again.');
+      });
+    });
+  })();
+
   document.getElementById('add-ann').addEventListener('click', function () {
     api('POST', '/bulletins/' + BID + '/announcements', { title: '', is_web_only: 1 }).then(function (res) {
       if (res.ok && res.d.ok) {

@@ -4183,17 +4183,95 @@
         });
       }
 
-      /* Reset to default order — push history + reload */
-      document.querySelectorAll('[data-standard-url]').forEach(btn => btn.addEventListener('click', async () => {
-        if (!await window.shConfirm('Reset bulletin to default order? You can undo this.')) return;
+      /* ── Our normal week ───────────────────────────────────────────────
+         startNextWeek() copies LAST week forward, so each week inherits the
+         one before it and the additions compound — which is why there was
+         nothing to fall back to. These put a saved, non-moving week back.
+
+         The old [data-standard-url] handler lived here and ran the fourteen
+         line list hardcoded in loadStandardOrder(), under the label "Reset to
+         default". The live bulletin has eighteen lines and eight standing
+         notices, so that button lost three parts of the service every time it
+         was pressed and never touched an announcement. The route still exists
+         for anything else calling it, but nothing in the UI points at it now.
+
+         Undo is server-side here rather than pushHistory(), because the client
+         history only knows about lines and a full reset also moves notices. */
+      document.querySelectorAll('[data-nw-restore]').forEach(btn => btn.addEventListener('click', async () => {
+        const scope = btn.dataset.nwRestore;
+        const msg = scope === 'order'
+          ? 'Put the order of service back to the normal week?\nYour announcements are left exactly as they are.'
+          : 'Put the order of service AND the weekly notices back to normal?\nAnything added this week that is not part of the normal week will be removed. Notices with a picture or video are kept.';
+        if (!await window.shConfirm(msg, { okLabel: 'Reset' })) return;
         try {
-          if (snapshotLines().length) pushHistory('Reset to default');
-          queuePendingToast('Reset to default');
-          await post(btn.dataset.standardUrl);
+          queuePendingToast('Reset to the normal week — you can undo this');
+          await post(btn.dataset.nwBase + '/restore', { scope: scope });
           markDirty();
           location.reload();
         } catch (e) { showSaved('Error'); }
       }));
+
+      /* Save this week as the normal one. The tick list is the guard against a
+         dated notice coming back to life on a reset months later. */
+      document.querySelectorAll('[data-nw-save]').forEach(btn => btn.addEventListener('click', async () => {
+        const base = btn.dataset.nwSave;
+        let info;
+        try {
+          info = await (await fetch(base, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })).json();
+        } catch (e) { showSaved('Error'); return; }
+
+        const items = info.current_announcements || [];
+        let ids = items.map(a => a.id);
+
+        if (items.length) {
+          const picked = await window.shPickAnnouncements(items);
+          if (picked === null) return;      // cancelled
+          ids = picked;
+        } else if (!await window.shConfirm('Save this order of service as the normal week?', { okLabel: 'Save' })) {
+          return;
+        }
+
+        try {
+          const r = await post(base, { announcement_ids: ids });
+          window.shToast('Saved as the normal week — ' + r.lines + ' items, ' + r.anns + ' notices.');
+        } catch (e) { showSaved('Error'); }
+      }));
+
+      /* Tick list. Resolves to an array of ids, or null if cancelled. */
+      window.shPickAnnouncements = function (items) {
+        return new Promise(resolve => {
+          const dim = document.createElement('div');
+          dim.setAttribute('style', 'position:fixed;inset:0;background:rgba(20,24,30,.42);z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;');
+          const card = document.createElement('div');
+          card.setAttribute('style', "background:#fff;border-radius:12px;width:min(440px,100%);max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px -20px rgba(20,24,30,.5);font-family:'Instrument Sans',system-ui,sans-serif;");
+          card.innerHTML =
+            '<h3 style="margin:0;padding:18px 20px 6px;font-size:15px;font-weight:600;">Save this week as normal</h3>' +
+            '<p style="margin:0;padding:0 20px 14px;font-size:12.5px;line-height:1.55;color:#4a5668;">Tick the notices that belong on <b>every</b> bulletin. Leave anything dated or one-off unticked, so it never comes back on a reset. The order of service is always saved.</p>' +
+            '<div data-list style="overflow-y:auto;padding:0 20px;border-top:1px solid rgba(26,35,50,.11);"></div>' +
+            '<div style="padding:14px 20px;display:flex;gap:9px;justify-content:flex-end;border-top:1px solid rgba(26,35,50,.11);flex-wrap:wrap;">' +
+              '<button data-cancel style="font:inherit;font-size:12px;font-weight:600;padding:11px 15px;border-radius:7px;cursor:pointer;border:1px solid rgba(26,35,50,.11);background:#fff;color:#03617A;">Cancel</button>' +
+              '<button data-ok style="font:inherit;font-size:12px;font-weight:600;padding:11px 15px;border-radius:7px;cursor:pointer;border:1px solid #03617A;background:#03617A;color:#fff;">Save as normal</button>' +
+            '</div>';
+          const list = card.querySelector('[data-list]');
+          items.forEach(a => {
+            const lab = document.createElement('label');
+            lab.setAttribute('style', 'display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid rgba(26,35,50,.11);font-size:13.5px;cursor:pointer;');
+            const cb = document.createElement('input');
+            cb.type = 'checkbox'; cb.checked = true; cb.value = a.id;
+            cb.setAttribute('style', 'margin-top:2px;width:17px;height:17px;flex-shrink:0;accent-color:#03617A;');
+            const sp = document.createElement('span'); sp.textContent = a.title;
+            lab.appendChild(cb); lab.appendChild(sp); list.appendChild(lab);
+          });
+          function done(v) { dim.remove(); document.removeEventListener('keydown', esc); resolve(v); }
+          function esc(e) { if (e.key === 'Escape') done(null); }
+          card.querySelector('[data-cancel]').addEventListener('click', () => done(null));
+          card.querySelector('[data-ok]').addEventListener('click', () =>
+            done(Array.from(list.querySelectorAll('input:checked')).map(c => parseInt(c.value, 10))));
+          dim.addEventListener('click', e => { if (e.target === dim) done(null); });
+          document.addEventListener('keydown', esc);
+          dim.appendChild(card); document.body.appendChild(dim);
+        });
+      };
 
       /* SortableJS — drag-to-reorder bulletin lines */
       function initSortable() {

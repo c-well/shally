@@ -141,6 +141,18 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
     Route::get  ('/api/bulletins/list',             [BulletinController::class, 'listBulletins'])->name('bulletins.list');
     Route::post ('/bulletins/{bulletin}/load-standard-order', [BulletinController::class, 'loadStandardOrder'])->name('bulletins.load-standard');
 
+    // ── "Our normal week" ────────────────────────────────────────────────
+    // A floor to land on after a few weeks of adding. load-standard-order
+    // above stays as-is so nothing that calls it breaks, but it is now the
+    // fallback seed only — once a real week is saved, these win.
+    // role:clerk (this group) already widens to super_admin via EnsureRole,
+    // so this is Andre, Karlon, Rosharde, and any future clerk.
+    Route::get   ('/bulletins/{bulletin}/default',          [\App\Http\Controllers\AdminBulletinDefaultController::class, 'show'])->name('bulletins.default.show');
+    Route::post  ('/bulletins/{bulletin}/default',          [\App\Http\Controllers\AdminBulletinDefaultController::class, 'save'])->name('bulletins.default.save');
+    Route::post  ('/bulletins/{bulletin}/default/restore',  [\App\Http\Controllers\AdminBulletinDefaultController::class, 'restore'])->name('bulletins.default.restore');
+    Route::post  ('/bulletins/{bulletin}/default/undo',     [\App\Http\Controllers\AdminBulletinDefaultController::class, 'undo'])->name('bulletins.default.undo');
+    Route::post  ('/bulletins/default/rollback',            [\App\Http\Controllers\AdminBulletinDefaultController::class, 'rollback'])->name('bulletins.default.rollback');
+
     Route::post  ('/bulletins/{bulletin}/lines',      [BulletinController::class, 'storeLine'])->name('bulletins.lines.store');
     Route::patch ('/bulletins/{bulletin}/lines/reorder', [BulletinController::class, 'reorderLines'])->name('bulletins.lines.reorder');
     Route::patch ('/bulletins/{bulletin}/announcements/reorder', [BulletinController::class, 'reorderAnnouncements'])->name('bulletins.announcements.reorder');
