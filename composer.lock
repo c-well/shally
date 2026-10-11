@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d5716ca59709032ce718896e66b56f0",
+    "content-hash": "ad4d1cef4d12f0ca0e0cb3cea3ee093c",
     "packages": [
         {
             "name": "anthropic-ai/sdk",
-            "version": "v0.45.0",
+            "version": "v0.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/anthropics/anthropic-sdk-php.git",
-                "reference": "0139cbc17d6db576478ea794e52aa91bc0747e3c"
+                "reference": "ecf8b7faaaf9d42773ef7d6a461d9c1131adf2c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/anthropics/anthropic-sdk-php/zipball/0139cbc17d6db576478ea794e52aa91bc0747e3c",
-                "reference": "0139cbc17d6db576478ea794e52aa91bc0747e3c",
+                "url": "https://api.github.com/repos/anthropics/anthropic-sdk-php/zipball/ecf8b7faaaf9d42773ef7d6a461d9c1131adf2c3",
+                "reference": "ecf8b7faaaf9d42773ef7d6a461d9c1131adf2c3",
                 "shasum": ""
             },
             "require": {
@@ -39,7 +39,7 @@
                 "pestphp/pest": "^3",
                 "php-http/mock-client": "^1",
                 "phpstan/extension-installer": "^1",
-                "phpstan/phpstan": "2.2.1",
+                "phpstan/phpstan": "2.2.13",
                 "phpstan/phpstan-phpunit": "^2",
                 "phpunit/phpunit": "^11",
                 "symfony/http-client": "^7"
@@ -65,9 +65,9 @@
             "description": "Anthropic PHP SDK",
             "support": {
                 "issues": "https://github.com/anthropics/anthropic-sdk-php/issues",
-                "source": "https://github.com/anthropics/anthropic-sdk-php/tree/v0.45.0"
+                "source": "https://github.com/anthropics/anthropic-sdk-php/tree/v0.57.0"
             },
-            "time": "2026-08-31T14:55:40+00:00"
+            "time": "2026-10-09T15:32:00+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",

@@ -16,7 +16,11 @@ use Throwable;
  */
 class PeaceContentGenerator
 {
-    private const MODEL = 'claude-sonnet-4-5';
+    /* This writes pastoral Q&A that goes straight onto a public page people
+       reach while they are hurting. It is the one place on this site where a
+       weaker model is visible to a stranger, so it gets the best one. Volume
+       is a few calls a week — the cost difference is cents. */
+    private const MODEL = 'claude-opus-5-5';
 
     /** Retry budget for transient API failures. Waits are seconds, per attempt. */
     private const MAX_ATTEMPTS     = 3;
@@ -50,6 +54,7 @@ class PeaceContentGenerator
             $response = $client->messages->create(
                 model: self::MODEL,
                 maxTokens: 4000,
+                outputConfig: ['effort' => 'high'],
                 system: [
                     [
                         'type' => 'text',

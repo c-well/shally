@@ -14,7 +14,11 @@ use Throwable;
  */
 class ClaudeAssistant
 {
-    private const MODEL = 'claude-opus-4-7';
+    /* Andre's reply is the whole product here — warmth and specificity are
+       the point, and it runs a handful of times a month. Opus. Effort is set
+       explicitly because Opus 5.5 defaults to `medium` where Opus 5 defaulted
+       to `high`; leaving it off would be a quiet downgrade. */
+    private const MODEL = 'claude-opus-5-5';
     private const LOG_PATH = '/home/shalom/feedback-log.md';
     private const RECENT_ENTRIES = 5;
 
@@ -36,6 +40,7 @@ class ClaudeAssistant
             $response = $client->messages->create(
                 model: self::MODEL,
                 maxTokens: 1024,
+                outputConfig: ['effort' => 'high'],
                 system: [
                     [
                         'type' => 'text',

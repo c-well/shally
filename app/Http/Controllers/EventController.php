@@ -81,8 +81,15 @@ class EventController extends Controller
         try {
             $client = new \Anthropic\Client(apiKey: $apiKey);
             $resp = $client->messages->create(
-                model: 'claude-haiku-4-5-20251001',
+                /* Pure structured extraction — a description in, a small fixed
+                   JSON object out. No prose, no judgement, no voice. That is
+                   exactly Haiku's job, and 5.5 is a tenth of 4.5's price
+                   ($0.10/$0.50 per MTok against $1.00/$5.00) on prompts this
+                   size. The old ID also carried a date suffix, which is not
+                   how these are addressed. */
+                model: 'claude-haiku-5-5',
                 maxTokens: 500,
+                outputConfig: ['effort' => 'low'],
                 system: [[
                     'type' => 'text',
                     'text' => "You extract recurring event schedules for a church calendar. Today is " . now('America/New_York')->toDateString() . ". "
@@ -99,7 +106,33 @@ class EventController extends Controller
                 ]],
                 messages: [['role' => 'user', 'content' => $text]],
             );
-            $raw = trim($resp->content[0]->text ?? '');
+            // ANTHROPIC_USAGE_TRACKED — this call used to spend silently; it
+            // never appeared on the in-app cost dashboard because nothing
+            // logged it. Same shape as ClaudeAssistant and the Peace generator.
+            try {
+                \App\Models\AnthropicUsageLog::track([
+                    'source'             => 'events.smart_parse',
+                    'model'              => 'claude-haiku-5-5',
+                    'input_tokens'       => $resp->usage->inputTokens ?? 0,
+                    'output_tokens'      => $resp->usage->outputTokens ?? 0,
+                    'cache_read_tokens'  => $resp->usage->cacheReadInputTokens ?? 0,
+                    'cache_write_tokens' => $resp->usage->cacheCreationInputTokens ?? 0,
+                    'request_id'         => $resp->id ?? null,
+                    'outcome'            => 'ok',
+                ]);
+            } catch (\Throwable $e) { /* never block on logging */ }
+
+            // Walk to the TEXT block rather than assuming content[0] is one.
+            // Haiku 4.5 did no thinking, so content[0] was always the text and
+            // ->text on it was safe. Haiku 5.5 runs adaptive thinking BY
+            // DEFAULT, so a ThinkingBlock now comes first and the old line
+            // would have thrown on every call — a silent 502 on the event
+            // parser the moment the model string changed.
+            $raw = '';
+            foreach ($resp->content as $block) {
+                if ($block->type === 'text') { $raw = trim($block->text); break; }
+            }
+            $raw = trim($raw);
             $raw = preg_replace('/^```(?:json)?|```$/m', '', $raw);
             $out = json_decode(trim($raw), true);
             if (! is_array($out)) return response()->json(['ok' => false, 'error' => 'parse'], 422);
