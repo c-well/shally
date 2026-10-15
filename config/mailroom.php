@@ -47,6 +47,12 @@ return [
     ],
 
     // Where the reading pane's buttons send a message.
+    // Where a sent copy is filed. Dovecot namespaces these under INBOX, so
+    // it is 'INBOX.Sent' and not 'Sent' — using the pretty name silently
+    // files into a folder nobody's mail app is looking at.
+    'sent_to'  => 'INBOX.Sent',
+    'sendmail' => '/usr/sbin/sendmail',
+
     'archive_to' => 'INBOX.Archive',
     'trash_to' => 'INBOX.Trash',
 

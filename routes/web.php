@@ -240,6 +240,7 @@ Route::middleware('auth')->group(function () {
         Route::get ('/admin/mail/api/delta',           [\App\Http\Controllers\AdminMailController::class, 'delta'])->name('admin.mail.delta');
         Route::get ('/admin/mail/api/message/{message}', [\App\Http\Controllers\AdminMailController::class, 'show'])->name('admin.mail.show');
         Route::post('/admin/mail/api/act',             [\App\Http\Controllers\AdminMailController::class, 'act'])->name('admin.mail.act');
+        Route::post('/admin/mail/api/send',             [\App\Http\Controllers\AdminMailController::class, 'send'])->name('admin.mail.send');
         Route::get ('/admin/mail/file/{attachment}',   [\App\Http\Controllers\AdminMailController::class, 'file'])->name('admin.mail.file');
         Route::post  ('/admin/push/subscribe', function (\Illuminate\Http\Request $r) {
             $d = $r->validate(['endpoint' => 'required|string|max:1000', 'keys.p256dh' => 'required|string|max:255', 'keys.auth' => 'required|string|max:255']);

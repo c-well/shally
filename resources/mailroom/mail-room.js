@@ -113,6 +113,8 @@
     recips: [],
     draftTo: '',
     draftBody: '',
+    sending: false,
+    sentNote: '',
     badTo: false,
 
     boot() {
@@ -327,6 +329,41 @@
     close() {
       this.reading = false;
       this.sel = null;
+    },
+
+    /**
+     * Queue a reply.
+     *
+     * The room does not send it — it writes the intent and the scheduler
+     * sends it within the minute, the same way archiving and deleting work.
+     * So the button says queued rather than sent, because claiming "Sent"
+     * when the message is still sitting in a table is the kind of small lie
+     * that costs trust the first time one fails.
+     */
+    async sendReply() {
+      this.commitTo();
+      const body = (this.draftBody || '').trim();
+      if (!body || this.sending) return;
+      if (!this.recips.length) { this.$refs.to?.focus(); return; }
+
+      this.sending = true;
+      this.sentNote = '';
+      try {
+        const r = await post('/admin/mail/api/send', {
+          id: this.sel.id,
+          body,
+          to: this.recips,
+        });
+        const d = await r.json();
+        if (!r.ok || !d.ok) throw new Error(d.error || 'Could not queue that reply.');
+        this.draftBody = '';
+        this.sentNote = d.message || 'Queued.';
+        setTimeout(() => { this.sentNote = ''; }, 6000);
+      } catch (e) {
+        this.sentNote = e.message || 'Could not queue that reply.';
+      } finally {
+        this.sending = false;
+      }
     },
 
     /** Archive and trash move the message; the list should not pretend otherwise. */

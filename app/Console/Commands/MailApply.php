@@ -45,6 +45,11 @@ class MailApply extends Command
                         '--folder' => $a->folder,
                         '--uid' => $a->uid,
                     ]),
+                    // The reply goes out and the copy is filed. Both happen
+                    // here rather than in the web process, because filing
+                    // needs doveadm and the web SAPI has exec disabled.
+                    'send' => \App\Services\Mail\MailSender::make()->send($a),
+
                     default => throw new \RuntimeException("unknown action {$a->action}"),
                 };
 

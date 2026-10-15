@@ -148,6 +148,14 @@ class MailSync extends Command
             ['mailbox' => $box, 'folder' => $folder, 'uid' => $uid],
             [
                 'message_id' => substr((string) $msg->getHeaderValue('Message-ID'), 0, 255) ?: null,
+                // What a reply needs to land in the thread rather than beside
+                // it. References is the chain; In-Reply-To is built from
+                // message_id at send time.
+                'refs' => trim((string) $msg->getHeaderValue('References')) ?: null,
+                // Honour Reply-To when the sender set one. A list that posts
+                // as noreply@ but points replies somewhere real is common, and
+                // answering the From address there goes nowhere.
+                'reply_to' => mb_substr(trim((string) $msg->getHeaderValue('Reply-To')), 0, 190) ?: null,
                 'from_name' => mb_substr($fromName, 0, 190),
                 'from_email' => mb_substr($fromEmail, 0, 190),
                 'subject' => mb_substr($subject, 0, 500),

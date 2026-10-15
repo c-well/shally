@@ -90,6 +90,30 @@ class Doveadm
      * Timeout on purpose: a wedged doveadm must not hold the scheduler open,
      * and the next run picks up exactly where this one stopped.
      */
+    /**
+     * Append a raw message to a folder — how a sent copy gets into the
+     * mailbox so the owner's own mail app can see it. doveadm reads the
+     * message from stdin, so this does not go through run().
+     */
+    public function save(string $box, string $folder, string $raw): void
+    {
+        if (PHP_SAPI !== 'cli') {
+            throw new RuntimeException('doveadm is CLI-only here — queue a mail_action instead.');
+        }
+
+        $p = new Process([$this->bin, 'save', '-u', $this->address($box), '-m', $folder]);
+        $p->setInput($raw);
+        $p->setTimeout(60);
+        $p->run();
+
+        if (! $p->isSuccessful()) {
+            throw new RuntimeException(
+                'doveadm save failed (exit ' . $p->getExitCode() . '): '
+                . trim($p->getErrorOutput() ?: $p->getOutput())
+            );
+        }
+    }
+
     private function run(array $args): string
     {
         if (PHP_SAPI !== 'cli') {

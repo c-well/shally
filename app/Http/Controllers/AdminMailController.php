@@ -221,11 +221,87 @@ class AdminMailController extends Controller
      * Dovecot within the minute — the web SAPI cannot shell out, and that
      * restriction is the point rather than an obstacle.
      */
+    /**
+     * POST — queue a reply.
+     *
+     * The web process builds the message and writes the intent; the scheduler
+     * sends it within the minute and files the copy. Nothing here touches the
+     * mail store, which is the same rule the rest of the room follows and is
+     * not optional: exec is disabled on the FPM pool.
+     */
+    public function send(Request $r)
+    {
+        $data = $r->validate([
+            'id'      => ['required', 'integer', 'exists:mail_messages,id'],
+            'body'    => ['required', 'string', 'min:1', 'max:50000'],
+            'to'      => ['nullable', 'array', 'max:20'],
+            'to.*'    => ['email:rfc'],
+            'cc'      => ['nullable', 'array', 'max:20'],
+            'cc.*'    => ['email:rfc'],
+            'subject' => ['nullable', 'string', 'max:450'],
+        ]);
+
+        $m = MailMessage::findOrFail($data['id']);
+
+        // Default recipient: Reply-To when the sender asked for one, else who
+        // it came from. Andre can override, but he should not have to.
+        $to = $data['to'] ?? array_values(array_filter([$m->reply_to ?: $m->from_email]));
+        if (! $to) {
+            return response()->json(['ok' => false, 'error' => 'That message has no address to reply to.'], 422);
+        }
+
+        // One "Re:" however many times it has been round.
+        $subject = trim((string) ($data['subject'] ?? $m->subject ?? ''));
+        if (! preg_match('/^re:/i', $subject)) {
+            $subject = 'Re: ' . ($subject !== '' ? $subject : '(no subject)');
+        }
+
+        $body = rtrim($data['body']) . \App\Services\Mail\MailSender::quote(
+            $m->body_text,
+            $m->from_name ?: $m->from_email,
+            optional($m->sent_at)->format('j M Y \a\t H:i'),
+        );
+
+        $action = MailAction::create([
+            'mailbox'      => $m->mailbox,
+            'folder'       => $m->folder,
+            'uid'          => $m->uid,
+            'action'       => 'send',
+            'requested_by' => auth()->id(),
+            'payload'      => [
+                'to'          => $to,
+                'cc'          => $data['cc'] ?? [],
+                'subject'     => $subject,
+                'body'        => $body,
+                'in_reply_to' => $m->message_id,
+                'references'  => $m->refs,
+                'from_name'   => config('mailroom.from_name', 'The Church of Peace'),
+            ],
+        ]);
+
+        \App\Models\AuditLog::record(
+            event: 'mail_reply_queued',
+            userId: auth()->id(),
+            description: 'Reply to ' . implode(', ', $to) . ' from ' . $m->mailbox . ' — "' . $subject . '"',
+        );
+
+        return response()->json([
+            'ok'      => true,
+            'queued'  => $action->id,
+            'to'      => $to,
+            'subject' => $subject,
+            'message' => 'Queued — it goes out within the minute.',
+        ]);
+    }
+
     public function act(Request $r)
     {
         $data = $r->validate([
             'id' => ['required', 'integer', 'exists:mail_messages,id'],
-            'action' => ['required', 'string', 'in:'.implode(',', MailAction::ACTIONS)],
+            // UI_ACTIONS, not ACTIONS — 'send' and 'fetch' are queued by
+            // their own paths and must not be reachable by posting a verb at
+            // this endpoint with no body.
+            'action' => ['required', 'string', 'in:'.implode(',', MailAction::UI_ACTIONS)],
         ]);
 
         $m = MailMessage::findOrFail($data['id']);

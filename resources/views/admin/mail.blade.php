@@ -248,7 +248,11 @@
               <div class="replyfoot">
                 <button class="btn quiet" type="button" disabled title="Attachments land in a later pass">Attach</button>
                 <span class="spacer"></span>
-                <button class="btn" type="button" disabled title="Sending lands in a later pass">Send reply</button>
+                <span class="sendnote" x-show="sentNote" x-text="sentNote" x-cloak></span>
+                <button class="btn" type="button"
+                        x-on:click="sendReply()"
+                        :disabled="sending || !draftBody.trim()"
+                        x-text="sending ? 'Sending…' : 'Send reply'">Send reply</button>
               </div>
             </div>
           </div>

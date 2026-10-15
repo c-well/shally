@@ -652,6 +652,12 @@
   .btn.quiet { background: var(--teal-wash); color: var(--teal); }
   .btn.quiet:hover { background: var(--teal); color: var(--parchment); }
   .replyfoot .spacer { flex: 1; }
+  /* Says what actually happened — queued, or why not. Never "Sent". */
+  .sendnote {
+    font-size: 0.72rem; color: var(--ink-soft); margin-right: 0.6rem;
+    text-align: right; line-height: 1.4; max-width: 22ch;
+  }
+  [x-cloak] { display: none !important; }
 
   .empty { flex: 1; display: grid; place-items: center; padding: 2rem; text-align: center; color: var(--ink-faint); }
   .empty .big {
