@@ -50,11 +50,32 @@ class MusicController extends Controller
         $day = MusicDay::where('token', $token)->firstOrFail();
         $back = redirect()->route('music.show', $token);
 
+        /*
+         * Uploads are sent from the page in the background so the singer
+         * sees a progress bar, and those requests ask for JSON. They get the
+         * same outcomes as a normal post, in a shape the page can act on: a
+         * redirect to follow once it is in, or the reasons it was refused.
+         * The flash is set before answering so the thank-you survives the
+         * page's own navigation to it.
+         */
+        $json  = $request->expectsJson();
+        $fail  = fn (array $errors) => $json
+            ? response()->json(['ok' => false, 'errors' => $errors], 422)
+            : $back->withErrors($errors)->withInput();
+        $done  = function (array $flash) use ($json, $back, $token) {
+            if ($json) {
+                foreach ($flash as $k => $v) session()->flash($k, $v);
+                return response()->json(['ok' => true, 'redirect' => route('music.show', $token)]);
+            }
+            foreach ($flash as $k => $v) $back->with($k, $v);
+            return $back;
+        };
+
         if (! $day->is_open) {
-            return $back->withErrors(['name' => 'Song submissions for this day are closed.']);
+            return $fail(['name' => ['Song submissions for this day are closed.']]);
         }
 
-        $silent = fn (string $why) => tap($back->with('sent', true), fn () =>
+        $silent = fn (string $why) => tap($done(['sent' => true]), fn () =>
             Log::info('music entry rejected', ['reason' => $why, 'ip' => $request->ip()]));
 
         try {
@@ -83,7 +104,7 @@ class MusicController extends Controller
 
         /* Uploads and YouTube links can fill the title in themselves; a CD cannot. */
         if ($data['method'] === 'bringing' && empty($data['song_title'])) {
-            return $back->withErrors(['song_title' => 'Tell us the name of the song.'])->withInput();
+            return $fail(['song_title' => ['Tell us the name of the song.']]);
         }
 
         $entry = MusicEntry::create([
@@ -120,6 +141,6 @@ class MusicController extends Controller
             ]);
         }
 
-        return $back->with('sent', true)->with('sent_name', $entry->name)->with('sent_method', $entry->method);
+        return $done(['sent' => true, 'sent_name' => $entry->name, 'sent_method' => $entry->method]);
     }
 }

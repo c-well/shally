@@ -68,6 +68,50 @@
   .thanks .big, .closed .big { font-family: 'Cormorant Garamond', serif; font-size: 30px; }
   .thanks p, .closed p { color: var(--ink-soft); margin-top: 10px; font-size: 14.5px; line-height: 1.65; }
   .again { display: inline-block; margin-top: 18px; color: var(--teal); font-weight: 600; font-size: 14px; text-decoration: none; }
+  /*
+   * Preview player — the same player André uses, so a singer hears exactly
+   * what the music team will get before sending it. Purple, lilac inside.
+   */
+  .mp {
+    --mp-accent: #5b2a86; --mp-accent-bright: #48206c; --mp-bg: #f3edf8;
+    --mp-border: color-mix(in srgb, #5b2a86 16%, transparent);
+    --mp-track: color-mix(in srgb, #5b2a86 16%, transparent);
+    --mp-buffer: color-mix(in srgb, #5b2a86 18%, transparent);
+    --mp-glow: color-mix(in srgb, #5b2a86 45%, transparent);
+    margin-top: 12px; display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px 10px 12px; background: var(--mp-bg);
+    border: 1px solid var(--mp-border); border-radius: 12px;
+    box-shadow: 0 12px 30px -20px var(--mp-glow);
+  }
+  .mp[hidden] { display: none; }
+  .mp audio { display: none; }
+  .mp-play { width: 46px; height: 46px; flex-shrink: 0; border-radius: 999px; background: var(--mp-accent); color: #fff; border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px -8px var(--mp-glow); transition: background .15s, transform .1s; }
+  .mp-play:hover { background: var(--mp-accent-bright); }
+  .mp-play:active { transform: scale(0.95); }
+  .mp-play svg { width: 18px; height: 18px; }
+  .mp-play .i-play { margin-left: 2px; }
+  .mp-play .i-pause { display: none; }
+  .mp.playing .mp-play .i-play { display: none; }
+  .mp.playing .mp-play .i-pause { display: block; }
+  .mp-body { flex: 1; min-width: 0; }
+  .mp-wrap { padding: 10px 0; cursor: pointer; position: relative; touch-action: none; }
+  .mp-bar { position: relative; height: 5px; border-radius: 999px; background: var(--mp-track); }
+  .mp-fill { position: absolute; inset: 0; width: 0%; background: var(--mp-accent); border-radius: 999px; }
+  .mp-handle { position: absolute; top: 50%; left: 0; width: 14px; height: 14px; background: var(--mp-accent); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%) scale(0); box-shadow: 0 2px 6px var(--mp-glow); transition: transform .15s; }
+  .mp.playing .mp-handle, .mp.started .mp-handle { transform: translate(-50%, -50%) scale(1); }
+  .mp-meta { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--ink-soft); letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+  .mp-hint { margin-top: 8px; font-size: 12.5px; color: var(--ink-soft); }
+
+  /* Upload progress — a real bar, so a slow phone never looks frozen. */
+  .up { margin-top: 26px; }
+  .up[hidden] { display: none; }
+  .up-bar { height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--teal) 14%, transparent); overflow: hidden; }
+  .up-fill { height: 100%; width: 0%; background: var(--teal); border-radius: 999px; transition: width .2s; }
+  .up-txt { margin-top: 10px; display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .up-txt b { color: var(--ink); font-weight: 600; }
+  .up.done .up-fill { animation: up-pulse 1.2s ease-in-out infinite; }
+  @keyframes up-pulse { 50% { opacity: .55; } }
+  @media (prefers-reduced-motion: reduce) { .up.done .up-fill { animation: none; } .up-fill { transition: none; } }
   .honey { position: absolute; left: -9999px; opacity: 0; }
 </style>
 @include('partials.theme-vars')
@@ -144,6 +188,20 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--teal);flex-shrink:0"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             <span id="fileName">Choose the track…</span>
           </label>
+          <div class="mp" id="preview" hidden>
+            <audio preload="metadata"></audio>
+            <button class="mp-play" type="button" aria-label="Play your track">
+              <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6,4 20,12 6,20"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <div class="mp-body">
+              <div class="mp-wrap" role="slider" tabindex="0" aria-label="Position in your track" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="mp-bar"><div class="mp-fill"></div><div class="mp-handle"></div></div>
+              </div>
+              <div class="mp-meta"><span class="mp-cur">0:00</span><span class="mp-dur">--:--</span></div>
+            </div>
+          </div>
+          <p class="mp-hint" id="previewHint" hidden>Have a listen to make sure it's the right one. Tap the box above to pick a different file.</p>
         </div>
         <div class="reveal" data-for="youtube">
           <input type="url" name="source_url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"
@@ -158,6 +216,11 @@
         </div>
       </div>
 
+      <div class="up" id="up" hidden aria-live="polite">
+        <div class="up-bar"><div class="up-fill" id="upFill"></div></div>
+        <div class="up-txt"><span id="upWhat"><b>Uploading</b></span><span id="upPct">0%</span></div>
+      </div>
+
       <button type="submit" class="send" id="sendBtn">Send my song</button>
     </form>
   @endif
@@ -167,25 +230,133 @@
 (function () {
   var form = document.getElementById('songForm'); if (!form) return;
   var radios = form.querySelectorAll('input[name=method]');
+  function method() { return (form.querySelector('input[name=method]:checked') || {}).value; }
   function sync() {
-    var v = (form.querySelector('input[name=method]:checked') || {}).value;
+    var v = method();
     form.querySelectorAll('.reveal').forEach(function (r) { r.classList.toggle('on', r.getAttribute('data-for') === v); });
+    if (v !== 'upload' && audio) audio.pause();
   }
   radios.forEach(function (r) { r.addEventListener('change', sync); });
-  sync();
 
+  /* ── Preview: hear the file before sending it ── */
   var fi = form.querySelector('input[name=track]'), box = document.getElementById('fileBox'), nm = document.getElementById('fileName');
+  var pv = document.getElementById('preview'), hint = document.getElementById('previewHint');
+  var audio = pv.querySelector('audio'), playBtn = pv.querySelector('.mp-play'), wrap = pv.querySelector('.mp-wrap');
+  var fill = pv.querySelector('.mp-fill'), handle = pv.querySelector('.mp-handle'), cur = pv.querySelector('.mp-cur'), dur = pv.querySelector('.mp-dur');
+  var url = null, MAX = 50 * 1048576;
+  function fmt(t) { if (!isFinite(t) || t < 0) return '0:00'; return Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0'); }
+  function mb(b) { return (b / 1048576).toFixed(1) + ' MB'; }
+
   fi.addEventListener('change', function () {
     var f = fi.files && fi.files[0];
+    audio.pause(); pv.classList.remove('playing', 'started');
+    if (url) { URL.revokeObjectURL(url); url = null; }
     box.classList.toggle('has', !!f);
-    nm.textContent = f ? f.name + ' (' + (f.size / 1048576).toFixed(1) + ' MB)' : 'Choose the track…';
-    if (f && f.size > 50 * 1048576) nm.textContent = f.name + ' is over 50MB. Send an MP3 instead, or bring it on a USB.';
+    if (!f) { nm.textContent = 'Choose the track…'; pv.hidden = true; hint.hidden = true; return; }
+    if (!/\.(mp3|m4a|aac|wav|flac|ogg|aif|aiff)$/i.test(f.name) && !/^audio\//.test(f.type)) {
+      nm.textContent = f.name + " isn't an audio file. Choose an MP3, M4A or WAV.";
+      pv.hidden = true; hint.hidden = true; return;
+    }
+    if (f.size > MAX) {
+      nm.textContent = f.name + ' is ' + mb(f.size) + '. The limit is 50 MB. Send an MP3 instead, or bring it on a USB.';
+      pv.hidden = true; hint.hidden = true; return;
+    }
+    nm.textContent = f.name + ' (' + mb(f.size) + ')';
+    url = URL.createObjectURL(f);
+    audio.src = url; cur.textContent = '0:00'; dur.textContent = '--:--';
+    fill.style.width = '0%'; handle.style.left = '0%';
+    pv.hidden = false; hint.hidden = false;
+  });
+  audio.addEventListener('error', function () {
+    if (!audio.getAttribute('src')) return;
+    pv.hidden = true;
+    hint.hidden = false;
+    hint.textContent = "This phone can't play that file, but you can still send it. The music team will check it.";
+  });
+  playBtn.addEventListener('click', function () { audio.paused ? audio.play() : audio.pause(); });
+  audio.addEventListener('play', function () { pv.classList.add('playing', 'started'); playBtn.setAttribute('aria-label', 'Pause'); });
+  audio.addEventListener('pause', function () { pv.classList.remove('playing'); playBtn.setAttribute('aria-label', 'Play your track'); });
+  audio.addEventListener('loadedmetadata', function () { dur.textContent = fmt(audio.duration); });
+  audio.addEventListener('timeupdate', function () {
+    var pc = (audio.currentTime / audio.duration) * 100 || 0;
+    fill.style.width = pc + '%'; handle.style.left = pc + '%'; cur.textContent = fmt(audio.currentTime);
+    wrap.setAttribute('aria-valuenow', Math.round(pc));
+  });
+  var scrub = false;
+  function seek(x) { if (!audio.duration) return; var r = wrap.getBoundingClientRect(); var k = Math.max(0, Math.min(1, (x - r.left) / r.width)); audio.currentTime = k * audio.duration; pv.classList.add('started'); }
+  wrap.addEventListener('pointerdown', function (e) { scrub = true; seek(e.clientX); if (wrap.setPointerCapture) wrap.setPointerCapture(e.pointerId); });
+  wrap.addEventListener('pointermove', function (e) { if (scrub) seek(e.clientX); });
+  wrap.addEventListener('pointerup', function () { scrub = false; });
+  wrap.addEventListener('keydown', function (e) {
+    var d = e.key === 'ArrowRight' ? 5 : e.key === 'ArrowLeft' ? -5 : 0; if (!d) return;
+    e.preventDefault(); audio.currentTime = Math.max(0, Math.min(audio.duration || 0, audio.currentTime + d));
   });
 
-  form.addEventListener('submit', function () {
-    var b = document.getElementById('sendBtn'); b.disabled = true;
-    b.textContent = (form.querySelector('input[name=method]:checked') || {}).value === 'upload' ? 'Uploading…' : 'Sending…';
+  /* ── Upload with a real progress bar ── */
+  var btn = document.getElementById('sendBtn'), up = document.getElementById('up'), upFill = document.getElementById('upFill');
+  var upWhat = document.getElementById('upWhat'), upPct = document.getElementById('upPct');
+  var busy = false;
+  function guard(e) { if (busy) { e.preventDefault(); e.returnValue = ''; } }
+  window.addEventListener('beforeunload', guard);
+
+  function showErrors(list) {
+    var box = form.parentNode.querySelector('.errs');
+    if (!box) { box = document.createElement('div'); box.className = 'errs'; form.parentNode.insertBefore(box, form); }
+    box.innerHTML = '';
+    list.forEach(function (t) { var d = document.createElement('div'); d.textContent = t; box.appendChild(d); });
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function reset(msg) {
+    busy = false; btn.disabled = false; btn.textContent = 'Send my song';
+    up.hidden = true; up.classList.remove('done');
+    if (msg) showErrors([msg]);
+  }
+
+  form.addEventListener('submit', function (e) {
+    if (method() !== 'upload' || !fi.files || !fi.files[0] || !window.FormData || !window.XMLHttpRequest) {
+      /* A file picked earlier must not ride along when the singer chose another way. */
+      if (method() !== 'upload') fi.disabled = true;
+      btn.disabled = true; btn.textContent = 'Sending…';
+      return;
+    }
+    e.preventDefault();
+    if (busy) return;
+    var f = fi.files[0];
+    if (f.size > MAX) { showErrors(['That file is over 50 MB. Send an MP3 instead, or bring it on a USB.']); return; }
+
+    audio.pause();
+    busy = true; btn.disabled = true; btn.textContent = 'Uploading…';
+    up.hidden = false; upFill.style.width = '0%'; upPct.textContent = '0%';
+    upWhat.innerHTML = '<b>Uploading</b> 0 of ' + mb(f.size);
+
+    var x = new XMLHttpRequest();
+    x.open('POST', form.action);
+    x.setRequestHeader('Accept', 'application/json');
+    x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    x.upload.onprogress = function (ev) {
+      if (!ev.lengthComputable) return;
+      var pc = Math.min(100, Math.round(ev.loaded / ev.total * 100));
+      upFill.style.width = pc + '%'; upPct.textContent = pc + '%';
+      upWhat.innerHTML = '<b>Uploading</b> ' + mb(Math.min(ev.loaded, f.size)) + ' of ' + mb(f.size);
+      if (ev.loaded >= ev.total) { up.classList.add('done'); upWhat.innerHTML = '<b>Almost done</b> saving your track'; upPct.textContent = ''; }
+    };
+    x.onload = function () {
+      var d = null; try { d = JSON.parse(x.responseText); } catch (err) {}
+      if (x.status >= 200 && x.status < 300 && d && d.ok) { busy = false; location.assign(d.redirect); return; }
+      if (x.status === 422 && d && d.errors) {
+        var list = []; Object.keys(d.errors).forEach(function (k) { list = list.concat(d.errors[k]); });
+        reset(); showErrors(list); return;
+      }
+      if (x.status === 419) { reset('This page was open a long time. Refresh it and send your song again.'); return; }
+      if (x.status === 413) { reset('That file is too big to send. Send an MP3 instead, or bring it on a USB.'); return; }
+      if (x.status === 429) { reset('Too many songs from this phone in the last hour. Try again a bit later.'); return; }
+      reset('Something went wrong sending your song. Your file is still chosen, so tap Send to try again.');
+    };
+    x.onerror = function () { reset('The connection dropped while sending. Your file is still chosen, so tap Send to try again.'); };
+    x.send(new FormData(form));
   });
+
+  sync();
 })();
 </script>
 </body>
