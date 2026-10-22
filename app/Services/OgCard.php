@@ -61,6 +61,129 @@ class OgCard
         return $abs;
     }
 
+    /* ── Music day ───────────────────────────────────────────────────────
+     * The card that shows when André texts the singers their link. Purple,
+     * green and gold, from the music day flyer, but none of the flyer's
+     * effects: one quiet gradient, five faint staff lines as the only nod to
+     * music, and the action itself, "Send your song", so the preview says
+     * what the link is for before anyone taps it.
+     *
+     * Named by id and a hash, never by the link token. The card URL sits in
+     * the page head, and the token is the permission to submit.
+     */
+    private const M_TOP   = [74, 26, 110];
+    private const M_FOOT  = [40, 11, 64];
+    private const M_GOLD  = [214, 178, 96];
+    private const M_CREAM = [251, 246, 236];
+    private const M_LAV   = [204, 186, 226];
+    private const M_GREEN = [36, 138, 72];
+
+    public static function musicDayRelPath(\App\Models\MusicDay $day): string
+    {
+        $stamp = substr(sha1($day->title . '|' . $day->service_date->toDateString() . '|v4'), 0, 10);
+
+        return 'og/music/' . $day->id . '-' . $stamp . '.png';
+    }
+
+    public static function musicDayUrl(\App\Models\MusicDay $day): string
+    {
+        return url('/' . self::musicDayRelPath($day));
+    }
+
+    public static function ensureMusicDay(\App\Models\MusicDay $day): string
+    {
+        $abs = public_path(self::musicDayRelPath($day));
+        if (is_file($abs)) {
+            return $abs;
+        }
+        if (! is_dir(dirname($abs))) {
+            mkdir(dirname($abs), 0755, true);
+        }
+        self::renderMusic($day, $abs);
+
+        return $abs;
+    }
+
+    private static function renderMusic(\App\Models\MusicDay $day, string $to): void
+    {
+        $im = imagecreatetruecolor(self::W, self::H);
+        imagealphablending($im, true);
+
+        /* Ground: one vertical gradient, top to foot. */
+        for ($y = 0; $y < self::H; $y++) {
+            $t = $y / (self::H - 1);
+            $c = imagecolorallocate($im,
+                (int) round(self::M_TOP[0] + (self::M_FOOT[0] - self::M_TOP[0]) * $t),
+                (int) round(self::M_TOP[1] + (self::M_FOOT[1] - self::M_TOP[1]) * $t),
+                (int) round(self::M_TOP[2] + (self::M_FOOT[2] - self::M_TOP[2]) * $t));
+            imageline($im, 0, $y, self::W, $y, $c);
+        }
+
+        $gold   = imagecolorallocate($im, ...self::M_GOLD);
+        $cream  = imagecolorallocate($im, ...self::M_CREAM);
+        $lav    = imagecolorallocate($im, ...self::M_LAV);
+        $green  = imagecolorallocate($im, ...self::M_GREEN);
+
+        /*
+         * Three things and nothing else (Karlon, 22 Oct): what it is, its
+         * name, and the date, so whoever opens the text is reminded when it
+         * is. The colour carries the flyer; the words carry the message.
+         */
+        imagefilledrectangle($im, 0, self::H - 14, self::W, self::H, $green);
+        imagefilledrectangle($im, 0, self::H - 17, self::W, self::H - 15, $gold);
+
+        $isDefault = trim(mb_strtolower($day->title)) === 'music day';
+        $serif     = self::font('CormorantGaramond.ttf');
+        $date      = $day->service_date->format('l, F j');
+
+        if ($isDefault) {
+            self::centred($im, $serif, 112, 330, 'Music Day', $cream);
+            self::centred($im, self::font('Poppins-Regular.ttf'), 30, 430, $date, $lav);
+        } else {
+            $lines = null;
+            for ($size = 100; $size >= 74; $size -= 2) {
+                $bx = imagettfbbox($size, 0, $serif, $day->title);
+                if (($bx[2] - $bx[0]) <= 1000) { $lines = [$day->title]; break; }
+            }
+            if (! $lines) {
+                for ($size = 88; $size >= 50; $size -= 2) {
+                    if ($lines = self::balanced2($serif, $size, $day->title, 1000)) break;
+                }
+                $lines ??= [mb_strimwidth($day->title, 0, 60, '…')];
+            }
+            $lh    = (int) round($size * 1.06);
+            $block = 60 + (count($lines) - 1) * $lh + 110;
+            $top   = (int) ((self::H - 17 - $block) / 2) + 40;
+
+            self::centred($im, self::font('Poppins-SemiBold.ttf'), 22, $top, 'MUSIC DAY', $gold, 9);
+            $y = $top + 40 + (int) round($size * 0.78);
+            foreach ($lines as $i => $line) {
+                self::centred($im, $serif, $size, $y + $i * $lh, $line, $cream);
+            }
+            $last = $y + (count($lines) - 1) * $lh;
+            self::centred($im, self::font('Poppins-Regular.ttf'), 30, $last + (int) round($size * 0.34) + 66, $date, $lav);
+        }
+
+        imagepng($im, $to, 8);
+        imagedestroy($im);
+    }
+
+    /** Two lines of near-equal width, or null if no split fits. @return string[]|null */
+    private static function balanced2(string $font, float $size, string $text, int $width): ?array
+    {
+        $words = preg_split('/\s+/u', trim($text));
+        $best = null; $bestW = PHP_INT_MAX;
+        for ($k = 1; $k < count($words); $k++) {
+            $a = implode(' ', array_slice($words, 0, $k));
+            $b = implode(' ', array_slice($words, $k));
+            $wa = imagettfbbox($size, 0, $font, $a); $wa = $wa[2] - $wa[0];
+            $wb = imagettfbbox($size, 0, $font, $b); $wb = $wb[2] - $wb[0];
+            $w = max($wa, $wb);
+            if ($w <= $width && $w < $bestW) { $best = [$a, $b]; $bestW = $w; }
+        }
+        return $best;
+    }
+
     private static function font(string $name): string
     {
         return storage_path('fonts/'.$name);

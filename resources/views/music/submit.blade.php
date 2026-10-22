@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>{{ $day->title }} — send your song · The Church of Peace</title>
+<meta name="description" content="{{ $day->service_date->format('l, F j') }} · The Church of Peace. Upload your track, paste a YouTube link, or tell us you are bringing it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The Church of Peace">
+<meta property="og:url" content="{{ $day->link() }}">
+<meta property="og:title" content="{{ trim(mb_strtolower($day->title)) === 'music day' ? 'Music Day' : 'Music Day — ' . $day->title }}">
+<meta property="og:description" content="{{ $day->service_date->format('l, F j') }} · The Church of Peace. Upload your track, paste a YouTube link, or tell us you are bringing it.">
+@if ($og)
+<meta property="og:image" content="{{ $og }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Music Day, {{ $day->title }}, {{ $day->service_date->format('l, F j') }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{ $og }}">
+@endif
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">

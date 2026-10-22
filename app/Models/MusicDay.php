@@ -22,6 +22,7 @@ class MusicDay extends Model
         static::deleting(function (self $d) {
             foreach (glob($d->dir() . "/*") ?: [] as $f) @unlink($f);
             @rmdir($d->dir());
+            foreach (glob(public_path('og/music/' . $d->id . '-*.png')) ?: [] as $f) @unlink($f);
         });
     }
 

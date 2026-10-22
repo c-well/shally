@@ -27,7 +27,19 @@ class MusicController extends Controller
     {
         $day = MusicDay::where('token', $token)->firstOrFail();
 
+        /* The link preview card. Drawn once per title and date, then served
+           straight off disk by Apache. A drawing failure must never cost a
+           singer the form, so it only ever falls back to no image. */
+        $og = null;
+        try {
+            \App\Services\OgCard::ensureMusicDay($day);
+            $og = \App\Services\OgCard::musicDayUrl($day);
+        } catch (\Throwable $e) {
+            Log::warning('music og card failed', ['day' => $day->id, 'error' => $e->getMessage()]);
+        }
+
         return view('music.submit', [
+            'og'          => $og,
             'day'         => $day,
             'renderToken' => Crypt::encryptString((string) time()),
         ]);
