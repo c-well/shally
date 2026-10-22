@@ -351,6 +351,11 @@ Schedule::command('mail:sync')->everyMinute()->withoutOverlapping()->name('mail-
 // here, in the same minute.
 Schedule::command('mail:apply')->everyMinute()->withoutOverlapping()->name('mail-apply')->onOneServer();
 
+// Music day — pull queued YouTube tracks (Snag's job, on the server), and
+// clear track files 30 days after the day.
+Schedule::command('music:fetch')->everyMinute()->withoutOverlapping(10)->name('music-fetch')->onOneServer();
+Schedule::command('music:purge')->dailyAt('03:40')->name('music-purge')->onOneServer();
+
 // A message with no share card shares as a blank square, and scrapers do not
 // come back for a second look — so the card is drawn before anyone shares it.
 Schedule::command('og:cards')->hourlyAt(7)->name('og-cards')->onOneServer();

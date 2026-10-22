@@ -97,7 +97,11 @@ Route::post('/contact',  [\App\Http\Controllers\ContactController::class, 'send'
 
 Route::get ('/intake/{form}', [\App\Http\Controllers\IntakeController::class, 'show'])->name('intake.show');
 Route::post('/intake/{form}', [\App\Http\Controllers\IntakeController::class, 'submit'])->middleware(['throttle:10,60', 'honeypot'])->name('intake.submit');
-Route::get ('/connect',  [\App\Http\Controllers\GuestController::class, 'show'])->name('connect');
+Route::get ('/connect',  [\App\Http\Controllers\GuestController::class, 'show'])->name('connect');/* Music day: the link André texts to singers. The 32-char token is the permission. */
+Route::get ('/music/{token}', [\App\Http\Controllers\MusicController::class, 'show'])->where('token', '[A-Za-z0-9]{32}')->name('music.show');
+Route::post('/music/{token}', [\App\Http\Controllers\MusicController::class, 'store'])->where('token', '[A-Za-z0-9]{32}')
+     ->middleware(['throttle:20,60', 'honeypot'])->name('music.store');
+
 Route::post('/connect',  [\App\Http\Controllers\GuestController::class, 'store'])
      ->middleware(['throttle:5,60', 'honeypot'])->name('connect.store');
 Route::get ('/prayer',   [\App\Http\Controllers\PrayerController::class, 'show'])->name('prayer.show');
@@ -151,6 +155,19 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
     Route::post  ('/bulletins/{bulletin}/default',          [\App\Http\Controllers\AdminBulletinDefaultController::class, 'save'])->name('bulletins.default.save');
     Route::post  ('/bulletins/{bulletin}/default/restore',  [\App\Http\Controllers\AdminBulletinDefaultController::class, 'restore'])->name('bulletins.default.restore');
     Route::post  ('/bulletins/{bulletin}/default/undo',     [\App\Http\Controllers\AdminBulletinDefaultController::class, 'undo'])->name('bulletins.default.undo');
+    // ── Music day — André, Karlon, Rosharde, any clerk ──
+    Route::get   ('/admin/music',                          [\App\Http\Controllers\AdminMusicController::class, 'index'])->name('admin.music');
+    Route::post  ('/admin/music/days',                     [\App\Http\Controllers\AdminMusicController::class, 'store'])->name('admin.music.store');
+    Route::get   ('/admin/music/days/{day}/state',         [\App\Http\Controllers\AdminMusicController::class, 'state'])->name('admin.music.state');
+    Route::post  ('/admin/music/days/{day}/toggle',        [\App\Http\Controllers\AdminMusicController::class, 'toggle'])->name('admin.music.toggle');
+    Route::post  ('/admin/music/days/{day}/order',         [\App\Http\Controllers\AdminMusicController::class, 'reorder'])->name('admin.music.order');
+    Route::get   ('/admin/music/days/{day}/zip',           [\App\Http\Controllers\AdminMusicController::class, 'zip'])->name('admin.music.zip');
+    Route::patch ('/admin/music/entries/{entry}',          [\App\Http\Controllers\AdminMusicController::class, 'update'])->name('admin.music.update');
+    Route::delete('/admin/music/entries/{entry}',          [\App\Http\Controllers\AdminMusicController::class, 'destroy'])->name('admin.music.destroy');
+    Route::post  ('/admin/music/entries/{entry}/retry',    [\App\Http\Controllers\AdminMusicController::class, 'retry'])->name('admin.music.retry');
+    Route::post  ('/admin/music/entries/{entry}/received', [\App\Http\Controllers\AdminMusicController::class, 'received'])->name('admin.music.received');
+    Route::get   ('/admin/music/entries/{entry}/track',    [\App\Http\Controllers\AdminMusicController::class, 'track'])->name('admin.music.track');
+    Route::get   ('/admin/music/entries/{entry}/download', [\App\Http\Controllers\AdminMusicController::class, 'download'])->name('admin.music.download');
     Route::post  ('/bulletins/default/rollback',            [\App\Http\Controllers\AdminBulletinDefaultController::class, 'rollback'])->name('bulletins.default.rollback');
 
     Route::post  ('/bulletins/{bulletin}/lines',      [BulletinController::class, 'storeLine'])->name('bulletins.lines.store');
