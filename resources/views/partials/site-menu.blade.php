@@ -344,6 +344,7 @@
                 </span>
               </a>
               <a class="site-admin-item" href="{{ url('/welcome') }}" role="menuitem">Bulletin</a>
+              <a class="site-admin-item" href="{{ route('admin.music') }}" role="menuitem">Music day</a>
               <a class="site-admin-item" href="{{ route('guide') }}" role="menuitem">Field Guide</a>
               <a class="site-admin-item" href="{{ route('schedule.index') }}" role="menuitem">Department schedule</a>
               <a class="site-admin-item" href="{{ route('admin.hub') }}" role="menuitem">Admin hub</a>
@@ -447,6 +448,7 @@
           <div class="site-menu-section-body">
             <div class="site-menu-sub-list">
               <button class="site-menu-sub-link site-menu-sub-link-form" id="search-btn-mobile" type="button" data-action="search">Search</button>
+              <a class="site-menu-sub-link" href="{{ route('admin.music') }}">Music day</a>
               <a class="site-menu-sub-link" href="{{ route('schedule.index') }}">Department schedule</a>
               <button class="site-menu-sub-link site-menu-sub-link-form" id="manage-names-btn" type="button">Manage names</button>
               <a class="site-menu-sub-link" href="{{ route('admin.hub') }}">Admin hub</a>
