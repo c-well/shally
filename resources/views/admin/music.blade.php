@@ -66,7 +66,70 @@
   .pill.bringing { background: color-mix(in srgb, #b08d3c 16%, transparent); color: #8c6f2e; }
   .pill.failed { background: rgba(168,42,31,.1); color: #a82a1f; }
   .why { font-size: 12.5px; color: #a82a1f; flex-basis: 100%; }
-  .card audio { grid-column: 2; width: 100%; height: 36px; margin-top: 8px; }
+  /*
+   * The player — the Find Peace player's parts and feel (round play button
+   * with its glow, the scrubber with buffer, handle and time tip), laid out
+   * as one row so a list of songs stays a list. Purple accent from the music
+   * day flyer instead of teal. No speed pills: sped-up music changes pitch.
+   */
+  .mp {
+    --mp-accent: #5b2a86;
+    --mp-accent-bright: #48206c;
+    --mp-bg: #f3edf8;
+    --mp-border: color-mix(in srgb, #5b2a86 16%, transparent);
+    --mp-ink: #1a2332;
+    --mp-ink-soft: #334455;
+    --mp-track: color-mix(in srgb, #5b2a86 16%, transparent);
+    --mp-buffer: color-mix(in srgb, #5b2a86 18%, transparent);
+    --mp-glow: color-mix(in srgb, #5b2a86 45%, transparent);
+    --mp-glow-hover: color-mix(in srgb, #5b2a86 65%, transparent);
+    grid-column: 2; margin-top: 10px;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px 10px 12px;
+    background: var(--mp-bg); border: 1px solid var(--mp-border); border-radius: 12px;
+    color: var(--mp-ink);
+    box-shadow: 0 12px 30px -20px var(--mp-glow);
+  }
+  .mp audio { display: none; }
+  .mp-play {
+    width: 46px; height: 46px; flex-shrink: 0; border-radius: 999px;
+    background: var(--mp-accent); color: #fff; border: 0; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px -8px var(--mp-glow);
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  }
+  .mp-play:hover { background: var(--mp-accent-bright); box-shadow: 0 10px 24px -8px var(--mp-glow-hover); }
+  .mp-play:active { transform: scale(0.95); }
+  .mp-play svg { width: 18px; height: 18px; }
+  .mp-play .i-pause { display: none; }
+  .mp.playing .mp-play .i-play { display: none; }
+  .mp.playing .mp-play .i-pause { display: block; }
+  .mp-play .i-play { margin-left: 2px; }
+  .mp-body { flex: 1; min-width: 0; }
+  .mp-wrap { padding: 10px 0; cursor: pointer; position: relative; touch-action: none; }
+  .mp-wrap:focus-visible { outline: 2px solid var(--mp-accent); outline-offset: 2px; border-radius: 4px; }
+  .mp-tip {
+    position: absolute; bottom: 100%; left: 0; transform: translate(-50%, -4px);
+    background: var(--mp-ink); color: var(--mp-bg);
+    font-size: 11px; letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
+    padding: 4px 8px; border-radius: 4px;
+    pointer-events: none; opacity: 0; transition: opacity 0.12s; white-space: nowrap; z-index: 5;
+  }
+  .mp-wrap:hover .mp-tip, .mp-wrap.scrubbing .mp-tip { opacity: 1; }
+  .mp-bar { position: relative; height: 5px; border-radius: 999px; background: var(--mp-track); }
+  .mp-buffer { position: absolute; inset: 0; width: 0%; background: var(--mp-buffer); border-radius: 999px; }
+  .mp-fill { position: absolute; inset: 0; width: 0%; background: var(--mp-accent); border-radius: 999px; }
+  .mp-handle {
+    position: absolute; top: 50%; left: 0; width: 14px; height: 14px;
+    background: var(--mp-accent); border: 2px solid #fff; border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    box-shadow: 0 2px 6px var(--mp-glow); transition: transform 0.15s;
+  }
+  .mp-wrap:hover .mp-handle, .mp.playing .mp-handle, .mp.started .mp-handle { transform: translate(-50%, -50%) scale(1); }
+  .mp-meta {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-size: 12px; color: var(--mp-ink-soft); letter-spacing: 0.04em; font-variant-numeric: tabular-nums;
+  }
   .acts { grid-column: 2; display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
   .ico { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); display: inline-grid; place-items: center; cursor: pointer; text-decoration: none; }
   .ico:hover { color: var(--teal); border-color: var(--teal); }
@@ -162,7 +225,20 @@
               @if ($e->error && $e->status !== 'ready')<span class="why">{{ $e->error }}</span>@endif
             </div>
             @if ($e->hasTrack())
-              <audio controls preload="none" src="{{ route('admin.music.track', $e) }}"></audio>
+              <div class="mp">
+                <audio preload="none" src="{{ route('admin.music.track', $e) }}"></audio>
+                <button class="mp-play" type="button" aria-label="Play {{ $e->song_title ?: 'song' }} by {{ $e->name }}">
+                  <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6,4 20,12 6,20"/></svg>
+                  <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                </button>
+                <div class="mp-body">
+                  <div class="mp-wrap" role="slider" tabindex="0" aria-label="Position in {{ $e->song_title ?: 'song' }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div class="mp-tip">0:00</div>
+                    <div class="mp-bar"><div class="mp-buffer"></div><div class="mp-fill"></div><div class="mp-handle"></div></div>
+                  </div>
+                  <div class="mp-meta"><span class="mp-cur">0:00</span><span class="mp-dur">{{ $e->durationLabel() ?? '--:--' }}</span></div>
+                </div>
+              </div>
             @endif
             <div class="acts">
               <button class="ico" type="button" data-move="-1" aria-label="Move up" @disabled($i === 0)><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
@@ -200,6 +276,57 @@
   var toastEl = document.getElementById('toast'), toastT;
   function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 2200); }
   function ask(msg, label) { return window.shConfirm ? window.shConfirm(msg, { okLabel: label, danger: true }) : Promise.resolve(confirm(msg)); }
+
+  /* Players — the Find Peace player's behaviour, once per song. */
+  (function () {
+    var players = Array.prototype.slice.call(document.querySelectorAll('.mp'));
+    function fmt(s) { if (!isFinite(s) || s < 0) return '0:00'; var m = Math.floor(s / 60); return m + ':' + String(Math.floor(s % 60)).padStart(2, '0'); }
+    players.forEach(function (p) {
+      var audio = p.querySelector('audio'), btn = p.querySelector('.mp-play'), wrap = p.querySelector('.mp-wrap');
+      var fill = p.querySelector('.mp-fill'), handle = p.querySelector('.mp-handle'), buf = p.querySelector('.mp-buffer');
+      var tip = p.querySelector('.mp-tip'), cur = p.querySelector('.mp-cur'), dur = p.querySelector('.mp-dur');
+      function len() { return audio.duration || 0; }
+      btn.addEventListener('click', function () {
+        if (audio.paused) {
+          players.forEach(function (o) { if (o !== p) o.querySelector('audio').pause(); });
+          audio.play();
+        } else { audio.pause(); }
+      });
+      audio.addEventListener('play', function () { p.classList.add('playing', 'started'); btn.setAttribute('aria-label', 'Pause'); });
+      audio.addEventListener('pause', function () { p.classList.remove('playing'); btn.setAttribute('aria-label', 'Play'); });
+      audio.addEventListener('ended', function () { p.classList.remove('playing'); });
+      audio.addEventListener('loadedmetadata', function () { dur.textContent = fmt(audio.duration); });
+      audio.addEventListener('timeupdate', function () {
+        var pc = (audio.currentTime / len()) * 100 || 0;
+        fill.style.width = pc + '%'; handle.style.left = pc + '%';
+        cur.textContent = fmt(audio.currentTime);
+        wrap.setAttribute('aria-valuenow', Math.round(pc));
+      });
+      audio.addEventListener('progress', function () {
+        if (audio.buffered.length) buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / len()) * 100 || 0) + '%';
+      });
+      var scrubbing = false;
+      function at(x) { var r = wrap.getBoundingClientRect(); var k = Math.max(0, Math.min(1, (x - r.left) / r.width)); return { k: k, t: k * len(), x: x - r.left }; }
+      function showTip(x) { var a = at(x); tip.textContent = fmt(a.t); tip.style.left = a.x + 'px'; }
+      function seek(x) {
+        if (!len()) { audio.preload = 'metadata'; audio.load(); return; }
+        var a = at(x); audio.currentTime = a.t; p.classList.add('started');
+        fill.style.width = (a.k * 100) + '%'; handle.style.left = (a.k * 100) + '%';
+      }
+      wrap.addEventListener('pointerdown', function (e) { scrubbing = true; wrap.classList.add('scrubbing'); seek(e.clientX); showTip(e.clientX); if (wrap.setPointerCapture) wrap.setPointerCapture(e.pointerId); });
+      wrap.addEventListener('pointermove', function (e) { showTip(e.clientX); if (scrubbing) seek(e.clientX); });
+      wrap.addEventListener('pointerup', function (e) { scrubbing = false; wrap.classList.remove('scrubbing'); if (wrap.releasePointerCapture) wrap.releasePointerCapture(e.pointerId); });
+      wrap.addEventListener('keydown', function (e) {
+        var d = 0;
+        if (e.key === 'ArrowRight') d = e.shiftKey ? 1 : 5;
+        else if (e.key === 'ArrowLeft') d = e.shiftKey ? -1 : -5;
+        else if (e.key === 'Home') { audio.currentTime = 0; e.preventDefault(); return; }
+        else if (e.key === 'End') { audio.currentTime = len(); e.preventDefault(); return; }
+        else return;
+        e.preventDefault(); audio.currentTime = Math.max(0, Math.min(len(), audio.currentTime + d));
+      });
+    });
+  })();
 
   var nd = document.getElementById('newDay');
   if (nd) nd.addEventListener('click', function () { document.getElementById('newForm').classList.toggle('open'); });
