@@ -491,3 +491,5 @@ Route::prefix('intercessors')->group(function () {
 require __DIR__.'/auth.php';
 
 require __DIR__.'/little-light.php';
+
+require __DIR__.'/david-escape.php';

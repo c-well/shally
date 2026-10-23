@@ -21,11 +21,12 @@ class LittleLightTrackingController extends Controller
 
     public function start(Request $request)
     {
-        $d = $request->validate(['run_token' => 'required|uuid', 'browser_token' => 'required|uuid', 'chapter' => 'required|integer|between:1,3', 'preview' => 'required|boolean']);
+        $d = $request->validate(['run_token' => 'required|uuid', 'browser_token' => 'required|uuid', 'chapter' => 'required|integer|between:1,3', 'preview' => 'required|boolean', 'game' => 'sometimes|in:little_light,david_escape']);
+        $game = $d['game'] ?? 'little_light';
         $hash = $this->browserHash($d['browser_token']);
         $test = $d['preview'] || in_array($request->user()?->role, ['super_admin', 'clerk', 'department_head'], true);
-        $run = LittleLightRun::firstOrCreate(['token' => $d['run_token']], ['browser_hash' => $hash, 'chapter' => $d['chapter'], 'is_test' => $test, 'last_seen_at' => now()]);
-        abort_unless(hash_equals($run->browser_hash, $hash) && $run->chapter == $d['chapter'], 409);
+        $run = LittleLightRun::firstOrCreate(['token' => $d['run_token']], ['browser_hash' => $hash, 'game' => $game, 'chapter' => $d['chapter'], 'is_test' => $test, 'last_seen_at' => now()]);
+        abort_unless(hash_equals($run->browser_hash, $hash) && $run->chapter == $d['chapter'] && $run->game === $game, 409);
         // Retrying a start must not reset progress or create another attempt.
         return response()->json(['ok' => true])->header('Cache-Control', 'no-store, private');
     }
@@ -58,9 +59,9 @@ class LittleLightTrackingController extends Controller
             }
             if ($run->chapter == 1) $run->sheep = max($run->sheep, $d['sheep']);
             if ($run->chapter == 2) $run->stones = max($run->stones, $d['stones']);
-            $objective = match ((int) $run->chapter) { 1 => $run->sheep >= 3, 2 => $run->stones >= 5, 3 => $run->scrolls >= 3 };
+            $objective = $run->game === 'david_escape' ? true : match ((int) $run->chapter) { 1 => $run->sheep >= 3, 2 => $run->stones >= 5, 3 => $run->scrolls >= 3 };
             if ($d['status'] === 'complete') {
-                abort_unless($objective && $run->furthest_percent >= ($run->chapter == 2 ? 85 : 90) && $seconds >= 10, 422, 'Completion needs chapter progress.');
+                abort_unless($objective && $run->furthest_percent >= ($run->chapter == 2 ? 85 : 90) && $seconds >= ($run->game === 'david_escape' ? 1 : 10), 422, 'Completion needs chapter progress.');
                 $run->completed_at = now();
                 $run->furthest_percent = 100;
             }

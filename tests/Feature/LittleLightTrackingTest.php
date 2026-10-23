@@ -19,7 +19,7 @@ class LittleLightTrackingTest extends TestCase
         config(['app.key' => 'base64:'.base64_encode(str_repeat('k', 32)), 'database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:', 'session.driver' => 'array', 'cache.default' => 'array']);
         DB::purge('sqlite');
         $this->withoutMiddleware(TrackPageView::class);
-        foreach (['0001_01_01_000000_create_users_table.php','2026_04_18_224910_add_role_to_users_table.php','2026_04_24_200000_create_audit_logs_table.php','2026_05_23_020525_create_app_settings_table.php','2026_10_23_180000_create_little_light_runs.php'] as $file) (require database_path('migrations/'.$file))->up();
+        foreach (['0001_01_01_000000_create_users_table.php','2026_04_18_224910_add_role_to_users_table.php','2026_04_24_200000_create_audit_logs_table.php','2026_05_23_020525_create_app_settings_table.php','2026_10_23_180000_create_little_light_runs.php','2026_10_23_190000_add_adventure_to_little_light_runs.php'] as $file) (require database_path('migrations/'.$file))->up();
     }
 
     private function start(int $chapter = 1, bool $preview = false): array
@@ -111,6 +111,20 @@ class LittleLightTrackingTest extends TestCase
         $run = LittleLightRun::where('token', $ordinary['run_token'])->first();
         $this->patch('/admin/games/little-light/'.$run->id, ['is_test' => true])->assertRedirect();
         $this->get('/admin/games/little-light')->assertOk()->assertViewHas('totals', fn ($v) => $v['starts'] === 0);
+    }
+
+
+    public function test_three_dimensional_adventure_activity_is_separate_from_little_light(): void
+    {
+        $r = ['run_token' => (string) Str::uuid(), 'browser_token' => (string) Str::uuid(), 'chapter' => 1, 'preview' => false, 'game' => 'david_escape'];
+        $this->postJson(self::API.'start', $r)->assertOk();
+        $this->travel(15)->seconds();
+        $this->postJson(self::API.'progress', $this->report($r, ['active_seconds' => 12, 'furthest_percent' => 99, 'scrolls' => 1, 'status' => 'complete']))->assertOk();
+        $this->start();
+        $this->actingAs($this->staff());
+        $this->get('/admin/games/little-light')->assertOk()->assertViewHas('totals', fn ($v) => $v['starts'] === 1 && $v['completed'] === 0);
+        $this->get('/admin/games/little-light?game=david_escape')->assertOk()->assertSee('David: A Way Through')->assertViewHas('totals', fn ($v) => $v['starts'] === 1 && $v['completed'] === 1);
+        $this->postJson(self::API.'start', array_replace($r, ['game' => 'little_light']))->assertConflict();
     }
 
     public function test_retention_prunes_only_attempts_older_than_ninety_days(): void

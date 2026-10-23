@@ -59,7 +59,7 @@
         }
         for (const run of pending.values()) {
           if (!run.started) {
-            await post('start', {run_token: run.token, browser_token: browser, chapter: run.chapter, preview});
+            await post('start', {run_token: run.token, browser_token: browser, chapter: run.chapter, game: env.game || 'little_light', preview});
             run.started = true;
           }
           if (run.ack < run.revision) {
@@ -84,7 +84,7 @@
   if (typeof window !== 'undefined') {
     try {
       root.LittleLightTracking = createTracker({fetch: window.fetch.bind(window), storage: {getItem: key => window.localStorage.getItem(key), setItem: (key, value) => window.localStorage.setItem(key, value)},
-        crypto: window.crypto, now: Date.now, hidden: () => document.hidden, search: location.search});
+        crypto: window.crypto, now: Date.now, hidden: () => document.hidden, search: location.search, game: document.body.dataset.game || 'little_light'});
       setInterval(() => root.LittleLightTracking.flush(), 15000);
       document.addEventListener('visibilitychange', () => { if (document.hidden) root.LittleLightTracking.suspend(); });
       window.addEventListener('pagehide', () => root.LittleLightTracking.suspend());
