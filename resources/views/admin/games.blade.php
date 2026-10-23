@@ -55,6 +55,7 @@
   <p class="lede">Each level is a real verse. Add as many as you like — pick a book, a game, and an age, and it shows up for the kids at <b>/kids</b>. Edits save as you type.</p>
   @if (session('status'))<div class="flash">{{ session('status') }}</div>@endif
 
+  <p class="lede"><a href="{{ route('admin.games.little-light') }}">Little Light: chapter activity and progress →</a></p>
   <form class="add" method="POST" action="{{ route('admin.games.store') }}">
     @csrf
     <h2>Add a level</h2>
