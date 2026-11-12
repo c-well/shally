@@ -41,7 +41,7 @@ class WhatsNewEmail extends Command
         }
 
         Mail::send(['html' => 'emails.whats-new', 'text' => 'emails.whats-new-text'], $data,
-            fn ($m) => $m->to($to)->subject("New on the church site: music day, and more"));
+            fn ($m) => $m->to($to)->subject("New on the church site: Music day"));
         $this->line("sent to {$to}");
         return self::SUCCESS;
     }

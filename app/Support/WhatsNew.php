@@ -8,7 +8,8 @@ namespace App\Support;
  * this list, so a feature is written up once. Order is the order André reads
  * them in: related things together, the one to try first at the top.
  * Written for the person using the site, not for whoever built it. 'short'
- * is the one line he sees first; the rest only shows when he opens it.
+ * is the one line he sees first, and
+ * 'headline' is the two- or three-word name the email leads with; the rest only shows when he opens it.
  *
  * area picks the colour of the tag: music, bulletin, mail, admin.
  */
@@ -19,6 +20,7 @@ class WhatsNew
         return [
             [
                 'key'     => 'music-day',
+                'headline'=> 'Music day.',
                 'short'   => 'Singers send their tracks to you, and you see who is in.',
                 'area'    => 'music',
                 'tag'     => 'Music day',
@@ -37,6 +39,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'music-listen',
+                'headline'=> 'Hear every track.',
                 'short'   => 'Check each track is the right one before the day.',
                 'area'    => 'music',
                 'tag'     => 'Music day',
@@ -50,6 +53,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'music-email',
+                'headline'=> 'An 8pm heads-up.',
                 'short'   => 'Who sent what, on evenings songs arrive. Quiet otherwise.',
                 'area'    => 'music',
                 'tag'     => 'Music day',
@@ -62,7 +66,8 @@ class WhatsNew
             ],
             [
                 'key'     => 'mail-reply',
-                'short'   => 'Write back as media@ or treasurer@ without leaving the admin.',
+                'headline'=> 'Reply as media@.',
+                'short'   => 'Answer church email without leaving the admin.',
                 'area'    => 'mail',
                 'tag'     => 'Mail',
                 'date'    => '2026-10-14',
@@ -75,6 +80,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'bulletin-normal',
+                'headline'=> 'Back to normal.',
                 'short'   => 'Undo weeks of additions in one tap.',
                 'area'    => 'bulletin',
                 'tag'     => 'Bulletin',
@@ -92,6 +98,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'admin-phone',
+                'headline'=> 'Made for your phone.',
                 'short'   => 'No pinching or sideways scrolling, on a phone or iPad.',
                 'area'    => 'admin',
                 'tag'     => 'Admin',
