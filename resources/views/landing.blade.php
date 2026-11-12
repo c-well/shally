@@ -222,14 +222,14 @@
   /* ── HERO ─────────────────────────────────────────────── */
   .hero {
     text-align: center;
-    padding: clamp(72px, 14vh, 140px) clamp(20px, 5vw, 32px) clamp(56px, 10vh, 96px);
+    padding: clamp(48px, 9vh, 104px) clamp(20px, 5vw, 32px) clamp(56px, 10vh, 96px);
     max-width: 1100px; margin: 0 auto;
   }
   .hero-eyebrow {
     font-family: 'Instrument Sans', sans-serif;
     font-size: 11px; font-weight: 700; letter-spacing: 0.36em;
     text-transform: uppercase; color: var(--teal);
-    margin-bottom: 22px;
+    margin-bottom: 22px; text-wrap: balance;
   }
   .hero h1 {
     font-family: 'Cormorant Garamond', serif;
@@ -245,7 +245,7 @@
     font-weight: 500;
   }
   .hero .lede {
-    margin: 32px auto 36px;
+    margin: 28px auto 36px;
     max-width: 580px;
     font-size: clamp(15px, 1.6vw, 17px);
     line-height: 1.65; color: var(--ink-soft);
@@ -497,8 +497,10 @@
   .font-toggle .aa { font-family: 'Cormorant Garamond', serif; font-size: 18px; line-height: 1; letter-spacing: -0.5px; }
 
   @media (max-width: 600px) {
-    .hero { padding-top: 56px; padding-bottom: 40px; }
-    .hero h1 { font-size: 48px; }
+    .hero { padding-top: 40px; padding-bottom: 40px; }
+    .hero h1 { font-size: 44px; }
+    .hero-eyebrow { letter-spacing: 0.24em; line-height: 1.7; margin-bottom: 16px; }
+    .hero .lede { margin-top: 24px; }
     .hero-cta-secondary { margin-left: 0; margin-top: 12px; }
     .donate-band { padding: 40px 24px; margin-top: 48px; }
   }
@@ -587,31 +589,46 @@
 
   /* Scripture-of-the-day swap — CSS grid stacks both layers in the same cell so
      the stage auto-sizes to whichever paragraph is taller (no clipping, no jump). */
-  /* The headline swap. Same stacked-grid cross-fade as .lede-stage below —
-     one grid cell, both lines in it, opacity does the work so nothing reflows
-     and the page never jumps. Only renders a second line when a public event
-     is actually within the week; otherwise this is a plain <h1>. */
-  .h1-stage { display: grid; }
-  /* margin-inline:auto, NOT margin:0 — the hero h1 carries a max-width, so
-     zeroing its margins left it flush-left inside the 960px stage and the
-     headline sat ~30px left of the eyebrow above it. */
-  .h1-stage > h1 { grid-area: 1 / 1; margin: 0 auto; transition: opacity .85s ease, transform .85s ease; }
-  .h1-stage .h1-event { opacity: 0; transform: translateY(10px); pointer-events: none; }
-  .h1-stage.swapped .h1-welcome { opacity: 0; transform: translateY(-10px); pointer-events: none; }
-  .h1-stage.swapped .h1-event   { opacity: 1; transform: translateY(0); pointer-events: auto; }
-  .h1-event-when {
-    display: block;
-    font-family: 'Poppins', system-ui, sans-serif;
-    font-size: clamp(11px, 2.6vw, 13px);
-    font-weight: 600; letter-spacing: .28em; text-transform: uppercase;
-    color: var(--brass); margin-bottom: .35em;
+  /* The headline swap, tidied. The eyebrow and the headline each stack their
+     two versions in one grid cell (no reflow), and the swap is SEQUENTIAL:
+     the welcome finishes leaving before the event arrives, so the two lines
+     are never on screen together. Only renders when a public event is within
+     the week; otherwise it is a plain eyebrow and <h1>. */
+  .hero-top .hero-eyebrow, .h1-stage { display: grid; justify-items: center; }
+  .hero-top .sw-a, .hero-top .sw-b { grid-area: 1 / 1; }
+  .hero-top .sw-a { transition: opacity .45s cubic-bezier(.4,0,.2,1), transform .45s cubic-bezier(.4,0,.2,1); }
+  .hero-top .sw-b {
+    opacity: 0; transform: translateY(6px); visibility: hidden;
+    transition: opacity .7s cubic-bezier(.2,0,0,1) .45s, transform .7s cubic-bezier(.2,0,0,1) .45s, visibility 0s linear .45s;
   }
-  /* Reduced motion: no fade. The event line is the more useful of the two, so
-     it is simply the one shown — never a swap the person did not ask for. */
+  .hero-top.swapped .sw-a { opacity: 0; transform: translateY(-6px); pointer-events: none; }
+  .hero-top.swapped .sw-b { opacity: 1; transform: none; visibility: visible; }
+  .h1-stage > .sw-a { margin: 0 auto; }
+  .h1-event {
+    margin: 0 auto; max-width: 900px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(56px, 9vw, 108px);
+    font-weight: 500; line-height: 1.02; letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .h1-event a { color: var(--teal); text-decoration: none; }
+  .h1-event a:hover { color: var(--teal-dark, #4f3768); }
+  .h1-event a:focus-visible { outline: 2px solid var(--teal); outline-offset: 6px; border-radius: 4px; }
+  @media (max-width: 600px) { .h1-event { font-size: 44px; } }
+  /* Reduced motion: no fade. The event is the more useful of the two, so it
+     is simply the one shown. */
   @media (prefers-reduced-motion: reduce) {
-    .h1-stage > h1 { transition: none; }
-    .h1-stage.has-event .h1-welcome { opacity: 0; }
-    .h1-stage.has-event .h1-event   { opacity: 1; transform: none; }
+    .hero-top .sw-a, .hero-top .sw-b { transition: none; }
+    .hero-top.has-event .sw-a { opacity: 0; visibility: hidden; }
+    .hero-top.has-event .sw-b { opacity: 1; transform: none; visibility: visible; }
+  }
+
+  /* Buttons: one row on desktop, a neat full-width stack on a phone. */
+  .hero-ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 4px; }
+  .hero-ctas .hero-cta, .hero-ctas .hero-cta-secondary { margin: 0; min-height: 52px; gap: 10px; }
+  @media (max-width: 600px) {
+    .hero-ctas { flex-direction: column; align-items: stretch; max-width: 360px; margin-left: auto; margin-right: auto; margin-top: 0; }
+    .hero-ctas .hero-cta, .hero-ctas .hero-cta-secondary { width: 100%; padding-left: 20px; padding-right: 20px; }
   }
 
   .lede-stage { display: grid; max-width: 580px; margin: 0 auto; }
@@ -748,31 +765,35 @@
 
 {{-- ── Hero ── --}}
 <section class="hero">
-  <div class="hero-eyebrow">{{ $heroPage?->eyebrow ?? "Shalom Seventh-day Adventist · Bronx, NY" }}</div>
   @php
-    // The next PUBLIC event inside a week. Drives the headline swap below and
-    // nothing else — when the date passes, the query returns nothing and the
-    // hero quietly goes back to the standing welcome with no cleanup needed.
-    // One source of truth: the same Event rows the calendar already reads.
+    // The next PUBLIC event inside a week drives the headline swap and nothing
+    // else. When the date passes the query returns nothing and the hero goes
+    // back to the standing welcome on its own.
     $heroEvent = \App\Models\Event::where('is_public', true)
         ->whereNotNull('start_at')
         ->whereBetween('start_at', [now('America/New_York')->startOfDay(), now('America/New_York')->addDays(7)])
         ->orderBy('start_at')
         ->first();
+    if ($heroEvent) {
+        $heroEvNy    = $heroEvent->start_at->copy()->timezone('America/New_York');
+        $heroEvDay   = $heroEvNy->isToday() ? 'Today' : ($heroEvNy->isTomorrow() ? 'Tomorrow' : 'This ' . $heroEvNy->format('l'));
+        $heroEvTime  = $heroEvNy->minute === 0 ? $heroEvNy->format('g A') : $heroEvNy->format('g:i A');
+        $heroEvWhen  = $heroEvDay . ' · ' . $heroEvNy->format('M j') . ' · ' . $heroEvTime;
+        // Display only: even out the spacing around a slash ("Pathfinder /Adventurer").
+        $heroEvTitle = str_replace('/', '/<wbr>', e(preg_replace('/\s*\/\s*/', '/', trim($heroEvent->title))));
+    }
   @endphp
-
-  <div class="h1-stage {{ $heroEvent ? 'has-event' : '' }}" id="h1-stage">
-    <h1 class="h1-welcome">Welcome to <em>The Church of Peace</em>.</h1>
-    @if ($heroEvent)
-      @php
-        $heroEvNy  = $heroEvent->start_at->copy()->timezone('America/New_York');
-        $heroEvDay = $heroEvNy->isToday() ? 'Today' : ($heroEvNy->isTomorrow() ? 'Tomorrow' : $heroEvNy->format('l'));
-      @endphp
-      <h1 class="h1-event" aria-hidden="true">
-        <span class="h1-event-when">{{ $heroEvDay }}</span>
-        <em>{{ $heroEvent->title }}</em>.
-      </h1>
-    @endif
+  <div class="hero-top {{ $heroEvent ? 'has-event' : '' }}" id="hero-top">
+    <div class="hero-eyebrow">
+      <span class="sw-a">{{ $heroPage?->eyebrow ?? "Shalom Seventh-day Adventist · Bronx, NY" }}</span>
+      @if ($heroEvent)<span class="sw-b" aria-hidden="true">{{ $heroEvWhen }}</span>@endif
+    </div>
+    <div class="h1-stage">
+      <h1 class="sw-a">Welcome to <em>The Church of Peace</em>.</h1>
+      @if ($heroEvent)
+        <p class="h1-event sw-b" aria-hidden="true"><a href="{{ route('calendar') }}" tabindex="-1">{!! $heroEvTitle !!}</a></p>
+      @endif
+    </div>
   </div>
   <div class="lede-stage" id="lede-stage">
     <div class="lede lede-welcome">@if($heroPage && $heroPage->body_html){!! \Str::arrowize($heroPage->body_html) !!}@else<p><em>&quot;Where two or three gather in my name, there am I with them.&quot;</em> (Matt. 18:20) Every Sabbath, we gather at 3323 White Plains Road to do just that.</p>@endif</div>
@@ -821,8 +842,10 @@
     </div>
   @else
     {{-- DORMANT — normal two-button hero (unchanged) --}}
-    <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin @include('partials._ar')</a>
-    <a href="{{ route('lesson.show') }}" class="hero-cta-secondary">Sabbath School lesson</a>
+    <div class="hero-ctas">
+      <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin @include('partials._ar')</a>
+      <a href="{{ route('lesson.show') }}" class="hero-cta-secondary">Sabbath School lesson</a>
+    </div>
   @endif
 
   @if (($liveEvent ?? null) && ! $isLive)
@@ -1331,14 +1354,20 @@
 
 <script>
   (function() {
-    // Headline swap — welcome first (it still registers on load), then the
-    // event. It does NOT swap back: the event is the news, and a headline
-    // that keeps cycling is noise on a page someone is trying to read.
+    // Headline swap: the welcome shows first, then the event takes its place
+    // once and stays. Screen readers and the keyboard follow what is visible.
     (function () {
-      const h1s = document.getElementById('h1-stage');
-      if (!h1s || !h1s.classList.contains('has-event')) return;
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      setTimeout(() => h1s.classList.add('swapped'), 2600);
+      const top = document.getElementById('hero-top');
+      if (!top || !top.classList.contains('has-event')) return;
+      const show = () => {
+        top.classList.add('swapped');
+        top.querySelectorAll('.sw-a').forEach(el => el.setAttribute('aria-hidden', 'true'));
+        top.querySelectorAll('.sw-b').forEach(el => el.removeAttribute('aria-hidden'));
+        const a = top.querySelector('.h1-event a');
+        if (a) a.removeAttribute('tabindex');
+      };
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { show(); return; }
+      setTimeout(show, 2600);
     })();
 
     const stage  = document.getElementById('lede-stage');
