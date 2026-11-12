@@ -16,7 +16,7 @@ class Bulletin extends Model
 
 
     protected $fillable = [
-        'title', 'service_date', 'body', 'pdf_path', 'is_published', 'always_show_during_week',
+        'title', 'service_date', 'body', 'cover', 'pdf_path', 'is_published', 'always_show_during_week',
         'published_at', 'published_snapshot',
         'previous_published_snapshot', 'previous_published_at',
         'theme', 'pdf_font_color', 'author_id',
@@ -32,6 +32,7 @@ class Bulletin extends Model
         'previous_published_snapshot'  => 'array',
         'previous_published_at'        => 'datetime',
         'event_ends_at'                => 'date',
+        'cover'                        => 'array',
     ];
 
     public function author()        { return $this->belongsTo(User::class, 'author_id'); }
