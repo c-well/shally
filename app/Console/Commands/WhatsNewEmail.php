@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Mail;
  */
 class WhatsNewEmail extends Command
 {
-    protected $signature = 'whatsnew:email {to?} {--first=André} {--preview=}';
+    protected $signature = 'whatsnew:email {to?} {--cc=} {--first=André} {--preview=}';
     protected $description = "Email the What's new list, or write a preview";
 
     public function handle(): int
@@ -41,7 +41,10 @@ class WhatsNewEmail extends Command
         }
 
         Mail::send(['html' => 'emails.whats-new', 'text' => 'emails.whats-new-text'], $data,
-            fn ($m) => $m->to($to)->subject("New on the church site: Music day"));
+            function ($m) use ($to) {
+                $m->to($to)->subject('New on the church site: Music day');
+                if ($cc = $this->option('cc')) $m->cc($cc);
+            });
         $this->line("sent to {$to}");
         return self::SUCCESS;
     }
