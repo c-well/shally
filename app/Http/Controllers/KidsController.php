@@ -27,7 +27,13 @@ class KidsController extends Controller
 
     private function leaders()
     {
-        // Public totals use the new checked rewards. Historical totals stay in admin.
+        // No public board (KC, 2026-11-09): kids play without a name, so there is
+        // nothing to show. Totals stay in admin. The old query is kept below for staff use.
+        return collect();
+    }
+
+    private function staffLeaders()
+    {
         return GamePlayer::whereNotIn('review_status', ['test', 'exclude'])
             ->withSum('progress as checked_stars', 'earned_stars')
             ->whereHas('progress', fn ($q) => $q->where('earned_stars', '>', 0))
@@ -54,14 +60,14 @@ class KidsController extends Controller
 
     public function register(Request $request): JsonResponse
     {
-        $d = $request->validate(['name' => 'required|string|max:30', 'preview' => 'sometimes|boolean']);
-        $name = trim(strip_tags($d['name']));
-        if ($name === '') {
-            return response()->json(['message' => 'Choose a nickname.'], 422);
-        }
+        // Kids play without signing in or giving a name (KC, 2026-11-09). The player is an
+        // anonymous random token kept in that browser, used only to keep progress and
+        // stars. Any name a stale page still sends is ignored.
+        $d = $request->validate(['preview' => 'sometimes|boolean']);
+        $name = ! empty($d['preview']) ? 'Practice preview' : 'Explorer';
         $p = GamePlayer::create(['name' => $name, 'token' => (string) Str::uuid(), 'review_status' => ! empty($d['preview']) ? 'test' : 'auto']);
 
-        return response()->json(['ok' => true, 'token' => $p->token, 'name' => $p->name, 'total_stars' => 0]);
+        return response()->json(['ok' => true, 'token' => $p->token, 'total_stars' => 0]);
     }
 
     private function player(Request $r): GamePlayer
@@ -75,7 +81,7 @@ class KidsController extends Controller
     {
         $p = $this->player($request);
 
-        return response()->json(['ok' => true, 'name' => $p->name, 'preview' => $p->review_status === 'test', 'total_stars' => (int) $p->progress()->sum('earned_stars'),
+        return response()->json(['ok' => true, 'preview' => $p->review_status === 'test', 'total_stars' => (int) $p->progress()->sum('earned_stars'),
             'levels' => $p->progress()->get(['game_level_id', 'earned_stars'])->mapWithKeys(fn ($v) => [$v->game_level_id => $v->earned_stars])]);
     }
 
@@ -176,6 +182,6 @@ class KidsController extends Controller
 
     public function leaderboard(): JsonResponse
     {
-        return response()->json(['leaders' => $this->leaders()->map(fn ($p) => ['name' => $p->name, 'total_stars' => (int) $p->checked_stars])]);
+        return response()->json(['leaders' => []]);
     }
 }

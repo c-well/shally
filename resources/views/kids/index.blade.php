@@ -111,20 +111,7 @@
     @endif
   @endforeach
 
-  <p class="family-note">For families: choose a nickname instead of a full name. Games save progress on this browser. <a href="{{ route('privacy') }}">How we handle game information →</a></p>
-  <div class="board">
-    <h2>Our discovery crew</h2>
-    <p>Celebrating completed puzzles and verse progress. Nicknames appear here with stars earned through our updated games.</p>
-    @if ($leaders->isNotEmpty())
-      <ol>
-        @foreach ($leaders as $p)
-          <li><span class="nm">{{ $p->name }}</span> <span class="st">★ {{ $p->checked_stars }}</span></li>
-        @endforeach
-      </ol>
-    @else
-      <div class="empty">A new chapter starts here. Finish a game to add your nickname and stars.</div>
-    @endif
-  </div>
+  <p class="family-note">For families: no sign-in and no names. Kids just tap play, and stars save in this browser. <a href="{{ route('privacy') }}">How we handle game information →</a></p>
 </main>
 
 @include('partials.footer')
@@ -134,7 +121,7 @@
   try {
     const pl=JSON.parse(localStorage.getItem('cop_kid')||'null');
     if(pl?.token)fetch('{{ route('kids.profile') }}',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},body:JSON.stringify({token:pl.token})}).then(r=>r.ok?r.json():null).then(d=>{
-      if(!d)return;if(d.preview){localStorage.removeItem('cop_kid');document.getElementById('who').textContent='Choose a game to start your adventure.';return;}document.getElementById('who').textContent=`Welcome back, ${d.name} · ★ ${d.total_stars}`;
+      if(!d)return;if(d.preview){localStorage.removeItem('cop_kid');document.getElementById('who').textContent='Choose a game to start your adventure.';return;}document.getElementById('who').textContent=`Welcome back, explorer · ★ ${d.total_stars}`;
       pl.total_stars=d.total_stars;localStorage.setItem('cop_kid',JSON.stringify(pl));
       document.querySelectorAll('[data-level]').forEach(card=>{const stars=d.levels[card.dataset.level]||0;if(stars){const go=card.querySelector('.go');go.textContent=stars===3?'★★★ Completed · Play again →':'★ In progress · Play →';}});
     }).catch(()=>{});
