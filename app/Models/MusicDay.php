@@ -6,8 +6,8 @@ use Illuminate\Support\Str;
 
 class MusicDay extends Model
 {
-    protected $fillable = ['title', 'service_date', 'token', 'is_open', 'note', 'files_purged_at'];
-    protected $casts    = ['service_date' => 'date', 'is_open' => 'boolean', 'files_purged_at' => 'datetime'];
+    protected $fillable = ['title', 'service_date', 'token', 'is_open', 'note', 'files_purged_at', 'rundown_sent_at'];
+    protected $casts    = ['service_date' => 'date', 'is_open' => 'boolean', 'files_purged_at' => 'datetime', 'rundown_sent_at' => 'datetime'];
 
     protected static function booted(): void
     {

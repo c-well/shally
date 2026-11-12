@@ -355,6 +355,8 @@ Schedule::command('mail:apply')->everyMinute()->withoutOverlapping()->name('mail
 // clear track files 30 days after the day.
 Schedule::command('music:fetch')->everyMinute()->withoutOverlapping(10)->name('music-fetch')->onOneServer();
 Schedule::command('music:purge')->dailyAt('03:40')->name('music-purge')->onOneServer();
+// 8pm New York: tell André about new songs, or send the rundown the night before a music day.
+Schedule::command('music:notify')->dailyAt('20:00')->timezone('America/New_York')->withoutOverlapping()->name('music-notify')->onOneServer();
 
 // A message with no share card shares as a blank square, and scrapers do not
 // come back for a second look — so the card is drawn before anyone shares it.

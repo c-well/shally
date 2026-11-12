@@ -12,8 +12,10 @@ class MusicEntry extends Model
     protected $fillable = [
         'music_day_id', 'name', 'song_title', 'method', 'medium', 'source_url',
         'file_path', 'original_name', 'duration_seconds', 'size_bytes',
-        'status', 'error', 'attempts', 'sort_order', 'ip_hash',
+        'status', 'error', 'attempts', 'sort_order', 'ip_hash', 'notified_at',
     ];
+
+    protected $casts = ['notified_at' => 'datetime'];
 
     protected static function booted(): void
     {
