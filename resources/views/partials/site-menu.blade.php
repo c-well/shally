@@ -347,6 +347,7 @@
               <a class="site-admin-item" href="{{ route('admin.music') }}" role="menuitem">Music day</a>
               <a class="site-admin-item" href="{{ route('guide') }}" role="menuitem">Field Guide</a>
               <a class="site-admin-item" href="{{ route('schedule.index') }}" role="menuitem">Department schedule</a>
+              <a class="site-admin-item" href="{{ route('admin.whats-new') }}" role="menuitem">What's new</a>
               <a class="site-admin-item" href="{{ route('admin.hub') }}" role="menuitem">Admin hub</a>
               <div class="site-admin-divider"></div>
               <div class="site-admin-user">{{ auth()->user()->name }}</div>
@@ -451,6 +452,7 @@
               <a class="site-menu-sub-link" href="{{ route('admin.music') }}">Music day</a>
               <a class="site-menu-sub-link" href="{{ route('schedule.index') }}">Department schedule</a>
               <button class="site-menu-sub-link site-menu-sub-link-form" id="manage-names-btn" type="button">Manage names</button>
+              <a class="site-menu-sub-link" href="{{ route('admin.whats-new') }}">What's new</a>
               <a class="site-menu-sub-link" href="{{ route('admin.hub') }}">Admin hub</a>
             </div>
           </div>

@@ -156,6 +156,7 @@ Route::middleware(['auth', 'role:clerk'])->group(function () {
     Route::post  ('/bulletins/{bulletin}/default/restore',  [\App\Http\Controllers\AdminBulletinDefaultController::class, 'restore'])->name('bulletins.default.restore');
     Route::post  ('/bulletins/{bulletin}/default/undo',     [\App\Http\Controllers\AdminBulletinDefaultController::class, 'undo'])->name('bulletins.default.undo');
     // ── Music day — André, Karlon, Rosharde, any clerk ──
+    Route::get   ('/admin/whats-new', fn () => view('admin.whats-new', ['items' => \App\Support\WhatsNew::items()]))->name('admin.whats-new');
     Route::get   ('/admin/music',                          [\App\Http\Controllers\AdminMusicController::class, 'index'])->name('admin.music');
     Route::post  ('/admin/music/days',                     [\App\Http\Controllers\AdminMusicController::class, 'store'])->name('admin.music.store');
     Route::get   ('/admin/music/days/{day}/state',         [\App\Http\Controllers\AdminMusicController::class, 'state'])->name('admin.music.state');
