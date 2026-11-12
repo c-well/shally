@@ -250,6 +250,27 @@
     font-size: clamp(15px, 1.6vw, 17px);
     line-height: 1.65; color: var(--ink-soft);
   }
+  /* The lede is THREE separate thoughts — a verse, what we do, and an
+     invitation to a newcomer — and every <p> inside it was margin:0, so they
+     ran together as one centred wall that nobody finishes reading. Give them
+     real air, and let the verse look like a verse. */
+  .hero .lede p { margin: 0 0 1.05em; }
+  .hero .lede p:last-child { margin-bottom: 0; }
+  .hero .lede p:first-child {
+    font-family: 'Lora', 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.18em;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 1.35em;
+  }
+  .hero .lede p:first-child em { font-style: italic; }
+  /* The newcomer line is the one that asks for something, so it sits slightly
+     apart and quieter — an aside, not another claim. */
+  .hero .lede p:last-child {
+    font-size: .94em;
+    color: var(--ink-faint, rgba(26,35,50,.52));
+    padding-top: .5em;
+  }
   .hero-cta {
     display: inline-flex; align-items: center; justify-content: center;
     background: var(--teal); color: #fff;
@@ -566,6 +587,33 @@
 
   /* Scripture-of-the-day swap — CSS grid stacks both layers in the same cell so
      the stage auto-sizes to whichever paragraph is taller (no clipping, no jump). */
+  /* The headline swap. Same stacked-grid cross-fade as .lede-stage below —
+     one grid cell, both lines in it, opacity does the work so nothing reflows
+     and the page never jumps. Only renders a second line when a public event
+     is actually within the week; otherwise this is a plain <h1>. */
+  .h1-stage { display: grid; }
+  /* margin-inline:auto, NOT margin:0 — the hero h1 carries a max-width, so
+     zeroing its margins left it flush-left inside the 960px stage and the
+     headline sat ~30px left of the eyebrow above it. */
+  .h1-stage > h1 { grid-area: 1 / 1; margin: 0 auto; transition: opacity .85s ease, transform .85s ease; }
+  .h1-stage .h1-event { opacity: 0; transform: translateY(10px); pointer-events: none; }
+  .h1-stage.swapped .h1-welcome { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+  .h1-stage.swapped .h1-event   { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .h1-event-when {
+    display: block;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: clamp(11px, 2.6vw, 13px);
+    font-weight: 600; letter-spacing: .28em; text-transform: uppercase;
+    color: var(--brass); margin-bottom: .35em;
+  }
+  /* Reduced motion: no fade. The event line is the more useful of the two, so
+     it is simply the one shown — never a swap the person did not ask for. */
+  @media (prefers-reduced-motion: reduce) {
+    .h1-stage > h1 { transition: none; }
+    .h1-stage.has-event .h1-welcome { opacity: 0; }
+    .h1-stage.has-event .h1-event   { opacity: 1; transform: none; }
+  }
+
   .lede-stage { display: grid; max-width: 580px; margin: 0 auto; }
   .lede-stage > .lede {
     grid-area: 1 / 1;   /* same cell — stacked */
@@ -701,7 +749,31 @@
 {{-- ── Hero ── --}}
 <section class="hero">
   <div class="hero-eyebrow">{{ $heroPage?->eyebrow ?? "Shalom Seventh-day Adventist · Bronx, NY" }}</div>
-  <h1>Welcome to <em>The Church of Peace</em>.</h1>
+  @php
+    // The next PUBLIC event inside a week. Drives the headline swap below and
+    // nothing else — when the date passes, the query returns nothing and the
+    // hero quietly goes back to the standing welcome with no cleanup needed.
+    // One source of truth: the same Event rows the calendar already reads.
+    $heroEvent = \App\Models\Event::where('is_public', true)
+        ->whereNotNull('start_at')
+        ->whereBetween('start_at', [now('America/New_York')->startOfDay(), now('America/New_York')->addDays(7)])
+        ->orderBy('start_at')
+        ->first();
+  @endphp
+
+  <div class="h1-stage {{ $heroEvent ? 'has-event' : '' }}" id="h1-stage">
+    <h1 class="h1-welcome">Welcome to <em>The Church of Peace</em>.</h1>
+    @if ($heroEvent)
+      @php
+        $heroEvNy  = $heroEvent->start_at->copy()->timezone('America/New_York');
+        $heroEvDay = $heroEvNy->isToday() ? 'Today' : ($heroEvNy->isTomorrow() ? 'Tomorrow' : $heroEvNy->format('l'));
+      @endphp
+      <h1 class="h1-event" aria-hidden="true">
+        <span class="h1-event-when">{{ $heroEvDay }}</span>
+        <em>{{ $heroEvent->title }}</em>.
+      </h1>
+    @endif
+  </div>
   <div class="lede-stage" id="lede-stage">
     <div class="lede lede-welcome">@if($heroPage && $heroPage->body_html){!! \Str::arrowize($heroPage->body_html) !!}@else<p><em>&quot;Where two or three gather in my name, there am I with them.&quot;</em> (Matt. 18:20) Every Sabbath, we gather at 3323 White Plains Road to do just that.</p>@endif</div>
     <div class="lede lede-verse" aria-hidden="true">
@@ -1259,6 +1331,16 @@
 
 <script>
   (function() {
+    // Headline swap — welcome first (it still registers on load), then the
+    // event. It does NOT swap back: the event is the news, and a headline
+    // that keeps cycling is noise on a page someone is trying to read.
+    (function () {
+      const h1s = document.getElementById('h1-stage');
+      if (!h1s || !h1s.classList.contains('has-event')) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      setTimeout(() => h1s.classList.add('swapped'), 2600);
+    })();
+
     const stage  = document.getElementById('lede-stage');
     const toggle = document.getElementById('verse-toggle');
     const txt    = document.getElementById('verse-toggle-text');
