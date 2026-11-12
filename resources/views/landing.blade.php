@@ -589,47 +589,63 @@
 
   /* Scripture-of-the-day swap — CSS grid stacks both layers in the same cell so
      the stage auto-sizes to whichever paragraph is taller (no clipping, no jump). */
-  /* The headline swap, tidied. The eyebrow and the headline each stack their
-     two versions in one grid cell (no reflow), and the swap is SEQUENTIAL:
-     the welcome finishes leaving before the event arrives, so the two lines
-     are never on screen together. Only renders when a public event is within
-     the week; otherwise it is a plain eyebrow and <h1>. */
-  .hero-top .hero-eyebrow, .h1-stage { display: grid; justify-items: center; }
-  .hero-top .sw-a, .hero-top .sw-b { grid-area: 1 / 1; }
-  .hero-top .sw-a { transition: opacity .45s cubic-bezier(.4,0,.2,1), transform .45s cubic-bezier(.4,0,.2,1); }
-  .hero-top .sw-b {
-    opacity: 0; transform: translateY(6px); visibility: hidden;
-    transition: opacity .7s cubic-bezier(.2,0,0,1) .45s, transform .7s cubic-bezier(.2,0,0,1) .45s, visibility 0s linear .45s;
+  /* ── Apple Stack hero (Layouts shelf: cwell-bible/layouts/apple-stack) ──
+     A title, one line, two buttons, a big photo. Nothing fades or swaps. */
+  .apple-stack {
+    background: var(--parchment, #f5f0fb); color: var(--ink);
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: clamp(64px, 9vw, 120px) clamp(20px, 3vw, 40px) 0;
+    overflow: hidden;
   }
-  .hero-top.swapped .sw-a { opacity: 0; transform: translateY(-6px); pointer-events: none; }
-  .hero-top.swapped .sw-b { opacity: 1; transform: none; visibility: visible; }
-  .h1-stage > .sw-a { margin: 0 auto; }
-  .h1-event {
-    margin: 0 auto; max-width: 900px;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(56px, 9vw, 108px);
-    font-weight: 500; line-height: 1.02; letter-spacing: -0.035em;
-    text-wrap: balance;
+  .apple-stack__text { max-width: 760px; min-width: 0; }
+  .lay-title {
+    margin: 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 500; font-style: normal;
+    font-size: clamp(44px, 6.6vw, 84px);
+    line-height: 1.02; letter-spacing: -0.012em;
+    color: var(--ink); text-wrap: balance;
   }
-  .h1-event a { color: var(--teal); text-decoration: none; }
-  .h1-event a:hover { color: var(--teal-dark, #4f3768); }
-  .h1-event a:focus-visible { outline: 2px solid var(--teal); outline-offset: 6px; border-radius: 4px; }
-  @media (max-width: 600px) { .h1-event { font-size: 44px; } }
-  /* Reduced motion: no fade. The event is the more useful of the two, so it
-     is simply the one shown. */
-  @media (prefers-reduced-motion: reduce) {
-    .hero-top .sw-a, .hero-top .sw-b { transition: none; }
-    .hero-top.has-event .sw-a { opacity: 0; visibility: hidden; }
-    .hero-top.has-event .sw-b { opacity: 1; transform: none; visibility: visible; }
+  .lay-sub {
+    margin: clamp(12px, 1.4vw, 16px) 0 0;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 300; font-size: clamp(19px, 1.9vw, 24px);
+    line-height: 1.4; letter-spacing: -0.005em;
+    color: #4a5568; text-wrap: balance;
   }
-
-  /* Buttons: one row on desktop, a neat full-width stack on a phone. */
-  .hero-ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 4px; }
-  .hero-ctas .hero-cta, .hero-ctas .hero-cta-secondary { margin: 0; min-height: 52px; gap: 10px; }
+  .lay-actions {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 14px; margin-top: clamp(28px, 2.8vw, 34px);
+  }
+  .lay-actions + .lay-actions { margin-top: 14px; }
+  .lay-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 44px; padding: 0 22px; box-sizing: border-box;
+    border-radius: 6px; border: 1px solid var(--teal);
+    background: var(--teal); color: #fff;
+    font: 500 15px/1.2 'Poppins', system-ui, sans-serif;
+    text-decoration: none; text-align: center;
+    transition: background .2s, color .2s, border-color .2s;
+  }
+  .lay-btn:hover { background: var(--teal-dark, #4f3768); border-color: var(--teal-dark, #4f3768); color: #fff; }
+  .lay-btn--ghost { background: transparent; color: var(--teal); border-color: color-mix(in srgb, var(--teal) 55%, transparent); }
+  .lay-btn--ghost:hover { background: color-mix(in srgb, var(--teal) 8%, transparent); color: var(--teal); border-color: var(--teal); }
+  .lay-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+  .lay-btn .live-cta-dot { flex: none; }
+  .apple-stack__media {
+    display: block; width: min(1040px, 100%); height: auto;
+    aspect-ratio: 1040 / 540; object-fit: cover; object-position: center 30%;
+    margin-top: clamp(48px, 5.6vw, 72px);
+    border-radius: 16px 16px 0 0;
+    background: color-mix(in srgb, var(--teal) 10%, #fff);
+  }
   @media (max-width: 600px) {
-    .hero-ctas { flex-direction: column; align-items: stretch; max-width: 360px; margin-left: auto; margin-right: auto; margin-top: 0; }
-    .hero-ctas .hero-cta, .hero-ctas .hero-cta-secondary { width: 100%; padding-left: 20px; padding-right: 20px; }
+    .lay-actions { flex-direction: column; align-items: stretch; max-width: 340px; margin-inline: auto; }
+    .apple-stack__media { aspect-ratio: 4 / 3; border-radius: 12px 12px 0 0; }
   }
+  /* Text-size control: the one line grows with the rest of the page. */
+  html.font-large .lay-sub { font-size: 24px; }
+  html.font-xlarge .lay-sub { font-size: 27px; }
 
   .lede-stage { display: grid; max-width: 580px; margin: 0 auto; }
   .lede-stage > .lede {
@@ -764,98 +780,59 @@
 @include('partials.site-menu')
 
 {{-- ── Hero ── --}}
-<section class="hero">
+<section class="apple-stack" aria-labelledby="hero-title">
   @php
-    // The next PUBLIC event inside a week drives the headline swap and nothing
-    // else. When the date passes the query returns nothing and the hero goes
-    // back to the standing welcome on its own.
-    $heroEvent = \App\Models\Event::where('is_public', true)
-        ->whereNotNull('start_at')
-        ->whereBetween('start_at', [now('America/New_York')->startOfDay(), now('America/New_York')->addDays(7)])
-        ->orderBy('start_at')
-        ->first();
-    if ($heroEvent) {
-        $heroEvNy    = $heroEvent->start_at->copy()->timezone('America/New_York');
-        $heroEvDay   = $heroEvNy->isToday() ? 'Today' : ($heroEvNy->isTomorrow() ? 'Tomorrow' : 'This ' . $heroEvNy->format('l'));
-        $heroEvTime  = $heroEvNy->minute === 0 ? $heroEvNy->format('g A') : $heroEvNy->format('g:i A');
-        $heroEvWhen  = $heroEvDay . ' · ' . $heroEvNy->format('M j') . ' · ' . $heroEvTime;
-        // Display only: even out the spacing around a slash ("Pathfinder /Adventurer").
-        $heroEvTitle = str_replace('/', '/<wbr>', e(preg_replace('/\s*\/\s*/', '/', trim($heroEvent->title))));
-    }
+    // The big photo is one of the admin's own slides (/admin/slides): the choir
+    // shot when it is there, otherwise the first active slide. Remove every
+    // slide and the hero simply has no photo.
+    $heroPhoto = isset($slides) && count($slides)
+        ? (collect($slides)->first(fn ($s) => str_contains((string) $s->image_path, 'tempimagem4iqpt')) ?? collect($slides)->first())
+        : null;
   @endphp
-  <div class="hero-top {{ $heroEvent ? 'has-event' : '' }}" id="hero-top">
-    <div class="hero-eyebrow">
-      <span class="sw-a">{{ $heroPage?->eyebrow ?? "Shalom Seventh-day Adventist · Bronx, NY" }}</span>
-      @if ($heroEvent)<span class="sw-b" aria-hidden="true">{{ $heroEvWhen }}</span>@endif
-    </div>
-    <div class="h1-stage">
-      <h1 class="sw-a">Welcome to <em>The Church of Peace</em>.</h1>
-      @if ($heroEvent)
-        <p class="h1-event sw-b" aria-hidden="true"><a href="{{ route('calendar') }}" tabindex="-1">{!! $heroEvTitle !!}</a></p>
-      @endif
-    </div>
-  </div>
-  <div class="lede-stage" id="lede-stage">
-    <div class="lede lede-welcome">@if($heroPage && $heroPage->body_html){!! \Str::arrowize($heroPage->body_html) !!}@else<p><em>&quot;Where two or three gather in my name, there am I with them.&quot;</em> (Matt. 18:20) Every Sabbath, we gather at 3323 White Plains Road to do just that.</p>@endif</div>
-    <div class="lede lede-verse" aria-hidden="true">
-      <p class="verse-text">"For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life."</p>
-      <p class="verse-ref">— John 3:16 · this week's Sabbath School memory verse</p>
-    </div>
-  </div>
-  @php
-    // Weekday-dawn prayer window (shared with the schedule cards below)
-    $heroNy = now('America/New_York');
-    $heroHopLive = $heroNy->isWeekday() && $heroNy->between($heroNy->copy()->setTime(4,45), $heroNy->copy()->setTime(6,15));
-    $heroPmLive  = $heroNy->isWednesday() && $heroNy->between($heroNy->copy()->setTime(18,45), $heroNy->copy()->setTime(20,15));
-    $heroZoom    = $heroHopLive ? 'Hour of Prayer' : ($heroPmLive ? 'Prayer Meeting' : null);
-  @endphp
-  @php
-    // LIVE_STATE — read from cache only (peace:check-live cron writes every 5 min).
-    // Fail-safe: stale (>15 min) or missing @include('partials._ar') treat as not live.
-    $liveCheckedAt = \App\Models\AppSetting::get('is_live_checked_at');
-    $isLiveCacheFresh = $liveCheckedAt && \Carbon\Carbon::parse($liveCheckedAt)->gt(now()->subMinutes(15));
-    $isLive = $isLiveCacheFresh && \App\Models\AppSetting::get('is_live') === '1';
-  @endphp
+  <div class="apple-stack__text">
+    <h1 class="lay-title" id="hero-title">Welcome to The Church of Peace.</h1>
+    <p class="lay-sub">Every Sabbath at 3323 White Plains Road, Bronx.</p>
+    @php
+      // Weekday-dawn prayer window (shared with the schedule cards below)
+      $heroNy = now('America/New_York');
+      $heroHopLive = $heroNy->isWeekday() && $heroNy->between($heroNy->copy()->setTime(4,45), $heroNy->copy()->setTime(6,15));
+      $heroPmLive  = $heroNy->isWednesday() && $heroNy->between($heroNy->copy()->setTime(18,45), $heroNy->copy()->setTime(20,15));
+      $heroZoom    = $heroHopLive ? 'Hour of Prayer' : ($heroPmLive ? 'Prayer Meeting' : null);
+    @endphp
+    @php
+      // LIVE_STATE — read from cache only (peace:check-live cron writes every 5 min).
+      // Fail-safe: stale (>15 min) or missing @include('partials._ar') treat as not live.
+      $liveCheckedAt = \App\Models\AppSetting::get('is_live_checked_at');
+      $isLiveCacheFresh = $liveCheckedAt && \Carbon\Carbon::parse($liveCheckedAt)->gt(now()->subMinutes(15));
+      $isLive = $isLiveCacheFresh && \App\Models\AppSetting::get('is_live') === '1';
+    @endphp
 
-  @if ($isLive)
-    {{-- LIVE — single primary CTA, bulletin + lesson demote to text links --}}
-    <a href="#" class="hero-cta live-cta" data-live-cta>
-      <span class="live-cta-dot" aria-hidden="true"></span>
-      Watch the service · Live now
-    </a>
-    <div class="hero-live-links">
-      <a href="{{ url('/welcome') }}">This Sabbath's bulletin</a>
-      <span aria-hidden="true">·</span>
-      <a href="{{ route('lesson.show') }}">Sabbath School lesson</a>
-    </div>
-  @elseif ($heroZoom)
-    {{-- Hour of Prayer is LIVE right now (weekday dawn) — the moment leads.
-         Steve rule: a button changes only when reality changes, and says so. --}}
-    <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="hero-cta live-cta">
-      <span class="live-cta-dot" aria-hidden="true"></span>
-      {{ $heroZoom }} · happening now — join
-    </a>
-    <div class="hero-live-links">
-      <a href="{{ url('/welcome') }}">This Sabbath's bulletin</a>
-      <span aria-hidden="true">·</span>
-      <a href="{{ route('lesson.show') }}">Sabbath School lesson</a>
-    </div>
-  @else
-    {{-- DORMANT — normal two-button hero (unchanged) --}}
-    <div class="hero-ctas">
-      <a href="{{ url('/welcome') }}" class="hero-cta">This Sabbath's bulletin @include('partials._ar')</a>
-      <a href="{{ route('lesson.show') }}" class="hero-cta-secondary">Sabbath School lesson</a>
-    </div>
-  @endif
 
-  @if (($liveEvent ?? null) && ! $isLive)
-    {{-- An event WE point to (not our stream) is on right now — e.g. the Crusade --}}
-    <a href="{{ $liveEvent->stream_url }}" target="_blank" rel="noopener" class="hero-cta live-cta" style="margin-top: 12px;">
-      <span class="live-cta-dot" aria-hidden="true"></span>
-      {{ \Illuminate\Support\Str::limit($liveEvent->title, 42) }} · Happening now — tune in
-    </a>
+    <div class="lay-actions">
+    @if ($isLive)
+      {{-- LIVE: watching leads, the bulletin stays one tap away --}}
+      <a href="#" class="lay-btn" data-live-cta><span class="live-cta-dot" aria-hidden="true"></span>Watch the service live</a>
+      <a href="{{ url('/welcome') }}" class="lay-btn lay-btn--ghost">This Sabbath’s bulletin</a>
+    @elseif ($heroZoom)
+      {{-- Hour of Prayer / Prayer Meeting is on right now. Steve rule: a
+           button changes only when reality changes, and says so. --}}
+      <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="lay-btn"><span class="live-cta-dot" aria-hidden="true"></span>{{ $heroZoom }} is on. Join</a>
+      <a href="{{ url('/welcome') }}" class="lay-btn lay-btn--ghost">This Sabbath’s bulletin</a>
+    @else
+      <a href="{{ url('/welcome') }}" class="lay-btn">This Sabbath’s bulletin</a>
+      <a href="{{ route('lesson.show') }}" class="lay-btn lay-btn--ghost">Sabbath School lesson</a>
+    @endif
+    </div>
+    @if (($liveEvent ?? null) && ! $isLive)
+      {{-- An event WE point to (not our stream) is on right now, e.g. the Crusade --}}
+      <div class="lay-actions">
+        <a href="{{ $liveEvent->stream_url }}" target="_blank" rel="noopener" class="lay-btn"><span class="live-cta-dot" aria-hidden="true"></span>{{ \Illuminate\Support\Str::limit($liveEvent->title, 42) }} is on. Tune in</a>
+      </div>
+    @endif
+  </div>
+  @if ($heroPhoto)
+    <img class="apple-stack__media" src="{{ $heroPhoto->imageUrl() }}" alt="{{ $heroPhoto->caption ?: 'Shalom church family on Sabbath' }}" width="1040" height="540" fetchpriority="high">
   @endif
-  <div class="verse-toggle-wrap"><button class="verse-toggle hidden" id="verse-toggle" type="button"><span class="verse-toggle-dot"></span><span id="verse-toggle-text">Show verse of the day</span></button></div>
 </section>
 
 {{-- ── Schedule ── --}}
@@ -1352,40 +1329,6 @@
 })();
 </script>
 
-<script>
-  (function() {
-    // Headline swap: the welcome shows first, then the event takes its place
-    // once and stays. Screen readers and the keyboard follow what is visible.
-    (function () {
-      const top = document.getElementById('hero-top');
-      if (!top || !top.classList.contains('has-event')) return;
-      const show = () => {
-        top.classList.add('swapped');
-        top.querySelectorAll('.sw-a').forEach(el => el.setAttribute('aria-hidden', 'true'));
-        top.querySelectorAll('.sw-b').forEach(el => el.removeAttribute('aria-hidden'));
-        const a = top.querySelector('.h1-event a');
-        if (a) a.removeAttribute('tabindex');
-      };
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { show(); return; }
-      setTimeout(show, 2600);
-    })();
-
-    const stage  = document.getElementById('lede-stage');
-    const toggle = document.getElementById('verse-toggle');
-    const txt    = document.getElementById('verse-toggle-text');
-    if (!stage || !toggle) return;
-    const SWAP_AFTER_MS = 25 * 1000;
-    setTimeout(() => {
-      stage.classList.add('swapped');
-      toggle.classList.remove('hidden');
-      txt.textContent = 'Show welcome message';
-    }, SWAP_AFTER_MS);
-    toggle.addEventListener('click', () => {
-      const isVerse = stage.classList.toggle('swapped');
-      txt.textContent = isVerse ? 'Show welcome message' : 'Show verse of the day';
-    });
-  })();
-</script>
 
 {{-- LIVE_LIGHTBOX — only rendered when channel is currently live. --}}
 @if (!empty($isLive) && $isLive)
