@@ -7,8 +7,8 @@ namespace App\Support;
  * The admin "What's new" page and the email that announces it both read
  * this list, so a feature is written up once. Order is the order André reads
  * them in: related things together, the one to try first at the top.
- * Written for the person using the site, not for whoever built it: what it
- * does, how to use it, where to find it.
+ * Written for the person using the site, not for whoever built it. 'short'
+ * is the one line he sees first; the rest only shows when he opens it.
  *
  * area picks the colour of the tag: music, bulletin, mail, admin.
  */
@@ -19,6 +19,7 @@ class WhatsNew
         return [
             [
                 'key'     => 'music-day',
+                'short'   => 'Singers send their tracks to you, and you see who is in.',
                 'area'    => 'music',
                 'tag'     => 'Music day',
                 'date'    => '2026-10-21',
@@ -36,6 +37,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'music-listen',
+                'short'   => 'Check each track is the right one before the day.',
                 'area'    => 'music',
                 'tag'     => 'Music day',
                 'date'    => '2026-10-22',
@@ -48,6 +50,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'music-email',
+                'short'   => 'Who sent what, on evenings songs arrive. Quiet otherwise.',
                 'area'    => 'music',
                 'tag'     => 'Music day',
                 'date'    => '2026-11-12',
@@ -59,6 +62,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'mail-reply',
+                'short'   => 'Write back as media@ or treasurer@ without leaving the admin.',
                 'area'    => 'mail',
                 'tag'     => 'Mail',
                 'date'    => '2026-10-14',
@@ -71,6 +75,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'bulletin-normal',
+                'short'   => 'Undo weeks of additions in one tap.',
                 'area'    => 'bulletin',
                 'tag'     => 'Bulletin',
                 'date'    => '2026-10-11',
@@ -87,6 +92,7 @@ class WhatsNew
             ],
             [
                 'key'     => 'admin-phone',
+                'short'   => 'No pinching or sideways scrolling, on a phone or iPad.',
                 'area'    => 'admin',
                 'tag'     => 'Admin',
                 'date'    => '2026-09-25',

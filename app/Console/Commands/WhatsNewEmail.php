@@ -23,8 +23,8 @@ class WhatsNewEmail extends Command
             'items'     => WhatsNew::items(),
             'first'     => $this->option('first'),
             'page'      => route('admin.whats-new'),
-            'preheader' => 'Music day, an evening email when songs come in, and a few other things.',
-            'intro'     => 'A few things have been added to the church site for you. The music day ones are new. You may have seen the others, but they are all here so they are easy to find.',
+            'preheader' => 'Music day links, an 8pm email when songs come in, and more.',
+            'intro'     => 'Tap any one to see how it works.',
             'signoff'   => 'Karlon',
         ];
 

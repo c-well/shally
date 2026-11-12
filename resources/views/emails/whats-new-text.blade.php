@@ -1,19 +1,11 @@
-Hi {{ $first }}, here's what's new
+Hi {{ $first }}, a few new things
 
 {{ $intro }}
 
 @foreach ($items as $it)
-{{ strtoupper($it['tag']) }}: {{ $it['title'] }}
-{{ $it['summary'] }}
-@foreach ($it['steps'] ?? [] as $i => $s)
-  {{ $i + 1 }}. {{ $s }}
+- {{ $it['title'] }}: {{ $it['short'] }}
 @endforeach
-@if (! empty($it['note'])){{ $it['note'] }}
-@endif
-@if (\App\Support\WhatsNew::link($it) && ! empty($it['cta'])){{ $it['cta'] }}: {{ \App\Support\WhatsNew::link($it) }}
-@endif
 
-@endforeach
-All of this is in one place on the site: {{ $page }}
+How each one works: {{ $page }}
 
 {{ $signoff }}
