@@ -31,7 +31,7 @@
         <div style="margin-top:10px; font-size:44px; line-height:1.05; font-weight:700; letter-spacing:-1px; color:#1d1d1f;">{{ $hero['headline'] }}</div>
         <div style="margin-top:12px; font-size:19px; line-height:1.35; color:#1d1d1f;">{{ $hero['short'] }}</div>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;"><tr>
-          <td style="border-radius:999px; background:{{ $fg }};"><a href="{{ $page }}#{{ $hero['key'] }}" style="display:inline-block; padding:11px 22px; font-family:{!! $sans !!}; font-size:15px; font-weight:500; color:#ffffff; text-decoration:none;">Learn more</a></td>
+          <td style="border-radius:8px; background:{{ $fg }};"><a href="{{ $page }}#{{ $hero['key'] }}" style="display:inline-block; padding:11px 22px; font-family:{!! $sans !!}; font-size:15px; font-weight:500; color:#ffffff; text-decoration:none;">Learn more</a></td>
         </tr></table>
       </td></tr>
 
