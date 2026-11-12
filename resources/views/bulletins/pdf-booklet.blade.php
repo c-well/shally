@@ -64,7 +64,7 @@
   .cover .title { margin-top: 8pt; font-family: Times, "Times New Roman", serif; font-size: 30pt; line-height: 1.08; font-weight: 700; }
   .cover .date { margin-top: 12pt; font-size: 12pt; letter-spacing: 1.2pt; text-transform: uppercase; }
   .cover .rule { width: 0.9in; margin: 0.34in auto 0.3in; border-top: 1.2pt solid #111; }
-  .cover .theme { font-family: Times, "Times New Roman", serif; font-style: italic; font-size: 16pt; line-height: 1.32; padding: 0 0.2in; }
+  .cover .theme { font-family: Times, "Times New Roman", serif; font-style: italic; font-size: 16pt; line-height: 1.32; padding: 0 0.62in; }
   .cover .ref { margin-top: 8pt; font-size: 10pt; letter-spacing: 1.5pt; text-transform: uppercase; color: #444; }
   .cover .addr { position: absolute; left: 0; right: 0; bottom: 0.45in; font-size: 8.5pt; line-height: 1.45; color: #444; }
 
