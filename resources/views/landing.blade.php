@@ -821,6 +821,18 @@
   .svc-hero-cta { font-size: 15px; font-weight: 500; border-radius: 6px; }
   .svc-others { font-family: 'Poppins', system-ui, sans-serif; font-size: 14px; }
   .svc-others a { color: var(--teal); }
+
+  /* ── PLAN 4: Photos. Contained, rounded, plain arrows. ── */
+  .slider-section { background: transparent; padding: 0 clamp(20px, 5vw, 48px) clamp(56px, 7vw, 88px); }
+  .slider { max-width: 1120px; margin: 0 auto; border-radius: 16px; background: #fff; }
+  .slide { background: #fff; }
+  .slider-intro-eyebrow { display: none; }
+  .slider-intro-title { font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; font-size: clamp(28px, 3.2vw, 40px); letter-spacing: -0.025em; }
+  .slide-caption { font-family: 'Poppins', system-ui, sans-serif; font-style: normal; font-weight: 600; font-size: clamp(22px, 3vw, 34px); letter-spacing: -0.02em; }
+  .slide-subcaption { font-family: 'Poppins', system-ui, sans-serif; font-size: 15px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+  .slider-arrow { background: rgba(255,255,255,0.82); color: var(--ink); }
+  .slider-arrow:hover { background: #fff; }
+  .slider-arrow svg { width: 18px; height: 18px; }
 </style>
 @include('partials.theme-vars')
 </head>
@@ -966,8 +978,8 @@
       @endforeach
     </div>
     @if (count($slides) > 1)
-      <button type="button" class="slider-arrow prev" aria-label="Previous slide">‹</button>
-      <button type="button" class="slider-arrow next" aria-label="Next slide">›</button>
+      <button type="button" class="slider-arrow prev" aria-label="Previous slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+      <button type="button" class="slider-arrow next" aria-label="Next slide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
       <div class="slider-dots">
         @foreach ($slides as $i => $s)
           <button type="button" data-i="{{ $i }}" class="{{ $i === 0 ? 'active' : '' }}" aria-label="Slide {{ $i + 1 }}"></button>
