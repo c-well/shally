@@ -824,8 +824,8 @@
 
   /* ── PLAN 4: Photos. Contained, rounded, plain arrows. ── */
   .slider-section { background: transparent; padding: 0 clamp(20px, 5vw, 48px) clamp(56px, 7vw, 88px); }
-  .slider { max-width: 1120px; margin: 0 auto; border-radius: 16px; background: #fff; }
-  .slide { background: #fff; }
+  .slider { max-width: 1120px; margin: 0 auto; border-radius: 16px; background: #efe8f7; }
+  .slide { background: #efe8f7; }
   .slider-intro-eyebrow { display: none; }
   .slider-intro-title { font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; font-size: clamp(28px, 3.2vw, 40px); letter-spacing: -0.025em; }
   .slide-caption { font-family: 'Poppins', system-ui, sans-serif; font-style: normal; font-weight: 600; font-size: clamp(22px, 3vw, 34px); letter-spacing: -0.02em; }
