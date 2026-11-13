@@ -777,6 +777,22 @@
   }
   .lb-close:hover { opacity: 1; }
   body.lb-open { overflow: hidden; }
+
+  /* ── PLAN 1: section titles (KC 2026-11-12). The display serif is for the
+     big headlines only; section titles are plain bold sans, and the small
+     spaced-out capital labels above them are gone. ── */
+  section.block .section-eyebrow { display: none; }
+  section.block { padding-top: clamp(72px, 9vw, 112px); padding-bottom: clamp(72px, 9vw, 112px); }
+  section.block > h2 {
+    font-family: 'Poppins', system-ui, sans-serif; font-weight: 600;
+    font-size: clamp(28px, 3.2vw, 40px); letter-spacing: -0.025em; line-height: 1.1;
+    max-width: 760px; text-wrap: balance;
+  }
+  section.block > .section-sub {
+    margin-top: 12px; max-width: 600px;
+    font-family: 'Poppins', system-ui, sans-serif; font-weight: 300;
+    font-size: clamp(18px, 1.8vw, 21px); line-height: 1.45; color: #4a5568; text-wrap: balance;
+  }
 </style>
 @include('partials.theme-vars')
 </head>
