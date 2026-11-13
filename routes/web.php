@@ -349,6 +349,13 @@ Route::middleware('auth')->group(function () {
             \App\Models\AuditLog::record(event: 'hero_layout_changed', userId: auth()->id(), description: 'Front page header set to: ' . $data['layout']);
             return response()->json(['ok' => true, 'layout' => $data['layout']]);
         })->name('admin.settings.hero');
+        // The dark event block under the front-page header in an event week.
+        Route::post  ('/admin/settings/event-takeover', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate(['on' => 'required|in:0,1']);
+            \App\Models\AppSetting::set('event_takeover', $data['on']);
+            \App\Models\AuditLog::record(event: 'event_takeover_changed', userId: auth()->id(), description: 'Front page event block turned ' . ($data['on'] === '1' ? 'on' : 'off'));
+            return response()->json(['ok' => true, 'on' => $data['on'] === '1']);
+        })->name('admin.settings.event-takeover');
         Route::get   ('/admin/anthropic-usage', function () {
             $now = \Carbon\Carbon::now('America/New_York');
             $startToday = $now->copy()->startOfDay()->setTimezone('UTC');

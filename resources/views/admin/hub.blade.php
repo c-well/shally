@@ -355,6 +355,22 @@
        style="margin-left:auto; font-family:'Instrument Sans',sans-serif; font-size:11px; font-weight:600; color:var(--teal); text-decoration:none; white-space:nowrap;">See the front page &rarr;</a>
   </div>
 
+  {{-- EVENT_BLOCK_PICKER: the dark event block under the front-page header.
+       It shows by itself in the week of a public event; this hides it. --}}
+  <div id="event-block-picker"
+       data-update-url="{{ route('admin.settings.event-takeover') }}"
+       data-current="{{ \App\Models\AppSetting::get('event_takeover', '1') }}"
+       style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin: 10px 0 0; padding: 12px 16px; background:#fff; border:1px solid var(--line); border-radius:6px;">
+    <span style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-soft); white-space:nowrap;">Event block</span>
+    @foreach (['1' => ['On', 'Shows in the week of a public event'], '0' => ['Off', 'Never shows']] as $key => $info)
+      <button type="button" class="eb-opt" data-on="{{ $key }}"
+              style="display:inline-flex; align-items:baseline; gap:7px; padding:6px 13px; background:#fff; border:1px solid color-mix(in srgb, var(--ink) 12%, transparent); border-radius:18px; cursor:pointer;">
+        <span style="font-family:'Instrument Sans',sans-serif; font-size:12px; font-weight:600; color:var(--ink);">{{ $info[0] }}</span>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--ink-soft); opacity:.8;">{{ $info[1] }}</span>
+      </button>
+    @endforeach
+  </div>
+
   {{-- ── THE TOP LATCH: pick how this hub looks (per admin, remembered) + search ── --}}
   <div class="viewbar">
     <span class="viewbar-label">View</span>
@@ -565,6 +581,26 @@
           window.shToast && window.shToast('Front page header changed');
           setTimeout(() => location.reload(), 350);
         } catch (e) { op.disabled = false; window.shToast && window.shToast('Front page header save failed: ' + e.message); }
+      });
+    });
+  }
+
+  // ── Event block on/off ──
+  const ebp = document.getElementById('event-block-picker');
+  if (ebp) {
+    const eurl = ebp.dataset.updateUrl;
+    const ecur = ebp.dataset.current || '1';
+    ebp.querySelectorAll('.eb-opt').forEach(op => {
+      if (op.dataset.on === ecur) { op.style.borderColor = 'var(--teal)'; op.style.background = 'color-mix(in srgb, var(--teal) 6%, transparent)'; }
+      op.addEventListener('click', async () => {
+        if (op.dataset.on === ecur) return;
+        op.disabled = true;
+        try {
+          const r = await fetch(eurl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' }, body: JSON.stringify({ on: op.dataset.on }), credentials: 'same-origin' });
+          if (!r.ok) throw new Error('save failed');
+          window.shToast && window.shToast(op.dataset.on === '1' ? 'Event block on' : 'Event block off');
+          setTimeout(() => location.reload(), 350);
+        } catch (e) { op.disabled = false; window.shToast && window.shToast('Event block save failed: ' + e.message); }
       });
     });
   }

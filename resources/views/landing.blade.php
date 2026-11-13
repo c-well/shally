@@ -804,6 +804,7 @@
 @else
   @include('landing.hero-apple-stack')
 @endif
+@include('landing.event-takeover')
 
 {{-- ── Schedule ── --}}
 <section class="block" id="schedule">
