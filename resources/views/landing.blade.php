@@ -816,7 +816,7 @@
     @elseif ($heroZoom)
       {{-- Hour of Prayer / Prayer Meeting is on right now. Steve rule: a
            button changes only when reality changes, and says so. --}}
-      <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="lay-btn"><span class="live-cta-dot" aria-hidden="true"></span>{{ $heroZoom }} is on. Join</a>
+      <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="lay-btn"><span class="live-cta-dot" aria-hidden="true"></span>{{ $heroZoom }} · Join now</a>
       <a href="{{ url('/welcome') }}" class="lay-btn lay-btn--ghost">This Sabbath’s bulletin</a>
     @else
       <a href="{{ url('/welcome') }}" class="lay-btn">This Sabbath’s bulletin</a>
