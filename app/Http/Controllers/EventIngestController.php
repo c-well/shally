@@ -28,7 +28,7 @@ class EventIngestController extends Controller
         'click', 'hover', 'scroll', 'time_on_page',
         'qa_open', 'audio_play_30s', 'audio_play_complete',
         'pdf_download', 'subscribe', 'verse_tooltip_open',
-        'live_cta_click', 'sermon_share', 'page_unload',
+        'live_cta_click', 'sermon_share', 'page_unload', 'view',
     ];
 
     public function ingest(Request $request): JsonResponse
@@ -105,6 +105,15 @@ class EventIngestController extends Controller
         try {
             // Bulk insert — single round trip
             DB::table('interaction_events')->insert($rows);
+            // A real browser ran the page: mark this visitor's page views as a
+            // person, not a bot. Staff (signed in) and bot agents never confirm.
+            if (! $isBot) {
+                DB::table('page_views')
+                    ->where('session_id', $sessionId)
+                    ->whereNull('confirmed_at')
+                    ->where('viewed_at', '>=', $now->copy()->subHours(12))
+                    ->update(['confirmed_at' => $now]);
+            }
         } catch (\Throwable $e) {
             Log::warning('Event ingest failed', ['err' => $e->getMessage(), 'count' => count($rows)]);
             return response()->json(['ok' => false, 'error' => 'persist'], 500);

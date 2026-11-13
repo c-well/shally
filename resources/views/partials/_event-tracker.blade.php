@@ -120,6 +120,28 @@
   // ── Viewport tracking
   function vp() { return { vw: window.innerWidth, vh: window.innerHeight }; }
 
+  // ── VIEW — one per page, sent only by a real, visible browser: after 1.5 s
+  // on screen, or at the first touch, scroll or key. Scrapers that load a page
+  // and leave never send it, which is how analytics tells people from bots.
+  (function () {
+    var sent = false;
+    function fire() {
+      if (sent) return; sent = true;
+      var v = vp();
+      enqueue({ type: 'view', vw: v.vw, vh: v.vh });
+      if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+      send();
+    }
+    function arm() { setTimeout(function () { if (document.visibilityState === 'visible') fire(); }, 1500); }
+    if (document.visibilityState === 'visible') arm();
+    else document.addEventListener('visibilitychange', function h() {
+      if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', h); arm(); }
+    });
+    ['pointerdown', 'scroll', 'keydown', 'touchstart'].forEach(function (t) {
+      window.addEventListener(t, fire, { once: true, passive: true });
+    });
+  })();
+
   // ── CLICKS — capture every click, anywhere
   document.addEventListener('click', function (e) {
     var el = e.target;

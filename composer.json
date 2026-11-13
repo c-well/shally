@@ -13,6 +13,7 @@
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "league/commonmark": "^2.8",
+        "maxmind-db/reader": "^1.12",
         "minishlink/web-push": "^10.1",
         "zbateson/mail-mime-parser": "^4.0"
     },

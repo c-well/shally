@@ -82,8 +82,10 @@ class TrackPageView
             default => "other",
         };
 
-        // Country from Cloudflare header if available
-        $country = $request->header("CF-IPCountry") ?: null;
+        // Where they are: the server's own GeoLite2 file, so no IP leaves the box.
+        // Cloudflare's header still wins if traffic ever runs through it.
+        [$geoCountry, $region, $city] = $this->geo((string) $request->ip());
+        $country = $request->header("CF-IPCountry") ?: $geoCountry;
         if ($country === "XX" || $country === "T1") $country = null; // CF unknown / Tor
 
         try {
@@ -96,6 +98,9 @@ class TrackPageView
                 "session_id" => $sid,
                 "device"     => $device,
                 "browser"    => $browser,
+                "source"     => $this->source($request),
+                "region"     => $region,
+                "city"       => $city,
                 "viewed_at"  => now(),
             ]);
         } catch (\Throwable $e) {
@@ -106,6 +111,57 @@ class TrackPageView
         $this->cronWatchdog();
 
         return $response;
+    }
+
+    /** @var \MaxMind\Db\Reader|null|false */
+    private static $geoReader = false;
+
+    /** @return array{0: ?string, 1: ?string, 2: ?string} country ISO, region, city */
+    private function geo(string $ip): array
+    {
+        try {
+            if (self::$geoReader === false) {
+                $f = '/usr/share/GeoIP/GeoLite2-City.mmdb';
+                self::$geoReader = is_readable($f) ? new \MaxMind\Db\Reader($f) : null;
+            }
+            if (! self::$geoReader || $ip === '') return [null, null, null];
+            $r = self::$geoReader->get($ip) ?? [];
+            return [
+                $r['country']['iso_code'] ?? null,
+                isset($r['subdivisions'][0]['names']['en']) ? mb_substr($r['subdivisions'][0]['names']['en'], 0, 64) : null,
+                isset($r['city']['names']['en']) ? mb_substr($r['city']['names']['en'], 0, 64) : null,
+            ];
+        } catch (\Throwable $e) {
+            return [null, null, null];
+        }
+    }
+
+    /**
+     * Where the visit came from, as a short name people recognise: google,
+     * facebook, email, direct (typed, bookmarked, or tapped in a text), a
+     * newsletter's ?utm_source=, or the other site's host. "internal" means a
+     * click from one page of this site to another.
+     */
+    private function source(Request $request): ?string
+    {
+        $utm = strtolower(trim((string) $request->query('utm_source', '')));
+        if ($utm !== '') return mb_substr(preg_replace('/[^a-z0-9 _.-]/', '', $utm), 0, 32) ?: null;
+        $ref = (string) $request->header('Referer', '');
+        $host = strtolower((string) parse_url($ref, PHP_URL_HOST));
+        if ($host === '') return 'direct';
+        $host = preg_replace('/^(www|m|l|lm|mobile)\./', '', $host);
+        $own = preg_replace('/^www\./', '', strtolower((string) parse_url(config('app.url'), PHP_URL_HOST)));
+        if ($host === $own || str_ends_with($host, '.' . $own)) return 'internal';
+        foreach ([
+            'mail.google.' => 'email', 'outlook.' => 'email', 'mail.yahoo.' => 'email', 'mail.aol.' => 'email',
+            'google.' => 'google', 'bing.com' => 'bing', 'duckduckgo.com' => 'duckduckgo', 'yahoo.' => 'yahoo',
+            'facebook.com' => 'facebook', 'fb.com' => 'facebook', 'instagram.com' => 'instagram',
+            'youtube.com' => 'youtube', 'youtu.be' => 'youtube', 't.co' => 'x', 'twitter.com' => 'x', 'x.com' => 'x',
+            'linkedin.com' => 'linkedin', 'whatsapp.' => 'whatsapp', 'chatgpt.com' => 'chatgpt', 'perplexity.ai' => 'perplexity',
+        ] as $needle => $name) {
+            if ($host === $needle || str_starts_with($host, $needle) || str_contains($host, '.' . $needle) || str_ends_with($host, $needle)) return $name;
+        }
+        return mb_substr($host, 0, 32);
     }
 
     /**

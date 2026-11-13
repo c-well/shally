@@ -9,6 +9,7 @@ class PageView extends Model
     protected $fillable = [
         "path", "referrer", "user_agent", "ip_hash", "country",
         "session_id", "device", "browser", "viewed_at",
+        "source", "region", "city", "confirmed_at",
     ];
     protected $casts = ["viewed_at" => "datetime"];
 }
