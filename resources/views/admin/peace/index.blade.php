@@ -77,6 +77,7 @@
     <a class="pmt" href="{{ route('admin.peace.schedule') }}">Schedule</a>
     <a class="pmt" href="{{ route('admin.peace.analytics') }}">Analytics</a>
     <a class="pmt" href="{{ route('admin.peace.subscribers') }}">Subscribers</a>
+    <a class="pmt" href="{{ route('admin.peace.news.index') }}">Peace Notes News</a>
     @php $pendingSubs = \App\Models\PeaceUserSubmission::where('status','pending')->count(); @endphp
     <a class="pmt {{ $pendingSubs > 0 ? 'gold' : '' }}" href="{{ route('admin.peace.submissions') }}">Submissions @if($pendingSubs > 0)<span class="pmt-n">{{ $pendingSubs }}</span>@endif</a>
   </div>
