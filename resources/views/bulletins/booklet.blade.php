@@ -40,6 +40,10 @@
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; overflow-x: clip; overscroll-behavior-x: none; }
   body { background: var(--bk-ground); color: var(--bk-ink); font-family: 'Instrument Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100dvh; }
+  /* White wall behind the khaki pages, so lilac never sits against the tan. Light mode only. */
+  html:not(.dark):has(body.look-pathfinder) { background: #fff !important; }
+  html:not(.dark) body.look-pathfinder { --bk-ground: #fff; background: #fff; }
+
   /* Khaki paper with a faint grain, like card stock. */
   .look-pathfinder .bk-face {
     background-image:
@@ -162,6 +166,16 @@
   }
 
   /* ── Controls ── */
+  /* Phone: the arrows stay pinned to the bottom while you read; they let go once you pass the booklet. */
+  @media not all and (min-width: 900px) and (min-height: 740px) {
+    .bk-reader .bk-nav {
+      position: sticky; bottom: 0; z-index: 5; margin-top: 14px;
+      padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--bk-ground) 82%, transparent);
+      -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+      border-top: 1px solid var(--bk-line);
+    }
+  }
   .bk-nav { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 26px auto 0; padding: 0 18px; }
   .bk-arrow { width: 44px; height: 44px; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--bk-line); background: color-mix(in srgb, #fff 55%, var(--bk-ground)); color: var(--bk-soft); cursor: pointer; transition: color 0.15s, border-color 0.15s, opacity 0.15s, transform 0.1s; }
   .bk-arrow:hover:not(:disabled) { color: var(--bk-accent); border-color: var(--bk-accent); }
@@ -215,6 +229,7 @@
 <main>
   <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">{{ $L['title'] }}, {{ $L['date']->format('F j, Y') }}</h1>
 
+  <div class="bk-reader">
   <div class="bk-stage" id="bk-stage" aria-roledescription="booklet">
     <div class="bk-book" id="bk-book">
       <div class="bk-leaf" data-leaf="0" style="z-index: 2;">
@@ -237,15 +252,16 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
     </button>
   </nav>
+  </div>
 
   <div class="bk-foot">
     <a href="{{ route('bulletins.pdf', $bulletin) }}?layout=booklet">Print it</a>
     <p>Print both sides, flip on the short edge, then fold in half.</p>
   </div>
 
-  {{-- Your Sabbath: two questions to tick, one to write. Private to the church; no email asked. --}}
+  {{-- How was your Sabbath: two questions to tick, one to write. Private to the church; no email asked. --}}
   <section class="sb" id="sabbath" aria-labelledby="sb-h">
-    <h2 id="sb-h">Your Sabbath</h2>
+    <h2 id="sb-h">How was your Sabbath?</h2>
     <p class="sb-lede">Three quick questions. Only the church reads your answers.</p>
 
     @if (session('sabbath_flash'))

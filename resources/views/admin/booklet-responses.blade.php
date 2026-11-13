@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 @include('admin.peace-news._head')
-<title>Your Sabbath · Admin</title>
+<title>Sabbath feedback · Admin</title>
 <style>
   .tally { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
   .bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; font-size: 14px; margin: 8px 0 0; }
@@ -15,8 +15,8 @@
 @include('partials.site-menu')
 <div class="top"><a href="{{ route('admin.hub') }}">‹ Admin</a></div>
 <main>
-  <h1>Your Sabbath</h1>
-  <p class="lede">What people shared under the booklet you can flip through on the site. Only you and Andre see this page.</p>
+  <h1>Sabbath feedback</h1>
+  <p class="lede">Answers to “How was your Sabbath?” from under the booklet on the site. Only church admins see this page.</p>
 
   @forelse ($groups as $g)
     @php $b = $g['bulletin']; $n = $g['rows']->count(); @endphp
