@@ -340,6 +340,15 @@ Route::middleware('auth')->group(function () {
             \App\Models\AuditLog::record(event: 'admin_type_changed', userId: auth()->id(), description: 'Admin type set to: ' . $data['scheme']);
             return response()->json(['ok' => true, 'scheme' => $data['scheme']]);
         })->name('admin.settings.admin-type');
+        // Which front-page header visitors see. Both live in
+        // resources/views/landing/; this only chooses, so switching back
+        // after an event week is a click, not a deploy.
+        Route::post  ('/admin/settings/hero', function (\Illuminate\Http\Request $request) {
+            $data = $request->validate(['layout' => 'required|in:apple-stack,classic']);
+            \App\Models\AppSetting::set('hero_layout', $data['layout']);
+            \App\Models\AuditLog::record(event: 'hero_layout_changed', userId: auth()->id(), description: 'Front page header set to: ' . $data['layout']);
+            return response()->json(['ok' => true, 'layout' => $data['layout']]);
+        })->name('admin.settings.hero');
         Route::get   ('/admin/anthropic-usage', function () {
             $now = \Carbon\Carbon::now('America/New_York');
             $startToday = $now->copy()->startOfDay()->setTimezone('UTC');

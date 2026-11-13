@@ -780,60 +780,30 @@
 @include('partials.site-menu')
 
 {{-- ── Hero ── --}}
-<section class="apple-stack" aria-labelledby="hero-title">
   @php
-    // The big photo is one of the admin's own slides (/admin/slides): the choir
-    // shot when it is there, otherwise the first active slide. Remove every
-    // slide and the hero simply has no photo.
-    $heroPhoto = isset($slides) && count($slides)
-        ? (collect($slides)->first(fn ($s) => str_contains((string) $s->image_path, 'tempimagem4iqpt')) ?? collect($slides)->first())
-        : null;
+    // Weekday-dawn prayer window (shared with the schedule cards below)
+    $heroNy = now('America/New_York');
+    $heroHopLive = $heroNy->isWeekday() && $heroNy->between($heroNy->copy()->setTime(4,45), $heroNy->copy()->setTime(6,15));
+    $heroPmLive  = $heroNy->isWednesday() && $heroNy->between($heroNy->copy()->setTime(18,45), $heroNy->copy()->setTime(20,15));
+    $heroZoom    = $heroHopLive ? 'Hour of Prayer' : ($heroPmLive ? 'Prayer Meeting' : null);
   @endphp
-  <div class="apple-stack__text">
-    <h1 class="lay-title" id="hero-title">Welcome to The Church of Peace.</h1>
-    <p class="lay-sub">Every Sabbath at 3323 White Plains Road, Bronx.</p>
-    @php
-      // Weekday-dawn prayer window (shared with the schedule cards below)
-      $heroNy = now('America/New_York');
-      $heroHopLive = $heroNy->isWeekday() && $heroNy->between($heroNy->copy()->setTime(4,45), $heroNy->copy()->setTime(6,15));
-      $heroPmLive  = $heroNy->isWednesday() && $heroNy->between($heroNy->copy()->setTime(18,45), $heroNy->copy()->setTime(20,15));
-      $heroZoom    = $heroHopLive ? 'Hour of Prayer' : ($heroPmLive ? 'Prayer Meeting' : null);
-    @endphp
-    @php
-      // LIVE_STATE — read from cache only (peace:check-live cron writes every 5 min).
-      // Fail-safe: stale (>15 min) or missing @include('partials._ar') treat as not live.
-      $liveCheckedAt = \App\Models\AppSetting::get('is_live_checked_at');
-      $isLiveCacheFresh = $liveCheckedAt && \Carbon\Carbon::parse($liveCheckedAt)->gt(now()->subMinutes(15));
-      $isLive = $isLiveCacheFresh && \App\Models\AppSetting::get('is_live') === '1';
-    @endphp
-
-
-    <div class="lay-actions">
-    @if ($isLive)
-      {{-- LIVE: watching leads, the bulletin stays one tap away --}}
-      <a href="#" class="lay-btn" data-live-cta><span class="live-cta-dot" aria-hidden="true"></span>Watch the service live</a>
-      <a href="{{ url('/welcome') }}" class="lay-btn lay-btn--ghost">This Sabbath’s bulletin</a>
-    @elseif ($heroZoom)
-      {{-- Hour of Prayer / Prayer Meeting is on right now. Steve rule: a
-           button changes only when reality changes, and says so. --}}
-      <a href="https://us02web.zoom.us/j/83002967327?pwd=dk13eXhDeUU1QjJ0TklqMjVtUWk0UT09" target="_blank" rel="noopener" class="lay-btn"><span class="live-cta-dot" aria-hidden="true"></span>{{ $heroZoom }} · Join now</a>
-      <a href="{{ url('/welcome') }}" class="lay-btn lay-btn--ghost">This Sabbath’s bulletin</a>
-    @else
-      <a href="{{ url('/welcome') }}" class="lay-btn">This Sabbath’s bulletin</a>
-      <a href="{{ route('lesson.show') }}" class="lay-btn lay-btn--ghost">Sabbath School lesson</a>
-    @endif
-    </div>
-    @if (($liveEvent ?? null) && ! $isLive)
-      {{-- An event WE point to (not our stream) is on right now, e.g. the Crusade --}}
-      <div class="lay-actions">
-        <a href="{{ $liveEvent->stream_url }}" target="_blank" rel="noopener" class="lay-btn"><span class="live-cta-dot" aria-hidden="true"></span>{{ \Illuminate\Support\Str::limit($liveEvent->title, 42) }} is on. Tune in</a>
-      </div>
-    @endif
-  </div>
-  @if ($heroPhoto)
-    <img class="apple-stack__media" src="{{ $heroPhoto->imageUrl() }}" alt="{{ $heroPhoto->caption ?: 'Shalom church family on Sabbath' }}" width="1040" height="540" fetchpriority="high">
-  @endif
-</section>
+  @php
+    // LIVE_STATE — read from cache only (peace:check-live cron writes every 5 min).
+    // Fail-safe: stale (>15 min) or missing @include('partials._ar') treat as not live.
+    $liveCheckedAt = \App\Models\AppSetting::get('is_live_checked_at');
+    $isLiveCacheFresh = $liveCheckedAt && \Carbon\Carbon::parse($liveCheckedAt)->gt(now()->subMinutes(15));
+    $isLive = $isLiveCacheFresh && \App\Models\AppSetting::get('is_live') === '1';
+  @endphp
+@php
+  // Which header the front page shows. Switched by the church in the admin
+  // hub ("Front page header") so going back never needs a developer.
+  $heroLayout = \App\Models\AppSetting::get('hero_layout', 'apple-stack');
+@endphp
+@if ($heroLayout === 'classic')
+  @include('landing.hero-classic')
+@else
+  @include('landing.hero-apple-stack')
+@endif
 
 {{-- ── Schedule ── --}}
 <section class="block" id="schedule">
