@@ -1573,6 +1573,9 @@
     padding: 28px 0; text-align: center;
   }
 
+  .booklet-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; min-height: 40px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--line); color: var(--teal); text-decoration: none; font-family: 'Poppins', system-ui, sans-serif; font-size: 14px; font-weight: 500; }
+  .booklet-link:hover { border-color: var(--teal); }
+
   /* Lightbox reader — modal card with fixed header, scrolling body inside */
   .lightbox {
     position: fixed; inset: 0;
@@ -2412,6 +2415,9 @@
                @if($canEdit) data-edit-url="{{ route('bulletins.update', $bulletin) }}" data-field="service_date" data-type="date" data-raw="{{ $serviceDate->toDateString() }}" @endif>
             {{ $serviceDate->format('l, F j, Y') }}
           </div>
+          @if (! empty($bulletin->cover) && ($bulletin->published_snapshot || $canEdit))
+            <a class="booklet-link" href="{{ route('bulletins.booklet', $bulletin) }}">Flip through the booklet @include('partials._ar')</a>
+          @endif
           @if ($bulletin->kind === 'event_night' && $bulletin->event_night_number)
             <div class="event-night-tag">
               {{ $bulletin->event_name }} · Night {{ $bulletin->event_night_number }}@if ($bulletin->event_total_nights) of {{ $bulletin->event_total_nights }}@endif

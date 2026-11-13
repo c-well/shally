@@ -133,6 +133,24 @@ class BulletinController extends Controller
         return view('bulletins.show', compact('bulletin'));
     }
 
+    /**
+     * GET /bulletin/{bulletin}/booklet — the booklet to flip through on the site.
+     * Same pages as the folded print (?layout=booklet on the PDF). Clerks see the
+     * live draft; everyone else sees what was published, and nothing before that.
+     */
+    public function booklet(Bulletin $bulletin)
+    {
+        $user    = request()->user();
+        $isClerk = $user && in_array($user->role, ['clerk', 'super_admin'], true);
+        $snapshot = $isClerk ? $bulletin->snapshotCurrentState() : $bulletin->published_snapshot;
+        if (! $snapshot) abort(404);
+
+        $L = \App\Support\BookletLayout::make($snapshot, $bulletin->cover);
+        return response()
+            ->view('bulletins.booklet', compact('bulletin', 'L'))
+            ->header('Cache-Control', 'private, no-store, max-age=0');
+    }
+
     /** PATCH /bulletins/{bulletin} — update title/service_date. */
     public function updateMeta(Request $request, Bulletin $bulletin): JsonResponse
     {

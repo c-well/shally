@@ -5,36 +5,13 @@
      The program splits between two lines, never between a line and the title under it
      (a hymn name or scripture reference belongs with the line above it). --}}
 @php
-  $date  = \Carbon\Carbon::parse($snapshot['service_date'] ?? now());
-  $cover = is_array($cover ?? null) ? $cover : [];
-  $lines = array_values($snapshot['lines'] ?? []);
-
-  /* Split nearest the middle, only where the next row is a real line. */
-  $n = count($lines); $split = $n;
-  if ($n > 1) {
-      $best = null;
-      for ($i = 1; $i < $n; $i++) {
-          if (($lines[$i]['kind'] ?? 'line') === 'section_header') continue;
-          if ($best === null || abs($i - $n / 2) < abs($best - $n / 2)) $best = $i;
-      }
-      $split = $best ?? $n;
-  }
-  $halves = [array_slice($lines, 0, $split), array_slice($lines, $split)];
-
-  /* Spread the rows to fill the page: about 470pt of height for the program.
-     Few lines get generous spacing; a long program packs tighter but still fits. */
-  $rowsMax = max(1, count($halves[0]), count($halves[1]));
-  /* dompdf collapses the margins between rows, so each gap counts once, not twice. */
-  $gap     = (int) max(3, min(24, floor(470 / $rowsMax - 17)));
-  $pt      = $rowsMax > 16 ? 10.5 : 12;
-
-  $emblems = [];
-  foreach ((array) ($cover['emblems'] ?? []) as $f) {
-      $p = public_path('img/emblems/' . basename($f));
-      if (is_file($p)) $emblems[] = 'data:' . (mime_content_type($p) ?: 'image/png') . ';base64,' . base64_encode(file_get_contents($p));
-  }
-  $kicker   = $cover['kicker'] ?? 'Welcome to';
-  $title    = $cover['title'] ?? (in_array(strtolower($snapshot['title'] ?? ''), ['', 'sabbath service', 'sabbath worship']) ? 'Sabbath Worship' : $snapshot['title']);
+  /* Pages come from App\Support\BookletLayout, shared with the web booklet (bulletins.booklet). */
+  $L = \App\Support\BookletLayout::make($snapshot, $cover ?? null);
+  ['date' => $date, 'cover' => $cover, 'halves' => $halves, 'rowsMax' => $rowsMax, 'gap' => $gap, 'pt' => $pt, 'kicker' => $kicker, 'title' => $title] = $L;
+  $emblems = array_map(function ($name) {
+      $p = public_path('img/emblems/' . $name);
+      return 'data:' . (mime_content_type($p) ?: 'image/png') . ';base64,' . base64_encode(file_get_contents($p));
+  }, $L['emblems']);
 @endphp
 <!doctype html>
 <html>
@@ -110,8 +87,7 @@
 
   <div class="col l back"><div class="page">
     <div class="title">Announcements</div>
-    @php $foldedAnns = \App\Models\Bulletin::foldAnnouncements(array_values(array_filter($snapshot['announcements'] ?? [], fn ($a) => empty($a['is_web_only'])))); @endphp
-    @foreach ($foldedAnns as $a)
+    @foreach ($L['announcements'] as $a)
       @php
         $aTitle = trim((string) ($a['title'] ?? '')); $aDetail = trim((string) ($a['detail'] ?? ''));
         $tLower = strtolower($aTitle); $titleColon = str_ends_with($aTitle, ':') ? $aTitle : $aTitle . ':';
