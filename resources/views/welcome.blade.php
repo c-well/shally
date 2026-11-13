@@ -1573,6 +1573,14 @@
     padding: 28px 0; text-align: center;
   }
 
+  /* Before the week goes live: a quiet card, plain type, no rail. */
+  .week-mode-notice { width: calc(100% - 36px); max-width: 560px; margin: 32px auto 0; padding: 30px 24px; background: color-mix(in srgb, #fff 70%, var(--parchment)); border: 1px solid var(--line); border-radius: 12px; text-align: center; }
+  .week-mode-notice p { margin: 0; text-wrap: balance; font-family: 'Poppins', system-ui, sans-serif; }
+  .wmn-kicker { font-size: 15px; font-weight: 500; color: var(--teal); }
+  .wmn-title { margin-top: 6px !important; font-size: 26px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; color: var(--ink); }
+  .wmn-where { margin-top: 10px !important; font-size: 16px; line-height: 1.5; color: var(--ink-soft); }
+  .wmn-note { margin-top: 16px !important; font-size: 14px; color: var(--ink-soft); }
+
   .booklet-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; min-height: 40px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--line); color: var(--teal); text-decoration: none; font-family: 'Poppins', system-ui, sans-serif; font-size: 14px; font-weight: 500; }
   .booklet-link:hover { border-color: var(--teal); }
 
@@ -2285,11 +2293,11 @@
 {{-- Week-mode preview banner — only shown when ?preview-week=1 is set OR
      when (future) auto-detection hides the order of service. --}}
 @if (($weekMode ?? false) && ! $canEdit)
-  <div class="week-mode-notice" style="max-width: 720px; margin: 28px auto 0; padding: 22px 28px; background: color-mix(in srgb, var(--teal) 6%, transparent); border-left: 3px solid var(--teal); border-radius: 6px; text-align: center;">
-    <div style="font-family: 'Instrument Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px;">This Sabbath</div>
-    <div style="font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--ink); margin-bottom: 6px;">Worship at 11 AM</div>
-    <div style="font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--ink-soft); font-style: normal;">3323 White Plains Rd · Bronx · everyone welcome</div>
-    <div style="margin-top: 14px; font-family: 'Instrument Sans', sans-serif; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); opacity: 0.6;">Order of service appears Sabbath morning</div>
+  <div class="week-mode-notice">
+    <p class="wmn-kicker">This Sabbath</p>
+    <p class="wmn-title">Worship at 11 AM</p>
+    <p class="wmn-where">3323 White Plains Rd, Bronx<br>Everyone is welcome</p>
+    <p class="wmn-note">The order of service is posted Sabbath morning.</p>
   </div>
 @endif
 
