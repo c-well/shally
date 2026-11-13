@@ -16,7 +16,7 @@
     @if (! empty($L['cover']['theme']))
       <div class="bk-rule"></div>
       <div class="bk-theme">&ldquo;{{ $L['cover']['theme'] }}&rdquo;</div>
-      @if (! empty($L['cover']['theme_ref']))<div class="bk-ref">{{ $L['cover']['theme_ref'] }}</div>@endif
+      @if (! empty($L['cover']['theme_ref']))<div class="bk-ref">{{ \App\Support\BookletLayout::linkify($L['cover']['theme_ref']) }}</div>@endif
     @endif
     <div class="bk-addr">3323 White Plains Rd, Bronx, NY 10467<br>thechurchofpeace.org</div>
   </div>
@@ -32,12 +32,12 @@
     @endif
     @foreach ($rows as $line)
       @if (($line['kind'] ?? 'line') === 'section_header')
-        <div class="bk-under">{{ $line['section'] ?? '' }}</div>
+        <div class="bk-under">{{ \App\Support\BookletLayout::linkify((string) ($line['section'] ?? '')) }}</div>
       @else
         @php $part = trim((string) ($line['part'] ?? '')); $person = trim((string) ($line['person'] ?? '')); @endphp
         @if ($part !== '')
           <div class="bk-row">
-            <span class="bk-part">{{ $part }}</span><span class="bk-dots"></span><span class="bk-who{{ \App\Support\BookletLayout::isGroup($person) ? ' grp' : '' }}">{{ $person }}</span>
+            <span class="bk-part">{{ $part }}</span><span class="bk-dots"></span><span class="bk-who{{ \App\Support\BookletLayout::isGroup($person) ? ' grp' : '' }}">{{ \App\Support\BookletLayout::linkify($person) }}</span>
           </div>
         @endif
       @endif

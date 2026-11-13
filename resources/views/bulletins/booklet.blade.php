@@ -203,6 +203,21 @@
   .sb-count { margin: 0 0 4px; font-size: 14px; color: var(--bk-soft); }
   .sb-btns { display: flex; gap: 10px; margin-top: 24px; }
   .sb-ghost { min-height: 46px; padding: 0 22px; border: 1px solid var(--bk-line); border-radius: 6px; background: none; color: var(--bk-ink); font: 500 16px 'Instrument Sans', system-ui, sans-serif; cursor: pointer; }
+  /* Scripture and hymns in the program you can tap. */
+  .bk-tap { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: inherit; text-decoration: underline; text-decoration-style: dotted; text-decoration-color: color-mix(in srgb, var(--bk-accent) 70%, transparent); text-underline-offset: 0.2em; -webkit-tap-highlight-color: transparent; }
+  .bk-tap:hover { color: var(--bk-accent); }
+  .bk-tap:focus-visible { outline: 2px solid var(--bk-accent); outline-offset: 2px; border-radius: 2px; }
+  .reading .tap-panel { display: block; animation: sb-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .reading .bk-book { opacity: 0; pointer-events: none; }
+  .reading .bk-nav { visibility: hidden; }
+  .tap-kind { margin: 6px 0 2px; font-size: 14px; color: var(--bk-soft); }
+  .tap-panel h2 { margin: 0 0 16px; font-family: 'Archivo', 'Instrument Sans', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; line-height: 1.1; color: var(--bk-ink); text-wrap: balance; }
+  .tap-body { font-size: 18px; line-height: 1.6; color: var(--bk-ink); }
+  .tap-body p { margin: 0 0 14px; }
+  .tap-body sup { font-size: 12px; font-weight: 600; color: var(--bk-accent); margin-right: 4px; }
+  .tap-body .lab { display: block; font-size: 14px; font-weight: 600; color: var(--bk-accent); margin-bottom: 2px; }
+  .tap-note { margin: 18px 0 0; font-size: 12px; line-height: 1.5; color: var(--bk-soft); }
+
   /* The quiet link at the foot of the last page. */
   .bk-ask { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * 16); margin: 0 auto; width: max-content; max-width: 90%; display: inline-flex; align-items: center; gap: calc(var(--u) * 3); min-height: 32px; padding: 0 calc(var(--u) * 8); border: 0; background: none; color: var(--bk-paper-soft); font: 500 calc(var(--u) * 10) 'Instrument Sans', system-ui, sans-serif; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; cursor: pointer; }
   .bk-ask:hover { color: var(--bk-accent); }
@@ -258,6 +273,17 @@
       <div class="bk-leaf" data-leaf="1" style="z-index: 1;">
         <div class="bk-face front">@include('bulletins._booklet-page', ['page' => 'right'])</div>
         <div class="bk-face back">@include('bulletins._booklet-page', ['page' => 'back'])</div>
+      </div>
+    </div>
+
+    {{-- Tap a scripture or a hymn in the program: it opens here, in the booklet's place. --}}
+    <div class="sb-panel tap-panel" id="tap-panel" role="region" aria-live="polite" aria-labelledby="tap-h">
+      <div class="sb">
+        <button type="button" class="sb-back" data-close><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> Back to the booklet</button>
+        <p class="tap-kind" id="tap-kind"></p>
+        <h2 id="tap-h"></h2>
+        <div class="tap-body" id="tap-body"></div>
+        <p class="tap-note" id="tap-note"></p>
       </div>
     </div>
 
@@ -380,7 +406,7 @@
   next.addEventListener('click', () => show(i + 1));
   document.addEventListener('keydown', (e) => {
     if (e.target.closest && e.target.closest('input, textarea')) return;
-    if (reader.classList.contains('asking')) { if (e.key === 'Escape') ask(false); return; }
+    if (busy()) { if (e.key === 'Escape') { ask(false); closeTap(); } return; }
     if (e.key === 'ArrowRight') show(i + 1);
     if (e.key === 'ArrowLeft')  show(i - 1);
   });
@@ -389,13 +415,15 @@
   let x0 = null, swiped = false;
   stage.addEventListener('pointerdown', (e) => { x0 = e.clientX; swiped = false; });
   stage.addEventListener('pointerup', (e) => {
-    if (x0 === null || reader.classList.contains('asking')) return;
+    if (x0 === null || busy() || e.target.closest('.bk-tap, [data-ask]')) { x0 = null; return; }
     const dx = e.clientX - x0; x0 = null;
     if (Math.abs(dx) > 40) { swiped = true; show(i + (dx < 0 ? 1 : -1)); }
   });
   stage.addEventListener('click', (e) => {
-    if (reader.classList.contains('asking')) return;
+    if (busy()) return;
     if (e.target.closest('[data-ask]')) { ask(true); return; }
+    const tap = e.target.closest('.bk-tap');
+    if (tap) { openTap(tap); return; }
     if (swiped) { swiped = false; return; }
     const r = stage.getBoundingClientRect();
     show(i + (e.clientX > r.left + r.width / 2 ? 1 : -1));
@@ -412,6 +440,54 @@
   addEventListener('resize', fit);
   if (document.fonts) document.fonts.ready.then(fit);
   addEventListener('load', fit);
+
+  /* Scripture (the site's ESV lookup, one verse at a time) and hymns (the site's own hymnal). */
+  const busy = () => reader.classList.contains('asking') || reader.classList.contains('reading');
+  const tapPanel = document.getElementById('tap-panel');
+  const tapKind = document.getElementById('tap-kind'), tapH = document.getElementById('tap-h');
+  const tapBody = document.getElementById('tap-body'), tapNote = document.getElementById('tap-note');
+  let hymnal = null, tapSeq = 0;
+  const el = (tag, text, cls) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (cls) n.className = cls; return n; };
+  function closeTap() { reader.classList.remove('reading'); }
+  tapPanel.addEventListener('click', (e) => { if (e.target.closest('[data-close]')) closeTap(); });
+  async function openTap(btn) {
+    const seq = ++tapSeq;
+    reader.classList.add('reading');
+    tapPanel.scrollTop = 0;
+    tapBody.replaceChildren(el('p', 'One moment…')); tapNote.textContent = '';
+    try {
+      if (btn.dataset.verse) {
+        const m = btn.dataset.verse.match(/^(.+) (\d+):(\d+)(?:-(\d+))?$/);
+        tapKind.textContent = 'Scripture'; tapH.textContent = btn.dataset.verse.replace('-', '–');
+        const from = +m[3], to = Math.min(+(m[4] || m[3]), from + 11), parts = [];
+        let note = '';
+        for (let v = from; v <= to; v++) {
+          const want = `${m[1]} ${m[2]}:${v}`;
+          const r = await fetch('/api/bible/esv?q=' + encodeURIComponent(want)).then(x => x.json());
+          const hit = (r.results || []).find(x => x.ref === want);
+          if (hit) { const p = el('p'); p.append(el('sup', String(v)), document.createTextNode(hit.text)); parts.push(p); }
+          note = r.attribution || note;
+        }
+        if (seq !== tapSeq) return;
+        tapBody.replaceChildren(...(parts.length ? parts : [el('p', 'This passage could not be found.')]));
+        tapNote.textContent = note;
+      } else {
+        hymnal = hymnal || fetch('/lib/hymnal.json').then(x => x.json());
+        const h = (await hymnal).find(x => x.number === +btn.dataset.hymn);
+        if (seq !== tapSeq) return;
+        tapKind.textContent = 'Hymn ' + btn.dataset.hymn; tapH.textContent = h ? h.title : 'Hymn';
+        tapBody.replaceChildren(...(h ? h.body.split(/\n\s*\n/).map(block => {
+          const lines = block.split('\n'); const p = el('p');
+          if (/^(\d+|Refrain|Chorus)$/i.test(lines[0].trim())) p.append(el('span', /^\d+$/.test(lines[0].trim()) ? 'Verse ' + lines.shift().trim() : lines.shift().trim(), 'lab'));
+          lines.forEach((l, k) => { if (k) p.append(el('br')); p.append(document.createTextNode(l)); });
+          return p;
+        }) : [el('p', 'This hymn could not be found.')]));
+        tapNote.textContent = 'From the Seventh-day Adventist Hymnal.';
+      }
+    } catch (err) {
+      if (seq === tapSeq) tapBody.replaceChildren(el('p', 'That did not load. Check your connection and tap again.'));
+    }
+  }
 
   /* How was your Sabbath: swap the booklet for the questions in the same space. */
   const reader = stage.closest('.bk-reader');
