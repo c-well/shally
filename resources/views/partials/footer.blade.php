@@ -39,7 +39,7 @@
   footer.site .socials svg { width: 16px; height: 16px; }
   footer.site .copy {
     font-family: 'Poppins', system-ui, sans-serif;
-    font-size: 13px; color: var(--ink-soft, #334455); opacity: 0.75; letter-spacing: 0;
+    font-size: 13px; color: var(--ink-soft, #334455); opacity: 0.75; letter-spacing: 0; text-transform: none;
   }
 </style>
 <footer class="site">
