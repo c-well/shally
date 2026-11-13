@@ -833,6 +833,52 @@
   .slider-arrow { background: rgba(255,255,255,0.82); color: var(--ink); }
   .slider-arrow:hover { background: #fff; }
   .slider-arrow svg { width: 18px; height: 18px; }
+
+  /* ── PLAN 5: This week at Shalom. Cards you swipe sideways; they move only
+     when the visitor moves them. Arrows are CSS ::scroll-button where the
+     browser has it; everywhere else the row still swipes. ── */
+  .week-row { padding: clamp(72px, 9vw, 104px) 0; overflow: hidden; }
+  .week-row__head { max-width: 1120px; margin: 0 auto 32px; padding: 0 clamp(20px, 5vw, 48px); display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .week-row__head h2 { margin: 0; text-align: left; font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; font-size: clamp(28px, 3.2vw, 40px); letter-spacing: -0.025em; }
+  .week-row__head a { font-size: 15px; color: var(--teal); white-space: nowrap; }
+  .week-row__track {
+    display: flex; gap: 20px; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scrollbar-width: none; max-width: 100%;
+    padding: 0 max(clamp(20px, 5vw, 48px), calc((100% - 1120px) / 2 + 48px)) 4px;
+    scroll-padding-inline: max(clamp(20px, 5vw, 48px), calc((100% - 1120px) / 2 + 48px));
+  }
+  .week-row__track::-webkit-scrollbar { display: none; }
+  .week-card {
+    flex: none; width: clamp(270px, 28vw, 340px); aspect-ratio: 340 / 440;
+    position: relative; overflow: hidden; scroll-snap-align: start;
+    border-radius: 16px; background: #fff; color: var(--ink); text-decoration: none;
+    transition: transform .4s cubic-bezier(.2,0,0,1);
+  }
+  .week-card:hover { transform: scale(1.012); }
+  .week-card--accent { background: var(--teal); color: #fff; }
+  .week-card--dark { background: #2a1f3a; color: #fff; }
+  .week-card--soft { background: #efe8f7; }
+  .week-card__text { position: absolute; inset: 28px 26px auto; display: flex; flex-direction: column; gap: 6px; }
+  .week-card__when { font-size: 13px; font-weight: 500; color: var(--teal); }
+  .week-card--accent .week-card__when, .week-card--dark .week-card__when { color: rgba(255,255,255,.8); }
+  .week-card__title { margin: 0; font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; font-size: 24px; line-height: 1.2; letter-spacing: -0.02em; }
+  .week-card__body { margin: 8px 0 0; font-weight: 300; font-size: 16px; line-height: 1.5; opacity: .85; }
+  .week-card__verse { margin: 6px 0 0; font-weight: 300; font-size: 18px; line-height: 1.55; }
+  .week-card__foot { position: absolute; left: 26px; bottom: 26px; font-size: 14px; font-weight: 500; }
+  .week-card__play { position: absolute; left: 26px; bottom: 26px; width: 52px; height: 52px; border-radius: 50%; background: #fff; color: #2a1f3a; display: flex; align-items: center; justify-content: center; }
+  @supports selector(::scroll-button(*)) {
+    .week-row { position: relative; padding-bottom: calc(clamp(72px, 9vw, 104px) + 64px); }
+    .week-row__track { scroll-behavior: smooth; anchor-name: --week-row; }
+    .week-row__track::scroll-button(*) {
+      position: absolute; position-anchor: --week-row; top: calc(anchor(bottom) + 24px);
+      width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%;
+      background-color: rgba(210,210,215,.64); background-repeat: no-repeat; background-position: center; background-size: 18px 18px; cursor: pointer;
+    }
+    .week-row__track::scroll-button(*):hover { background-color: rgba(210,210,215,.9); }
+    .week-row__track::scroll-button(*):disabled { opacity: .42; cursor: default; }
+    .week-row__track::scroll-button(left)  { content: '' / 'Previous'; right: calc(max(clamp(20px, 5vw, 48px), (100% - 1120px) / 2 + 48px) + 58px); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a2332' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E"); }
+    .week-row__track::scroll-button(right) { content: '' / 'Next'; right: max(clamp(20px, 5vw, 48px), (100% - 1120px) / 2 + 48px); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a2332' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5l7 7-7 7'/%3E%3C/svg%3E"); }
+  }
 </style>
 @include('partials.theme-vars')
 </head>
@@ -990,30 +1036,29 @@
 </section>
 @endif
 
-{{-- ── This week (cards) ── --}}
-<section class="block">
-  <div class="section-eyebrow">This week</div>
-  <h2>What's happening at Shalom.</h2>
-
-  <div class="feature-row">
-    <a href="{{ url('/welcome') }}" class="feature-card">
-      <span class="fc-eyebrow">Sabbath</span>
-      <span class="fc-title">This week's bulletin.</span>
-      <span class="fc-sub">Order of service, who's leading what, and the announcements — refreshed every Sabbath.</span>
-      <span class="fc-arrow">Read @include('partials._ar')</span>
+{{-- ── This week at Shalom (swipe row; Layouts shelf: this-week-row) ── --}}
+<section class="week-row" aria-labelledby="week-title">
+  <div class="week-row__head">
+    <h2 id="week-title">This week at Shalom.</h2>
+    <a href="{{ route('calendar') }}">Calendar ›</a>
+  </div>
+  <div class="week-row__track">
+    <a href="{{ url('/welcome') }}" class="week-card week-card--accent">
+      <span class="week-card__text"><span class="week-card__when">This Sabbath</span><span class="week-card__title">The bulletin</span><span class="week-card__body">Order of service, who’s leading, and the announcements.</span></span>
+      <span class="week-card__foot">Read ›</span>
     </a>
-    <a href="{{ route('lesson.show') }}" class="feature-card">
-      <span class="fc-eyebrow">Adult Bible Study Guide</span>
-      <span class="fc-title">Sabbath School lesson.</span>
-      <span class="fc-sub">This quarter's full guide. Download the PDF or follow the daily readings.</span>
-      <span class="fc-arrow">Open @include('partials._ar')</span>
+    <a href="{{ route('lesson.show') }}" class="week-card">
+      <span class="week-card__text"><span class="week-card__when">Sabbath School</span><span class="week-card__title">This quarter’s lesson</span><span class="week-card__body">Follow the daily readings, or download the guide.</span></span>
+      <span class="week-card__foot" style="color: var(--teal);">Open ›</span>
     </a>
-    <a href="{{ route('peace-notes') }}" class="feature-card">
-      <span class="fc-eyebrow">Podcast</span>
-      <span class="fc-title">Peace Notes.</span>
-      <span class="fc-sub">Conversations from the pulpit and beyond — listen any time.</span>
-      <span class="fc-arrow">Listen @include('partials._ar')</span>
+    <a href="{{ route('peace-notes') }}" class="week-card week-card--dark">
+      <span class="week-card__text"><span class="week-card__when">Podcast</span><span class="week-card__title">Peace Notes</span><span class="week-card__body">Conversations from the pulpit and beyond.</span></span>
+      <span class="week-card__play" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg></span>
     </a>
+    <div class="week-card week-card--soft">
+      <span class="week-card__text"><span class="week-card__when">Memory verse</span><span class="week-card__verse">“For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.”</span></span>
+      <span class="week-card__foot" style="color: #4a5568; font-weight: 400;">John 3:16</span>
+    </div>
   </div>
 </section>
 
