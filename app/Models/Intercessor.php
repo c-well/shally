@@ -33,6 +33,26 @@ class Intercessor extends Model
         return Hash::check($pin, $this->pin_hash);
     }
 
+    /**
+     * A sign-in link for this person's phone. The raw token lives only in the
+     * link; the cache holds its sha256, and the first sign-in uses it up.
+     */
+    public function signInLink(int $minutes): string
+    {
+        $raw = bin2hex(random_bytes(24));
+        \Illuminate\Support\Facades\Cache::put('intercessor-link:' . hash('sha256', $raw), $this->id, now()->addMinutes($minutes));
+        return route('intercessors.link', $raw);
+    }
+
+    /** The active team member a link belongs to, or null. With $consume, the link stops working. */
+    public static function fromLinkToken(string $raw, bool $consume): ?self
+    {
+        if (! preg_match('/^[a-f0-9]{48}$/', $raw)) return null;
+        $key = 'intercessor-link:' . hash('sha256', $raw);
+        $id = $consume ? \Illuminate\Support\Facades\Cache::pull($key) : \Illuminate\Support\Facades\Cache::get($key);
+        return $id ? static::where('active', true)->find($id) : null;
+    }
+
     /** E.164-ish tidy for Twilio ("+1..."). Assumes US if 10 digits. */
     public static function normalizePhone(string $raw): string {
         $d = preg_replace('/\D+/', '', $raw);

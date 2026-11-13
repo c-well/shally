@@ -429,6 +429,10 @@ Route::middleware('auth')->group(function () {
         Route::get   ('/admin/peace',                            [\App\Http\Controllers\AdminPeaceController::class, 'index'])->name('admin.peace.index');
         // Peace Notes News: issues, edit, approve/hold, readers' answers
         Route::get   ('/admin/peace/news',                       [\App\Http\Controllers\AdminPeaceNewsController::class, 'index'])->name('admin.peace.news.index');
+        // Prayer team: who gets prayer-request texts and can sign in at /intercessors
+        Route::get   ('/admin/prayer-team',                      [\App\Http\Controllers\AdminPrayerTeamController::class, 'index'])->name('admin.prayer-team');
+        Route::post  ('/admin/prayer-team',                      [\App\Http\Controllers\AdminPrayerTeamController::class, 'store'])->middleware('throttle:30,1')->name('admin.prayer-team.store');
+        Route::post  ('/admin/prayer-team/{intercessor}',        [\App\Http\Controllers\AdminPrayerTeamController::class, 'update'])->whereNumber('intercessor')->middleware('throttle:30,1')->name('admin.prayer-team.update');
         // Your Sabbath: what people shared under the web booklet
         Route::get   ('/admin/sabbath-responses',                [\App\Http\Controllers\BookletResponseController::class, 'index'])->name('admin.booklet.responses');
         Route::get   ('/admin/peace/news/{issue}',               [\App\Http\Controllers\AdminPeaceNewsController::class, 'edit'])->whereNumber('issue')->name('admin.peace.news.edit');
@@ -515,8 +519,10 @@ Route::middleware('auth')->group(function () {
 // ── INTERCESSORS (prayer team) ──
 Route::prefix('intercessors')->group(function () {
     Route::get   ('/',              [\App\Http\Controllers\IntercessorController::class, 'signIn'])->name('intercessors.signIn');
-    Route::post  ('/sign-in',       [\App\Http\Controllers\IntercessorController::class, 'attemptSignIn'])->middleware('throttle:20,10')->name('intercessors.attemptSignIn');
-    Route::post  ('/forgot-pin',    [\App\Http\Controllers\IntercessorController::class, 'forgotPin'])->middleware('throttle:5,15')->name('intercessors.forgotPin');
+    // Sign in by a link texted to the phone the church has on file (no public name list, no PIN).
+    Route::post  ('/send-link',     [\App\Http\Controllers\IntercessorController::class, 'sendLink'])->middleware('throttle:10,10')->name('intercessors.sendLink');
+    Route::get   ('/in/{token}',    [\App\Http\Controllers\IntercessorController::class, 'linkLanding'])->where('token', '[a-f0-9]{48}')->name('intercessors.link');
+    Route::post  ('/in/{token}',    [\App\Http\Controllers\IntercessorController::class, 'linkSignIn'])->middleware('throttle:20,10')->where('token', '[a-f0-9]{48}')->name('intercessors.link.signIn');
     Route::post  ('/sign-out',      [\App\Http\Controllers\IntercessorController::class, 'signOut'])->name('intercessors.signOut');
 
     Route::middleware('intercessor')->group(function () {

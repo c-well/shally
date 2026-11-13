@@ -80,7 +80,7 @@ class PrayerController extends Controller
             $twilio = app(\App\Services\Intake\TwilioNotifier::class);
             if ($twilio->configured()) {
                 $who = $pr->name ?: 'Someone';
-                $msg = "🙏 New prayer request from $who at Shalom. Sign in to pray: https://thechurchofpeace.org/intercessors";
+                $msg = "Shalom prayer team: a new prayer request from $who. Read it here: https://thechurchofpeace.org/intercessors/dashboard";
                 foreach (\App\Models\Intercessor::where('active', true)->get() as $ic) {
                     $twilio->send($ic->phone, $msg);
                 }

@@ -122,6 +122,7 @@
     'music'     => ['Music day', 'Songs.', 'One link for the singers. They send the track, a YouTube link, or say they are bringing it — you see who is in and download them all in order.', 'Open', route('admin.music')],
     'games'     => ['Kids', 'Scripture games.', 'Build the verse games — pick a book, a game, an age. They appear at /kids.', 'Open', route('admin.games')],
     'mystery'   => ['Teens', 'Undercover.', 'The question bank for the youth-night mystery game.', 'Open', route('admin.mystery')],
+    'prayerteam'=> ['Prayer', 'Prayer team.', 'Who gets a text when a prayer request comes in. Add people and text them a sign-in link.', 'Open', route('admin.prayer-team')],
     'sabbath'   => ['Booklet', 'Sabbath feedback.', 'What people ticked and wrote under the booklet on the site, with counts for each answer.', 'Read', route('admin.booklet.responses')],
     'intake'    => ['Forms', 'Intake.', 'Graduation slides, sign-ups — shareable links, every submission in its gallery.', 'Open', route('admin.intake.index')],
     'changelog' => ['Dev notes', 'Changelog.', 'Plain-English log of every site change. When something feels off, look here first.', 'Open', route('admin.changelog')],
@@ -143,12 +144,12 @@
     'pg_contact'=> ['Get in touch', 'Contact form.', 'Public form · sends to contact@ with CC to c-wellpics.', 'Preview', route('admin.pages.edit', 'contact')],
   ];
 
-  $TOOL_KEYS = ['messages','users','logs','changes','bulletin','events','services','handouts','music','games','mystery','intake','sabbath','changelog','spend','names','schedule','lessons','sermons','peace','slides','media','analytics','buginbox'];
+  $TOOL_KEYS = ['messages','users','logs','changes','bulletin','events','services','handouts','music','games','mystery','intake','sabbath','prayerteam','changelog','spend','names','schedule','lessons','sermons','peace','slides','media','analytics','buginbox'];
   $PAGE_KEYS = ['pg_landing','pg_about','pg_visit','pg_beliefs','pg_notes','pg_contact'];
 
   $GROUPS = [
     'week'    => ['This week', ['bulletin', 'events', 'services', 'handouts', 'music', 'schedule', 'slides', 'lessons', 'names']],
-    'people'  => ['People & inbox', ['mail', 'messages', 'users', 'intake', 'sabbath', 'buginbox']],
+    'people'  => ['People & inbox', ['mail', 'messages', 'users', 'intake', 'sabbath', 'prayerteam', 'buginbox']],
     'ministry'=> ['Ministries, games & site', ['peace', 'sermons', 'games', 'mystery', 'media', 'pg_landing', 'pg_about', 'pg_visit', 'pg_beliefs', 'pg_notes', 'pg_contact']],
     'system'  => ['System & insights', ['analytics', 'logs', 'changes', 'changelog', 'spend']],
   ];

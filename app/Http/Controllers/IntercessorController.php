@@ -12,74 +12,61 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class IntercessorController extends Controller
 {
-    /** Sign-in door — tap your name, then enter PIN. Public but no-index. */
+    /**
+     * The prayer team's door. No names are shown: a member types the phone number
+     * the church has on file and gets a sign-in link by text. Everyone else sees
+     * what the page is for and how to send a prayer request.
+     */
     public function signIn(Request $request): View
     {
-        $intercessors = Intercessor::where('active', true)
-            ->orderBy('role', 'desc')   // heads first, then regulars
-            ->orderBy('name')
-            ->get(['id', 'name', 'role']);
-
-        return view('intercessors.sign-in', compact('intercessors'));
+        return view('intercessors.sign-in');
     }
 
-    /** PIN check + issue cookie. Honeypot + rate limit. */
-    public function attemptSignIn(Request $request): RedirectResponse
+    /** Text a sign-in link to a team member's phone. Same answer whether or not the number is on file. */
+    public function sendLink(Request $request, TwilioNotifier $twilio): RedirectResponse
     {
-        // Honeypot
-        if (filled($request->input('form_meta_field')) || filled($request->input('website'))) {
-            return back()->with('sent', true);
-        }
+        $done = back()->with('link_sent', true);
+        if (filled($request->input('website'))) return $done;
 
-        $data = $request->validate([
-            'intercessor_id' => 'required|integer|exists:intercessors,id',
-            'pin'            => 'required|string|size:6',
-        ]);
+        $data = $request->validate(['phone' => 'required|string|max:30']);
+        $rlKey = 'intercessor-link:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($rlKey, 5)) return $done;
+        RateLimiter::hit($rlKey, 900);
 
-        // Rate limit: 6 wrong PINs / IP / 10 min
-        $rlKey = 'intercessor-pin:' . $request->ip();
-        if (RateLimiter::tooManyAttempts($rlKey, 6)) {
-            return back()->withErrors(['pin' => 'Too many tries — wait a few minutes and try again.']);
-        }
-
-        $intercessor = Intercessor::find($data['intercessor_id']);
-        if (! $intercessor || ! $intercessor->active) {
-            return back()->withErrors(['pin' => 'This name is no longer active.']);
-        }
-
-        // Per-intercessor lockout
-        if ($intercessor->pin_locked_until && $intercessor->pin_locked_until->isFuture()) {
-            return back()->withErrors(['pin' => 'This account is temporarily locked. Try again later.']);
-        }
-
-        if (! $intercessor->checkPin($data['pin'])) {
-            RateLimiter::hit($rlKey, 600);
-            $intercessor->increment('pin_wrong_count');
-            if ($intercessor->pin_wrong_count >= 10) {
-                $intercessor->pin_locked_until = now()->addMinutes(15);
-                $intercessor->pin_wrong_count  = 0;
-                $intercessor->save();
+        $phone = Intercessor::normalizePhone($data['phone']);
+        $i = Intercessor::where('active', true)->where('phone', $phone)->first();
+        if ($i) {
+            $phoneKey = 'intercessor-link-phone:' . $i->id;
+            if (! RateLimiter::tooManyAttempts($phoneKey, 3)) {
+                RateLimiter::hit($phoneKey, 3600);
+                $twilio->send($i->phone, 'Shalom prayer team: tap to sign in on this phone. ' . $i->signInLink(30) . ' (works once, for 30 minutes)');
             }
-            return back()->withErrors(['pin' => 'That PIN is not right. Try again, or use "Text me my PIN" below.']);
         }
+        return $done;
+    }
 
-        // Success: clear counters, mint session
-        $intercessor->pin_wrong_count = 0;
-        $intercessor->pin_locked_until = null;
-        $intercessor->last_seen_at = now();
-        $intercessor->last_ip = $request->ip();
-        $intercessor->save();
+    /** The link from the text lands here. A button, not an automatic sign-in, so message previews cannot use it up. */
+    public function linkLanding(string $token): View
+    {
+        $i = Intercessor::fromLinkToken($token, consume: false);
+        return view('intercessors.link', ['intercessor' => $i, 'token' => $token]);
+    }
 
-        $rawToken = bin2hex(random_bytes(32));   // 64-char hex
+    public function linkSignIn(Request $request, string $token): RedirectResponse
+    {
+        $i = Intercessor::fromLinkToken($token, consume: true);
+        if (! $i) return redirect()->route('intercessors.signIn')->withErrors(['phone' => 'That link has been used or has expired. Ask for a new one below.']);
+
+        $i->forceFill(['last_seen_at' => now(), 'last_ip' => $request->ip()])->save();
+        $rawToken = bin2hex(random_bytes(32));
         IntercessorSession::create([
-            'intercessor_id' => $intercessor->id,
+            'intercessor_id' => $i->id,
             'token_hash'     => IntercessorSession::hashToken($rawToken),
             'last_ip'        => $request->ip(),
             'user_agent'     => Str::limit((string) $request->userAgent(), 400, ''),
@@ -89,36 +76,6 @@ class IntercessorController extends Controller
 
         return redirect()->route('intercessors.dashboard')
             ->withCookie(cookie(EnsureIntercessor::COOKIE, $rawToken, minutes: 60 * 24 * 180, secure: true, httpOnly: true, sameSite: 'lax'));
-    }
-
-    /** "I forgot my PIN" — texts the CURRENT PIN to the number on file. */
-    public function forgotPin(Request $request, TwilioNotifier $twilio): RedirectResponse
-    {
-        if (filled($request->input('form_meta_field'))) return back()->with('sent', true);
-
-        $data = $request->validate(['intercessor_id' => 'required|integer|exists:intercessors,id']);
-
-        $rlKey = 'intercessor-forgot:' . $request->ip();
-        if (RateLimiter::tooManyAttempts($rlKey, 4)) {
-            return back()->with('pin_texted', true);
-        }
-        RateLimiter::hit($rlKey, 900);
-
-        $i = Intercessor::find($data['intercessor_id']);
-        if (! $i || ! $i->active) return back()->with('pin_texted', true);   // silent OK either way
-
-        // The stored pin_hash is one-way — we can't recover the PIN. We rotate to a
-        // fresh 6-digit code and text THAT. The requester's ruling: "sending them
-        // the pin is fine" — the PIN is a friction gate, not a secret.
-        $newPin = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $i->pin_hash = Hash::make($newPin);
-        $i->pin_wrong_count = 0;
-        $i->pin_locked_until = null;
-        $i->save();
-
-        $twilio->send($i->phone, "Shalom prayer team: your PIN is $newPin. Sign in at https://thechurchofpeace.org/intercessors");
-
-        return back()->with('pin_texted', true);
     }
 
     /** Main dashboard — list of prayer requests, newest first. */
