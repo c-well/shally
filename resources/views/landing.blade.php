@@ -833,6 +833,7 @@
   .slider-arrow { background: rgba(255,255,255,0.82); color: var(--ink); }
   .slider-arrow:hover { background: #fff; }
   .slider-arrow svg { width: 18px; height: 18px; }
+  @media (max-width: 600px) { .slider { height: auto; aspect-ratio: 4 / 3; } }
 
   /* ── PLAN 5: This week at Shalom. Cards you swipe sideways; they move only
      when the visitor moves them. Arrows are CSS ::scroll-button where the
