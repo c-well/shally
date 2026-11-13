@@ -87,6 +87,14 @@
     @endforeach
   </div>
 
+  <p style="margin: -6px 0 18px; font-size: 13px; color: var(--ink-soft);">
+    @if ($showAll)
+      Showing everything, bots included. <a href="?days={{ $days }}" style="color: var(--teal);">Show real people only</a>
+    @else
+      Real people only: a visit counts once the visitor's browser actually opens the page. {{ number_format($botSessions) }} bot visits filtered out in this range. <a href="?days={{ $days }}&all=1" style="color: var(--teal);">Show everything</a>
+    @endif
+  </p>
+
   <div class="totals">
     <div class="stat">
       <div class="label">Page views</div>
@@ -204,6 +212,40 @@
     </div>
   </div>
 
+  <div class="grid-2" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px;">
+    <div class="panel">
+      <h2>Where they come from</h2>
+      @if (count($sources) > 0)
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+          @foreach ($sources as $s)
+            <tr style="border-top:1px solid var(--line);">
+              <td style="padding:8px 0;">{{ ['direct' => 'Direct, a bookmark or a text message', 'google' => 'Google', 'facebook' => 'Facebook', 'instagram' => 'Instagram', 'youtube' => 'YouTube', 'email' => 'Email', 'bing' => 'Bing', 'x' => 'X (Twitter)', 'whatsapp' => 'WhatsApp', 'chatgpt' => 'ChatGPT'][$s->source] ?? $s->source }}</td>
+              <td style="padding:8px 0; text-align:right; font-variant-numeric: tabular-nums;">{{ number_format($s->people) }}</td>
+            </tr>
+          @endforeach
+        </table>
+      @else
+        <div class="empty-mini">Builds up as people visit.</div>
+      @endif
+    </div>
+    <div class="panel">
+      <h2>Where they are</h2>
+      @if (count($places) > 0)
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+          @foreach ($places as $p)
+            <tr style="border-top:1px solid var(--line);">
+              <td style="padding:8px 0;">{{ $p->place }}</td>
+              <td style="padding:8px 0; text-align:right; font-variant-numeric: tabular-nums;">{{ number_format($p->people) }}</td>
+            </tr>
+          @endforeach
+        </table>
+      @else
+        <div class="empty-mini">Builds up as people visit.</div>
+      @endif
+      <p style="margin-top:12px; font-size:12px; color:var(--ink-soft);">Approximate, from the server's own location file. No visitor's address leaves the server.</p>
+    </div>
+  </div>
+
   @if (count($countries) > 0)
     <div class="panel">
       <h2>Countries</h2>
@@ -213,7 +255,7 @@
         @endforeach
       </div>
       <p style="margin-top:14px; font-size:11px; color:var(--ink-soft); opacity:0.65; font-family:'JetBrains Mono',monospace; letter-spacing:0.04em;">
-        Country detection uses the CF-IPCountry header (only set if traffic flows through Cloudflare). Empty if not on CF.
+        Country comes from the server's own location file (GeoLite2), or Cloudflare's header if traffic ever runs through it.
       </p>
     </div>
   @endif

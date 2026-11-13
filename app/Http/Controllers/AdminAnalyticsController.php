@@ -28,10 +28,16 @@ class AdminAnalyticsController extends Controller
         $days = max(1, min(365, $days));
         $since = now()->subDays($days);
 
+        // People, not bots. A page view counts once the visitor's browser has
+        // actually run the page (confirmed_at, set by the tracker's beacon).
+        // ?all=1 shows everything, bots included, for comparison.
+        $showAll = $request->boolean('all');
+        $pv = fn () => DB::table('page_views')->when(! $showAll, fn ($q) => $q->whereNotNull('confirmed_at'));
+
         // ============================================================
         // ORIGINAL PAGEVIEW ANALYTICS (unchanged behavior)
         // ============================================================
-        $topPaths = DB::table('page_views')
+        $topPaths = $pv()
             ->where('viewed_at', '>=', $since)
             ->select('path')
             ->selectRaw('COUNT(*) as views')
@@ -41,7 +47,7 @@ class AdminAnalyticsController extends Controller
             ->limit(20)
             ->get();
 
-        $daily = DB::table('page_views')
+        $daily = $pv()
             ->where('viewed_at', '>=', $since)
             ->selectRaw('DATE(viewed_at) as d')
             ->selectRaw('COUNT(*) as views')
@@ -63,35 +69,51 @@ class AdminAnalyticsController extends Controller
         }
 
         $ownHost = parse_url(config('app.url'), PHP_URL_HOST);
-        $topReferrers = DB::table('page_views')
+        $topReferrers = $pv()
             ->where('viewed_at', '>=', $since)
             ->whereNotNull('referrer')->where('referrer', '!=', '')
             ->where('referrer', 'NOT LIKE', '%' . $ownHost . '%')
             ->selectRaw('referrer, COUNT(*) as views')
             ->groupBy('referrer')->orderByDesc('views')->limit(10)->get();
 
-        $devices = DB::table('page_views')
+        $devices = $pv()
             ->where('viewed_at', '>=', $since)
             ->whereNotNull('device')
             ->selectRaw('device, COUNT(*) as views, COUNT(DISTINCT session_id) as uniques')
             ->groupBy('device')->orderByDesc('views')->get();
 
-        $browsers = DB::table('page_views')
+        $browsers = $pv()
             ->where('viewed_at', '>=', $since)
             ->whereNotNull('browser')
             ->selectRaw('browser, COUNT(*) as views')
             ->groupBy('browser')->orderByDesc('views')->get();
 
-        $countries = DB::table('page_views')
+        $countries = $pv()
             ->where('viewed_at', '>=', $since)
             ->whereNotNull('country')
             ->selectRaw('country, COUNT(*) as views')
             ->groupBy('country')->orderByDesc('views')->limit(15)->get();
 
-        $totals = DB::table('page_views')
+        $totals = $pv()
             ->where('viewed_at', '>=', $since)
             ->selectRaw('COUNT(*) as views, COUNT(DISTINCT session_id) as uniques, COUNT(DISTINCT path) as pages')
             ->first();
+
+        // Where people come from (first-hand sources, not clicks inside the site)
+        $sources = $pv()->where('viewed_at', '>=', $since)
+            ->whereNotNull('source')->where('source', '!=', 'internal')
+            ->selectRaw('source, COUNT(DISTINCT session_id) as people')
+            ->groupBy('source')->orderByDesc('people')->limit(12)->get();
+
+        // Where they are (server-side GeoLite2; city when the file knows it)
+        $places = $pv()->where('viewed_at', '>=', $since)
+            ->whereNotNull('city')
+            ->selectRaw("CONCAT(city, IF(region IS NULL, '', CONCAT(', ', region)), IF(country IS NULL OR country = 'US', '', CONCAT(' (', country, ')'))) as place, COUNT(DISTINCT session_id) as people")
+            ->groupBy('place')->orderByDesc('people')->limit(15)->get();
+
+        // How much was filtered out as bots in this range
+        $botSessions = DB::table('page_views')->where('viewed_at', '>=', $since)
+            ->whereNull('confirmed_at')->distinct()->count('session_id');
 
         // ============================================================
         // NEW — INTERACTION ANALYTICS (2026-05-30)
@@ -152,7 +174,7 @@ class AdminAnalyticsController extends Controller
             ->get();
 
         // Named-event counters (everything that's not the noise events)
-        $noiseEvents = ['click', 'hover', 'scroll', 'page_unload', 'time_on_page'];
+        $noiseEvents = ['click', 'hover', 'scroll', 'page_unload', 'time_on_page', 'view'];
         $namedEvents = DB::table('interaction_events')
             ->where('created_at', '>=', $since)
             ->where('is_bot', false)
@@ -194,13 +216,14 @@ class AdminAnalyticsController extends Controller
                 COUNT(DISTINCT session_id) as sessions,
                 SUM(CASE WHEN event_type = "click" THEN 1 ELSE 0 END) as clicks,
                 SUM(CASE WHEN event_type = "hover" THEN 1 ELSE 0 END) as hovers,
-                SUM(CASE WHEN event_type NOT IN ("click", "hover", "scroll", "page_unload") THEN 1 ELSE 0 END) as named')
+                SUM(CASE WHEN event_type NOT IN ("click", "hover", "scroll", "page_unload", "view") THEN 1 ELSE 0 END) as named')
             ->first();
 
         return view('admin.analytics.index', compact(
             // original
             'topPaths', 'filled', 'topReferrers', 'devices', 'browsers',
             'countries', 'totals', 'days',
+            'showAll', 'sources', 'places', 'botSessions',
             // new
             'topClicks', 'heatmapPages', 'heatmapPath', 'heatmapPoints',
             'scrollDepth', 'namedEvents', 'recentSessions',
