@@ -879,6 +879,12 @@
     .week-row__track::scroll-button(left)  { content: '' / 'Previous'; right: calc(max(clamp(20px, 5vw, 48px), (100% - 1120px) / 2 + 48px) + 58px); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a2332' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E"); }
     .week-row__track::scroll-button(right) { content: '' / 'Next'; right: max(clamp(20px, 5vw, 48px), (100% - 1120px) / 2 + 48px); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a2332' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5l7 7-7 7'/%3E%3C/svg%3E"); }
   }
+
+  /* ── PLAN 6: Watch our latest service. Title, one line, a button, the video. ── */
+  #watch { text-align: center; }
+  #watch .watch-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 22px; margin-top: 28px; border-radius: 6px; background: var(--teal); color: #fff; font: 500 15px 'Poppins', system-ui, sans-serif; text-decoration: none; }
+  #watch .watch-btn:hover { background: var(--teal-dark, #4f3768); }
+  .youtube-wrap { max-width: 1040px; margin-top: 48px; border: 0; border-radius: 16px; }
 </style>
 @include('partials.theme-vars')
 </head>
@@ -1066,7 +1072,8 @@
 <section class="block" id="watch">
   <div class="section-eyebrow">Live & on demand</div>
   <h2>Watch our latest service.</h2>
-  <p class="section-sub">Streaming each Sabbath on YouTube. Catch up on a missed week below.</p>
+  <p class="section-sub">Streaming every Sabbath. Catch up on any week you missed.</p>
+  <a class="watch-btn" href="https://www.youtube.com/c/ShalomSDAChurchBX/videos" target="_blank" rel="noopener">More on YouTube</a>
 
   <div class="youtube-wrap">
     @php $latestVid = \App\Models\AppSetting::get('latest_service_video_id'); @endphp
