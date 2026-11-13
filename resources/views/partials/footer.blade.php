@@ -23,9 +23,9 @@
   }
   footer.site address {
     font-style: normal;
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
-    line-height: 1.85; color: var(--ink-soft, #334455); margin-bottom: 24px;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 14px; letter-spacing: 0; text-transform: none;
+    line-height: 1.75; color: var(--ink-soft, #334455); margin-bottom: 24px;
   }
   footer.site address a { color: var(--ink-soft, #334455); border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s; }
   footer.site address a:hover { color: var(--teal, #03617A); border-bottom-color: var(--teal, #03617A); }
@@ -38,8 +38,8 @@
   footer.site .socials a:hover { color: var(--teal, #03617A); border-color: var(--teal, #03617A); }
   footer.site .socials svg { width: 16px; height: 16px; }
   footer.site .copy {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--ink-soft, #334455); opacity: 0.7; letter-spacing: 0.08em;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 13px; color: var(--ink-soft, #334455); opacity: 0.75; letter-spacing: 0;
   }
 </style>
 <footer class="site">
@@ -58,5 +58,5 @@
     </a>
   </div>
   <div class="copy">&copy; {{ date("Y") }} Shalom Seventh-day Adventist Church &middot; The Church of Peace</div>
-  <div style="text-align: center; padding: 14px 0; font-family: "Instrument Sans", sans-serif; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;"><a href="/privacy" style="color: var(--ink-soft); text-decoration: none; opacity: 0.65;">Privacy</a></div>
+  <div style="text-align: center; padding: 14px 0; font-family: 'Poppins', system-ui, sans-serif; font-size: 13px;"><a href="/privacy" style="color: var(--ink-soft); text-decoration: none; opacity: 0.75;">Privacy</a></div>
 </footer>
