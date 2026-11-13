@@ -17,6 +17,7 @@ Route::get('/welcome', [BulletinController::class, 'home'])->name('welcome');
 Route::get('/bulletin/{bulletin}', [BulletinController::class, 'show'])->name('bulletins.show');
 Route::get('/bulletin/{bulletin}/pdf', [BulletinController::class, 'downloadPdf'])->name('bulletins.pdf');
 Route::get('/bulletin/{bulletin}/booklet', [BulletinController::class, 'booklet'])->name('bulletins.booklet');
+Route::post('/bulletin/{bulletin}/booklet/respond', [\App\Http\Controllers\BookletResponseController::class, 'store'])->middleware('throttle:10,1')->name('bulletins.booklet.respond');
 Route::get('/announcements', [BulletinController::class, 'announcementsPage'])->name('announcements');
 Route::get('/calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar');
 Route::get('/lesson',          [\App\Http\Controllers\LessonController::class, 'show'])->name('lesson.show');
@@ -428,6 +429,8 @@ Route::middleware('auth')->group(function () {
         Route::get   ('/admin/peace',                            [\App\Http\Controllers\AdminPeaceController::class, 'index'])->name('admin.peace.index');
         // Peace Notes News: issues, edit, approve/hold, readers' answers
         Route::get   ('/admin/peace/news',                       [\App\Http\Controllers\AdminPeaceNewsController::class, 'index'])->name('admin.peace.news.index');
+        // Your Sabbath: what people shared under the web booklet
+        Route::get   ('/admin/sabbath-responses',                [\App\Http\Controllers\BookletResponseController::class, 'index'])->name('admin.booklet.responses');
         Route::get   ('/admin/peace/news/{issue}',               [\App\Http\Controllers\AdminPeaceNewsController::class, 'edit'])->whereNumber('issue')->name('admin.peace.news.edit');
         Route::post  ('/admin/peace/news/{issue}',               [\App\Http\Controllers\AdminPeaceNewsController::class, 'update'])->whereNumber('issue')->name('admin.peace.news.update');
         Route::post  ('/admin/peace/news/{issue}/status',        [\App\Http\Controllers\AdminPeaceNewsController::class, 'status'])->whereNumber('issue')->name('admin.peace.news.status');

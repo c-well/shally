@@ -146,8 +146,9 @@ class BulletinController extends Controller
         if (! $snapshot) abort(404);
 
         $L = \App\Support\BookletLayout::make($snapshot, $bulletin->cover);
+        $Q = \App\Support\BookletLayout::questions((array) $bulletin->cover);
         return response()
-            ->view('bulletins.booklet', compact('bulletin', 'L'))
+            ->view('bulletins.booklet', compact('bulletin', 'L', 'Q'))
             ->header('Cache-Control', 'private, no-store, max-age=0');
     }
 

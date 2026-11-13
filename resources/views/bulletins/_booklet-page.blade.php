@@ -2,7 +2,7 @@
      Sizes are in --u (one printed point on a 5.5in page), so the screen copy keeps the print proportions. --}}
 @if ($page === 'cover')
   <div class="pg-in bk-cover">
-    <div class="bk-church">Shalom Seventh-day Adventist Church</div>
+    <div class="bk-logo" role="img" aria-label="Shalom Seventh-day Adventist Church">shalom</div>
     @if ($L['emblems'])
       <div class="bk-emblems">
         @foreach ($L['emblems'] as $e)<img src="{{ asset('img/emblems/' . $e) }}" alt="" draggable="false">@endforeach

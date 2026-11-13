@@ -110,7 +110,9 @@
   .bk-cover { text-align: center; }
   /* Pathfinder cover: a gold band across the top, like the scarf. */
   .look-pathfinder .bk-cover::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--u) * 7); background: linear-gradient(90deg, #b8842a, #d9a944 50%, #b8842a); }
-  .bk-church { font-size: calc(var(--u) * 10); font-weight: 500; color: var(--bk-paper-soft); padding-top: calc(var(--u) * 12); }
+  /* The church's own "shalom" wordmark (the site's Xtreem face), in black. */
+  @font-face { font-family: 'Xtreem'; src: url('{{ asset('fonts/XtreemMedium.ttf') }}') format('truetype'); font-weight: 500; font-display: swap; }
+  .bk-logo { font-family: 'Xtreem', 'Archivo', sans-serif; font-weight: 500; font-size: calc(var(--u) * 40); line-height: 0.8; letter-spacing: -0.02em; color: #14100a; padding-top: calc(var(--u) * 12); }
   .bk-emblems { display: flex; justify-content: center; align-items: center; gap: calc(var(--u) * 22); margin-top: calc(var(--u) * 28); }
   .bk-emblems img { height: calc(var(--u) * 100); width: auto; pointer-events: none; filter: drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 6) rgba(60, 42, 14, 0.18)); animation: bk-pop 0.7s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   .bk-emblems img + img { animation-delay: 0.48s; }
@@ -172,6 +174,32 @@
   .bk-foot a:hover { border-color: var(--bk-accent); color: var(--bk-accent); }
   .bk-foot p { margin: 10px 0 0; font-size: 13px; color: var(--bk-soft); }
 
+  /* ── Your Sabbath ── */
+  .sb { max-width: 560px; margin: 8px auto calc(56px + env(safe-area-inset-bottom)); padding: 30px calc(18px + env(safe-area-inset-right)) 0 calc(18px + env(safe-area-inset-left)); border-top: 1px solid var(--bk-line); }
+  .sb h2 { margin: 0; font-family: 'Archivo', 'Instrument Sans', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; color: var(--bk-ink); }
+  .sb-lede { margin: 6px 0 22px; color: var(--bk-soft); font-size: 16px; line-height: 1.5; }
+  .sb fieldset { border: 0; margin: 0 0 24px; padding: 0; min-width: 0; }
+  .sb legend { padding: 0; font-weight: 600; font-size: 18px; color: var(--bk-ink); }
+  .sb-hint { margin: 2px 0 12px; font-size: 14px; color: var(--bk-soft); }
+  .sb-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .sb-chip { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--bk-line); background: color-mix(in srgb, #fff 60%, var(--bk-ground)); color: var(--bk-ink); font-size: 16px; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+  .sb-chip:active { transform: scale(0.97); }
+  .sb-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .sb-tick { display: none; }
+  .sb-chip:has(input:checked) { background: #e4d3b0; border-color: #8a5e17; color: #2a2014; }
+  .sb-chip:has(input:checked) .sb-tick { display: block; color: #8a5e17; }
+  .sb-chip:has(input:focus-visible) { outline: 2px solid var(--bk-accent); outline-offset: 2px; }
+  .sb-label { display: block; margin: 4px 0 8px; font-weight: 600; font-size: 18px; color: var(--bk-ink); }
+  .sb-label span { font-weight: 400; font-size: 15px; color: var(--bk-soft); }
+  .sb textarea, .sb input[name="first_name"] { width: 100%; font: 400 16px 'Instrument Sans', system-ui, sans-serif; color: var(--bk-ink); background: color-mix(in srgb, #fff 75%, var(--bk-ground)); border: 1px solid var(--bk-line); border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; }
+  .sb textarea { resize: vertical; line-height: 1.5; }
+  .sb textarea:focus, .sb input[name="first_name"]:focus { outline: 2px solid var(--bk-accent); outline-offset: 1px; }
+  .sb-send { min-height: 46px; padding: 0 28px; border: 0; border-radius: 6px; background: #2a2014; color: #fff; font: 600 16px 'Instrument Sans', system-ui, sans-serif; cursor: pointer; }
+  .sb-send:hover { background: #8a5e17; }
+  .sb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; }
+  .sb-done { padding: 16px 18px; border-radius: 8px; background: #e4d3b0; color: #2a2014; font-size: 16px; }
+  .sb-err { padding: 12px 14px; border-radius: 8px; background: #fdecea; color: #8a1f17; font-size: 15px; }
+
   @media (prefers-reduced-motion: reduce) {
     .bk-book, .bk-leaf { transition: none; }
     .bk-stage, .bk-emblems img { animation: none; }
@@ -214,6 +242,48 @@
     <a href="{{ route('bulletins.pdf', $bulletin) }}?layout=booklet">Print it</a>
     <p>Print both sides, flip on the short edge, then fold in half.</p>
   </div>
+
+  {{-- Your Sabbath: two questions to tick, one to write. Private to the church; no email asked. --}}
+  <section class="sb" id="sabbath" aria-labelledby="sb-h">
+    <h2 id="sb-h">Your Sabbath</h2>
+    <p class="sb-lede">Three quick questions. Only the church reads your answers.</p>
+
+    @if (session('sabbath_flash'))
+      <p class="sb-done" role="status">{{ session('sabbath_flash') }}</p>
+    @else
+      @if (session('sabbath_error'))<p class="sb-err" role="alert">{{ session('sabbath_error') }}</p>@endif
+      <form method="post" action="{{ route('bulletins.booklet.respond', $bulletin) }}">
+        @csrf
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="sb-hp">
+        <input type="hidden" name="form_opened_at" id="sb-opened" value="0">
+
+        @foreach (['spoke', 'joined'] as $k)
+          <fieldset>
+            <legend>{{ $Q[$k]['q'] }}</legend>
+            <p class="sb-hint">Tick any that fit.</p>
+            <div class="sb-chips">
+              @foreach ($Q[$k]['options'] as $o)
+                <label class="sb-chip">
+                  <input type="checkbox" name="{{ $k }}[]" value="{{ $o }}" @checked(in_array($o, (array) old($k, []), true))>
+                  <svg class="sb-tick" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                  <span>{{ $o }}</span>
+                </label>
+              @endforeach
+            </div>
+          </fieldset>
+        @endforeach
+
+        <label class="sb-label" for="sb-story">{{ $Q['story'] }}</label>
+        <textarea id="sb-story" name="story" rows="4" maxlength="2000" placeholder="A moment, a song, a word that stayed with you">{{ old('story') }}</textarea>
+
+        <label class="sb-label" for="sb-name">Your first name <span>(optional)</span></label>
+        <input id="sb-name" name="first_name" maxlength="40" autocomplete="given-name" value="{{ old('first_name') }}">
+
+        <button type="submit" class="sb-send">Send</button>
+      </form>
+    @endif
+  </section>
+
 </main>
 
 <script>
@@ -263,6 +333,7 @@
   prev.addEventListener('click', () => show(i - 1));
   next.addEventListener('click', () => show(i + 1));
   document.addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('input, textarea')) return;
     if (e.key === 'ArrowRight') show(i + 1);
     if (e.key === 'ArrowLeft')  show(i - 1);
   });
@@ -293,6 +364,9 @@
   if (document.fonts) document.fonts.ready.then(fit);
   addEventListener('load', fit);
 
+  const opened = document.getElementById('sb-opened');
+  if (opened) opened.value = Date.now();
+  /* Taps inside the form never turn pages. */
   /* Crossing the phone/computer width keeps you on the same spread. */
   /* Once, after a moment: lift the cover a little so it reads as something that turns. */
   let touched = false;

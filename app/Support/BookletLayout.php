@@ -72,6 +72,23 @@ class BookletLayout
         ];
     }
 
+    /**
+     * The "Your Sabbath" questions under the web booklet: two you tick, one you write.
+     * Answers are checked against these lists, so only these words are ever stored.
+     * @return array{spoke: array{q:string, options:list<string>}, joined: array{q:string, options:list<string>}, story: string}
+     */
+    public static function questions(array $cover): array
+    {
+        $spoke = ['The music', 'The sermon', 'The scripture readings', 'Prayer time', 'Being together'];
+        if (($cover['look'] ?? '') === 'pathfinder') array_splice($spoke, 0, 0, ['Our Pathfinders and Adventurers']);
+
+        return [
+            'spoke'  => ['q' => 'What spoke to you today?', 'options' => $spoke],
+            'joined' => ['q' => 'How were you with us?', 'options' => ['In the sanctuary', 'Watching online', 'My first time visiting', 'I brought someone']],
+            'story'  => 'Tell us about your Sabbath',
+        ];
+    }
+
     /** A program row's person is a group (set in italics) when it names a team, choir or club. */
     public static function isGroup(string $person): bool
     {
