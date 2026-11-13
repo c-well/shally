@@ -885,6 +885,12 @@
   #watch .watch-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 22px; margin-top: 28px; border-radius: 6px; background: var(--teal); color: #fff; font: 500 15px 'Poppins', system-ui, sans-serif; text-decoration: none; }
   #watch .watch-btn:hover { background: var(--teal-dark, #4f3768); }
   .youtube-wrap { max-width: 1040px; margin-top: 48px; border: 0; border-radius: 16px; }
+
+  /* ── PLAN 7: Join us between Sabbaths. Four even tiles, plain titles. ── */
+  .connect-tile { border: 0; border-radius: 14px; padding: 28px 22px; gap: 12px; }
+  .connect-tile:hover { border: 0; box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--ink) 35%, transparent); }
+  .connect-tile .ct-name { font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.02em; text-transform: none; }
+  .connect-tile .ct-sub { font-size: 15px; color: #4a5568; }
 </style>
 @include('partials.theme-vars')
 </head>
@@ -1089,6 +1095,7 @@
 <section class="block" id="connect">
   <div class="section-eyebrow">Stay connected</div>
   <h2>Join us between Sabbaths.</h2>
+  <p class="section-sub">Prayer, Zoom, and every service online.</p>
 
   <div class="connect-row">
     <a href="{{ route('prayer.show') }}" class="connect-tile">
