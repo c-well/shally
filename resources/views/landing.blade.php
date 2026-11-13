@@ -793,6 +793,34 @@
     font-family: 'Poppins', system-ui, sans-serif; font-weight: 300;
     font-size: clamp(18px, 1.8vw, 21px); line-height: 1.45; color: #4a5568; text-wrap: balance;
   }
+
+  /* ── PLAN 3: Every week. Even cards, one row (two by two on a phone). ── */
+  .schedule {
+    margin-top: 40px; display: grid; gap: 16px;
+    grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
+    max-width: 1040px; margin-left: auto; margin-right: auto;
+  }
+  @media (max-width: 820px) { .schedule { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .schedule .svc-card { min-width: 0; }
+  .svc-card {
+    display: flex; flex-direction: column; gap: 6px; min-height: 160px;
+    background: #fff; border: 0; border-radius: 14px; padding: 24px 22px;
+    text-align: left; color: var(--ink); text-decoration: none;
+  }
+  .svc-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--ink) 35%, transparent); }
+  .svc-card .svc-name { font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; font-size: 19px; letter-spacing: -0.02em; margin: 0; }
+  .svc-card .svc-when { font-family: 'Poppins', system-ui, sans-serif; font-size: 15px; letter-spacing: 0; color: #4a5568; margin: 0; }
+  .svc-card .svc-where, .svc-card .svc-join {
+    margin-top: auto; font-family: 'Poppins', system-ui, sans-serif; font-size: 14px; font-weight: 500;
+    letter-spacing: 0; text-transform: none; color: var(--teal);
+  }
+  .svc-hero { background: var(--teal); border-radius: 16px; box-shadow: 0 18px 44px -18px color-mix(in srgb, var(--teal) 55%, transparent); }
+  .svc-hero-now, .svc-hero-cta, .svc-hero-sub { font-family: 'Poppins', system-ui, sans-serif; letter-spacing: 0; text-transform: none; }
+  .svc-hero-now { font-size: 14px; font-weight: 500; }
+  .svc-hero-name { font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; letter-spacing: -0.02em; }
+  .svc-hero-cta { font-size: 15px; font-weight: 500; border-radius: 6px; }
+  .svc-others { font-family: 'Poppins', system-ui, sans-serif; font-size: 14px; }
+  .svc-others a { color: var(--teal); }
 </style>
 @include('partials.theme-vars')
 </head>
@@ -884,7 +912,7 @@
       @endforeach
     </div>
   @else
-    <div class="schedule">
+    <div class="schedule" style="--n: {{ max(1, min(4, count($svcs))) }}">
       @foreach ($svcs as $c)
         @if ($c['zoom'])
           <a href="{{ $c['zoom'] }}" target="_blank" rel="noopener" class="svc-card" title="Join on Zoom">
