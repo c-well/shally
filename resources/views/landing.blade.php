@@ -389,11 +389,16 @@
   .youtube-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
 
   /* ── Connect block ────────────────────────────────────── */
+  /* Four tiles, so four across, or two by two when there is not room.
+     Never 3 + 1: auto-fit left Facebook alone on a second row. */
   .connect-row {
     margin-top: 40px;
     display: grid; gap: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    max-width: 740px; margin-left: auto; margin-right: auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-width: 960px; margin-left: auto; margin-right: auto;
+  }
+  @media (max-width: 820px) {
+    .connect-row { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 520px; }
   }
   .connect-tile {
     display: flex; flex-direction: column; align-items: center; gap: 10px;
