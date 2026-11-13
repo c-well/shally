@@ -891,6 +891,13 @@
   .connect-tile:hover { border: 0; box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--ink) 35%, transparent); }
   .connect-tile .ct-name { font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.02em; text-transform: none; }
   .connect-tile .ct-sub { font-size: 15px; color: #4a5568; }
+
+  /* ── PLAN 8: Support the ministry. Dark band, one button. ── */
+  .donate-band { max-width: 1120px; background: #2a1f3a; border-radius: 16px; padding: clamp(56px, 7vw, 88px) 32px; box-shadow: none; margin-top: 0; }
+  .donate-band h3 { font-family: 'Poppins', system-ui, sans-serif; font-weight: 600; font-size: clamp(28px, 3.2vw, 40px); letter-spacing: -0.025em; margin-bottom: 12px; }
+  .donate-band p { font-weight: 300; font-size: clamp(17px, 1.7vw, 20px); line-height: 1.45; color: rgba(255,255,255,.78); margin-bottom: 28px; }
+  .donate-band a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 22px; border-radius: 6px; font: 500 15px 'Poppins', system-ui, sans-serif; letter-spacing: 0; text-transform: none; color: var(--ink); }
+  .donate-band a:hover { background: #efe8f7; }
 </style>
 @include('partials.theme-vars')
 </head>
@@ -1125,7 +1132,7 @@
 <section class="block" style="padding-top:0;">
   <div class="donate-band">
     <h3>Support the ministry.</h3>
-    <p>Tithes, offerings, and gifts run securely through Adventist Giving.</p>
+    <p>Tithes, offerings and gifts, given securely through Adventist Giving.</p>
     <a href="https://adventistgiving.org/#/org/AN48SH/envelope/start" target="_blank" rel="noopener">Give now @include('partials._arup')</a>
   </div>
 </section>
