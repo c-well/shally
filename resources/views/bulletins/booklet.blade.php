@@ -188,6 +188,25 @@
   .bk-foot a:hover { border-color: var(--bk-accent); color: var(--bk-accent); }
   .bk-foot p { margin: 10px 0 0; font-size: 13px; color: var(--bk-soft); }
 
+  /* ── How was your Sabbath: the panel takes the booklet's place, no scrolling ── */
+  .sb-panel { position: absolute; inset: 0; z-index: 20; display: none; overflow: auto; background: var(--bk-ground); cursor: default; overscroll-behavior: contain; }
+  .asking .sb-panel { display: block; animation: sb-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .asking .bk-book { opacity: 0; pointer-events: none; }
+  .asking .bk-nav { visibility: hidden; }
+  .bk-book { transition: transform 0.85s cubic-bezier(0.32, 0.08, 0.2, 1), opacity 0.25s ease; }
+  @keyframes sb-in { from { opacity: 0; transform: translateY(10px); } }
+  .sb-panel .sb { width: min(560px, 100%); margin: 0 auto; padding: 4px 18px 20px; border-top: 0; }
+  .sb-back { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; margin: 0 0 10px -6px; padding: 0 6px; border: 0; background: none; color: var(--bk-soft); font: 500 15px 'Instrument Sans', system-ui, sans-serif; cursor: pointer; }
+  .sb-back:hover { color: var(--bk-accent); }
+  .sb-step { display: none; border: 0; margin: 0; padding: 0; min-width: 0; }
+  .sb-step.on { display: block; animation: sb-in 0.3s ease both; }
+  .sb-count { margin: 0 0 4px; font-size: 14px; color: var(--bk-soft); }
+  .sb-btns { display: flex; gap: 10px; margin-top: 24px; }
+  .sb-ghost { min-height: 46px; padding: 0 22px; border: 1px solid var(--bk-line); border-radius: 6px; background: none; color: var(--bk-ink); font: 500 16px 'Instrument Sans', system-ui, sans-serif; cursor: pointer; }
+  /* The quiet link at the foot of the last page. */
+  .bk-ask { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * 16); margin: 0 auto; width: max-content; max-width: 90%; display: inline-flex; align-items: center; gap: calc(var(--u) * 3); min-height: 32px; padding: 0 calc(var(--u) * 8); border: 0; background: none; color: var(--bk-paper-soft); font: 500 calc(var(--u) * 10) 'Instrument Sans', system-ui, sans-serif; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; cursor: pointer; }
+  .bk-ask:hover { color: var(--bk-accent); }
+
   /* ── Your Sabbath ── */
   .sb { max-width: 560px; margin: 8px auto calc(56px + env(safe-area-inset-bottom)); padding: 30px calc(18px + env(safe-area-inset-right)) 0 calc(18px + env(safe-area-inset-left)); border-top: 1px solid var(--bk-line); }
   .sb h2 { margin: 0; font-family: 'Archivo', 'Instrument Sans', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; color: var(--bk-ink); }
@@ -241,6 +260,57 @@
         <div class="bk-face back">@include('bulletins._booklet-page', ['page' => 'back'])</div>
       </div>
     </div>
+
+    {{-- How was your Sabbath: opened from the quiet link on the last page; takes the booklet's place, one question at a time. Private to the church. --}}
+    <div class="sb-panel" id="sb-panel" role="dialog" aria-modal="false" aria-labelledby="sb-h" @if (session('sabbath_flash') || session('sabbath_error')) data-open="1" @endif>
+      <section class="sb" id="sabbath">
+        <button type="button" class="sb-back" data-close><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg> Back to the booklet</button>
+        <h2 id="sb-h">How was your Sabbath?</h2>
+        @if (session('sabbath_flash'))
+          <p class="sb-done" role="status">{{ session('sabbath_flash') }}</p>
+        @else
+          <p class="sb-lede">Three quick questions. Only the church reads your answers.</p>
+          @if (session('sabbath_error'))<p class="sb-err" role="alert">{{ session('sabbath_error') }}</p>@endif
+          <form method="post" action="{{ route('bulletins.booklet.respond', $bulletin) }}" id="sb-form">
+            @csrf
+            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="sb-hp">
+            <input type="hidden" name="form_opened_at" id="sb-opened" value="0">
+
+            @foreach (['spoke', 'joined'] as $n => $k)
+              <fieldset class="sb-step{{ $n === 0 ? ' on' : '' }}" data-step="{{ $n }}">
+                <legend>{{ $Q[$k]['q'] }}</legend>
+                <p class="sb-hint">{{ $n + 1 }} of 3 · Tick any that fit.</p>
+                <div class="sb-chips">
+                  @foreach ($Q[$k]['options'] as $o)
+                    <label class="sb-chip">
+                      <input type="checkbox" name="{{ $k }}[]" value="{{ $o }}" @checked(in_array($o, (array) old($k, []), true))>
+                      <svg class="sb-tick" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                      <span>{{ $o }}</span>
+                    </label>
+                  @endforeach
+                </div>
+                <div class="sb-btns">
+                  @if ($n > 0)<button type="button" class="sb-ghost" data-go="{{ $n - 1 }}">Back</button>@endif
+                  <button type="button" class="sb-send" data-go="{{ $n + 1 }}">Next</button>
+                </div>
+              </fieldset>
+            @endforeach
+
+            <div class="sb-step" data-step="2">
+              <label class="sb-label" for="sb-story">{{ $Q['story'] }}</label>
+              <p class="sb-hint" style="margin-top: -4px;">3 of 3</p>
+              <textarea id="sb-story" name="story" rows="4" maxlength="2000" placeholder="A moment, a song, a word that stayed with you">{{ old('story') }}</textarea>
+              <label class="sb-label" for="sb-name">Your first name <span>(optional)</span></label>
+              <input id="sb-name" name="first_name" maxlength="40" autocomplete="given-name" value="{{ old('first_name') }}">
+              <div class="sb-btns">
+                <button type="button" class="sb-ghost" data-go="1">Back</button>
+                <button type="submit" class="sb-send">Send</button>
+              </div>
+            </div>
+          </form>
+        @endif
+      </section>
+    </div>
   </div>
 
   <nav class="bk-nav" aria-label="Turn pages">
@@ -259,46 +329,6 @@
     <p>Print both sides, flip on the short edge, then fold in half.</p>
   </div>
 
-  {{-- How was your Sabbath: two questions to tick, one to write. Private to the church; no email asked. --}}
-  <section class="sb" id="sabbath" aria-labelledby="sb-h">
-    <h2 id="sb-h">How was your Sabbath?</h2>
-    <p class="sb-lede">Three quick questions. Only the church reads your answers.</p>
-
-    @if (session('sabbath_flash'))
-      <p class="sb-done" role="status">{{ session('sabbath_flash') }}</p>
-    @else
-      @if (session('sabbath_error'))<p class="sb-err" role="alert">{{ session('sabbath_error') }}</p>@endif
-      <form method="post" action="{{ route('bulletins.booklet.respond', $bulletin) }}">
-        @csrf
-        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="sb-hp">
-        <input type="hidden" name="form_opened_at" id="sb-opened" value="0">
-
-        @foreach (['spoke', 'joined'] as $k)
-          <fieldset>
-            <legend>{{ $Q[$k]['q'] }}</legend>
-            <p class="sb-hint">Tick any that fit.</p>
-            <div class="sb-chips">
-              @foreach ($Q[$k]['options'] as $o)
-                <label class="sb-chip">
-                  <input type="checkbox" name="{{ $k }}[]" value="{{ $o }}" @checked(in_array($o, (array) old($k, []), true))>
-                  <svg class="sb-tick" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-                  <span>{{ $o }}</span>
-                </label>
-              @endforeach
-            </div>
-          </fieldset>
-        @endforeach
-
-        <label class="sb-label" for="sb-story">{{ $Q['story'] }}</label>
-        <textarea id="sb-story" name="story" rows="4" maxlength="2000" placeholder="A moment, a song, a word that stayed with you">{{ old('story') }}</textarea>
-
-        <label class="sb-label" for="sb-name">Your first name <span>(optional)</span></label>
-        <input id="sb-name" name="first_name" maxlength="40" autocomplete="given-name" value="{{ old('first_name') }}">
-
-        <button type="submit" class="sb-send">Send</button>
-      </form>
-    @endif
-  </section>
 
 </main>
 
@@ -350,6 +380,7 @@
   next.addEventListener('click', () => show(i + 1));
   document.addEventListener('keydown', (e) => {
     if (e.target.closest && e.target.closest('input, textarea')) return;
+    if (reader.classList.contains('asking')) { if (e.key === 'Escape') ask(false); return; }
     if (e.key === 'ArrowRight') show(i + 1);
     if (e.key === 'ArrowLeft')  show(i - 1);
   });
@@ -358,11 +389,13 @@
   let x0 = null, swiped = false;
   stage.addEventListener('pointerdown', (e) => { x0 = e.clientX; swiped = false; });
   stage.addEventListener('pointerup', (e) => {
-    if (x0 === null) return;
+    if (x0 === null || reader.classList.contains('asking')) return;
     const dx = e.clientX - x0; x0 = null;
     if (Math.abs(dx) > 40) { swiped = true; show(i + (dx < 0 ? 1 : -1)); }
   });
   stage.addEventListener('click', (e) => {
+    if (reader.classList.contains('asking')) return;
+    if (e.target.closest('[data-ask]')) { ask(true); return; }
     if (swiped) { swiped = false; return; }
     const r = stage.getBoundingClientRect();
     show(i + (e.clientX > r.left + r.width / 2 ? 1 : -1));
@@ -380,9 +413,25 @@
   if (document.fonts) document.fonts.ready.then(fit);
   addEventListener('load', fit);
 
+  /* How was your Sabbath: swap the booklet for the questions in the same space. */
+  const reader = stage.closest('.bk-reader');
+  const panel  = document.getElementById('sb-panel');
   const opened = document.getElementById('sb-opened');
-  if (opened) opened.value = Date.now();
-  /* Taps inside the form never turn pages. */
+  function ask(open) {
+    reader.classList.toggle('asking', open);
+    if (open && opened && opened.value === '0') opened.value = Date.now();
+    if (open && !panel.dataset.open) panel.querySelectorAll('.sb-step').forEach(st => st.classList.toggle('on', st.dataset.step === '0'));
+    if (!open) delete panel.dataset.open;
+    if (open) { const r = stage.getBoundingClientRect(); if (r.top < 0 || r.top > innerHeight * 0.4) scrollTo({ top: scrollY + r.top - 60, behavior: 'smooth' }); panel.querySelector('.sb-back').focus({ preventScroll: true }); }
+  }
+  panel.addEventListener('click', (e) => {
+    if (e.target.closest('[data-close]')) { ask(false); return; }
+    const go = e.target.closest('[data-go]');
+    if (!go) return;
+    panel.querySelectorAll('.sb-step').forEach(st => st.classList.toggle('on', st.dataset.step === go.dataset.go));
+    panel.scrollTop = 0;
+  });
+  if (panel.dataset.open) { show(list().length - 1); ask(true); }
   /* Crossing the phone/computer width keeps you on the same spread. */
   /* Once, after a moment: lift the cover a little so it reads as something that turns. */
   let touched = false;
@@ -398,7 +447,7 @@
   }
 
   wide.addEventListener('change', () => show(list().findIndex(v => v.s === spread)));
-  show(0);
+  if (!panel.dataset.open) show(0);
 })();
 </script>
 

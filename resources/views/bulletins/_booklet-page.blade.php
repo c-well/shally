@@ -74,5 +74,6 @@
       @endif
     @endforeach
     <div class="bk-pleasant">Have a pleasant Sabbath :)</div>
+    <button type="button" class="bk-ask" data-ask>How was your Sabbath? Tell us <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
 @endif
