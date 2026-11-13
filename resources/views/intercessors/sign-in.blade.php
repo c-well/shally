@@ -5,14 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Intercessors — Sign in · The Church of Peace</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Poppins:wght@400;500&family=Instrument+Sans:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: #fefcef; color: #1a2332; font-family: 'Instrument Sans', sans-serif; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
   main { max-width: 480px; margin: 0 auto; padding: clamp(48px,10vh,96px) 24px 60px; }
-  .eyebrow { font-family: 'Instrument Sans'; font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: #03617A; margin-bottom: 14px; text-align: center; }
+  .eyebrow { font-family: 'Poppins', system-ui, sans-serif; font-size: 15px; font-weight: 500; color: #03617A; margin-bottom: 10px; text-align: center; }
   h1 { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 500; letter-spacing: -.02em; margin-bottom: 12px; text-align: center; }
-  .subtitle { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #4a5568; text-align: center; margin-bottom: 40px; line-height: 1.5; }
+  .subtitle { font-family: 'Poppins', system-ui, sans-serif; font-size: 16px; color: #4a5568; text-align: center; margin: 0 auto 40px; max-width: 460px; line-height: 1.6; text-wrap: balance; }
+  .empty { max-width: 460px; margin: 0 auto; padding: 26px 24px; border: 1px solid rgba(26,35,50,.12); border-radius: 12px; background: #fff; text-align: center; font-family: 'Poppins', system-ui, sans-serif; }
+  .empty p { margin: 0; font-size: 16px; line-height: 1.6; color: #4a5568; }
+  .empty a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 16px; padding: 0 18px; border-radius: 6px; background: #03617A; color: #fff; text-decoration: none; font-weight: 500; font-size: 15px; }
   .who { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .who button { padding: 18px 12px; background: #fff; border: 1px solid rgba(26,35,50,.12); border-radius: 10px; cursor: pointer; font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 500; color: #1a2332; }
   .who button:hover { background: #03617A; border-color: #03617A; color: #fff; }
@@ -39,7 +42,16 @@
 <main>
   <div class="eyebrow">Prayer team</div>
   <h1>Welcome, intercessor.</h1>
-  <p class="subtitle">Tap your name to sign in. Cookie stays with you six months — you won't have to do this every time.</p>
+  @if ($intercessors->isEmpty())
+    {{-- No team members yet: say so plainly instead of an empty page. --}}
+    <p class="subtitle">This is where the church prayer team signs in.</p>
+    <div class="empty">
+      <p>The prayer team list is being set up. Need someone to pray with you? Send a request and the team will hold it in prayer.</p>
+      <a href="{{ route('prayer.show') }}">Send a prayer request</a>
+    </div>
+  @else
+  <p class="subtitle">Tap your name to sign in. You stay signed in on this phone for six months.</p>
+  @endif
 
   @if (session('pin_texted'))
     <div class="ok">Sent. Check your phone for the new PIN, then tap your name again.</div>
