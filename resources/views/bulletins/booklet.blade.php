@@ -13,7 +13,6 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2">
 <link rel="shortcut icon" href="/favicon.ico?v=2">
 @include('partials.dark-mode')
-<meta name="theme-color" content="{{ (($L['cover']['look'] ?? '') === 'pathfinder') ? '#ebe0c9' : '#f5f0fb' }}">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{{ $L['title'] }} · {{ $L['date']->format('M j') }} — The Church of Peace</title>
 <meta name="description" content="The program for {{ $L['title'] }}, {{ $L['date']->format('l, F j, Y') }}, at Shalom Seventh-day Adventist Church. Flip through it or print it.">
@@ -25,7 +24,7 @@
 <style>
   /* ── Looks. Everything below takes its colour and type from these tokens. ──
      default:    the site's season colours.
-     pathfinder: a light uniform-khaki ground, gold scarf accent, emblem red. Set with cover.look. */
+     pathfinder: the pages are light uniform khaki on the site's own ground; gold scarf accent, emblem red. Set with cover.look. */
   body.look-default {
     --bk-ground: var(--parchment); --bk-ink: var(--ink); --bk-soft: var(--ink-soft); --bk-line: var(--line);
     --bk-paper: #fff; --bk-paper-ink: #1a2332; --bk-paper-soft: #5f6876;
@@ -33,21 +32,19 @@
     --bk-display: 'Cormorant Garamond', Georgia, serif; --bk-display-weight: 600; --bk-display-track: -0.01em;
   }
   body.look-pathfinder {
-    --bk-ground: #ebe0c9; --bk-ink: #2e2516; --bk-soft: #6b5d45; --bk-line: rgba(78, 58, 26, 0.22);
-    --bk-paper: #fffcf6; --bk-paper-ink: #2a2217; --bk-paper-soft: #6f6350;
-    --bk-accent: #a87420; --bk-accent-2: #a9332a;
+    --bk-ground: var(--parchment); --bk-ink: var(--ink); --bk-soft: var(--ink-soft); --bk-line: var(--line);
+    --bk-paper: #e4d3b0; --bk-paper-ink: #2a2014; --bk-paper-soft: #64543a;
+    --bk-accent: #8a5e17; --bk-accent-2: #9a2c23;
     --bk-display: 'Archivo', 'Instrument Sans', system-ui, sans-serif; --bk-display-weight: 800; --bk-display-track: -0.025em;
   }
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; overflow-x: clip; overscroll-behavior-x: none; }
   body { background: var(--bk-ground); color: var(--bk-ink); font-family: 'Instrument Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100dvh; }
-  /* The khaki ground holds in dark mode too: it is the uniform, not a theme. */
-  html:has(body.look-pathfinder), html.dark:has(body.look-pathfinder) { background: #ebe0c9 !important; color-scheme: light; }
-  html.dark body.look-pathfinder { background: #ebe0c9 !important; color: #2e2516 !important; }
-  body.look-pathfinder {
+  /* Khaki paper with a faint grain, like card stock. */
+  .look-pathfinder .bk-face {
     background-image:
-      radial-gradient(120% 70% at 50% 0%, rgba(255, 250, 238, 0.75), rgba(255, 250, 238, 0) 60%),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.26 0 0 0 0 0.12 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      radial-gradient(130% 80% at 50% 0%, rgba(255, 248, 230, 0.45), rgba(255, 248, 230, 0) 65%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.22 0 0 0 0 0.1 0 0 0 0.12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   .bk-top { max-width: 1100px; margin: 0 auto; padding: 14px calc(18px + env(safe-area-inset-right)) 0 calc(18px + env(safe-area-inset-left)); }
