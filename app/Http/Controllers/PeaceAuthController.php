@@ -58,6 +58,7 @@ class PeaceAuthController extends Controller
             'intent'     => 'nullable|array',
             'intent.type'  => 'nullable|string|max:40',
             'intent.qa_id' => 'nullable|integer|exists:peace_qa_pairs,id',
+            'intent.answer_id' => 'nullable|integer|exists:peace_news_answers,id',
             'source_url' => 'nullable|url|max:500',
         ]);
 
@@ -78,6 +79,8 @@ class PeaceAuthController extends Controller
         $intent = $data['intent'] ?? null;
         $heading = match ($intent['type'] ?? null) {
             'save_qa' => 'Save your spot.',
+            'news_signup' => 'Tap to start getting Peace Notes News.',
+            'news_answer' => 'Tap to post your answer.',
             default   => 'Tap to come back.',
         };
 
@@ -111,6 +114,16 @@ class PeaceAuthController extends Controller
 
         // Perform intent (e.g., save_qa)
         $intent = $result['intent'] ?? null;
+        // Peace Notes News: turn the newsletter on only when they asked for it,
+        // and post a waiting answer once the email is confirmed.
+        if ($intent && ($intent['type'] ?? null) === 'news_signup') {
+            $sub->forceFill(['subscribed_newsletter' => true])->save();
+        }
+        if ($intent && ($intent['type'] ?? null) === 'news_answer' && ! empty($intent['answer_id'])) {
+            \App\Models\PeaceNewsAnswer::where('id', (int) $intent['answer_id'])->where('status', 'unverified')
+                ->update(['subscriber_id' => $sub->id, 'status' => 'pending']);
+            session()->flash('news_flash', 'Thank you. Your answer will show after a quick read by the church.');
+        }
         if ($intent && ($intent['type'] ?? null) === 'save_qa' && !empty($intent['qa_id'])) {
             DB::table('peace_saved_qas')->updateOrInsert(
                 ['subscriber_id' => $sub->id, 'qa_id' => (int) $intent['qa_id']],

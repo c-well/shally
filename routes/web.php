@@ -22,6 +22,16 @@ Route::get('/lesson',          [\App\Http\Controllers\LessonController::class, '
 Route::get('/lesson/{lesson}', [\App\Http\Controllers\LessonController::class, 'show'])->whereNumber('lesson')->name('lesson.week');
 
 // Public pages — content editable from /admin/pages
+// Peace Notes News — weekly issue from Sabbath's sermon (before /peace-notes/{slug}).
+Route::get ('/peace-notes/news',               [\App\Http\Controllers\PeaceNewsController::class, 'index'])->name('peace.news.index');
+Route::get ('/peace-notes/news/{slug}',        [\App\Http\Controllers\PeaceNewsController::class, 'show'])
+     ->middleware('seeker')->where('slug', '[A-Za-z0-9-]+')->name('peace.news.show');
+Route::post('/peace-notes/news/{slug}/answer', [\App\Http\Controllers\PeaceNewsController::class, 'answer'])
+     ->middleware(['seeker', 'throttle:10,1'])->where('slug', '[A-Za-z0-9-]+')->name('peace.news.answer');
+Route::get ('/peace/news/review/{token}',      [\App\Http\Controllers\PeaceNewsController::class, 'review'])->where('token', '[a-f0-9]{64}')->name('peace.news.review');
+Route::post('/peace/news/review/{token}',      [\App\Http\Controllers\PeaceNewsController::class, 'reviewAct'])->middleware('throttle:20,1')->where('token', '[a-f0-9]{64}')->name('peace.news.review.act');
+Route::get ('/peace/news/unsubscribe/{subscriber}',  [\App\Http\Controllers\PeaceNewsController::class, 'unsubscribe'])->middleware('signed')->name('peace.news.unsubscribe');
+Route::post('/peace/news/unsubscribe/{subscriber}',  [\App\Http\Controllers\PeaceNewsController::class, 'unsubscribeConfirm'])->middleware('signed')->name('peace.news.unsubscribe.confirm');
 Route::get ('/peace-notes',         [\App\Http\Controllers\SermonController::class, 'index'])->name('peace-notes');
 Route::get ('/peace-notes/{slug}',  [\App\Http\Controllers\SermonController::class, 'show'])
      ->where('slug', '[A-Za-z0-9-]+')->name('peace-notes.show');
@@ -415,6 +425,12 @@ Route::middleware('auth')->group(function () {
 
         // Peace ministry admin (edit any sermon field, Q&As, scriptures)
         Route::get   ('/admin/peace',                            [\App\Http\Controllers\AdminPeaceController::class, 'index'])->name('admin.peace.index');
+        // Peace Notes News: issues, edit, approve/hold, readers' answers
+        Route::get   ('/admin/peace/news',                       [\App\Http\Controllers\AdminPeaceNewsController::class, 'index'])->name('admin.peace.news.index');
+        Route::get   ('/admin/peace/news/{issue}',               [\App\Http\Controllers\AdminPeaceNewsController::class, 'edit'])->whereNumber('issue')->name('admin.peace.news.edit');
+        Route::post  ('/admin/peace/news/{issue}',               [\App\Http\Controllers\AdminPeaceNewsController::class, 'update'])->whereNumber('issue')->name('admin.peace.news.update');
+        Route::post  ('/admin/peace/news/{issue}/status',        [\App\Http\Controllers\AdminPeaceNewsController::class, 'status'])->whereNumber('issue')->name('admin.peace.news.status');
+        Route::post  ('/admin/peace/news/answers/{answer}',      [\App\Http\Controllers\AdminPeaceNewsController::class, 'answer'])->whereNumber('answer')->name('admin.peace.news.answer');
         Route::get   ('/admin/peace/schedule',                   [\App\Http\Controllers\AdminPeaceController::class, 'schedule'])->name('admin.peace.schedule');
         Route::get   ('/admin/peace/analytics',                  [\App\Http\Controllers\AdminPeaceController::class, 'analytics'])->name('admin.peace.analytics');
         Route::get   ('/admin/peace/subscribers',                [\App\Http\Controllers\AdminPeaceController::class, 'subscribers'])->name('admin.peace.subscribers');
