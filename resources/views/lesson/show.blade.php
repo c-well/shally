@@ -50,7 +50,7 @@
     display: flex; flex-direction: column; align-items: center;
     padding: 14px 6px;
     border: 1px solid var(--line); border-radius: 6px;
-    background: rgba(251,244,224,0.6);
+    background: color-mix(in srgb, #fff 72%, var(--parchment));
     color: var(--ink-soft); cursor: pointer;
     transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
     font: inherit;

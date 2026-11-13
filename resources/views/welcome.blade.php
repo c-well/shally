@@ -1576,7 +1576,7 @@
   /* Lightbox reader — modal card with fixed header, scrolling body inside */
   .lightbox {
     position: fixed; inset: 0;
-    background: rgba(251, 244, 224, 0.94);
+    background: color-mix(in srgb, var(--parchment) 94%, transparent);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     z-index: 300;
