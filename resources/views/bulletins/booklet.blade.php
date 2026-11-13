@@ -53,14 +53,24 @@
 
   /* ── Sizing: one page is 5.5 × 8.5 in. --pw is a page's width on screen. ── */
   .bk-stage {
-    --pw: min(calc(100vw - 36px), calc((100dvh - 210px) * 5.5 / 8.5), 460px);
+    --pw: min(calc(100vw - 36px), 460px);
     position: relative; width: 100%; height: calc(var(--pw) * 8.5 / 5.5);
     margin: 22px 0 0; overflow: clip;
     touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: pointer;
     animation: bk-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
-  @media (min-width: 900px) {
+  @media (min-width: 900px) and (min-height: 740px) {
     .bk-stage { --pw: min(calc((100vw - 120px) / 2), calc((100dvh - 230px) * 5.5 / 8.5), 520px); margin-top: 30px; overflow: visible; }
+  }
+  /* Whole-pixel page widths, so the book never sits on a half pixel and text stays sharp. */
+  @supports (width: round(down, 10.5px, 2px)) {
+    .bk-stage { --pw: round(down, min(calc(100vw - 36px), 460px), 2px); }
+    @media (min-width: 900px) and (min-height: 740px) {
+      .bk-stage { --pw: round(down, min(calc((100vw - 120px) / 2), calc((100dvh - 230px) * 5.5 / 8.5), 520px), 2px); }
+    }
+  }
+  @supports (left: round(down, 50%, 1px)) {
+    .bk-stage .bk-book { left: round(down, 50%, 1px); }
   }
   @keyframes bk-rise { from { opacity: 0; transform: translateY(18px); } }
   /* Perspective only while a page is turning: flat pages at rest stay crisp. */
@@ -83,9 +93,10 @@
     backface-visibility: hidden; -webkit-backface-visibility: hidden;
     background: var(--bk-paper); color: var(--bk-paper-ink);
     box-shadow: 0 28px 54px -30px rgba(60, 42, 14, 0.5), 0 2px 6px rgba(60, 42, 14, 0.08);
-    container-type: inline-size;
+    container-type: size;
   }
   .bk-face.back { transform: rotateY(180deg); }
+
   /* The fold: a soft shadow along the spine edge of each page. */
   .bk-face::after { content: ''; position: absolute; inset: 0; pointer-events: none; }
   .bk-face.front::after { background: linear-gradient(to right, rgba(60,42,14,0.11), rgba(60,42,14,0) 7%); }
@@ -94,7 +105,7 @@
   .bk-face.back  { border-radius: 4px 0 0 4px; }
 
   /* ── Page content. --u is one printed point, so 12pt type is calc(var(--u) * 12). ── */
-  .pg-in { --u: calc(100cqw / 396); position: relative; height: 100%; padding: calc(var(--u) * 32) calc(var(--u) * 34); }
+  .pg-in { --u: min(100cqw / 360, 100cqh / 556); position: relative; height: 100%; padding: calc(var(--u) * 32) calc(var(--u) * 34); }
 
   .bk-cover { text-align: center; }
   /* Pathfinder cover: a gold band across the top, like the scarf. */
@@ -136,6 +147,17 @@
   .bk-mission p { margin: 0; color: var(--bk-paper-soft); }
   .bk-offer { margin: calc(var(--u) * 6) 0; font-weight: 500; }
   .bk-pleasant { text-align: center; margin-top: calc(var(--u) * 12); font-family: var(--bk-display); font-weight: 600; font-size: calc(var(--u) * 11); color: var(--bk-accent-2); }
+
+  /* ── Phone: paper proportions would make the type too small to read, so the pages
+     use reading sizes (program about 15px) and grow as tall as the longest page. ── */
+  @media not all and (min-width: 900px) and (min-height: 740px) {
+    .bk-stage .pg-in { --u: clamp(1.15px, 100cqw / 260, 1.45px); height: auto; min-height: 100%; padding: calc(var(--u) * 24) calc(var(--u) * 16) calc(var(--u) * 64); }
+    .bk-stage .bk-back { font-size: calc(var(--u) * 10); }
+    .bk-stage .bk-title { font-size: calc(var(--u) * 30); }
+    .bk-stage .bk-row { margin: calc(var(--u) * min(var(--gap), 12)) 0; }
+    .bk-stage .bk-under { margin: calc(var(--u) * (3 - min(var(--gap), 12))) 0 calc(var(--u) * min(var(--gap), 12)); }
+    .bk-stage .bk-addr { bottom: calc(var(--u) * 22); }
+  }
 
   /* ── Controls ── */
   .bk-nav { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 26px auto 0; padding: 0 18px; }
@@ -202,7 +224,7 @@
   const where = document.getElementById('bk-where');
   const prev  = document.getElementById('bk-prev');
   const next  = document.getElementById('bk-next');
-  const wide  = matchMedia('(min-width: 900px)');
+  const wide  = matchMedia('(min-width: 900px) and (min-height: 740px)');
 
   /* A view = which spread is open (0 closed cover, 1 inside, 2 closed back) and where the book sits. */
   const VIEWS = {
@@ -258,6 +280,18 @@
     const r = stage.getBoundingClientRect();
     show(i + (e.clientX > r.left + r.width / 2 ? 1 : -1));
   });
+
+  /* Phone: the stage is as tall as the longest page; computer: paper size from CSS. */
+  const pages = [...book.querySelectorAll('.pg-in')];
+  function fit() {
+    if (wide.matches) { stage.style.height = ''; return; }
+    stage.style.height = '0px';
+    stage.style.height = Math.ceil(Math.max(...pages.map(p => p.scrollHeight))) + 'px';
+  }
+  fit();
+  addEventListener('resize', fit);
+  if (document.fonts) document.fonts.ready.then(fit);
+  addEventListener('load', fit);
 
   /* Crossing the phone/computer width keeps you on the same spread. */
   /* Once, after a moment: lift the cover a little so it reads as something that turns. */
