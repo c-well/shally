@@ -155,6 +155,20 @@ Schedule::command('peace:scan-channel')
     ->onOneServer()
     ->emailOutputOnFailure('contact@c-wellpics.com')
     ->name('peace-scan-channel-retry-sun-7am');
+// PEACE NOTES NEWS — draft from the newest sermon (hourly no-op until one has
+// no issue), review email to Andre cc KC; first approval sends Sunday 8 AM ET.
+Schedule::command('peace:news-draft')
+    ->hourlyAt(25)
+    ->onOneServer()
+    ->withoutOverlapping(30)
+    ->name('peace-news-draft');
+
+Schedule::command('peace:news-send')
+    ->everyTenMinutes()
+    ->onOneServer()
+    ->withoutOverlapping(60)
+    ->name('peace-news-send');
+
 // Sunday 12pm ET sanity check — verify a sermon was actually processed yesterday.
 // If no peace_sermons row was created since Saturday 00:00 ET, alert Karlon.
 // Silent on success (no alert spam).
