@@ -34,7 +34,7 @@
         @if ($sermon->youtube_video_id)
           <a class="pn-btn" href="{{ $issue->youtubeAt($issue->opening_seconds) }}" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>Watch the sermon</a>
         @endif
-        <a class="pn-btn pn-btn--ghost" href="{{ route('find-peace.show', $sermon->slug) }}">Read more on Find Peace</a>
+        <a class="pn-btn pn-btn--ghost" href="{{ route('peace.news.index') }}">Past issues</a>
       </div>
     </div>
   </section>

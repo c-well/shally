@@ -89,6 +89,7 @@ class PeaceNewsController extends Controller
                 subject: 'Confirm your answer on Peace Notes News',
                 view: 'peace.emails.seeker.magic-link',
                 viewData: ['email' => $email, 'url' => url('/peace/auth/verify/' . $raw), 'heading' => 'Tap to post your answer.'],
+                opts: ['from_name' => 'Peace Notes News'],
             );
         }
         return redirect($back)->with('news_flash', 'Almost there. We emailed you a link: tap it to post your answer. No password.');

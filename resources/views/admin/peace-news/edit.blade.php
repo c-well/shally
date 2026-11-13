@@ -11,7 +11,7 @@
   @if (session('ok'))<div class="ok">{{ session('ok') }}</div>@endif
   <span class="pill s-{{ $issue->status }}">{{ ucfirst($issue->status) }}</span>
   <h1 style="margin-top: 10px;">{{ $sermon->title }}</h1>
-  <p class="lede">{{ $sermon->speaker }} · Sabbath, {{ \Illuminate\Support\Carbon::parse($sermon->sermon_date)->format('M j') }}. The summary comes from Find Peace; edit it there. <a href="{{ route('peace.news.show', $issue->slug) }}">See the issue page ›</a></p>
+  <p class="lede">{{ $sermon->speaker }} · Sabbath, {{ \Illuminate\Support\Carbon::parse($sermon->sermon_date)->format('M j') }}. The summary is written from the sermon; edit it under Peace admin. <a href="{{ route('peace.news.show', $issue->slug) }}">See the issue page ›</a></p>
 
   @if ($issue->status !== 'sent')
     <form method="post" action="{{ route('admin.peace.news.status', $issue) }}" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">

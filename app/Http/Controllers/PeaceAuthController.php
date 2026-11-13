@@ -86,13 +86,14 @@ class PeaceAuthController extends Controller
 
         $this->mailer->sendView(
             to: $email,
-            subject: 'One-tap sign-in to Finding Peace',
+            subject: str_starts_with((string) ($intent['type'] ?? ''), 'news_') ? 'Confirm your email for Peace Notes News' : 'One-tap sign-in to Finding Peace',
             view: 'peace.emails.seeker.magic-link',
             viewData: [
                 'email'   => $email,
                 'url'     => $url,
                 'heading' => $heading,
-            ]
+            ],
+            opts: str_starts_with((string) ($intent['type'] ?? ''), 'news_') ? ['from_name' => 'Peace Notes News'] : [],
         );
 
         \App\Models\AuditLog::record(

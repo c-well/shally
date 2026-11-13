@@ -58,7 +58,7 @@
   @endif
 
   <tr><td style="padding:22px 28px;font-size:13px;color:#5f6876;border-top:1px solid #eee;margin-top:16px;">
-    If neither of you approves, nothing sends. The sermon stays on Find Peace as usual.
+    If neither of you approves, nothing sends.
   </td></tr>
 </table>
 </td></tr>

@@ -70,7 +70,7 @@ class PeaceNewsSendCommand extends Command
                 'youSaid'   => $issue->youSaid(),
                 'unsubUrl'  => $unsub,
             ],
-            opts: ['headers' => ['List-Unsubscribe' => '<' . $unsub . '>']],
+            opts: ['from_name' => 'Peace Notes News', 'headers' => ['List-Unsubscribe' => '<' . $unsub . '>']],
         );
     }
 }

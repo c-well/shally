@@ -30,7 +30,8 @@ class ResendMailer
         }
 
         $payload = [
-            'from'     => env('RESEND_FROM_NAME', 'Finding Peace') . ' <' . env('RESEND_FROM', 'hello@thechurchofpeace.org') . '>',
+            // Peace Notes News is its own thing, not Finding Peace: callers may name the sender.
+            'from'     => ($opts['from_name'] ?? env('RESEND_FROM_NAME', 'Finding Peace')) . ' <' . env('RESEND_FROM', 'hello@thechurchofpeace.org') . '>',
             'to'       => [$to],
             'subject'  => $subject,
             'html'     => $html,
