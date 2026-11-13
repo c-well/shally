@@ -145,6 +145,7 @@
     @endif
     <h1>{{ $page?->title ?? 'Sermon archive.' }}</h1>
     <div class="archive-line">{{ count($sermons) }} {{ count($sermons) === 1 ? 'sermon' : 'sermons' }} · listen anytime</div>
+    <div style="margin-top: 14px; font-size: 15px;"><a href="{{ route('peace.news.index') }}" style="color: var(--teal);">Peace Notes News: the week’s message every Sunday ›</a></div>
   </div>
 
   @php
@@ -217,6 +218,7 @@
   </div>
 </main>
 
+@include('peace.partials.news-signup')
 @include("partials.footer")
 
 @include('partials.search-float')

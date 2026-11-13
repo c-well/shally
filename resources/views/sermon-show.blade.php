@@ -417,6 +417,7 @@
   </div>
 </main>
 
+@include('peace.partials.news-signup')
 @include("partials.footer")
 
 
